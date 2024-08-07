@@ -43,7 +43,7 @@ export default function MerchantServicesTabs() {
       case "compliance":
         return <ComplianceTable />;
       default:
-        return <div>Tab content not found</div>;
+        return <div>Tab content not here</div>;
     }
   };
 
