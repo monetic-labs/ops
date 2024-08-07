@@ -38,8 +38,9 @@ export default function RootLayout({
       <body
         className={clsx(
           "min-h-screen bg-background font-sans antialiased",
-          fontSans.variable
-        )}>
+          fontSans.variable,
+        )}
+      >
         <Providers themeProps={{ attribute: "class", defaultTheme: "dark" }}>
           <div className="relative flex flex-col h-screen">
             <Navbar />
@@ -51,7 +52,8 @@ export default function RootLayout({
                 isExternal
                 className="flex items-center gap-1 text-current"
                 href="https://backpack.network"
-                title="Backpack">
+                title="Backpack"
+              >
                 <span className="text-default-600">Version</span>
                 <p className="text-primary">{siteConfig.version}</p>
               </Link>

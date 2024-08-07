@@ -40,6 +40,7 @@ export default function CardLimitModal({
   useEffect(() => {
     if (currentLimit) {
       const [, limitAmount, , limitCycle] = currentLimit.split(" ");
+
       setAmount(limitAmount.replace("$", ""));
       setCycle(limitCycle);
     }
@@ -69,7 +70,8 @@ export default function CardLimitModal({
             label="Limit Cycle"
             placeholder="Select cycle"
             value={cycle}
-            onChange={(e) => setCycle(e.target.value)}>
+            onChange={(e) => setCycle(e.target.value)}
+          >
             {cycles.map((c) => (
               <SelectItem key={c.value} value={c.value}>
                 {c.label}

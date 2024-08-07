@@ -1,6 +1,4 @@
 import React, { ReactNode, useState } from "react";
-
-import { BillPay, billPayColumns, billPayData, statusColorMap } from "@/data";
 import { Button } from "@nextui-org/button";
 import { Chip } from "@nextui-org/chip";
 import {
@@ -13,6 +11,7 @@ import {
 } from "@nextui-org/table";
 import { User } from "@nextui-org/user";
 
+import { BillPay, billPayColumns, billPayData, statusColorMap } from "@/data";
 import BillPayCloneModal from "@/components/modals/bill-clone";
 import CreateBillPayModal from "@/components/modals/bill-create";
 import BillPayDetailsModal from "@/components/modals/bill-details";
@@ -39,7 +38,8 @@ export default function BillPayTable() {
                 src: `https://i.pravatar.cc/150?u=${billPay.internalNote}`,
               }}
               description={billPay.internalNote}
-              name={billPay.vendor}>
+              name={billPay.vendor}
+            >
               {billPay.vendor}
             </User>
           );
@@ -51,7 +51,8 @@ export default function BillPayTable() {
                 statusColorMap[billPay.status as keyof typeof statusColorMap]
               }
               size="sm"
-              variant="flat">
+              variant="flat"
+            >
               {billPay.status}
             </Chip>
           );
@@ -63,7 +64,8 @@ export default function BillPayTable() {
                 onPress={() => {
                   setSelectedBillPay(billPay);
                   setIsDetailsModalOpen(true);
-                }}>
+                }}
+              >
                 Details
               </Button>
               <Button
@@ -71,7 +73,8 @@ export default function BillPayTable() {
                 onPress={() => {
                   setSelectedBillPay(billPay);
                   setIsSaveModalOpen(true);
-                }}>
+                }}
+              >
                 Save
               </Button>
               <Button
@@ -79,7 +82,8 @@ export default function BillPayTable() {
                 onPress={() => {
                   setSelectedBillPay(billPay);
                   setIsCloneModalOpen(true);
-                }}>
+                }}
+              >
                 Clone
               </Button>
             </div>
@@ -88,7 +92,7 @@ export default function BillPayTable() {
           return cellValue as ReactNode;
       }
     },
-    []
+    [],
   );
 
   return (
@@ -103,7 +107,8 @@ export default function BillPayTable() {
           {(column) => (
             <TableColumn
               key={column.uid}
-              align={column.uid === "actions" ? "center" : "start"}>
+              align={column.uid === "actions" ? "center" : "start"}
+            >
               {column.name}
             </TableColumn>
           )}
@@ -131,14 +136,14 @@ export default function BillPayTable() {
       {selectedBillPay && (
         <>
           <BillPayDetailsModal
+            billPay={selectedBillPay}
             isOpen={isDetailsModalOpen}
             onClose={() => setIsDetailsModalOpen(false)}
-            billPay={selectedBillPay}
           />
           <BillPaySaveModal
+            billPay={selectedBillPay}
             isOpen={isSaveModalOpen}
             onClose={() => setIsSaveModalOpen(false)}
-            billPay={selectedBillPay}
             onSave={(updatedBillPay, saveAsTemplate) => {
               console.log("Saving bill pay:", updatedBillPay);
               if (saveAsTemplate) {
@@ -149,9 +154,9 @@ export default function BillPayTable() {
             }}
           />
           <BillPayCloneModal
+            billPay={selectedBillPay}
             isOpen={isCloneModalOpen}
             onClose={() => setIsCloneModalOpen(false)}
-            billPay={selectedBillPay}
             onSave={(clonedBillPay) => {
               console.log("Cloning bill pay:", clonedBillPay);
               setIsCloneModalOpen(false);

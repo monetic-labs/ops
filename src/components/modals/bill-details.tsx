@@ -1,4 +1,3 @@
-import { BillPay } from "@/data";
 import { Button } from "@nextui-org/button";
 import {
   Modal,
@@ -7,6 +6,8 @@ import {
   ModalFooter,
   ModalHeader,
 } from "@nextui-org/modal";
+
+import { BillPay } from "@/data";
 
 interface BillPayDetailsModalProps {
   isOpen: boolean;
@@ -20,7 +21,7 @@ export default function BillPayDetailsModal({
   billPay,
 }: BillPayDetailsModalProps) {
   return (
-    <Modal isOpen={isOpen} onClose={onClose} size="3xl">
+    <Modal isOpen={isOpen} size="3xl" onClose={onClose}>
       <ModalContent>
         <ModalHeader>Bill Pay Details for {billPay.vendor}</ModalHeader>
         <ModalBody>

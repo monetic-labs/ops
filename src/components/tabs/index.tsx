@@ -8,13 +8,13 @@ import { useState } from "react";
 import BillPayTab from "./bill-pay";
 import ComplianceTable from "./compliance";
 import UsersTab from "./users";
+import CardServicesTabs from "./card-services";
 
 import { tabsConfig } from "@/config/tabs";
-import CardServicesTabs from "./card-services";
 
 export default function MerchantServicesTabs() {
   const [selectedService, setSelectedService] = useState<string>(
-    tabsConfig[0].id
+    tabsConfig[0].id,
   );
 
   const renderTabContent = (tabId: string) => {
@@ -53,7 +53,8 @@ export default function MerchantServicesTabs() {
         aria-label="Service options"
         className="w-full"
         selectedKey={selectedService}
-        onSelectionChange={(key) => setSelectedService(key as string)}>
+        onSelectionChange={(key) => setSelectedService(key as string)}
+      >
         {tabsConfig.map((tab) => (
           <Tab key={tab.id} title={tab.label}>
             <Card className="bg-charyo-500/60 backdrop-blur-sm border-none">

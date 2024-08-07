@@ -42,7 +42,7 @@ export default function CreateCardModal({
   };
 
   return (
-    <Modal size="lg" isOpen={isOpen} onClose={onClose}>
+    <Modal isOpen={isOpen} size="lg" onClose={onClose}>
       <ModalContent>
         <ModalHeader className="flex flex-col gap-1">
           Create New Card
@@ -64,7 +64,8 @@ export default function CreateCardModal({
             label="Card Type"
             placeholder="Select card type"
             value={cardType}
-            onChange={(e) => setCardType(e.target.value)}>
+            onChange={(e) => setCardType(e.target.value)}
+          >
             {cardTypes.map((type) => (
               <SelectItem key={type.value} value={type.value}>
                 {type.label}

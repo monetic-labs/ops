@@ -38,7 +38,7 @@ export default function BillPayCloneModal({
   };
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} size="2xl">
+    <Modal isOpen={isOpen} size="2xl" onClose={onClose}>
       <ModalContent>
         <ModalHeader>Clone Bill Pay</ModalHeader>
         <ModalBody>
@@ -57,7 +57,8 @@ export default function BillPayCloneModal({
                 ...clonedBillPay,
                 paymentMethod: e.target.value as BillPay["paymentMethod"],
               })
-            }>
+            }
+          >
             {paymentMethods.map((method) => (
               <SelectItem key={method} value={method}>
                 {method}

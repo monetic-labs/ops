@@ -1,4 +1,3 @@
-import { users, usersColumns } from "@/data";
 import { Button } from "@nextui-org/button";
 import { Chip } from "@nextui-org/chip";
 import {
@@ -11,9 +10,12 @@ import {
 } from "@nextui-org/table";
 import { User } from "@nextui-org/user";
 import React, { useState } from "react";
+
 import CreateUserModal from "../modals/user-create";
 import UserEditModal from "../modals/user-edit";
 import UserDetailsModal from "../modals/users-details";
+
+import { users, usersColumns } from "@/data";
 
 const statusColorMap: Record<string, "success" | "danger"> = {
   Active: "success",
@@ -22,7 +24,7 @@ const statusColorMap: Record<string, "success" | "danger"> = {
 
 export default function UserTab() {
   const [selectedUser, setSelectedUser] = useState<(typeof users)[0] | null>(
-    null
+    null,
   );
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
@@ -41,7 +43,8 @@ export default function UserTab() {
                 src: `https://i.pravatar.cc/150?u=${card.name}`,
               }}
               description={card.name}
-              name={cellValue}>
+              name={cellValue}
+            >
               {card.name}
             </User>
           );
@@ -51,7 +54,8 @@ export default function UserTab() {
               className="capitalize"
               color={statusColorMap[card.status]}
               size="sm"
-              variant="flat">
+              variant="flat"
+            >
               {cellValue}
             </Chip>
           );
@@ -63,7 +67,8 @@ export default function UserTab() {
                 onPress={() => {
                   setSelectedUser(card);
                   setIsDetailsModalOpen(true);
-                }}>
+                }}
+              >
                 Details
               </Button>
               <Button
@@ -71,7 +76,8 @@ export default function UserTab() {
                 onPress={() => {
                   setSelectedUser(card);
                   setIsEditModalOpen(true);
-                }}>
+                }}
+              >
                 Edit
               </Button>
             </div>
@@ -80,7 +86,7 @@ export default function UserTab() {
           return cellValue;
       }
     },
-    []
+    [],
   );
 
   return (
@@ -95,7 +101,8 @@ export default function UserTab() {
           {(column) => (
             <TableColumn
               key={column.uid}
-              align={column.uid === "actions" ? "center" : "start"}>
+              align={column.uid === "actions" ? "center" : "start"}
+            >
               {column.name}
             </TableColumn>
           )}
@@ -117,21 +124,21 @@ export default function UserTab() {
         <>
           <UserDetailsModal
             isOpen={isDetailsModalOpen}
-            onClose={() => setIsDetailsModalOpen(false)}
             user={selectedUser}
+            onClose={() => setIsDetailsModalOpen(false)}
           />
           <UserEditModal
             isOpen={isEditModalOpen}
-            onClose={() => setIsEditModalOpen(false)}
             user={selectedUser}
-            onSave={(updatedUser) => {
-              // Implement save logic here
-              console.log("Saving user:", updatedUser);
-              setIsEditModalOpen(false);
-            }}
+            onClose={() => setIsEditModalOpen(false)}
             onRemove={(userId) => {
               // Implement remove logic here
               console.log("Removing user:", userId);
+              setIsEditModalOpen(false);
+            }}
+            onSave={(updatedUser) => {
+              // Implement save logic here
+              console.log("Saving user:", updatedUser);
               setIsEditModalOpen(false);
             }}
           />

@@ -45,7 +45,7 @@ export default function WithdrawFundsModal({
   };
 
   return (
-    <Modal size="3xl" isOpen={isOpen} onClose={onClose}>
+    <Modal isOpen={isOpen} size="3xl" onClose={onClose}>
       <ModalContent>
         <ModalHeader className="flex flex-col gap-1">
           Withdraw Funds
@@ -69,25 +69,26 @@ export default function WithdrawFundsModal({
           </Table>
 
           <RadioGroup
+            className="mt-4"
             label="Select balance to withdraw from"
             value={selectedBalance}
             onValueChange={setSelectedBalance}
-            className="mt-4">
+          >
             {availableBalances.map((item) => (
               <Radio key={item.id} value={item.id}>
                 {`${item.network} - ${item.token} ($${item.balance.toFixed(
-                  2
+                  2,
                 )})`}
               </Radio>
             ))}
           </RadioGroup>
 
           <Input
+            className="mt-4"
             label="Withdraw Amount"
             placeholder="Enter amount to withdraw"
             value={withdrawAmount}
             onChange={(e) => setWithdrawAmount(e.target.value)}
-            className="mt-4"
           />
         </ModalBody>
         <ModalFooter>

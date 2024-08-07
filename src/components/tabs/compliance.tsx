@@ -1,4 +1,3 @@
-import { DeleteIcon, EditIcon, EyeIcon } from "@/components/icons";
 import { Chip } from "@nextui-org/chip";
 import {
   Table,
@@ -11,6 +10,8 @@ import {
 import { Tooltip } from "@nextui-org/tooltip";
 import { User } from "@nextui-org/user";
 import React from "react";
+
+import { DeleteIcon, EditIcon, EyeIcon } from "@/components/icons";
 
 const columns = [
   { name: "NAME", uid: "name" },
@@ -66,7 +67,8 @@ export default function ComplianceTable() {
                 src: `https://i.pravatar.cc/150?u=${card.name}`,
               }}
               description={card.type}
-              name={cellValue}>
+              name={cellValue}
+            >
               {card.type}
             </User>
           );
@@ -76,7 +78,8 @@ export default function ComplianceTable() {
               className="capitalize"
               color={statusColorMap[card.status]}
               size="sm"
-              variant="flat">
+              variant="flat"
+            >
               {cellValue}
             </Chip>
           );
@@ -104,7 +107,7 @@ export default function ComplianceTable() {
           return cellValue;
       }
     },
-    []
+    [],
   );
 
   return (
@@ -113,7 +116,8 @@ export default function ComplianceTable() {
         {(column) => (
           <TableColumn
             key={column.uid}
-            align={column.uid === "actions" ? "center" : "start"}>
+            align={column.uid === "actions" ? "center" : "start"}
+          >
             {column.name}
           </TableColumn>
         )}

@@ -1,14 +1,16 @@
-import CreateCardModal from "@/components/modals/card-create";
-import { cardServicesConfig } from "@/config/tabs";
 import { Button } from "@nextui-org/button";
 import { Tab, Tabs } from "@nextui-org/tabs";
 import { useState } from "react";
+
 import CardListTable from "./card-list";
 import Transactions from "./transactions";
 
+import { cardServicesConfig } from "@/config/tabs";
+import CreateCardModal from "@/components/modals/card-create";
+
 export default function CardServicesTabs() {
   const [selectedService, setSelectedService] = useState<string>(
-    cardServicesConfig[0].id
+    cardServicesConfig[0].id,
   );
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
@@ -29,7 +31,8 @@ export default function CardServicesTabs() {
         <Tabs
           aria-label="Service options"
           selectedKey={selectedService}
-          onSelectionChange={(key) => setSelectedService(key as string)}>
+          onSelectionChange={(key) => setSelectedService(key as string)}
+        >
           {cardServicesConfig.map((tab) => (
             <Tab key={tab.id} title={tab.label} />
           ))}

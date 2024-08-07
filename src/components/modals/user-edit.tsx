@@ -66,7 +66,8 @@ export default function UserEditModal({
             selectedKeys={[editedUser.role]}
             onChange={(e) =>
               setEditedUser({ ...editedUser, role: e.target.value })
-            }>
+            }
+          >
             {roles.map((role) => (
               <SelectItem key={role} value={role}>
                 {role}
@@ -80,7 +81,8 @@ export default function UserEditModal({
                 ...editedUser,
                 status: isActive ? "Active" : "Inactive",
               })
-            }>
+            }
+          >
             {editedUser.status === "Active" ? "Active" : "Suspended"}
           </Switch>
         </ModalBody>
@@ -98,7 +100,8 @@ export default function UserEditModal({
       {/* Confirmation Modal for Remove User */}
       <Modal
         isOpen={isRemoveConfirmOpen}
-        onClose={() => setIsRemoveConfirmOpen(false)}>
+        onClose={() => setIsRemoveConfirmOpen(false)}
+      >
         <ModalContent>
           <ModalHeader>Confirm Removal</ModalHeader>
           <ModalBody>

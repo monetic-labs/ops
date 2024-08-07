@@ -1,5 +1,4 @@
 import { useState } from "react";
-
 import { Button } from "@nextui-org/button";
 import { Checkbox } from "@nextui-org/checkbox";
 import { Input } from "@nextui-org/input";
@@ -36,7 +35,7 @@ export default function BillPaySaveModal({
   };
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} size="2xl">
+    <Modal isOpen={isOpen} size="2xl" onClose={onClose}>
       <ModalContent>
         <ModalHeader>Save Bill Pay</ModalHeader>
         <ModalBody>
@@ -129,7 +128,8 @@ export default function BillPaySaveModal({
           />
           <Checkbox
             isSelected={saveAsTemplate}
-            onValueChange={setSaveAsTemplate}>
+            onValueChange={setSaveAsTemplate}
+          >
             Save as Vendor Template
           </Checkbox>
           {saveAsTemplate && (

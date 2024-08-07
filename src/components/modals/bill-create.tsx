@@ -55,6 +55,7 @@ export default function CreateBillPayModal({
   const calculateTotal = () => {
     const amount = parseFloat(newBillPay.amount) || 0;
     const fee = parseFloat(newBillPay.fee) || 0;
+
     return (amount + fee).toFixed(2);
   };
 
@@ -67,7 +68,7 @@ export default function CreateBillPayModal({
   };
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} size="2xl">
+    <Modal isOpen={isOpen} size="2xl" onClose={onClose}>
       <ModalContent>
         <ModalHeader>Create New Bill Pay</ModalHeader>
         <ModalBody>
@@ -83,7 +84,8 @@ export default function CreateBillPayModal({
             selectedKeys={[newBillPay.vendorMethod]}
             onChange={(e) =>
               setNewBillPay({ ...newBillPay, vendorMethod: e.target.value })
-            }>
+            }
+          >
             {vendorMethods.map((method) => (
               <SelectItem key={method} value={method}>
                 {method}
@@ -131,10 +133,10 @@ export default function CreateBillPayModal({
             onChange={(e) => handleAmountOrFeeChange("fee", e.target.value)}
           />
           <Input
+            isReadOnly
             label="Total"
             type="number"
             value={newBillPay.total}
-            isReadOnly
           />
         </ModalBody>
         <ModalFooter>

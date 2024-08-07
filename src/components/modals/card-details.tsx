@@ -67,20 +67,21 @@ export default function CardDetailsModal({
   if (!card) return null;
 
   return (
-    <Modal size="2xl" isOpen={isOpen} onClose={onClose}>
+    <Modal isOpen={isOpen} size="2xl" onClose={onClose}>
       <ModalContent>
         <ModalHeader className="flex flex-col gap-1">Card Details</ModalHeader>
         <ModalBody>
           <Input
+            isReadOnly={!isEditing}
             label="Card Name"
             value={card.cardName}
-            isReadOnly={!isEditing}
           />
           <div className="mt-4">
             <div className="flex items-center gap-2 mb-2">
               <Chip
                 color={card.status === "Active" ? "success" : "danger"}
-                variant="flat">
+                variant="flat"
+              >
                 {card.status}
               </Chip>
               <Chip color="primary" variant="flat">
@@ -91,50 +92,53 @@ export default function CardDetailsModal({
               Limit: ${card.limit.amount} per {card.limit.cycle}
             </p>
             <Progress
-              value={parseInt(card.limit.amount)}
-              maxValue={10000}
               className="mt-2"
+              maxValue={10000}
+              value={parseInt(card.limit.amount)}
             />
           </div>
           <div className="flex flex-col md:flex-row gap-4">
             <div className="flex-grow space-y-2">
               <p className="text-small text-default-500">Card Number</p>
               <Snippet
+                codeString={card.cardNumber}
+                color="default"
                 symbol=""
                 variant="flat"
-                color="default"
-                codeString={card.cardNumber}>
+              >
                 {card.cardNumber.replace(/(\d{4})/g, "$1 ").trim()}
               </Snippet>
             </div>
             <div className="w-full md:w-1/4 space-y-2">
               <p className="text-small text-default-500">Expiration Date</p>
               <Snippet
+                codeString={card.expDate}
+                color="default"
                 symbol=""
                 variant="flat"
-                color="default"
-                codeString={card.expDate}>
+              >
                 {card.expDate}
               </Snippet>
             </div>
             <div className="w-full md:w-1/6 space-y-2">
               <p className="text-small text-default-500">CVV</p>
               <Snippet
+                codeString={card.cvv}
+                color="default"
                 symbol=""
                 variant="flat"
-                color="default"
-                codeString={card.cvv}>
+              >
                 {card.cvv}
               </Snippet>
             </div>
           </div>
-          <Input label="Holder" value={card.holder} isReadOnly={!isEditing} />
+          <Input isReadOnly={!isEditing} label="Holder" value={card.holder} />
           <Input
+            isReadOnly={!isEditing}
             label="Billing Address"
             value={card.billingAddress}
-            isReadOnly={!isEditing}
           />
-          <Input label="Email" value={card.email} isReadOnly={!isEditing} />
+          <Input isReadOnly={!isEditing} label="Email" value={card.email} />
         </ModalBody>
         <ModalFooter>
           <Button color="primary" variant="light" onPress={handleLock}>

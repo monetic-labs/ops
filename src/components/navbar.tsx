@@ -63,10 +63,11 @@ export const Navbar = () => {
               <NextLink
                 className={clsx(
                   linkStyles({ color: "foreground" }),
-                  "data-[active=true]:text-primary data-[active=true]:font-medium"
+                  "data-[active=true]:text-primary data-[active=true]:font-medium",
                 )}
                 color="foreground"
-                href={item.href}>
+                href={item.href}
+              >
                 {item.label}
               </NextLink>
             </NavbarItem>
@@ -76,7 +77,8 @@ export const Navbar = () => {
 
       <NavbarContent
         className="hidden sm:flex basis-1/5 sm:basis-full"
-        justify="end">
+        justify="end"
+      >
         <NavbarItem className="hidden sm:flex gap-2">
           <Link isExternal aria-label="Twitter" href={siteConfig.links.twitter}>
             <TwitterIcon className="text-default-500" />
@@ -97,7 +99,8 @@ export const Navbar = () => {
             className="text-sm font-normal text-default-600 bg-default-100"
             href={siteConfig.links.sponsor}
             startContent={<HeartFilledIcon className="text-danger" />}
-            variant="flat">
+            variant="flat"
+          >
             Sponsor
           </Button>
         </NavbarItem>
@@ -121,11 +124,12 @@ export const Navbar = () => {
                   index === 2
                     ? "primary"
                     : index === siteConfig.navMenuItems.length - 1
-                    ? "danger"
-                    : "foreground"
+                      ? "danger"
+                      : "foreground"
                 }
                 href="#"
-                size="lg">
+                size="lg"
+              >
                 {item.label}
               </Link>
             </NavbarMenuItem>

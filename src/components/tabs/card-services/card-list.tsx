@@ -1,6 +1,3 @@
-import CardDetailsModal from "@/components/modals/card-details";
-import CardLimitModal from "@/components/modals/card-limit";
-import { cards, cardsColumns } from "@/data";
 import { Button } from "@nextui-org/button";
 import { Chip } from "@nextui-org/chip";
 import {
@@ -14,6 +11,10 @@ import {
 import { Tooltip } from "@nextui-org/tooltip";
 import { User } from "@nextui-org/user";
 import React, { useState } from "react";
+
+import { cards, cardsColumns } from "@/data";
+import CardLimitModal from "@/components/modals/card-limit";
+import CardDetailsModal from "@/components/modals/card-details";
 
 const statusColorMap: Record<string, "success" | "danger"> = {
   Active: "success",
@@ -45,7 +46,7 @@ export default function CardListTable() {
   const handleSaveLimit = (amount: string, cycle: string) => {
     if (selectedCard) {
       console.log(
-        `New limit for ${selectedCard.cardName}: ${amount} per ${cycle}`
+        `New limit for ${selectedCard.cardName}: ${amount} per ${cycle}`,
       );
       // Here you would update the card's limit in your state or send it to an API
     }
@@ -64,7 +65,8 @@ export default function CardListTable() {
               src: `https://i.pravatar.cc/150?u=${card.holder}`,
             }}
             description={card.holder}
-            name={card.cardName}></User>
+            name={card.cardName}
+          />
         );
       case "status":
         return (
@@ -72,7 +74,8 @@ export default function CardListTable() {
             className="capitalize"
             color={statusColorMap[card.status]}
             size="sm"
-            variant="flat">
+            variant="flat"
+          >
             {card.status}
           </Chip>
         );
@@ -86,7 +89,8 @@ export default function CardListTable() {
                 size="sm"
                 onPress={() => {
                   handleOpenLimitModal(card);
-                }}>
+                }}
+              >
                 Limit
               </Button>
             </Tooltip>
@@ -95,7 +99,8 @@ export default function CardListTable() {
                 size="sm"
                 onPress={() => {
                   handleOpenDetailsModal(card);
-                }}>
+                }}
+              >
                 Details
               </Button>
             </Tooltip>
@@ -113,7 +118,8 @@ export default function CardListTable() {
           {(column) => (
             <TableColumn
               key={column.uid}
-              align={column.uid === "actions" ? "center" : "start"}>
+              align={column.uid === "actions" ? "center" : "start"}
+            >
               {column.name}
             </TableColumn>
           )}
@@ -132,21 +138,21 @@ export default function CardListTable() {
       </Table>
 
       <CardLimitModal
-        isOpen={openModal === "limit"}
-        onClose={handleCloseModal}
         cardName={selectedCard?.cardName || ""}
         currentLimit={
           selectedCard?.limit
             ? `${selectedCard.limit.amount} per ${selectedCard.limit.cycle}`
             : ""
         }
+        isOpen={openModal === "limit"}
+        onClose={handleCloseModal}
         onSave={handleSaveLimit}
       />
 
       <CardDetailsModal
+        card={selectedCard}
         isOpen={openModal === "details"}
         onClose={handleCloseModal}
-        card={selectedCard}
       />
     </>
   );

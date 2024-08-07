@@ -40,7 +40,7 @@ export default function AddFundsModal({ isOpen, onClose }: AddFundsModalProps) {
   };
 
   return (
-    <Modal size="lg" isOpen={isOpen} onClose={onClose}>
+    <Modal isOpen={isOpen} size="lg" onClose={onClose}>
       <ModalContent>
         <ModalHeader className="flex flex-col gap-1">Add Funds</ModalHeader>
         <ModalBody>
@@ -49,7 +49,8 @@ export default function AddFundsModal({ isOpen, onClose }: AddFundsModalProps) {
               label="Select Network"
               placeholder="Choose a blockchain network"
               value={network}
-              onChange={(e) => setNetwork(e.target.value)}>
+              onChange={(e) => setNetwork(e.target.value)}
+            >
               {networks.map((net) => (
                 <SelectItem key={net.value} value={net.value}>
                   {net.label}
@@ -60,7 +61,8 @@ export default function AddFundsModal({ isOpen, onClose }: AddFundsModalProps) {
               label="Select Stablecoin"
               placeholder="Choose a stablecoin"
               value={stablecoin}
-              onChange={(e) => setStablecoin(e.target.value)}>
+              onChange={(e) => setStablecoin(e.target.value)}
+            >
               {stablecoins.map((coin) => (
                 <SelectItem key={coin.value} value={coin.value}>
                   {coin.label}

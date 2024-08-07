@@ -29,7 +29,7 @@ export default function TransactionDetailsModal({
   transaction,
 }: TransactionDetailsModalProps) {
   return (
-    <Modal isOpen={isOpen} onClose={onClose} size="lg">
+    <Modal isOpen={isOpen} size="lg" onClose={onClose}>
       <ModalContent>
         {(onClose) => (
           <>
@@ -73,9 +73,10 @@ export default function TransactionDetailsModal({
                       transaction.status === "Completed"
                         ? "text-green-500"
                         : transaction.status === "Pending"
-                        ? "text-yellow-500"
-                        : "text-red-500"
-                    }`}>
+                          ? "text-yellow-500"
+                          : "text-red-500"
+                    }`}
+                  >
                     {transaction.status}
                   </span>
                 </div>

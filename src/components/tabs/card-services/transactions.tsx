@@ -1,5 +1,4 @@
 import React, { useState } from "react";
-
 import { Chip } from "@nextui-org/chip";
 import {
   Table,
@@ -11,9 +10,9 @@ import {
 } from "@nextui-org/table";
 import { Tooltip } from "@nextui-org/tooltip";
 import { User } from "@nextui-org/user";
+import { Button } from "@nextui-org/button";
 
 import TransactionDetailsModal from "@/components/modals/tx-details";
-import { Button } from "@nextui-org/button";
 
 const columns = [
   { name: "MERCHANT ID", uid: "merchantId" },
@@ -80,7 +79,7 @@ export default function Transactions() {
   const renderCell = React.useCallback(
     (
       transaction: (typeof transactions)[0],
-      columnKey: keyof (typeof transactions)[0]
+      columnKey: keyof (typeof transactions)[0],
     ) => {
       const cellValue = transaction[columnKey];
 
@@ -93,7 +92,8 @@ export default function Transactions() {
                 src: `https://i.pravatar.cc/150?u=${transaction.merchantId}`,
               }}
               description={transaction.merchantId}
-              name={cellValue}>
+              name={cellValue}
+            >
               {transaction.merchantId}
             </User>
           );
@@ -103,7 +103,8 @@ export default function Transactions() {
               className="capitalize"
               color={statusColorMap[transaction.amount]}
               size="sm"
-              variant="flat">
+              variant="flat"
+            >
               {cellValue}
             </Chip>
           );
@@ -114,7 +115,8 @@ export default function Transactions() {
                 <span className="text-lg text-default-400 cursor-pointer active:opacity-50">
                   <Button
                     size="sm"
-                    onPress={() => setSelectedTransaction(transaction)}>
+                    onPress={() => setSelectedTransaction(transaction)}
+                  >
                     Details
                   </Button>
                 </span>
@@ -125,7 +127,7 @@ export default function Transactions() {
           return cellValue;
       }
     },
-    []
+    [],
   );
 
   return (
@@ -135,7 +137,8 @@ export default function Transactions() {
           {(column) => (
             <TableColumn
               key={column.uid}
-              align={column.uid === "actions" ? "center" : "start"}>
+              align={column.uid === "actions" ? "center" : "start"}
+            >
               {column.name}
             </TableColumn>
           )}
@@ -147,7 +150,7 @@ export default function Transactions() {
                 <TableCell>
                   {renderCell(
                     item,
-                    columnKey as keyof (typeof transactions)[0]
+                    columnKey as keyof (typeof transactions)[0],
                   )}
                 </TableCell>
               )}
@@ -157,8 +160,8 @@ export default function Transactions() {
       </Table>
       <TransactionDetailsModal
         isOpen={!!selectedTransaction}
-        onClose={() => setSelectedTransaction(null)}
         transaction={selectedTransaction || transactions[0]}
+        onClose={() => setSelectedTransaction(null)}
       />
     </>
   );

@@ -70,7 +70,8 @@ export default function CreateUserModal({
           <Select
             label="Role"
             selectedKeys={[newUser.role]}
-            onChange={(e) => setNewUser({ ...newUser, role: e.target.value })}>
+            onChange={(e) => setNewUser({ ...newUser, role: e.target.value })}
+          >
             {roles.map((role) => (
               <SelectItem key={role} value={role}>
                 {role}

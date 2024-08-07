@@ -2,7 +2,8 @@ export type SiteConfig = typeof siteConfig;
 
 export const siteConfig = {
   name: "Merchant Services",
-  description: "Your home to manage the various ways you access and instrument your value based transactions",
+  description:
+    "Your home to manage the various ways you access and instrument your value based transactions",
   version: "0.0.1",
   navItems: [
     {
