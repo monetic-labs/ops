@@ -1,4 +1,7 @@
-import { DeleteIcon, EditIcon, EyeIcon } from "@/components/icons";
+import React, { ReactNode, useState } from "react";
+
+import { BillPay, billPayColumns, billPayData, statusColorMap } from "@/data";
+import { Button } from "@nextui-org/button";
 import { Chip } from "@nextui-org/chip";
 import {
   Table,
@@ -8,59 +11,24 @@ import {
   TableHeader,
   TableRow,
 } from "@nextui-org/table";
-import { Tooltip } from "@nextui-org/tooltip";
 import { User } from "@nextui-org/user";
-import React from "react";
 
-const columns = [
-  { name: "VENDOR", uid: "vendor" },
-  { name: "INTERNAL NOTE", uid: "internalNote" },
-  { name: "MEMO", uid: "memo" },
-  { name: "STATUS", uid: "status" },
-  { name: "AMOUNT", uid: "amount" },
-  { name: "FEES", uid: "fees" },
-  { name: "ACTIONS", uid: "actions" },
-];
-
-const billPay = [
-  {
-    vendor: "Acme, LTD",
-    internalNote: "ai-generated-note",
-    memo: "",
-    status: "View",
-    amount: "$10,000.00",
-    fees: "$200.00",
-    actions: "modal",
-  },
-  {
-    vendor: "Design Contractor",
-    internalNote: "ai-generated-note",
-    memo: "",
-    status: "View",
-    amount: "$10,000.00",
-    fees: "$200.00",
-    actions: "modal",
-  },
-  {
-    vendor: "UPS Shipping Account",
-    internalNote: "ai-generated-note",
-    memo: "Physical",
-    status: "Inactive",
-    amount: "$5000",
-    fees: "$100",
-    actions: "modal",
-  },
-];
-
-const statusColorMap: Record<string, "success" | "danger"> = {
-  Active: "success",
-  Inactive: "danger",
-};
+import BillPayCloneModal from "@/components/modals/bill-clone";
+import CreateBillPayModal from "@/components/modals/bill-create";
+import BillPayDetailsModal from "@/components/modals/bill-details";
+import BillPaySaveModal from "@/components/modals/bill-save";
 
 export default function BillPayTable() {
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isCloneModalOpen, setIsCloneModalOpen] = useState(false);
+  const [selectedBillPay, setSelectedBillPay] = useState<BillPay | null>(null);
+  const [isSaveModalOpen, setIsSaveModalOpen] = useState(false);
+
   const renderCell = React.useCallback(
-    (card: (typeof billPay)[0], columnKey: keyof (typeof billPay)[0]) => {
-      const cellValue = card[columnKey];
+    (billPay: BillPay, columnKey: React.Key): ReactNode => {
+      const cellValue = billPay[columnKey as keyof BillPay];
 
       switch (columnKey) {
         case "vendor":
@@ -68,72 +36,129 @@ export default function BillPayTable() {
             <User
               avatarProps={{
                 radius: "lg",
-                src: `https://i.pravatar.cc/150?u=${card.internalNote}`,
+                src: `https://i.pravatar.cc/150?u=${billPay.internalNote}`,
               }}
-              description={card.internalNote}
-              name={cellValue}>
-              {card.vendor}
+              description={billPay.internalNote}
+              name={billPay.vendor}>
+              {billPay.vendor}
             </User>
           );
         case "status":
           return (
             <Chip
               className="capitalize"
-              color={statusColorMap[card.status]}
+              color={
+                statusColorMap[billPay.status as keyof typeof statusColorMap]
+              }
               size="sm"
               variant="flat">
-              {cellValue}
+              {billPay.status}
             </Chip>
           );
         case "actions":
           return (
-            <div className="relative flex items-center gap-2">
-              <Tooltip content="Card Details">
-                <span className="text-lg text-default-400 cursor-pointer active:opacity-50">
-                  <EyeIcon />
-                </span>
-              </Tooltip>
-              <Tooltip content="Edit Card">
-                <span className="text-lg text-default-400 cursor-pointer active:opacity-50">
-                  <EditIcon />
-                </span>
-              </Tooltip>
-              <Tooltip color="danger" content="Delete Card">
-                <span className="text-lg text-danger cursor-pointer active:opacity-50">
-                  <DeleteIcon />
-                </span>
-              </Tooltip>
+            <div className="relative flex items-center justify-center gap-2">
+              <Button
+                size="sm"
+                onPress={() => {
+                  setSelectedBillPay(billPay);
+                  setIsDetailsModalOpen(true);
+                }}>
+                Details
+              </Button>
+              <Button
+                size="sm"
+                onPress={() => {
+                  setSelectedBillPay(billPay);
+                  setIsSaveModalOpen(true);
+                }}>
+                Save
+              </Button>
+              <Button
+                size="sm"
+                onPress={() => {
+                  setSelectedBillPay(billPay);
+                  setIsCloneModalOpen(true);
+                }}>
+                Clone
+              </Button>
             </div>
           );
         default:
-          return cellValue;
+          return cellValue as ReactNode;
       }
     },
     []
   );
 
   return (
-    <Table aria-label="Example table with custom cells">
-      <TableHeader columns={columns}>
-        {(column) => (
-          <TableColumn
-            key={column.uid}
-            align={column.uid === "actions" ? "center" : "start"}>
-            {column.name}
-          </TableColumn>
-        )}
-      </TableHeader>
-      <TableBody items={billPay}>
-        {(item) => (
-          <TableRow key={item.vendor}>
-            {(columnKey) => (
-              <TableCell>
-                {renderCell(item, columnKey as keyof (typeof billPay)[0])}
-              </TableCell>
-            )}
-          </TableRow>
-        )}
-      </TableBody>
-    </Table>
+    <>
+      <div className="flex justify-end items-center mb-4">
+        <Button color="default" onPress={() => setIsCreateModalOpen(true)}>
+          Create Bill Pay
+        </Button>
+      </div>
+      <Table aria-label="Bill Pay table">
+        <TableHeader columns={billPayColumns}>
+          {(column) => (
+            <TableColumn
+              key={column.uid}
+              align={column.uid === "actions" ? "center" : "start"}>
+              {column.name}
+            </TableColumn>
+          )}
+        </TableHeader>
+        <TableBody items={billPayData}>
+          {(item) => (
+            <TableRow key={item.id}>
+              {(columnKey) => (
+                <TableCell>
+                  {renderCell(item, columnKey as keyof BillPay)}
+                </TableCell>
+              )}
+            </TableRow>
+          )}
+        </TableBody>
+      </Table>
+      <CreateBillPayModal
+        isOpen={isCreateModalOpen}
+        onClose={() => setIsCreateModalOpen(false)}
+        onSave={(newBillPay) => {
+          console.log("Creating bill pay:", newBillPay);
+          setIsCreateModalOpen(false);
+        }}
+      />
+      {selectedBillPay && (
+        <>
+          <BillPayDetailsModal
+            isOpen={isDetailsModalOpen}
+            onClose={() => setIsDetailsModalOpen(false)}
+            billPay={selectedBillPay}
+          />
+          <BillPaySaveModal
+            isOpen={isSaveModalOpen}
+            onClose={() => setIsSaveModalOpen(false)}
+            billPay={selectedBillPay}
+            onSave={(updatedBillPay, saveAsTemplate) => {
+              console.log("Saving bill pay:", updatedBillPay);
+              if (saveAsTemplate) {
+                console.log("Saving as template");
+                // Implement logic to save as template
+              }
+              setIsSaveModalOpen(false);
+            }}
+          />
+          <BillPayCloneModal
+            isOpen={isCloneModalOpen}
+            onClose={() => setIsCloneModalOpen(false)}
+            billPay={selectedBillPay}
+            onSave={(clonedBillPay) => {
+              console.log("Cloning bill pay:", clonedBillPay);
+              setIsCloneModalOpen(false);
+            }}
+          />
+        </>
+      )}
+    </>
   );
 }

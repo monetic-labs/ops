@@ -1,4 +1,5 @@
-import { DeleteIcon, EditIcon, EyeIcon } from "@/components/icons";
+import { users, usersColumns } from "@/data";
+import { Button } from "@nextui-org/button";
 import { Chip } from "@nextui-org/chip";
 import {
   Table,
@@ -8,46 +9,11 @@ import {
   TableHeader,
   TableRow,
 } from "@nextui-org/table";
-import { Tooltip } from "@nextui-org/tooltip";
 import { User } from "@nextui-org/user";
-import React from "react";
-
-const columns = [
-  { name: "NAME", uid: "name" },
-  { name: "ROLE", uid: "role" },
-  { name: "EMAIL", uid: "email" },
-  { name: "STATUS", uid: "status" },
-  { name: "ACTIONS", uid: "actions" },
-];
-
-const users = [
-  {
-    name: "Rick Sanchez",
-    role: "Admin",
-    email: "rick.sanchez@example.com",
-    status: "Active",
-    actions: "Actions",
-  },
-  {
-    name: "Morty Smith",
-    role: "Admin",
-    email: "morty.smith@example.com",
-    status: "View",
-    actions: "modal",
-  },
-  {
-    name: "Summer Smith",
-    role: "Admin",
-    email: "summer.smith@example.com",
-    status: "View",
-  },
-  {
-    name: "Beth Smith",
-    role: "Admin",
-    email: "beth.smith@example.com",
-    status: "View",
-  },
-];
+import React, { useState } from "react";
+import CreateUserModal from "../modals/user-create";
+import UserEditModal from "../modals/user-edit";
+import UserDetailsModal from "../modals/users-details";
 
 const statusColorMap: Record<string, "success" | "danger"> = {
   Active: "success",
@@ -55,6 +21,13 @@ const statusColorMap: Record<string, "success" | "danger"> = {
 };
 
 export default function UserTab() {
+  const [selectedUser, setSelectedUser] = useState<(typeof users)[0] | null>(
+    null
+  );
+  const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+
   const renderCell = React.useCallback(
     (card: (typeof users)[0], columnKey: keyof (typeof users)[0]) => {
       const cellValue = card[columnKey];
@@ -84,22 +57,23 @@ export default function UserTab() {
           );
         case "actions":
           return (
-            <div className="relative flex items-center gap-2">
-              <Tooltip content="Card Details">
-                <span className="text-lg text-default-400 cursor-pointer active:opacity-50">
-                  <EyeIcon />
-                </span>
-              </Tooltip>
-              <Tooltip content="Edit Card">
-                <span className="text-lg text-default-400 cursor-pointer active:opacity-50">
-                  <EditIcon />
-                </span>
-              </Tooltip>
-              <Tooltip color="danger" content="Delete Card">
-                <span className="text-lg text-danger cursor-pointer active:opacity-50">
-                  <DeleteIcon />
-                </span>
-              </Tooltip>
+            <div className="flex items-center justify-center gap-2">
+              <Button
+                size="sm"
+                onPress={() => {
+                  setSelectedUser(card);
+                  setIsDetailsModalOpen(true);
+                }}>
+                Details
+              </Button>
+              <Button
+                size="sm"
+                onPress={() => {
+                  setSelectedUser(card);
+                  setIsEditModalOpen(true);
+                }}>
+                Edit
+              </Button>
             </div>
           );
         default:
@@ -110,27 +84,68 @@ export default function UserTab() {
   );
 
   return (
-    <Table aria-label="Example table with custom cells">
-      <TableHeader columns={columns}>
-        {(column) => (
-          <TableColumn
-            key={column.uid}
-            align={column.uid === "actions" ? "center" : "start"}>
-            {column.name}
-          </TableColumn>
-        )}
-      </TableHeader>
-      <TableBody items={users}>
-        {(item) => (
-          <TableRow key={item.name}>
-            {(columnKey) => (
-              <TableCell>
-                {renderCell(item, columnKey as keyof (typeof users)[0])}
-              </TableCell>
-            )}
-          </TableRow>
-        )}
-      </TableBody>
-    </Table>
+    <>
+      <div className="flex justify-end items-center mb-4">
+        <Button color="default" onPress={() => setIsCreateModalOpen(true)}>
+          Create User
+        </Button>
+      </div>
+      <Table aria-label="Example table with custom cells">
+        <TableHeader columns={usersColumns}>
+          {(column) => (
+            <TableColumn
+              key={column.uid}
+              align={column.uid === "actions" ? "center" : "start"}>
+              {column.name}
+            </TableColumn>
+          )}
+        </TableHeader>
+        <TableBody items={users}>
+          {(item) => (
+            <TableRow key={item.name}>
+              {(columnKey) => (
+                <TableCell>
+                  {renderCell(item, columnKey as keyof (typeof users)[0])}
+                </TableCell>
+              )}
+            </TableRow>
+          )}
+        </TableBody>
+      </Table>
+
+      {selectedUser && (
+        <>
+          <UserDetailsModal
+            isOpen={isDetailsModalOpen}
+            onClose={() => setIsDetailsModalOpen(false)}
+            user={selectedUser}
+          />
+          <UserEditModal
+            isOpen={isEditModalOpen}
+            onClose={() => setIsEditModalOpen(false)}
+            user={selectedUser}
+            onSave={(updatedUser) => {
+              // Implement save logic here
+              console.log("Saving user:", updatedUser);
+              setIsEditModalOpen(false);
+            }}
+            onRemove={(userId) => {
+              // Implement remove logic here
+              console.log("Removing user:", userId);
+              setIsEditModalOpen(false);
+            }}
+          />
+        </>
+      )}
+      <CreateUserModal
+        isOpen={isCreateModalOpen}
+        onClose={() => setIsCreateModalOpen(false)}
+        onSave={(newUser) => {
+          // Implement create user logic here
+          console.log("Creating user:", newUser);
+          setIsCreateModalOpen(false);
+        }}
+      />
+    </>
   );
 }

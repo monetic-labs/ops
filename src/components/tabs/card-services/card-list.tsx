@@ -1,6 +1,6 @@
 import CardDetailsModal from "@/components/modals/card-details";
 import CardLimitModal from "@/components/modals/card-limit";
-import { cards, columns } from "@/data";
+import { cards, cardsColumns } from "@/data";
 import { Button } from "@nextui-org/button";
 import { Chip } from "@nextui-org/chip";
 import {
@@ -109,7 +109,7 @@ export default function CardListTable() {
   return (
     <>
       <Table aria-label="Example table with custom cells">
-        <TableHeader columns={columns}>
+        <TableHeader columns={cardsColumns}>
           {(column) => (
             <TableColumn
               key={column.uid}
