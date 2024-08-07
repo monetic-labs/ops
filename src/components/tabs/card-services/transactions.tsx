@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 
 import { Chip } from "@nextui-org/chip";
 import {
@@ -12,7 +12,8 @@ import {
 import { Tooltip } from "@nextui-org/tooltip";
 import { User } from "@nextui-org/user";
 
-import { DeleteIcon, EditIcon, EyeIcon } from "@/components/icons";
+import TransactionDetailsModal from "@/components/modals/tx-details";
+import { Button } from "@nextui-org/button";
 
 const columns = [
   { name: "MERCHANT ID", uid: "merchantId" },
@@ -31,6 +32,11 @@ const transactions = [
     memo: "some a.i. notes about the transaction",
     receipt: "attach",
     actions: "modal",
+    date: "2023-04-15",
+    category: "Office Supplies",
+    cardName: "Company Card",
+    cardLastFour: "1234",
+    status: "Completed",
   },
   {
     merchantId: "0002",
@@ -39,6 +45,11 @@ const transactions = [
     memo: "some a.i. notes about the transaction",
     receipt: "attach",
     actions: "modal",
+    date: "2023-04-15",
+    category: "Office Supplies",
+    cardName: "Company Card",
+    cardLastFour: "1234",
+    status: "Completed",
   },
   {
     merchantId: "0003",
@@ -47,6 +58,11 @@ const transactions = [
     memo: "some a.i. notes about the transaction",
     receipt: "attach",
     actions: "modal",
+    date: "2023-04-15",
+    category: "Office Supplies",
+    cardName: "Company Card",
+    cardLastFour: "1234",
+    status: "Completed",
   },
 ];
 
@@ -57,6 +73,10 @@ const statusColorMap: Record<string, "success" | "warning" | "danger"> = {
 };
 
 export default function Transactions() {
+  const [selectedTransaction, setSelectedTransaction] = useState<
+    (typeof transactions)[0] | null
+  >(null);
+
   const renderCell = React.useCallback(
     (
       transaction: (typeof transactions)[0],
@@ -89,20 +109,14 @@ export default function Transactions() {
           );
         case "actions":
           return (
-            <div className="relative flex items-center gap-2">
-              <Tooltip content="Details">
+            <div className="relative flex items-center justify-center">
+              <Tooltip content="View Transaction Details">
                 <span className="text-lg text-default-400 cursor-pointer active:opacity-50">
-                  <EyeIcon />
-                </span>
-              </Tooltip>
-              <Tooltip content="Edit transaction">
-                <span className="text-lg text-default-400 cursor-pointer active:opacity-50">
-                  <EditIcon />
-                </span>
-              </Tooltip>
-              <Tooltip color="danger" content="Delete transaction">
-                <span className="text-lg text-danger cursor-pointer active:opacity-50">
-                  <DeleteIcon />
+                  <Button
+                    size="sm"
+                    onPress={() => setSelectedTransaction(transaction)}>
+                    Details
+                  </Button>
                 </span>
               </Tooltip>
             </div>
@@ -115,27 +129,37 @@ export default function Transactions() {
   );
 
   return (
-    <Table aria-label="Example table with custom cells">
-      <TableHeader columns={columns}>
-        {(column) => (
-          <TableColumn
-            key={column.uid}
-            align={column.uid === "actions" ? "center" : "start"}>
-            {column.name}
-          </TableColumn>
-        )}
-      </TableHeader>
-      <TableBody items={transactions}>
-        {(item) => (
-          <TableRow key={item.merchantId}>
-            {(columnKey) => (
-              <TableCell>
-                {renderCell(item, columnKey as keyof (typeof transactions)[0])}
-              </TableCell>
-            )}
-          </TableRow>
-        )}
-      </TableBody>
-    </Table>
+    <>
+      <Table aria-label="Example table with custom cells">
+        <TableHeader columns={columns}>
+          {(column) => (
+            <TableColumn
+              key={column.uid}
+              align={column.uid === "actions" ? "center" : "start"}>
+              {column.name}
+            </TableColumn>
+          )}
+        </TableHeader>
+        <TableBody items={transactions}>
+          {(item) => (
+            <TableRow key={item.merchantId}>
+              {(columnKey) => (
+                <TableCell>
+                  {renderCell(
+                    item,
+                    columnKey as keyof (typeof transactions)[0]
+                  )}
+                </TableCell>
+              )}
+            </TableRow>
+          )}
+        </TableBody>
+      </Table>
+      <TransactionDetailsModal
+        isOpen={!!selectedTransaction}
+        onClose={() => setSelectedTransaction(null)}
+        transaction={selectedTransaction || transactions[0]}
+      />
+    </>
   );
 }

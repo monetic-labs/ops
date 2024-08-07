@@ -1,4 +1,7 @@
-import { DeleteIcon, EditIcon, EyeIcon } from "@/components/icons";
+import CardDetailsModal from "@/components/modals/card-details";
+import CardLimitModal from "@/components/modals/card-limit";
+import { cards, columns } from "@/data";
+import { Button } from "@nextui-org/button";
 import { Chip } from "@nextui-org/chip";
 import {
   Table,
@@ -10,126 +13,141 @@ import {
 } from "@nextui-org/table";
 import { Tooltip } from "@nextui-org/tooltip";
 import { User } from "@nextui-org/user";
-import React from "react";
-
-const columns = [
-  { name: "CARD NAME", uid: "cardName" },
-  { name: "HOLDER", uid: "holder" },
-  { name: "TYPE", uid: "type" },
-  { name: "STATUS", uid: "status" },
-  { name: "LIMIT", uid: "limit" },
-  { name: "ACTIONS", uid: "actions" },
-];
-
-const cards = [
-  {
-    cardName: "General Use",
-    holder: "Sterlin Archer",
-    type: "Physical",
-    status: "Active",
-    limit: "$1000 p/day",
-    actions: "modal",
-  },
-  {
-    cardName: "Apple",
-    holder: "Sterlin Archer",
-    type: "Virtual",
-    status: "Active",
-    limit: "$100 p/month",
-    actions: "modal",
-  },
-  {
-    cardName: "Vacation",
-    holder: "Sterlin Archer",
-    type: "Physical",
-    status: "Inactive",
-    limit: "$5000 p/day",
-    actions: "modal",
-  },
-];
+import React, { useState } from "react";
 
 const statusColorMap: Record<string, "success" | "danger"> = {
   Active: "success",
   Inactive: "danger",
 };
 
-export default function CardListTable() {
-  const renderCell = React.useCallback(
-    (card: (typeof cards)[0], columnKey: keyof (typeof cards)[0]) => {
-      const cellValue = card[columnKey];
+type Card = (typeof cards)[0];
+type ColumnKey = keyof Card | "actions";
 
-      switch (columnKey) {
-        case "cardName":
-          return (
-            <User
-              avatarProps={{
-                radius: "lg",
-                src: `https://i.pravatar.cc/150?u=${card.holder}`,
-              }}
-              description={card.holder}
-              name={cellValue}>
-              {card.cardName}
-            </User>
-          );
-        case "status":
-          return (
-            <Chip
-              className="capitalize"
-              color={statusColorMap[card.status]}
-              size="sm"
-              variant="flat">
-              {cellValue}
-            </Chip>
-          );
-        case "actions":
-          return (
-            <div className="relative flex items-center gap-2">
-              <Tooltip content="Card Details">
-                <span className="text-lg text-default-400 cursor-pointer active:opacity-50">
-                  <EyeIcon />
-                </span>
-              </Tooltip>
-              <Tooltip content="Edit Card">
-                <span className="text-lg text-default-400 cursor-pointer active:opacity-50">
-                  <EditIcon />
-                </span>
-              </Tooltip>
-              <Tooltip color="danger" content="Delete Card">
-                <span className="text-lg text-danger cursor-pointer active:opacity-50">
-                  <DeleteIcon />
-                </span>
-              </Tooltip>
-            </div>
-          );
-        default:
-          return cellValue;
-      }
-    },
-    []
-  );
+export default function CardListTable() {
+  const [openModal, setOpenModal] = useState<"details" | "limit" | null>(null);
+  const [selectedCard, setSelectedCard] = useState<Card | null>(null);
+
+  const handleOpenDetailsModal = (card: Card) => {
+    setSelectedCard(card);
+    setOpenModal("details");
+  };
+
+  const handleOpenLimitModal = (card: Card) => {
+    setSelectedCard(card);
+    setOpenModal("limit");
+  };
+
+  const handleCloseModal = () => {
+    setOpenModal(null);
+    setSelectedCard(null);
+  };
+
+  const handleSaveLimit = (amount: string, cycle: string) => {
+    if (selectedCard) {
+      console.log(
+        `New limit for ${selectedCard.cardName}: ${amount} per ${cycle}`
+      );
+      // Here you would update the card's limit in your state or send it to an API
+    }
+    handleCloseModal();
+  };
+
+  const renderCell = React.useCallback((card: Card, columnKey: ColumnKey) => {
+    const cellValue = columnKey !== "actions" ? card[columnKey] : null;
+
+    switch (columnKey) {
+      case "cardName":
+        return (
+          <User
+            avatarProps={{
+              radius: "lg",
+              src: `https://i.pravatar.cc/150?u=${card.holder}`,
+            }}
+            description={card.holder}
+            name={card.cardName}></User>
+        );
+      case "status":
+        return (
+          <Chip
+            className="capitalize"
+            color={statusColorMap[card.status]}
+            size="sm"
+            variant="flat">
+            {card.status}
+          </Chip>
+        );
+      case "limit":
+        return `$${card.limit.amount} per ${card.limit.cycle}`;
+      case "actions":
+        return (
+          <div className="relative flex items-center justify-center gap-2">
+            <Tooltip content="Adjust Limit">
+              <Button
+                size="sm"
+                onPress={() => {
+                  handleOpenLimitModal(card);
+                }}>
+                Limit
+              </Button>
+            </Tooltip>
+            <Tooltip content="View Details">
+              <Button
+                size="sm"
+                onPress={() => {
+                  handleOpenDetailsModal(card);
+                }}>
+                Details
+              </Button>
+            </Tooltip>
+          </div>
+        );
+      default:
+        return cellValue as React.ReactNode;
+    }
+  }, []);
 
   return (
-    <Table aria-label="Example table with custom cells">
-      <TableHeader columns={columns}>
-        {(column) => (
-          <TableColumn
-            key={column.uid}
-            align={column.uid === "actions" ? "center" : "start"}>
-            {column.name}
-          </TableColumn>
-        )}
-      </TableHeader>
-      <TableBody items={cards}>
-        {(item) => (
-          <TableRow key={item.cardName}>
-            {(columnKey) => (
-              <TableCell>
-                {renderCell(item, columnKey as keyof (typeof cards)[0])}
-              </TableCell>
-            )}
-          </TableRow>
-        )}
-      </TableBody>
-    </Table>
+    <>
+      <Table aria-label="Example table with custom cells">
+        <TableHeader columns={columns}>
+          {(column) => (
+            <TableColumn
+              key={column.uid}
+              align={column.uid === "actions" ? "center" : "start"}>
+              {column.name}
+            </TableColumn>
+          )}
+        </TableHeader>
+        <TableBody items={cards}>
+          {(item) => (
+            <TableRow key={item.cardName}>
+              {(columnKey) => (
+                <TableCell>
+                  {renderCell(item, columnKey as ColumnKey)}
+                </TableCell>
+              )}
+            </TableRow>
+          )}
+        </TableBody>
+      </Table>
+
+      <CardLimitModal
+        isOpen={openModal === "limit"}
+        onClose={handleCloseModal}
+        cardName={selectedCard?.cardName || ""}
+        currentLimit={
+          selectedCard?.limit
+            ? `${selectedCard.limit.amount} per ${selectedCard.limit.cycle}`
+            : ""
+        }
+        onSave={handleSaveLimit}
+      />
+
+      <CardDetailsModal
+        isOpen={openModal === "details"}
+        onClose={handleCloseModal}
+        card={selectedCard}
+      />
+    </>
   );
 }
