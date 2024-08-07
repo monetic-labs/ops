@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Button } from "@nextui-org/button";
 import { Input } from "@nextui-org/input";
 import {
@@ -16,14 +17,12 @@ import {
   TableHeader,
   TableRow,
 } from "@nextui-org/table";
-import { useState } from "react";
 
 interface WithdrawFundsModalProps {
   isOpen: boolean;
   onClose: () => void;
 }
 
-// Mock data for available balances
 const availableBalances = [
   { id: "1", network: "Ethereum", token: "USDC", balance: 1000 },
   { id: "2", network: "Ethereum", token: "DAI", balance: 500 },
@@ -39,7 +38,6 @@ export default function WithdrawFundsModal({
   const [withdrawAmount, setWithdrawAmount] = useState("");
 
   const handleWithdraw = () => {
-    // Implement withdraw logic here
     console.log("Withdrawing:", { selectedBalance, withdrawAmount });
     onClose();
   };

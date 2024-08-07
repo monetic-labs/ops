@@ -28,14 +28,16 @@ export default function AvailableCard() {
               className="w-1/2"
               color="default"
               size="sm"
-              onPress={() => setIsAddFundsOpen(true)}>
+              onPress={() => setIsAddFundsOpen(true)}
+            >
               Add Funds
             </Button>
             <Button
               className="w-1/2"
               color="default"
               size="sm"
-              onPress={() => setIsWithdrawFundsOpen(true)}>
+              onPress={() => setIsWithdrawFundsOpen(true)}
+            >
               Withdraw
             </Button>
           </div>

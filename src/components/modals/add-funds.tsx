@@ -34,7 +34,7 @@ export default function AddFundsModal({ isOpen, onClose }: AddFundsModalProps) {
   const [amount, setAmount] = useState("");
 
   const handleAddFunds = () => {
-    // Implement add funds logic here
+    // TODO: Implement add funds logic
     console.log("Adding funds:", { network, stablecoin, amount });
     onClose();
   };

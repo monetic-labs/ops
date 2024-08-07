@@ -10,7 +10,7 @@ import {
 interface UserDetailsModalProps {
   isOpen: boolean;
   onClose: () => void;
-  user: any; // Replace 'any' with your user type
+  user: any;
 }
 
 export default function UserDetailsModal({
@@ -21,10 +21,8 @@ export default function UserDetailsModal({
   return (
     <Modal isOpen={isOpen} onClose={onClose}>
       <ModalContent>
-        <ModalHeader>{user.name}'s Details</ModalHeader>
-        <ModalBody>
-          {/* Add tabs or sections for issued cards and transactions */}
-        </ModalBody>
+        <ModalHeader>{user.name}&apos;s Details</ModalHeader>
+        <ModalBody />
         <ModalFooter>
           <Button onPress={onClose}>Close</Button>
         </ModalFooter>

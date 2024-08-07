@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Button } from "@nextui-org/button";
 import { Input } from "@nextui-org/input";
 import {
@@ -8,7 +9,6 @@ import {
   ModalHeader,
 } from "@nextui-org/modal";
 import { Select, SelectItem } from "@nextui-org/select";
-import { useState } from "react";
 
 interface CreateCardModalProps {
   isOpen: boolean;
@@ -31,7 +31,6 @@ export default function CreateCardModal({
   const [limitCycle, setLimitCycle] = useState("");
 
   const handleCreateCard = () => {
-    // Implement card creation logic here
     console.log("Creating card:", {
       cardName,
       cardHolder,

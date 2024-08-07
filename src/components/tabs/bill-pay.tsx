@@ -1,4 +1,3 @@
-import React, { ReactNode, useState } from "react";
 import { Button } from "@nextui-org/button";
 import { Chip } from "@nextui-org/chip";
 import {
@@ -10,17 +9,17 @@ import {
   TableRow,
 } from "@nextui-org/table";
 import { User } from "@nextui-org/user";
+import React, { ReactNode, useState } from "react";
 
-import { BillPay, billPayColumns, billPayData, statusColorMap } from "@/data";
 import BillPayCloneModal from "@/components/modals/bill-clone";
 import CreateBillPayModal from "@/components/modals/bill-create";
 import BillPayDetailsModal from "@/components/modals/bill-details";
 import BillPaySaveModal from "@/components/modals/bill-save";
+import { BillPay, billPayColumns, billPayData, statusColorMap } from "@/data";
 
 export default function BillPayTable() {
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
-  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isCloneModalOpen, setIsCloneModalOpen] = useState(false);
   const [selectedBillPay, setSelectedBillPay] = useState<BillPay | null>(null);
   const [isSaveModalOpen, setIsSaveModalOpen] = useState(false);
