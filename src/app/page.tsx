@@ -11,11 +11,19 @@ export default function Home() {
       <div className="inline-block max-w-lg text-center justify-center">
         <h1 className={title({ color: "charyo" })}>Merchant Services</h1>
       </div>
-      <div className="flex flex-row gap-4 w-full max-w-7xl justify-between mb-8">
-        <AvailableCard />
-        <PendingCard />
-        <SpentCard />
-        <LockedCard />
+      <div className="flex flex-col sm:flex-row gap-4 w-full max-w-7xl justify-between mb-8">
+        <div className="w-full sm:w-1/4 mb-4 sm:mb-0 flex">
+          <AvailableCard />
+        </div>
+        <div className="w-full sm:w-1/4 mb-4 sm:mb-0 flex">
+          <PendingCard />
+        </div>
+        <div className="w-full sm:w-1/4 mb-4 sm:mb-0 flex">
+          <SpentCard />
+        </div>
+        <div className="w-full sm:w-1/4 flex">
+          <LockedCard />
+        </div>
       </div>
       <MerchantServicesTabs />
     </section>
