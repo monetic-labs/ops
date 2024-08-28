@@ -6,7 +6,7 @@ import CardListTable from "./card-list";
 import Transactions from "./transactions";
 
 import { cardServicesConfig } from "@/config/tabs";
-import CreateCardModal from "@/components/modals/card-create";
+import CreateCardModal from "@/components/card-issuance/card-create";
 
 export default function CardServicesTabs() {
   const [selectedService, setSelectedService] = useState<string>(

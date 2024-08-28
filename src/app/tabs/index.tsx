@@ -5,13 +5,14 @@ import { Divider } from "@nextui-org/divider";
 import { Tab, Tabs } from "@nextui-org/tabs";
 import { useState } from "react";
 
-import BillPayTab from "../bill-pay/bill-pay";
-import ComplianceTable from "../compliance/compliance";
-import UsersTab from "../users/users";
+import BillPayTab from "../../components/bill-pay/bill-pay";
+import ComplianceTable from "../../components/compliance/compliance";
+import UsersTab from "../../components/users/users";
 import CardServicesTabs from "@/components/card-issuance";
 
 import { tabsConfig } from "@/config/tabs";
-import BackOfficeTabs from "../back-office/back-office";
+import BackOfficeTabs from "../../components/back-office/back-office";
+import WidgetManagement from "../../components/back-office/widget-tab";
 
 export default function MerchantServicesTabs() {
   const [selectedService, setSelectedService] = useState<string>(
@@ -45,6 +46,13 @@ export default function MerchantServicesTabs() {
         return (
           <>
             <BackOfficeTabs />
+            <Divider className="my-4" />
+          </>
+        );
+      case "widget-mgmt":
+        return (
+          <>
+            <WidgetManagement />
             <Divider className="my-4" />
           </>
         );

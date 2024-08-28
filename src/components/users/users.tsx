@@ -11,9 +11,9 @@ import {
 import { User } from "@nextui-org/user";
 import React, { useState } from "react";
 
-import CreateUserModal from "../modals/user-create";
-import UserEditModal from "../modals/user-edit";
-import UserDetailsModal from "../modals/users-details";
+import CreateUserModal from "./user-create";
+import UserEditModal from "./user-edit";
+import UserDetailsModal from "./users-details";
 
 import { users, usersColumns } from "@/data";
 
