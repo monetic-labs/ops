@@ -17,7 +17,6 @@ export default function CreateOrders() {
   return (
     <div className="space-y-4">
       <div>
-        <label className="block text-sm font-medium mb-1">Order ID</label>
         <Snippet symbol="#" variant="flat">
           {orderId || "Generated Order ID"}
         </Snippet>
