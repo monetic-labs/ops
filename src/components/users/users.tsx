@@ -11,11 +11,11 @@ import {
 import { User } from "@nextui-org/user";
 import React, { useState } from "react";
 
-import CreateUserModal from "../modals/user-create";
-import UserEditModal from "../modals/user-edit";
-import UserDetailsModal from "../modals/users-details";
-
 import { users, usersColumns } from "@/data";
+
+import CreateUserModal from "./user-create";
+import UserEditModal from "./user-edit";
+import UserDetailsModal from "./users-details";
 
 const statusColorMap: Record<string, "success" | "danger"> = {
   Active: "success",

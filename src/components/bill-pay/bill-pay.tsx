@@ -11,10 +11,10 @@ import {
 import { User } from "@nextui-org/user";
 import React, { ReactNode, useState } from "react";
 
-import BillPayCloneModal from "@/components/modals/bill-clone";
-import CreateBillPayModal from "@/components/modals/bill-create";
-import BillPayDetailsModal from "@/components/modals/bill-details";
-import BillPaySaveModal from "@/components/modals/bill-save";
+import BillPayCloneModal from "@/components/bill-pay/bill-clone";
+import CreateBillPayModal from "@/components/bill-pay/bill-create";
+import BillPayDetailsModal from "@/components/bill-pay/bill-details";
+import BillPaySaveModal from "@/components/bill-pay/bill-save";
 import { BillPay, billPayColumns, billPayData, statusColorMap } from "@/data";
 
 export default function BillPayTable() {

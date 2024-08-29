@@ -12,7 +12,7 @@ import { Tooltip } from "@nextui-org/tooltip";
 import { User } from "@nextui-org/user";
 import { Button } from "@nextui-org/button";
 
-import TransactionDetailsModal from "@/components/modals/tx-details";
+import TransactionDetailsModal from "@/components/card-issuance/card-txns";
 
 const columns = [
   { name: "MERCHANT ID", uid: "merchantId" },

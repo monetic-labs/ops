@@ -4,8 +4,8 @@ import { Button } from "@nextui-org/button";
 import { Card, CardBody, CardHeader } from "@nextui-org/card";
 import { useState } from "react";
 
-import AddFundsModal from "@/components/modals/add-funds";
-import WithdrawFundsModal from "@/components/modals/withdraw-funds";
+import AddFundsModal from "@/components/account-contract/add-funds";
+import WithdrawFundsModal from "@/components/account-contract/withdraw-funds";
 
 export default function AvailableCard() {
   const [isAddFundsOpen, setIsAddFundsOpen] = useState(false);

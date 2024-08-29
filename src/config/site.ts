@@ -1,7 +1,7 @@
 export type SiteConfig = typeof siteConfig;
 
 export const siteConfig = {
-  name: "Merchant Services",
+  name: "Self Banking Services",
   description:
     "Your home to manage the various ways you access and instrument your value based transactions",
   version: "0.0.1",

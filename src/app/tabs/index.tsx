@@ -1,15 +1,16 @@
 "use client";
 
+import { useState } from "react";
 import { Card, CardBody, CardHeader } from "@nextui-org/card";
 import { Divider } from "@nextui-org/divider";
 import { Tab, Tabs } from "@nextui-org/tabs";
-import { useState } from "react";
 
-import BillPayTab from "./bill-pay";
-import ComplianceTable from "./compliance";
-import UsersTab from "./users";
-import CardServicesTabs from "./card-services";
-
+import WidgetManagement from "@/components/back-office/widget-tab";
+import BackOfficeTabs from "@/components/back-office/back-office";
+import BillPayTab from "@/components/bill-pay/bill-pay";
+import CardServicesTabs from "@/components/card-issuance";
+import ComplianceTable from "@/components/compliance/compliance";
+import UsersTab from "@/components/users/users";
 import { tabsConfig } from "@/config/tabs";
 
 export default function MerchantServicesTabs() {
@@ -19,7 +20,7 @@ export default function MerchantServicesTabs() {
 
   const renderTabContent = (tabId: string) => {
     switch (tabId) {
-      case "cards":
+      case "card-issuance":
         return (
           <>
             <CardServicesTabs />
@@ -37,6 +38,20 @@ export default function MerchantServicesTabs() {
         return (
           <>
             <BillPayTab />
+            <Divider className="my-4" />
+          </>
+        );
+      case "back-office":
+        return (
+          <>
+            <BackOfficeTabs />
+            <Divider className="my-4" />
+          </>
+        );
+      case "widget-mgmt":
+        return (
+          <>
+            <WidgetManagement />
             <Divider className="my-4" />
           </>
         );

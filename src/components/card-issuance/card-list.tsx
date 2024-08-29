@@ -13,8 +13,8 @@ import { User } from "@nextui-org/user";
 import React, { useState } from "react";
 
 import { cards, cardsColumns } from "@/data";
-import CardLimitModal from "@/components/modals/card-limit";
-import CardDetailsModal from "@/components/modals/card-details";
+import CardLimitModal from "@/components/card-issuance/card-limit";
+import CardDetailsModal from "@/components/card-issuance/card-details";
 
 const statusColorMap: Record<string, "success" | "danger"> = {
   Active: "success",

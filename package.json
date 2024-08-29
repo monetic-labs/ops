@@ -6,9 +6,11 @@
 		"dev": "next dev --turbo",
 		"build": "next build",
 		"start": "next start",
-		"lint": "eslint . --ext .ts,.tsx -c .eslintrc.json --fix"
+		"lint": "eslint . --ext .ts,.tsx -c .eslintrc.json --fix",
+		"fuck": "next lint --fix"
 	},
 	"dependencies": {
+		"@backpack-fux/pylon-sdk": "^0.2.2",
 		"@nextui-org/button": "2.0.37",
 		"@nextui-org/card": "^2.0.33",
 		"@nextui-org/chip": "^2.0.32",
