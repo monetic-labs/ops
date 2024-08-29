@@ -1,11 +1,17 @@
+import { title } from "@/components/primitives";
 import React from "react";
 
 export default function AuthPage() {
   return (
-    <div className="container mx-auto p-4">
-      <h1 className="text-2xl font-bold mb-4">Authentication</h1>
-      {/* Add your authentication form or components here */}
-      <p>Please log in or sign up to continue.</p>
-    </div>
+    <section className="flex flex-col items-center justify-center gap-4 py-8 md:py-10">
+      <div className="inline-block max-w-lg text-center justify-center">
+        <h1 className={title({ color: "charyo" })}>Self Banking Services</h1>
+      </div>
+      <div className="flex flex-col sm:flex-row gap-4 w-full max-w-7xl justify-between mb-8">
+        <div className="w-full sm:w-1/4 mb-4 sm:mb-0 flex">
+          Nope
+        </div>
+      </div>
+    </section>
   );
 }
