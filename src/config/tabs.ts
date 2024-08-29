@@ -62,4 +62,3 @@ export const backOfficeConfig = [
     content: "This is where you manage your widgets",
   },
 ];
-

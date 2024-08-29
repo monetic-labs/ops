@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import { Chip } from "@nextui-org/chip";
 import {
   Table,
@@ -48,7 +48,7 @@ const statusColorMap: Record<string, "success" | "warning" | "danger"> = {
 };
 
 export default function PaymentsTab() {
-const renderCell = React.useCallback(
+  const renderCell = React.useCallback(
     (payment: (typeof payments)[0], columnKey: React.Key) => {
       const cellValue = payment[columnKey as keyof (typeof payments)[0]];
 
@@ -93,7 +93,7 @@ const renderCell = React.useCallback(
           return cellValue;
       }
     },
-    []
+    [],
   );
 
   return (

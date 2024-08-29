@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Button } from "@nextui-org/button";
 import { Divider } from "@nextui-org/divider";
 import { Input } from "@nextui-org/input";
@@ -9,7 +10,6 @@ import {
   ModalHeader,
 } from "@nextui-org/modal";
 import { Select, SelectItem } from "@nextui-org/select";
-import { useState } from "react";
 
 interface AddFundsModalProps {
   isOpen: boolean;

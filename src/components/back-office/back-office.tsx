@@ -1,16 +1,15 @@
-import { Button } from "@nextui-org/button";
 import { Tab, Tabs } from "@nextui-org/tabs";
 import { useState } from "react";
+
+import { backOfficeConfig } from "@/config/tabs";
 
 import Payments from "./payments-tab";
 import CreateOrders from "./orders-tab";
 import WidgetManagement from "./widget-tab";
 
-import { backOfficeConfig } from "@/config/tabs";
-
 export default function BackOfficeTabs() {
   const [selectedService, setSelectedService] = useState<string>(
-    backOfficeConfig[0].id
+    backOfficeConfig[0].id,
   );
 
   const renderTabContent = (tabId: string) => {

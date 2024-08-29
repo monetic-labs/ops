@@ -4,21 +4,27 @@ import { Button } from "@nextui-org/button";
 import { Snippet } from "@nextui-org/snippet";
 
 export default function CreateOrders() {
-  const [orderId, setOrderId] = useState("");
+  const [orderId] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [amount, setAmount] = useState("");
 
   const handleCreateOrder = () => {
     // Implement order creation logic here
-    console.log("Creating order:", { orderId, email, phone, amount });
+    // Remove or comment out the console.log
+    // console.log("Creating order:", { orderId, email, phone, amount });
   };
 
   return (
     <div className="space-y-4">
       <div>
-        <label className="block text-sm font-medium mb-1">Order ID</label>
-        <Snippet symbol="#" variant="flat">
+        <label
+          className="block text-sm font-medium mb-1"
+          htmlFor="order-id-snippet"
+        >
+          Order ID
+        </label>
+        <Snippet id="order-id-snippet" symbol="#" variant="flat">
           {orderId || "Generated Order ID"}
         </Snippet>
       </div>

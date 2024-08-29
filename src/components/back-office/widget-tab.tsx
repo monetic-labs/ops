@@ -12,7 +12,11 @@ export default function WidgetManagement() {
   const [selectedCurrency, setSelectedCurrency] = useState("");
 
   const handleSaveSettings = () => {
-    console.log("Saving settings:", { settlementAddress, selectedNetwork, selectedCurrency });
+    console.log("Saving settings:", {
+      settlementAddress,
+      selectedNetwork,
+      selectedCurrency,
+    });
     // Implement save logic here
   };
 
@@ -28,7 +32,9 @@ export default function WidgetManagement() {
         label="Settlement Network"
         placeholder="Select a network"
         selectedKeys={selectedNetwork ? [selectedNetwork] : []}
-        onSelectionChange={(keys) => setSelectedNetwork(Array.from(keys)[0] as string)}
+        onSelectionChange={(keys) =>
+          setSelectedNetwork(Array.from(keys)[0] as string)
+        }
       >
         {networks.map((network) => (
           <SelectItem key={network} value={network}>
@@ -40,7 +46,9 @@ export default function WidgetManagement() {
         label="Settlement Currency"
         placeholder="Select a currency"
         selectedKeys={selectedCurrency ? [selectedCurrency] : []}
-        onSelectionChange={(keys) => setSelectedCurrency(Array.from(keys)[0] as string)}
+        onSelectionChange={(keys) =>
+          setSelectedCurrency(Array.from(keys)[0] as string)
+        }
       >
         {currencies.map((currency) => (
           <SelectItem key={currency} value={currency}>

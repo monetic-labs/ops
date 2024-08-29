@@ -1,18 +1,17 @@
 "use client";
 
+import { useState } from "react";
 import { Card, CardBody, CardHeader } from "@nextui-org/card";
 import { Divider } from "@nextui-org/divider";
 import { Tab, Tabs } from "@nextui-org/tabs";
-import { useState } from "react";
 
-import BillPayTab from "../../components/bill-pay/bill-pay";
-import ComplianceTable from "../../components/compliance/compliance";
-import UsersTab from "../../components/users/users";
+import WidgetManagement from "@/components/back-office/widget-tab";
+import BackOfficeTabs from "@/components/back-office/back-office";
+import BillPayTab from "@/components/bill-pay/bill-pay";
 import CardServicesTabs from "@/components/card-issuance";
-
+import ComplianceTable from "@/components/compliance/compliance";
+import UsersTab from "@/components/users/users";
 import { tabsConfig } from "@/config/tabs";
-import BackOfficeTabs from "../../components/back-office/back-office";
-import WidgetManagement from "../../components/back-office/widget-tab";
 
 export default function MerchantServicesTabs() {
   const [selectedService, setSelectedService] = useState<string>(

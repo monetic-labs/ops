@@ -2,11 +2,11 @@ import { Button } from "@nextui-org/button";
 import { Tab, Tabs } from "@nextui-org/tabs";
 import { useState } from "react";
 
-import CardListTable from "./card-list";
-import Transactions from "./transactions";
-
 import { cardServicesConfig } from "@/config/tabs";
 import CreateCardModal from "@/components/card-issuance/card-create";
+
+import CardListTable from "./card-list";
+import Transactions from "./transactions";
 
 export default function CardServicesTabs() {
   const [selectedService, setSelectedService] = useState<string>(
