@@ -20,8 +20,23 @@ export interface Company {
   registeredAddress: RegisteredAddress;
 }
 
-export interface MerchantFormData {
-  walletAddress: string;
-  representatives: Representative[];
-  company: Company;
-}
+export type MerchantFormData = {
+  company: {
+    name: string;
+    email: string;
+    mailingAddress: string;
+    settlementAddress: string;
+  };
+  owner: {
+    firstName: string;
+    lastName: string;
+    email: string;
+    phone: string;
+  };
+  representatives: Array<{
+    name: string;
+    surname: string;
+    email: string;
+    phoneNumber: string;
+  }>;
+};

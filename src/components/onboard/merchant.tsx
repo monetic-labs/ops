@@ -1,316 +1,247 @@
 'use client';
 
-import { useState } from 'react';
-import { Control, FieldErrors, useForm } from 'react-hook-form';
-
-import { FormButton } from '@/components/onboard/form-button';
+import { useState, useRef, useEffect } from 'react';
+import { useForm } from 'react-hook-form';
+import { Tabs, Tab } from '@nextui-org/tabs';
 import { FormCard } from '@/components/onboard/form-card';
 import { FormInput } from '@/components/onboard/form-input';
+import { FormButton } from '@/components/onboard/form-button';
 import { MerchantFormData } from '@/data/merchant';
+import { useLogin } from '@/hooks/auth/useLogin';
+import { useVerify } from '@/hooks/auth/useVerify';
+import { Input } from '@nextui-org/input';
+import { Button } from '@nextui-org/button';
+import { useRouter } from 'next/navigation';
 
-interface MerchantFormProps {
-  control: Control<MerchantFormData>;
-  errors: FieldErrors<MerchantFormData>;
-  onNext: () => void;
-  onPrevious: () => void;
-  onSubmit?: (data: Partial<MerchantFormData>) => void;
-  onCancel?: () => void;
-}
-
-const CompanyInformationStep: React.FC<MerchantFormProps> = ({
-  control,
-  errors,
-  onNext,
-  onCancel,
-}: MerchantFormProps) => (
-  <>
-    <FormCard title="Company Information">
-      <p className="text-notpurple-200">KYB Provided by Persona</p>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div className="col-span-1 md:col-span-2">
-          <FormInput
-            control={control}
-            errorMessage={errors.company?.name?.message}
-            label="Company Name"
-            name="company.name"
-          />
-        </div>
-        <div className="col-span-1 md:col-span-2">
-          <FormInput
-            control={control}
-            errorMessage={errors.company?.email?.message}
-            label="Company Email"
-            name="company.email"
-          />
-        </div>
-        <div className="col-span-1 md:col-span-2">
-          <h3 className="text-lg font-semibold mb-2 text-notpurple-100">Registered Address</h3>
-        </div>
-        <div className="col-span-1 md:col-span-2">
-          <FormInput
-            control={control}
-            errorMessage={errors.company?.registeredAddress?.street1?.message}
-            label="Street Address 1"
-            name="company.registeredAddress.street1"
-          />
-        </div>
-        <div className="col-span-1 md:col-span-2">
-          <FormInput
-            control={control}
-            errorMessage={errors.company?.registeredAddress?.street2?.message}
-            label="Street Address 2 (Optional)"
-            name="company.registeredAddress.street2"
-          />
-        </div>
-        <div>
-          <FormInput
-            control={control}
-            errorMessage={errors.company?.registeredAddress?.city?.message}
-            label="City"
-            name="company.registeredAddress.city"
-          />
-        </div>
-        <div>
-          <FormInput
-            control={control}
-            errorMessage={errors.company?.registeredAddress?.postcode?.message}
-            label="Postcode"
-            name="company.registeredAddress.postcode"
-          />
-        </div>
-        <div>
-          <FormInput
-            control={control}
-            errorMessage={errors.company?.registeredAddress?.state?.message}
-            label="State"
-            name="company.registeredAddress.state"
-          />
-        </div>
-        <div>
-          <FormInput
-            control={control}
-            errorMessage={errors.company?.registeredAddress?.country?.message}
-            helperText="Enter a 2-letter ISO country code"
-            label="Country Code"
-            maxLength={2}
-            name="company.registeredAddress.country"
-            placeholder="e.g. US, GB"
-          />
-        </div>
-      </div>
-      <div className="mt-6 flex justify-between">
-        <FormButton className="w-[48%] bg-charyo-500 hover:bg-charyo-600" onClick={onCancel}>
-          Cancel
-        </FormButton>
-        <FormButton className="w-[48%]" onClick={onNext}>
-          Next
-        </FormButton>
-      </div>
-    </FormCard>
-  </>
-);
-
-const RepresentativeInformationStep: React.FC<MerchantFormProps> = ({
-  control,
-  errors,
-  onPrevious,
-  onNext,
-}: MerchantFormProps) => (
-  <>
-    <FormCard title="Company Owner Info">
-      <FormInput
-        control={control}
-        errorMessage={errors.representatives?.[0]?.name?.message}
-        label="First Name"
-        name="representatives.0.name"
-      />
-      <FormInput
-        control={control}
-        errorMessage={errors.representatives?.[0]?.surname?.message}
-        label="Last Name"
-        name="representatives.0.surname"
-      />
-      <FormInput
-        control={control}
-        errorMessage={errors.representatives?.[0]?.email?.message}
-        label="Email"
-        name="representatives.0.email"
-      />
-      <FormInput
-        control={control}
-        errorMessage={errors.representatives?.[0]?.phoneNumber?.message}
-        label="Phone Number"
-        name="representatives.0.phoneNumber"
-      />
-      <div className="flex justify-between mt-4">
-        <FormButton onClick={onPrevious}>Previous</FormButton>
-        <FormButton onClick={onNext}>Next</FormButton>
-      </div>
-    </FormCard>
-  </>
-);
-
-const WalletInformationStep: React.FC<MerchantFormProps> = ({
-  control,
-  errors,
-  onPrevious,
-  onSubmit,
-}) => {
-  console.log('WalletInformationStep rendered');
-
-  return (
-    <>
-      <FormCard title="Wallet Information">
-        <form
-          onSubmit={(e) => {
-            e.preventDefault();
-            const formData = (e.target as HTMLFormElement).elements.namedItem(
-              'walletAddress'
-            ) as HTMLInputElement;
-
-            console.log('Form submitted in WalletInformationStep, wallet address:', formData.value);
-            onSubmit?.({ walletAddress: formData.value });
-          }}
-        >
-          <FormInput
-            control={control}
-            errorMessage={errors.walletAddress?.message}
-            label="Wallet Address"
-            name="walletAddress"
-            placeholder="0xdeadbeef"
-          />
-          <div className="flex justify-between mt-4">
-            <FormButton type="button" onClick={onPrevious}>
-              Previous
-            </FormButton>
-            <FormButton type="submit">Submit</FormButton>
-          </div>
-        </form>
-      </FormCard>
-    </>
-  );
-};
+const OTP_LENGTH = 6;
 
 export const KYBMerchantForm: React.FC<{ onCancel: () => void }> = ({ onCancel }) => {
-  const [step, setStep] = useState(1);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [formData, setFormData] = useState<Partial<MerchantFormData>>({
-    representatives: [
-      {
-        name: '',
-        surname: '',
-        email: '',
-        phoneNumber: '',
-      },
-    ],
-  });
+  const [activeTab, setActiveTab] = useState('company-info');
+  const { control, handleSubmit, formState: { errors }, getValues } = useForm<MerchantFormData>();
+  const [otp, setOtp] = useState('');
+  const [isOtpComplete, setIsOtpComplete] = useState(false);
+  const [otpSubmitted, setOtpSubmitted] = useState(false);
+  const { login, isLoading: isLoginLoading, error: loginError } = useLogin();
+  const { verify, isLoading: isVerifyLoading, error: verifyError } = useVerify();
+  const otpInputs = useRef<(HTMLInputElement | null)[]>([]);
+  const router = useRouter();
 
-  const {
-    control,
-    handleSubmit,
-    formState: { errors },
-    getValues,
-  } = useForm<MerchantFormData>({
-    defaultValues: formData,
-    mode: 'onBlur',
-  });
+  const handleOtpChange = (index: number, value: string) => {
+    const newOtp = otp.split('');
+    newOtp[index] = value;
+    const updatedOtp = newOtp.join('');
+    setOtp(updatedOtp);
 
-  const updateFormData = (data: Partial<MerchantFormData>) => {
-    setFormData((prevData) => ({ ...prevData, ...data }));
-  };
-
-  const onSubmit = async (data: MerchantFormData) => {
-    console.log('onSubmit called with data:', data);
-    setIsSubmitting(true);
-    try {
-      console.log('Preparing to call createMerchant');
-      const merchantData = {
-        ...formData,
-        ...data,
-        company: {
-          ...data.company,
-          registeredAddress: {
-            ...data.company.registeredAddress,
-            country: data.company.registeredAddress.country.toUpperCase(),
-          },
-        },
-        fee: 0,
-        compliance: undefined,
-      };
-
-      console.log('Merchant data prepared:', merchantData);
-      //const response = await pylonService.createMerchant(merchantData);
-
-      //console.log('Merchant created successfully:', response);
-      // Handle successful submission (e.g., show success message, redirect)
-    } catch (error) {
-      console.error('Error in createMerchant:', error);
-      // Handle error (e.g., show error message)
-    } finally {
-      setIsSubmitting(false);
-      console.log('Submission process completed');
+    if (value !== '' && index < OTP_LENGTH - 1) {
+      otpInputs.current[index + 1]?.focus();
     }
-  };
 
-  const handleStepSubmit = (data: Partial<MerchantFormData>) => {
-    console.log('handleStepSubmit called with data:', data);
-    updateFormData(data);
-    if (step < 3) {
-      setStep(step + 1);
+    if (updatedOtp.length === OTP_LENGTH) {
+      setIsOtpComplete(true);
+      setTimeout(() => setIsOtpComplete(false), 1000);
+      handleVerify();
     } else {
-      console.log('Final form data before submission:', { ...formData, ...data });
-      onSubmit({ ...formData, ...data } as MerchantFormData);
+      setIsOtpComplete(false);
     }
   };
 
-  const renderStep = () => {
-    const commonProps = {
-      control,
-      errors,
-      onSubmit: handleStepSubmit,
-    };
-
-    console.log('Rendering step:', step);
-
-    switch (step) {
-      case 1:
-        return (
-          <CompanyInformationStep
-            {...commonProps}
-            onCancel={onCancel}
-            onNext={() => handleStepSubmit(getValues())}
-            onPrevious={() => {}}
-          />
-        );
-      case 2:
-        return (
-          <RepresentativeInformationStep
-            {...commonProps}
-            onNext={() => handleStepSubmit(getValues())}
-            onPrevious={() => setStep(1)}
-          />
-        );
-      case 3:
-        return (
-          <WalletInformationStep
-            {...commonProps}
-            onNext={() => handleStepSubmit(getValues())}
-            onPrevious={() => setStep(2)}
-          />
-        );
-      default:
-        return null;
+  const handleVerify = async () => {
+    const email = getValues('owner.email');
+    if (email && otp.length === OTP_LENGTH) {
+      setOtpSubmitted(true);
+      await verify(email, otp);
+      setOtp('');
+      otpInputs.current[0]?.focus();
+      setTimeout(() => setOtpSubmitted(false), 2000);
     }
   };
 
-  return (
-    <div className="min-h-screen flex items-center justify-center">
-      {renderStep()}
-      {isSubmitting && (
-        <div className="fixed inset-0 bg-charyo-700/60 backdrop-blur-md flex items-center justify-center">
-          <p className="text-notpurple-100 text-xl">Submitting...</p>
+  const handleResendOTP = async () => {
+    const email = getValues('owner.email');
+    if (email) {
+      await login(email);
+    }
+  };
+
+  const onSubmitStep = async (step: number) => {
+    const data = getValues();
+    console.log(`Step ${step} data:`, data);
+
+    if (step === 2) {
+      // Combine data from steps 1 and 2 and send to pylon service
+      const combinedData = {
+        company: data.company,
+        owner: data.owner,
+      };
+      console.log('Combined data to send to pylon service:', combinedData);
+      // TODO: Implement pylon service integration
+      // await sendToPylonService(combinedData);
+    }
+
+    // Move to the next tab
+    const tabKeys = ['company-info', 'company-owner', 'documents', 'validate'];
+    const nextTabIndex = tabKeys.indexOf(activeTab) + 1;
+    if (nextTabIndex < tabKeys.length) {
+      setActiveTab(tabKeys[nextTabIndex]);
+    }
+  };
+
+
+const handleCancel = () => {
+    router.push('/auth');
+  };
+
+  const renderCompanyInfo = () => (
+    <>
+      <FormInput
+        control={control}
+        name="company.name"
+        label="Company Name"
+        errorMessage={errors.company?.name?.message}
+      />
+      <FormInput
+        control={control}
+        name="company.email"
+        label="Company Email"
+        errorMessage={errors.company?.email?.message}
+      />
+      <FormInput
+        control={control}
+        name="company.mailingAddress"
+        label="Entity Mailing Address"
+        errorMessage={errors.company?.mailingAddress?.message}
+      />
+      <FormInput
+        control={control}
+        name="company.settlementAddress"
+        label="Settlement Address"
+        placeholder="0xdeadbeef"
+        errorMessage={errors.company?.settlementAddress?.message}
+      />
+       <div className="flex justify-between">
+         <div className="w-1/2">
+           <FormButton onClick={() => onSubmitStep(1)}>Step 1: Submit Company Info</FormButton>
+         </div>
+         <div className="w-1/2">
+           <FormButton onClick={handleCancel}>Cancel</FormButton>
+         </div>
+       </div>
+    </>
+  );
+
+  const renderCompanyOwner = () => (
+    <>
+      <FormInput
+        control={control}
+        name="owner.firstName"
+        label="First Name"
+        errorMessage={errors.owner?.firstName?.message}
+      />
+      <FormInput
+        control={control}
+        name="owner.lastName"
+        label="Last Name"
+        errorMessage={errors.owner?.lastName?.message}
+      />
+      <FormInput
+        control={control}
+        name="owner.email"
+        label="Email"
+        errorMessage={errors.owner?.email?.message}
+      />
+      <FormInput
+        control={control}
+        name="owner.phone"
+        label="Phone"
+        errorMessage={errors.owner?.phone?.message}
+      />
+      {/* Add a toggle for additional representatives here */}
+      <div className="flex justify-between">
+         <div className="w-1/2">
+           <FormButton onClick={() => onSubmitStep(2)}>Step 2: Submit Owner Info</FormButton>
+         </div>
+         <div className="w-1/2">
+           <FormButton onClick={handleCancel}>Cancel</FormButton>
+         </div>
+       </div>
+    </>
+  );
+
+  const renderDocuments = () => (
+    <>
+    <div className="h-96">
+      {/* Add your iframe for document flow here */}
+      <iframe src="your-document-flow-url" className="w-full h-full" />
+    </div>
+    <div className="flex justify-between">
+         <div className="w-1/2">
+           <FormButton onClick={() => onSubmitStep(3)}>Step 3: Submit Documents</FormButton>
+         </div>
+         <div className="w-1/2">
+           <FormButton onClick={handleCancel}>Cancel</FormButton>
+         </div>
+       </div>
+    </>
+  );
+
+  const renderValidate = () => (
+    <div className="space-y-4">
+      <p className="text-notpurple-100">Enter the 6-digit OTP sent to your email.</p>
+      <div className="flex flex-col items-center space-y-2">
+        <div className="flex justify-center space-x-2">
+          {Array.from({ length: OTP_LENGTH }).map((_, index) => (
+            <input
+              key={index}
+              ref={(el) => { otpInputs.current[index] = el; }}
+              type="text"
+              maxLength={1}
+              value={otp[index] || ''}
+              onChange={(e) => handleOtpChange(index, e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Backspace' && !otp[index] && index > 0) {
+                  otpInputs.current[index - 1]?.focus();
+                }
+              }}
+              className={`w-10 h-12 text-center text-xl border-2 rounded-md bg-charyo-500 text-white 
+                ${isOtpComplete ? 'animate-flash border-ualert-500' : otpSubmitted ? 'border-green-500' : 'border-gray-300'}
+                focus:border-ualert-500 focus:outline-none`}
+            />
+          ))}
         </div>
+        {otpSubmitted && (
+          <p className="text-notpurple-500 mt-2">OTP submitted</p>
+        )}
+      </div>
+      <Button
+        onClick={handleResendOTP}
+        disabled={isLoginLoading}
+        className="bg-ualert-500 text-white hover:bg-ualert-600"
+      >
+        Resend OTP
+      </Button>
+      {(loginError || verifyError) && (
+        <p className="text-ualert-500 mt-2">{loginError || verifyError}</p>
       )}
     </div>
+  );
+
+  return (
+    <FormCard title="KYB Merchant Onboarding">
+        <Tabs selectedKey={activeTab} onSelectionChange={(key) => setActiveTab(key as string)}>
+          <Tab key="company-info" title="Company Info">
+            {renderCompanyInfo()}
+          </Tab>
+          <Tab key="company-owner" title="Company Owner">
+            {renderCompanyOwner()}
+          </Tab>
+          <Tab key="documents" title="Documents">
+            {renderDocuments()}
+          </Tab>
+          <Tab key="validate" title="Validate">
+            {renderValidate()}
+          </Tab>
+        </Tabs>
+
+    </FormCard>
   );
 };

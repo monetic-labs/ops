@@ -6,7 +6,7 @@ import { Button } from "@nextui-org/button";
 import { Input } from "@nextui-org/input";
 import { useLogin } from "@/hooks/auth/useLogin";
 import { useVerify } from "@/hooks/auth/useVerify";
-import { Link } from "@nextui-org/link";
+import { useRouter } from "next/navigation";
 
 const OTP_LENGTH = 6;
 
@@ -19,6 +19,7 @@ export default function AuthPage() {
   const { login, isLoading: isLoginLoading, error: loginError, otpResponse } = useLogin();
   const { verify, isLoading: isVerifyLoading, error: verifyError } = useVerify();
   const otpInputs = useRef<(HTMLInputElement | null)[]>([]);
+  const router = useRouter();
 
   useEffect(() => {
     if (otpResponse) {
@@ -28,6 +29,11 @@ export default function AuthPage() {
       console.log("OTP received:", otpResponse.otp);
     }
   }, [otpResponse]);
+
+  const handleSignUp = async (e: React.FormEvent) => {
+    e.preventDefault();
+    router.push("/onboard");
+  };
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -87,7 +93,7 @@ export default function AuthPage() {
       <h1 className={title({ color: "chardient" })}>Self Banking Portal</h1>
       <h2 className={subtitle({ color: "charyo" })}>Welcome, Skeptic</h2>
       <div className="bg-background/60 backdrop-blur-md rounded-lg p-6 shadow-lg w-full max-w-md">
-        <form onSubmit={handleLogin} className="space-y-4">
+        <form className="space-y-4">
           <Input
             type="email"
             label="Email"
@@ -95,11 +101,6 @@ export default function AuthPage() {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
-            classNames={{
-              errorMessage: "!text-ualert-500",
-              input: "!text-white",
-              label: "!text-white",
-            }}
           />
           {showOtpInput && (
             <>
@@ -151,14 +152,25 @@ export default function AuthPage() {
             </>
           )}
           {!showOtpInput && (
+            <div className="flex gap-2">
             <Button
               type="submit"
-              className="bg-charyo-500 text-white hover:bg-charyo-600 w-full"
+              className="bg-charyo-500 text-white hover:bg-notpurple-600 flex-1"
               variant="shadow"
+              onClick={handleSignUp}
+            >
+              Sign Up
+            </Button>
+            <Button
+              type="button"
+              className="bg-ualert-500 text-white hover:bg-notpurple-600 flex-1"
+              variant="shadow"
+              onClick={handleLogin}
               isLoading={isLoginLoading}
             >
-              Sign In (if you dare)
+              Sign In
             </Button>
+          </div>
           )}
         </form>
         {(loginError || verifyError) && (
