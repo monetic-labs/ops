@@ -79,7 +79,7 @@ export default function AddFundsModal({ isOpen, onClose }: AddFundsModalProps) {
 
           <Divider className="my-4" />
 
-          <div className="p-4 rounded-md space-y-2">
+          <div className="p-4 rounded-md space-y-4 font-mono">
             <h4 className="font-semibold text-lg mb-2">Transaction Details</h4>
             <div className="flex justify-between">
               <span>Current Balance:</span>
@@ -94,17 +94,17 @@ export default function AddFundsModal({ isOpen, onClose }: AddFundsModalProps) {
               <span className="font-medium">External Wallet</span>
             </div>
             <Divider className="my-2" />
-            <div className="flex justify-between text-lg font-semibold">
+            <div className="flex justify-between text-lg font-bold">
               <span>New Balance:</span>
-              <span>$1,000.00</span>
+              <span>${(1000 + parseFloat(amount || "0")).toFixed(2)}</span>
             </div>
           </div>
         </ModalBody>
         <ModalFooter>
-          <Button color="danger" variant="light" onPress={onClose}>
+          <Button variant="light" onPress={onClose} className="text-notpurple-500">
             Cancel
           </Button>
-          <Button color="primary" onPress={handleAddFunds}>
+          <Button onPress={handleAddFunds} className="bg-ualert-500 text-notpurple-500">
             Confirm Add Funds
           </Button>
         </ModalFooter>

@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
-import { useForm } from 'react-hook-form';
+import { Controller, useForm } from 'react-hook-form';
 import { Tabs, Tab } from '@nextui-org/tabs';
 import { FormCard } from '@/components/onboard/form-card';
 import { FormInput } from '@/components/onboard/form-input';
@@ -86,101 +86,136 @@ export const KYBMerchantForm: React.FC<{ onCancel: () => void }> = ({ onCancel }
     }
   };
 
-
-const handleCancel = () => {
+  const handleCancel = () => {
     router.push('/auth');
   };
 
   const renderCompanyInfo = () => (
-    <>
-      <FormInput
-        control={control}
+    <div className="space-y-4">
+      <Controller
         name="company.name"
-        label="Company Name"
-        errorMessage={errors.company?.name?.message}
-      />
-      <FormInput
         control={control}
+        rules={{ required: 'Company name is required' }}
+        render={({ field }) => (
+          <Input
+            {...field}
+            label="Company Name"
+            placeholder="Enter company name"
+            isInvalid={!!errors.company?.name}
+            errorMessage={errors.company?.name?.message}
+          />
+        )}
+      />
+      <Controller
         name="company.email"
-        label="Company Email"
-        errorMessage={errors.company?.email?.message}
-      />
-      <FormInput
         control={control}
+        rules={{ required: 'Company email is required', pattern: { value: /^\S+@\S+$/i, message: 'Invalid email address' } }}
+        render={({ field }) => (
+          <Input
+            {...field}
+            label="Company Email"
+            placeholder="Enter company email"
+            isInvalid={!!errors.company?.email}
+            errorMessage={errors.company?.email?.message}
+          />
+        )}
+      />
+      <Controller
         name="company.mailingAddress"
-        label="Entity Mailing Address"
-        errorMessage={errors.company?.mailingAddress?.message}
-      />
-      <FormInput
         control={control}
-        name="company.settlementAddress"
-        label="Settlement Address"
-        placeholder="0xdeadbeef"
-        errorMessage={errors.company?.settlementAddress?.message}
+        rules={{ required: 'Mailing address is required' }}
+        render={({ field }) => (
+          <Input
+            {...field}
+            label="Entity Mailing Address"
+            placeholder="Enter mailing address"
+            isInvalid={!!errors.company?.mailingAddress}
+            errorMessage={errors.company?.mailingAddress?.message}
+          />
+        )}
       />
-       <div className="flex justify-between">
-         <div className="w-1/2">
-           <FormButton onClick={() => onSubmitStep(1)}>Step 1: Submit Company Info</FormButton>
-         </div>
-         <div className="w-1/2">
-           <FormButton onClick={handleCancel}>Cancel</FormButton>
-         </div>
-       </div>
-    </>
+      <Controller
+        name="company.settlementAddress"
+        control={control}
+        rules={{ required: 'Settlement address is required' }}
+        render={({ field }) => (
+          <Input
+            {...field}
+            label="Settlement Address"
+            placeholder="Enter settlement address"
+            isInvalid={!!errors.company?.settlementAddress}
+            errorMessage={errors.company?.settlementAddress?.message}
+          />
+        )}
+      />
+      <div className="flex justify-between mt-4">
+        <Button onClick={handleCancel} color="danger">Cancel</Button>
+        <Button onClick={() => onSubmitStep(1)} color="primary">Step 1: Submit Company Info</Button>
+      </div>
+    </div>
   );
 
   const renderCompanyOwner = () => (
-    <>
-      <FormInput
-        control={control}
+    <div className="space-y-4">
+      <Controller
         name="owner.firstName"
-        label="First Name"
-        errorMessage={errors.owner?.firstName?.message}
-      />
-      <FormInput
         control={control}
-        name="owner.lastName"
-        label="Last Name"
-        errorMessage={errors.owner?.lastName?.message}
+        rules={{ required: 'Owner name is required' }}
+        render={({ field }) => (
+          <Input
+            {...field}
+            label="Owner Name"
+            placeholder="Enter owner name"
+            isInvalid={!!errors.owner?.firstName}
+            errorMessage={errors.owner?.firstName?.message}
+          />
+        )}
       />
-      <FormInput
-        control={control}
+      <Controller
         name="owner.email"
-        label="Email"
-        errorMessage={errors.owner?.email?.message}
-      />
-      <FormInput
         control={control}
-        name="owner.phone"
-        label="Phone"
-        errorMessage={errors.owner?.phone?.message}
+        rules={{ required: 'Owner email is required', pattern: { value: /^\S+@\S+$/i, message: 'Invalid email address' } }}
+        render={({ field }) => (
+          <Input
+            {...field}
+            label="Owner Email"
+            placeholder="Enter owner email"
+            isInvalid={!!errors.owner?.email}
+            errorMessage={errors.owner?.email?.message}
+          />
+        )}
       />
-      {/* Add a toggle for additional representatives here */}
-      <div className="flex justify-between">
-         <div className="w-1/2">
-           <FormButton onClick={() => onSubmitStep(2)}>Step 2: Submit Owner Info</FormButton>
-         </div>
-         <div className="w-1/2">
-           <FormButton onClick={handleCancel}>Cancel</FormButton>
-         </div>
-       </div>
-    </>
+      <Controller
+        name="owner.phone"
+        control={control}
+        rules={{ required: 'Owner phone is required' }}
+        render={({ field }) => (
+          <Input
+            {...field}
+            label="Owner Phone"
+            placeholder="Enter owner phone"
+            isInvalid={!!errors.owner?.phone}
+            errorMessage={errors.owner?.phone?.message}
+          />
+        )}
+      />
+      <div className="flex justify-between mt-4">
+        <Button onClick={handleCancel} color="danger">Cancel</Button>
+        <Button onClick={() => onSubmitStep(2)} color="primary">Step 2: Submit Owner Info</Button>
+      </div>
+    </div>
   );
 
   const renderDocuments = () => (
     <>
-    <div className="h-96">
-      {/* Add your iframe for document flow here */}
-      <iframe src="your-document-flow-url" className="w-full h-full" />
-    </div>
-    <div className="flex justify-between">
-         <div className="w-1/2">
-           <FormButton onClick={() => onSubmitStep(3)}>Step 3: Submit Documents</FormButton>
-         </div>
-         <div className="w-1/2">
-           <FormButton onClick={handleCancel}>Cancel</FormButton>
-         </div>
-       </div>
+      <div className="h-96">
+        {/* Add your iframe for document flow here */}
+        <iframe src="your-document-flow-url" className="w-full h-full" />
+      </div>
+      <div className="flex justify-between mt-4">
+        <Button onClick={handleCancel} color="danger">Cancel</Button>
+        <Button onClick={() => onSubmitStep(3)} color="primary">Step 3: Submit Documents</Button>
+      </div>
     </>
   );
 
@@ -212,36 +247,39 @@ const handleCancel = () => {
           <p className="text-notpurple-500 mt-2">OTP submitted</p>
         )}
       </div>
-      <Button
-        onClick={handleResendOTP}
-        disabled={isLoginLoading}
-        className="bg-ualert-500 text-white hover:bg-ualert-600"
-      >
-        Resend OTP
-      </Button>
+
       {(loginError || verifyError) && (
         <p className="text-ualert-500 mt-2">{loginError || verifyError}</p>
       )}
+      <div className="flex justify-between mt-4">
+        <Button onClick={handleCancel} color="danger">Cancel</Button>
+        <Button
+        onClick={handleResendOTP}
+        disabled={isLoginLoading}
+        className="bg-blue-500 text-white hover:bg-ualert-600"
+      >
+          Resend OTP
+        </Button>
+      </div>
     </div>
   );
 
   return (
     <FormCard title="KYB Merchant Onboarding">
-        <Tabs selectedKey={activeTab} onSelectionChange={(key) => setActiveTab(key as string)}>
-          <Tab key="company-info" title="Company Info">
-            {renderCompanyInfo()}
-          </Tab>
-          <Tab key="company-owner" title="Company Owner">
-            {renderCompanyOwner()}
-          </Tab>
-          <Tab key="documents" title="Documents">
-            {renderDocuments()}
-          </Tab>
-          <Tab key="validate" title="Validate">
-            {renderValidate()}
-          </Tab>
-        </Tabs>
-
+      <Tabs selectedKey={activeTab} onSelectionChange={(key) => setActiveTab(key as string)}>
+        <Tab key="company-info" title="Company Info">
+          {renderCompanyInfo()}
+        </Tab>
+        <Tab key="company-owner" title="Company Owner">
+          {renderCompanyOwner()}
+        </Tab>
+        <Tab key="documents" title="Documents">
+          {renderDocuments()}
+        </Tab>
+        <Tab key="validate" title="Validate">
+          {renderValidate()}
+        </Tab>
+      </Tabs>
     </FormCard>
   );
 };

@@ -82,12 +82,13 @@ export default function UserEditModal({
                 status: isActive ? "Active" : "Inactive",
               })
             }
+            classNames={{ wrapper: "bg-ualert-500" }}
           >
             {editedUser.status === "Active" ? "Active" : "Suspended"}
           </Switch>
         </ModalBody>
         <ModalFooter>
-          <Button color="danger" onPress={() => setIsRemoveConfirmOpen(true)}>
+          <Button onPress={() => setIsRemoveConfirmOpen(true)} className="bg-ualert-500 text-notpurple-500">
             Remove User
           </Button>
           <Button onPress={onClose}>Cancel</Button>
@@ -112,7 +113,7 @@ export default function UserEditModal({
             <Button onPress={() => setIsRemoveConfirmOpen(false)}>
               Cancel
             </Button>
-            <Button color="danger" onPress={handleRemove}>
+            <Button onPress={handleRemove} className="bg-ualert-600 text-notpurple-500">
               Remove
             </Button>
           </ModalFooter>

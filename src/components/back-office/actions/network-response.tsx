@@ -41,10 +41,10 @@ export function NetworkResponse({ isOpen, onClose, response }: NetworkResponsePr
                   <span
                     className={`font-bold ${
                       response.responseStatus === "Approved"
-                        ? "text-green-500"
+                        ? "text-ualert-100"
                         : response.responseStatus === "Pending"
-                        ? "text-yellow-500"
-                        : "text-red-500"
+                        ? "text-ualert-300"
+                        : "text-ualert-500"
                     }`}
                   >
                     {response.responseStatus}
@@ -59,10 +59,10 @@ export function NetworkResponse({ isOpen, onClose, response }: NetworkResponsePr
                   <span
                     className={`font-bold ${
                       response.riskScore < 50
-                        ? "text-green-500"
+                        ? "text-ualert-200"
                         : response.riskScore < 75
-                        ? "text-yellow-500"
-                        : "text-red-500"
+                        ? "text-ualert-500"
+                        : "text-ualert-900"
                     }`}
                   >
                     {response.riskScore}
@@ -77,7 +77,7 @@ export function NetworkResponse({ isOpen, onClose, response }: NetworkResponsePr
             </ModalBody>
             <Divider />
             <ModalFooter className="flex justify-center">
-              <Button color="primary" onPress={onClose}>
+              <Button color="primary" onPress={onClose} className="bg-ualert-500 text-notpurple-500">
                 Close
               </Button>
             </ModalFooter>

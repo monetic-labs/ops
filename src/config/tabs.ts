@@ -1,16 +1,5 @@
 export const tabsConfig = [
   {
-    id: "card-issuance",
-    label: "Card Issuance",
-    content:
-      "These are all your customer transactions, orders that become transactions",
-  },
-  {
-    id: "users",
-    label: "Users",
-    content: "This is where you create orders for customers",
-  },
-  {
     id: "bill-pay",
     label: "Bill Pay",
     content: "This is where you manage your account",
@@ -21,15 +10,26 @@ export const tabsConfig = [
     content: "This is where you manage your settings",
   },
   {
-    id: "widgets",
-    label: "Widgets",
-    content: "This is where you manage your widgets",
+    id: "card-issuance",
+    label: "Card Issuance",
+    content:
+      "These are all your customer transactions, orders that become transactions",
   },
   {
-    id: "compliance",
-    label: "Compliance",
-    content: "This is where you manage your settings",
+    id: "users",
+    label: "Users",
+    content: "This is where you create orders for customers",
   },
+  // {
+  //   id: "widgets",
+  //   label: "Widgets",
+  //   content: "This is where you manage your widgets",
+  // },
+  // {
+  //   id: "compliance",
+  //   label: "Compliance",
+  //   content: "This is where you manage your settings",
+  // },
 ];
 
 export const cardServicesConfig = [

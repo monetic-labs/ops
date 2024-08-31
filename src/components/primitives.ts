@@ -7,6 +7,7 @@ export const title = tv({
       charyo: "text-charyo-500",
       ualert: "text-ualert-500",
       notpurple: "text-notpurple-500",
+      gruel: "text-gruel-500",
 
       chardient: "from-[#999999] to-[#0d0d0d]",
       alertient: "from-[#ffc0f7] to-[#660050]",
@@ -61,7 +62,8 @@ export const subtitle = tv({
       charyo: "text-charyo-500",
       ualert: "text-ualert-500",
       notpurple: "text-notpurple-500",
-
+      gruel: "text-gruel-500",
+      
       chardient: "from-[#999999] to-[#0d0d0d]",
       alertient: "from-[#ffc0f7] to-[#660050]",
       notient: "from-[#faf9fd] to-[#636365]",

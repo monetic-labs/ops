@@ -60,11 +60,11 @@ export function CancelConfirmationModal({
             </ModalBody>
             <Divider />
             <ModalFooter className="flex justify-center space-x-4">
-              <Button color="danger" onPress={onConfirm}>
-                Confirm Cancel
-              </Button>
-              <Button color="primary" variant="light" onPress={onClose}>
+              <Button onPress={onClose} className="bg-ualert-500 text-notpurple-500">
                 Go Back
+              </Button>
+              <Button onPress={onConfirm} className="bg-ualert-500 text-notpurple-500">
+                Confirm Cancel
               </Button>
             </ModalFooter>
           </>

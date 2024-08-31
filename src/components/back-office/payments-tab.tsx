@@ -133,12 +133,12 @@ export default function PaymentsTab() {
           return (
             <div className="flex items-center justify-center gap-2">
               <Tooltip content="View Payment Details">
-                <Button size="sm" onPress={() => handleViewDetails(payment)} className="bg-blue-500 text-notpurple-500">
-                  Network
+                <Button size="sm" onPress={() => handleViewDetails(payment)} className="bg-charyo-200 text-notpurple-500">
+                  Details
                 </Button>
               </Tooltip>
               <Tooltip content="Cancel Order">
-                <Button size="sm" color="danger" onPress={() => handleCancelOrder(payment)} className="bg-ualert-500 text-notpurple-500">
+                <Button size="sm" color="danger" onPress={() => handleCancelOrder(payment)} className="bg-charyo-200 text-notpurple-500">
                   Cancel
                 </Button>
               </Tooltip>
@@ -158,7 +158,13 @@ export default function PaymentsTab() {
 
   return (
     <>
-      <Table aria-label="Payments table with custom cells">
+      <Table 
+        aria-label="Payments table with custom cells"
+        classNames={{
+          wrapper: "bg-charyo-500/40 text-notpurple-500",
+          th: "bg-notpurple-400/20 text-notpurple-500",
+        }}
+      >
         <TableHeader columns={columns}>
           {(column) => (
             <TableColumn
@@ -207,7 +213,7 @@ export default function PaymentsTab() {
           }}
         />
       )}
-            {refundPayment && (
+      {refundPayment && (
         <RefundModal
           isOpen={!!refundPayment}
           onClose={handleCloseRefundModal}

@@ -78,10 +78,10 @@ export default function BillPayDetailsModal({
                   <span
                     className={`font-bold ${
                       billPay.status === "Completed"
-                        ? "text-green-500"
+                        ? "text-ualert-100"
                         : billPay.status === "Pending"
-                        ? "text-yellow-500"
-                        : "text-red-500"
+                        ? "text-ualert-300"
+                        : "text-ualert-500"
                     }`}
                   >
                     {billPay.status}
@@ -91,7 +91,7 @@ export default function BillPayDetailsModal({
             </ModalBody>
             <Divider />
             <ModalFooter className="flex justify-center">
-              <Button color="primary" onPress={onClose}>
+              <Button onPress={onClose} className="bg-ualert-500 text-notpurple-500">
                 Close
               </Button>
             </ModalFooter>

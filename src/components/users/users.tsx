@@ -68,6 +68,7 @@ export default function UserTab() {
                   setSelectedUser(card);
                   setIsDetailsModalOpen(true);
                 }}
+                className="bg-charyo-400 text-notpurple-500"
               >
                 Details
               </Button>
@@ -77,6 +78,7 @@ export default function UserTab() {
                   setSelectedUser(card);
                   setIsEditModalOpen(true);
                 }}
+                className="bg-charyo-400 text-notpurple-500"
               >
                 Edit
               </Button>
@@ -92,7 +94,7 @@ export default function UserTab() {
   return (
     <>
       <div className="flex justify-end items-center mb-4">
-        <Button color="default" onPress={() => setIsCreateModalOpen(true)}>
+        <Button onPress={() => setIsCreateModalOpen(true)} className="bg-ualert-500 text-notpurple-500">
           Create User
         </Button>
       </div>
