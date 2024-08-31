@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { Chip } from "@nextui-org/chip";
 import {
   Table,
@@ -11,6 +11,9 @@ import {
 import { Tooltip } from "@nextui-org/tooltip";
 import { User } from "@nextui-org/user";
 import { Button } from "@nextui-org/button";
+import { NetworkResponse } from "./actions/network-response";
+import { CancelConfirmationModal } from "./actions/order-cancel";
+import { RefundModal } from "./actions/order-refund";
 
 const columns = [
   { name: "CUSTOMER", uid: "customer" },
@@ -48,6 +51,55 @@ const statusColorMap: Record<string, "success" | "warning" | "danger"> = {
 };
 
 export default function PaymentsTab() {
+  const [selectedPayment, setSelectedPayment] = useState<(typeof payments)[0] | null>(null);
+  const [cancelPayment, setCancelPayment] = useState<(typeof payments)[0] | null>(null);
+  const [refundPayment, setRefundPayment] = useState<(typeof payments)[0] | null>(null);
+
+  const handleViewDetails = (payment: (typeof payments)[0]) => {
+    setSelectedPayment(payment);
+  };
+
+  const handleCloseModal = () => {
+    setSelectedPayment(null);
+  };
+
+  const handleCancelOrder = (payment: (typeof payments)[0]) => {
+    setCancelPayment(payment);
+  };
+
+  const handleConfirmCancel = () => {
+    if (cancelPayment) {
+      console.log("Order cancelled:", cancelPayment.orderId);
+      // Implement cancel logic here
+      setCancelPayment(null);
+    }
+  };
+
+  const handleCloseCancelModal = () => {
+    setCancelPayment(null);
+  };
+
+  const handleRefund = (payment: (typeof payments)[0]) => {
+    setRefundPayment(payment);
+  };
+
+  const handleConfirmRefund = (refundAmount: number) => {
+    if (refundPayment) {
+      console.log("Refund initiated for order:", refundPayment.orderId, "Amount:", refundAmount);
+      // Implement refund logic here
+      setRefundPayment(null);
+    }
+  };
+
+  const handleCloseRefundModal = () => {
+    setRefundPayment(null);
+  };
+
+  const handleResendReceipt = (payment: (typeof payments)[0]) => {
+    console.log("Resending receipt for order:", payment.orderId);
+    // Implement resend receipt logic here
+  }; 
+  
   const renderCell = React.useCallback(
     (payment: (typeof payments)[0], columnKey: React.Key) => {
       const cellValue = payment[columnKey as keyof (typeof payments)[0]];
@@ -79,13 +131,21 @@ export default function PaymentsTab() {
           );
         case "actions":
           return (
-            <div className="relative flex items-center justify-center">
+            <div className="flex items-center justify-center gap-2">
               <Tooltip content="View Payment Details">
-                <span className="text-lg text-default-400 cursor-pointer active:opacity-50">
-                  <Button size="sm" onPress={() => console.log("View details")}>
-                    Details
-                  </Button>
-                </span>
+                <Button size="sm" onPress={() => handleViewDetails(payment)} className="bg-blue-500 text-notpurple-500">
+                  Network
+                </Button>
+              </Tooltip>
+              <Tooltip content="Cancel Order">
+                <Button size="sm" color="danger" onPress={() => handleCancelOrder(payment)} className="bg-ualert-500 text-notpurple-500">
+                  Cancel
+                </Button>
+              </Tooltip>
+              <Tooltip content="Refund Order">
+                <Button size="sm" color="warning" onPress={() => handleRefund(payment)} className="bg-charyo-200 text-notpurple-500">
+                  Refund
+                </Button>
               </Tooltip>
             </div>
           );
@@ -97,28 +157,76 @@ export default function PaymentsTab() {
   );
 
   return (
-    <Table aria-label="Payments table with custom cells">
-      <TableHeader columns={columns}>
-        {(column) => (
-          <TableColumn
-            key={column.uid}
-            align={column.uid === "actions" ? "center" : "start"}
-          >
-            {column.name}
-          </TableColumn>
-        )}
-      </TableHeader>
-      <TableBody items={payments}>
-        {(item) => (
-          <TableRow key={item.orderId}>
-            {(columnKey) => (
-              <TableCell>
-                {renderCell(item, columnKey as keyof (typeof payments)[0])}
-              </TableCell>
-            )}
-          </TableRow>
-        )}
-      </TableBody>
-    </Table>
+    <>
+      <Table aria-label="Payments table with custom cells">
+        <TableHeader columns={columns}>
+          {(column) => (
+            <TableColumn
+              key={column.uid}
+              align={column.uid === "actions" ? "center" : "start"}
+            >
+              {column.name}
+            </TableColumn>
+          )}
+        </TableHeader>
+        <TableBody items={payments}>
+          {(item) => (
+            <TableRow key={item.orderId}>
+              {(columnKey) => (
+                <TableCell>
+                  {renderCell(item, columnKey as keyof (typeof payments)[0])}
+                </TableCell>
+              )}
+            </TableRow>
+          )}
+        </TableBody>
+      </Table>
+      {selectedPayment && (
+        <NetworkResponse
+          isOpen={!!selectedPayment}
+          onClose={handleCloseModal}
+          response={{
+            transactionId: selectedPayment.orderId,
+            responseStatus: selectedPayment.paymentStatus,
+            responseCode: "00", // You'll need to add this to your payment data
+            riskScore: 30, // You'll need to add this to your payment data
+            timestamp: new Date().toISOString(), // You'll need to add this to your payment data
+          }}
+        />
+      )}
+      {cancelPayment && (
+        <CancelConfirmationModal
+          isOpen={!!cancelPayment}
+          onClose={handleCloseCancelModal}
+          onConfirm={handleConfirmCancel}
+          order={{
+            orderId: cancelPayment.orderId,
+            customerName: cancelPayment.customer,
+            customerEmail: "customer@example.com", // You'll need to add this to your payment data
+            amount: cancelPayment.total,
+          }}
+        />
+      )}
+            {refundPayment && (
+        <RefundModal
+          isOpen={!!refundPayment}
+          onClose={handleCloseRefundModal}
+          onConfirm={handleConfirmRefund}
+          order={{
+            orderId: refundPayment.orderId,
+            worldpayId: "WP" + refundPayment.orderId, // You'll need to add this to your payment data
+            networkStatus: refundPayment.paymentStatus,
+            customerName: refundPayment.customer,
+            customerEmail: "customer@example.com", // You'll need to add this to your payment data
+            customerPhone: "123-456-7890", // You'll need to add this to your payment data
+            cardLastFour: "1234", // You'll need to add this to your payment data
+            issuingBank: "Example Bank", // You'll need to add this to your payment data
+            bin: "123456", // You'll need to add this to your payment data
+            orderAmount: parseFloat(refundPayment.total.replace("$", "")),
+            totalAmount: parseFloat(refundPayment.total.replace("$", "")),
+          }}
+        />
+      )}
+    </>
   );
 }
