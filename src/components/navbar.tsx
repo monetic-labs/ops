@@ -29,7 +29,7 @@ import { siteConfig } from "@/config/site";
 export const Navbar = () => {
 
   return (
-    <NextUINavbar maxWidth="xl" position="sticky">
+    <NextUINavbar maxWidth="xl" position="sticky" classNames={{ base: "bg-charyo-900/70 text-notpurple-500 backdrop-blur-lg border-none" }}>
       <NavbarContent className="basis-1/5 sm:basis-full" justify="start">
         <NavbarBrand as="li" className="gap-3 max-w-fit">
           <NextLink className="flex justify-start items-center gap-1" href="/">

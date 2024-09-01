@@ -4,8 +4,7 @@ import { title, subtitle } from "@/components/primitives";
 import React, { useEffect, useRef, useState } from "react";
 import { Button } from "@nextui-org/button";
 import { Input } from "@nextui-org/input";
-import { useLogin } from "@/hooks/auth/useLogin";
-import { useVerify } from "@/hooks/auth/useVerify";
+import { useIssueOTP, useVerifyOTP } from "@/hooks/auth/useOTP";
 import { useRouter } from "next/navigation";
 
 const OTP_LENGTH = 6;
@@ -16,19 +15,10 @@ export default function AuthPage() {
   const [showOtpInput, setShowOtpInput] = useState(false);
   const [otpSubmitted, setOtpSubmitted] = useState(false);
   const [isOtpComplete, setIsOtpComplete] = useState(false);
-  const { login, isLoading: isLoginLoading, error: loginError, otpResponse } = useLogin();
-  const { verify, isLoading: isVerifyLoading, error: verifyError } = useVerify();
+  const { issueOTP, isLoading: isIssueLoading, error: issueError } = useIssueOTP();
+  const { verifyOTP, isLoading: isVerifyLoading, error: verifyError } = useVerifyOTP();
   const otpInputs = useRef<(HTMLInputElement | null)[]>([]);
   const router = useRouter();
-
-  useEffect(() => {
-    if (otpResponse) {
-      setShowOtpInput(true);
-      // In a real-world scenario, you wouldn't display the OTP to the user
-      // This is just for demonstration purposes
-      console.log("OTP received:", otpResponse.otp);
-    }
-  }, [otpResponse]);
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -38,8 +28,13 @@ export default function AuthPage() {
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     if (email) {
-      await login(email);
-      setShowOtpInput(true);
+      const response = await issueOTP(email);
+      if (response) {
+        setShowOtpInput(true);
+        // In a real-world scenario, you wouldn't display the OTP to the user
+        // This is just for demonstration purposes
+        console.log("OTP issued:", response.email);
+      }
     }
   };
 
@@ -57,16 +52,21 @@ export default function AuthPage() {
       console.log("6th digit entered:", updatedOtp);
       setIsOtpComplete(true);
       setTimeout(() => setIsOtpComplete(false), 1000); // Reset after 1 second
-      handleVerify();
+      handleVerify(updatedOtp);
     } else {
       setIsOtpComplete(false);
     }
   };
 
-  const handleVerify = async () => {
-    if (email && otp.length === OTP_LENGTH) {
+  const handleVerify = async (otpValue: string) => {
+    if (email && otpValue.length === OTP_LENGTH) {
       setOtpSubmitted(true);
-      await verify(email, otp);
+      const response = await verifyOTP({ email, otp: otpValue });
+      if (response) {
+        // Handle successful verification (e.g., redirect to dashboard)
+        console.log("OTP verified successfully");
+        router.push("/dashboard");
+      }
       // Clear OTP after verification
       setOtp("");
       // Reset focus to first input
@@ -84,7 +84,7 @@ export default function AuthPage() {
 
   const handleResendOTP = async () => {
     if (email) {
-      await login(email);
+      await issueOTP(email);
     }
   };
 
@@ -144,7 +144,7 @@ export default function AuthPage() {
                   className="bg-ualert-500 text-white hover:bg-ualert-600"
                   variant="flat"
                   onClick={handleResendOTP}
-                  isLoading={isLoginLoading}
+                  isLoading={isIssueLoading}
                 >
                   Resend OTP
                 </Button>
@@ -153,28 +153,28 @@ export default function AuthPage() {
           )}
           {!showOtpInput && (
             <div className="flex gap-2">
-            <Button
-              type="submit"
-              className="bg-charyo-500 text-white hover:bg-notpurple-600 flex-1"
-              variant="shadow"
-              onClick={handleSignUp}
-            >
-              Sign Up
-            </Button>
-            <Button
-              type="button"
-              className="bg-ualert-500 text-white hover:bg-notpurple-600 flex-1"
-              variant="shadow"
-              onClick={handleLogin}
-              isLoading={isLoginLoading}
-            >
-              Sign In
-            </Button>
-          </div>
+              <Button
+                type="submit"
+                className="bg-charyo-500 text-white hover:bg-notpurple-600 flex-1"
+                variant="shadow"
+                onClick={handleSignUp}
+              >
+                Sign Up
+              </Button>
+              <Button
+                type="button"
+                className="bg-ualert-500 text-white hover:bg-notpurple-600 flex-1"
+                variant="shadow"
+                onClick={handleLogin}
+                isLoading={isIssueLoading}
+              >
+                Sign In
+              </Button>
+            </div>
           )}
         </form>
-        {(loginError || verifyError) && (
-          <p className="!text-ualert-500 mt-2">{loginError || verifyError}</p>
+        {(issueError || verifyError) && (
+          <p className="!text-ualert-500 mt-2">{issueError || verifyError}</p>
         )}
       </div>
     </section>

@@ -4,14 +4,12 @@ import { useState, useRef, useEffect } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { Tabs, Tab } from '@nextui-org/tabs';
 import { FormCard } from '@/components/onboard/form-card';
-import { FormInput } from '@/components/onboard/form-input';
-import { FormButton } from '@/components/onboard/form-button';
 import { MerchantFormData } from '@/data/merchant';
-import { useLogin } from '@/hooks/auth/useLogin';
-import { useVerify } from '@/hooks/auth/useVerify';
 import { Input } from '@nextui-org/input';
 import { Button } from '@nextui-org/button';
 import { useRouter } from 'next/navigation';
+import { useIssueOTP, useVerifyOTP } from '@/hooks/auth/useOTP';
+import { verify } from 'crypto';
 
 const OTP_LENGTH = 6;
 
@@ -21,8 +19,8 @@ export const KYBMerchantForm: React.FC<{ onCancel: () => void }> = ({ onCancel }
   const [otp, setOtp] = useState('');
   const [isOtpComplete, setIsOtpComplete] = useState(false);
   const [otpSubmitted, setOtpSubmitted] = useState(false);
-  const { login, isLoading: isLoginLoading, error: loginError } = useLogin();
-  const { verify, isLoading: isVerifyLoading, error: verifyError } = useVerify();
+  const { issueOTP, isLoading: isIssueLoading, error: issueError } = useIssueOTP();
+  const { verifyOTP, isLoading: isVerifyLoading, error: verifyError } = useVerifyOTP();
   const otpInputs = useRef<(HTMLInputElement | null)[]>([]);
   const router = useRouter();
 
@@ -39,17 +37,21 @@ export const KYBMerchantForm: React.FC<{ onCancel: () => void }> = ({ onCancel }
     if (updatedOtp.length === OTP_LENGTH) {
       setIsOtpComplete(true);
       setTimeout(() => setIsOtpComplete(false), 1000);
-      handleVerify();
+      handleVerify(updatedOtp);
     } else {
       setIsOtpComplete(false);
     }
   };
 
-  const handleVerify = async () => {
+  const handleVerify = async (otpValue: string) => {
     const email = getValues('owner.email');
-    if (email && otp.length === OTP_LENGTH) {
+    if (email && otpValue.length === OTP_LENGTH) {
       setOtpSubmitted(true);
-      await verify(email, otp);
+      const response = await verifyOTP({ email, otp: otpValue });
+      if (response) {
+        console.log("OTP verified successfully");
+        // Handle successful verification (e.g., move to next step)
+      }
       setOtp('');
       otpInputs.current[0]?.focus();
       setTimeout(() => setOtpSubmitted(false), 2000);
@@ -59,7 +61,7 @@ export const KYBMerchantForm: React.FC<{ onCancel: () => void }> = ({ onCancel }
   const handleResendOTP = async () => {
     const email = getValues('owner.email');
     if (email) {
-      await login(email);
+      await issueOTP(email);
     }
   };
 
@@ -247,19 +249,19 @@ export const KYBMerchantForm: React.FC<{ onCancel: () => void }> = ({ onCancel }
           <p className="text-notpurple-500 mt-2">OTP submitted</p>
         )}
       </div>
-
-      {(loginError || verifyError) && (
-        <p className="text-ualert-500 mt-2">{loginError || verifyError}</p>
+      <Button
+        onClick={handleResendOTP}
+        disabled={isIssueLoading}
+        className="bg-ualert-500 text-white hover:bg-ualert-600"
+      >
+        Resend OTP
+      </Button>
+      {(issueError || verifyError) && (
+        <p className="text-ualert-500 mt-2">{issueError || verifyError}</p>
       )}
       <div className="flex justify-between mt-4">
         <Button onClick={handleCancel} color="danger">Cancel</Button>
-        <Button
-        onClick={handleResendOTP}
-        disabled={isLoginLoading}
-        className="bg-blue-500 text-white hover:bg-ualert-600"
-      >
-          Resend OTP
-        </Button>
+        <Button onClick={() => onSubmitStep(4)} color="primary">Step 4: Complete Validation</Button>
       </div>
     </div>
   );
