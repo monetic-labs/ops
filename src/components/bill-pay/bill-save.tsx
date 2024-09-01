@@ -142,7 +142,10 @@ export default function BillPaySaveModal({
         </ModalBody>
         <ModalFooter>
           <Button onPress={onClose}>Cancel</Button>
-          <Button onPress={handleSave} className="bg-ualert-500 text-notpurple-500">
+          <Button
+            className="bg-ualert-500 text-notpurple-500"
+            onPress={handleSave}
+          >
             Save
           </Button>
         </ModalFooter>

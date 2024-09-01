@@ -1,11 +1,12 @@
 "use client";
 
-import { title, subtitle } from "@/components/primitives";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useRef, useState } from "react";
 import { Button } from "@nextui-org/button";
 import { Input } from "@nextui-org/input";
-import { useIssueOTP, useVerifyOTP } from "@/hooks/auth/useOTP";
 import { useRouter } from "next/navigation";
+
+import { useIssueOTP, useVerifyOTP } from "@/hooks/auth/useOTP";
+import { title, subtitle } from "@/components/primitives";
 
 const OTP_LENGTH = 6;
 
@@ -15,8 +16,16 @@ export default function AuthPage() {
   const [showOtpInput, setShowOtpInput] = useState(false);
   const [otpSubmitted, setOtpSubmitted] = useState(false);
   const [isOtpComplete, setIsOtpComplete] = useState(false);
-  const { issueOTP, isLoading: isIssueLoading, error: issueError } = useIssueOTP();
-  const { verifyOTP, isLoading: isVerifyLoading, error: verifyError } = useVerifyOTP();
+  const {
+    issueOTP,
+    isLoading: isIssueLoading,
+    error: issueError,
+  } = useIssueOTP();
+  const {
+    verifyOTP,
+    isLoading: isVerifyLoading,
+    error: verifyError,
+  } = useVerifyOTP();
   const otpInputs = useRef<(HTMLInputElement | null)[]>([]);
   const router = useRouter();
 
@@ -29,6 +38,7 @@ export default function AuthPage() {
     e.preventDefault();
     if (email) {
       const response = await issueOTP(email);
+
       if (response) {
         setShowOtpInput(true);
         // In a real-world scenario, you wouldn't display the OTP to the user
@@ -39,12 +49,14 @@ export default function AuthPage() {
   };
 
   const handleOtpChange = (index: number, value: string) => {
-    const newOtp = otp.split('');
+    const newOtp = otp.split("");
+
     newOtp[index] = value;
-    const updatedOtp = newOtp.join('');
+    const updatedOtp = newOtp.join("");
+
     setOtp(updatedOtp);
 
-    if (value !== '' && index < OTP_LENGTH - 1) {
+    if (value !== "" && index < OTP_LENGTH - 1) {
       otpInputs.current[index + 1]?.focus();
     }
 
@@ -62,6 +74,7 @@ export default function AuthPage() {
     if (email && otpValue.length === OTP_LENGTH) {
       setOtpSubmitted(true);
       const response = await verifyOTP({ email, otp: otpValue });
+
       if (response) {
         // Handle successful verification (e.g., redirect to dashboard)
         console.log("OTP verified successfully");
@@ -95,34 +108,38 @@ export default function AuthPage() {
       <div className="bg-background/60 backdrop-blur-md rounded-lg p-6 shadow-lg w-full max-w-md">
         <form className="space-y-4">
           <Input
-            type="email"
+            required
             label="Email"
             placeholder="Enter your email"
+            type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            required
           />
           {showOtpInput && (
             <>
               <div className="flex flex-col items-center space-y-2">
-                <label htmlFor="otp-input" className="text-white">Enter OTP</label>
+                <label className="text-white" htmlFor="otp-input">
+                  Enter OTP
+                </label>
                 <div className="flex justify-center space-x-2">
                   {Array.from({ length: OTP_LENGTH }).map((_, index) => (
                     <input
                       key={index}
-                      ref={(el) => { otpInputs.current[index] = el; }}
-                      type="text"
+                      ref={(el) => {
+                        otpInputs.current[index] = el;
+                      }}
+                      className={`w-10 h-12 text-center text-xl border-2 rounded-md bg-charyo-500 text-white 
+                        ${isOtpComplete ? "animate-flash border-ualert-500" : otpSubmitted ? "border-green-500" : "border-gray-300"}
+                        focus:border-ualert-500 focus:outline-none`}
                       maxLength={1}
-                      value={otp[index] || ''}
+                      type="text"
+                      value={otp[index] || ""}
                       onChange={(e) => handleOtpChange(index, e.target.value)}
                       onKeyDown={(e) => {
-                        if (e.key === 'Backspace' && !otp[index] && index > 0) {
+                        if (e.key === "Backspace" && !otp[index] && index > 0) {
                           otpInputs.current[index - 1]?.focus();
                         }
                       }}
-                      className={`w-10 h-12 text-center text-xl border-2 rounded-md bg-charyo-500 text-white 
-                        ${isOtpComplete ? 'animate-flash border-ualert-500' : otpSubmitted ? 'border-green-500' : 'border-gray-300'}
-                        focus:border-ualert-500 focus:outline-none`}
                     />
                   ))}
                 </div>
@@ -132,19 +149,19 @@ export default function AuthPage() {
               </div>
               <div className="flex gap-2 justify-between">
                 <Button
-                  type="button"
                   className="bg-notpurple-500/30 text-white hover:bg-gray-600"
+                  type="button"
                   variant="flat"
                   onClick={handleCancel}
                 >
                   Cancel
                 </Button>
                 <Button
-                  type="button"
                   className="bg-ualert-500 text-white hover:bg-ualert-600"
+                  isLoading={isIssueLoading}
+                  type="button"
                   variant="flat"
                   onClick={handleResendOTP}
-                  isLoading={isIssueLoading}
                 >
                   Resend OTP
                 </Button>
@@ -154,19 +171,19 @@ export default function AuthPage() {
           {!showOtpInput && (
             <div className="flex gap-2">
               <Button
-                type="submit"
                 className="bg-charyo-500 text-white hover:bg-notpurple-600 flex-1"
+                type="submit"
                 variant="shadow"
                 onClick={handleSignUp}
               >
                 Sign Up
               </Button>
               <Button
-                type="button"
                 className="bg-ualert-500 text-white hover:bg-notpurple-600 flex-1"
+                isLoading={isIssueLoading}
+                type="button"
                 variant="shadow"
                 onClick={handleLogin}
-                isLoading={isIssueLoading}
               >
                 Sign In
               </Button>

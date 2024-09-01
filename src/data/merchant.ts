@@ -24,7 +24,7 @@ export type MerchantFormData = {
   company: {
     name: string;
     email: string;
-    mailingAddress: string;
+    mailingAddress: RegisteredAddress;
     settlementAddress: string;
   };
   owner: {

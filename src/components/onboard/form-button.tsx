@@ -1,4 +1,4 @@
-import { Button, ButtonProps } from '@nextui-org/button';
+import { Button, ButtonProps } from "@nextui-org/button";
 
 export const FormButton: React.FC<ButtonProps> = (props) => {
   return (

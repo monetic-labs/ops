@@ -1,6 +1,7 @@
-import { useState } from 'react';
-import { IssueOTP, VerifyOTP } from '@backpack-fux/pylon-sdk';
-import pylon from '@/libs/pylon-sdk'; // Adjust this import path as needed
+import { useState } from "react";
+import { IssueOTP, VerifyOTP } from "@backpack-fux/pylon-sdk";
+
+import pylon from "@/libs/pylon-sdk"; // Adjust this import path as needed
 
 export function useIssueOTP() {
   const [isLoading, setIsLoading] = useState(false);
@@ -11,11 +12,14 @@ export function useIssueOTP() {
     setError(null);
     try {
       const response = await pylon.issueOTP({ email });
+
       setIsLoading(false);
+
       return response;
     } catch (err) {
       setIsLoading(false);
-      setError(err instanceof Error ? err.message : 'An error occurred');
+      setError(err instanceof Error ? err.message : "An error occurred");
+
       return null;
     }
   };
@@ -32,11 +36,14 @@ export function useVerifyOTP() {
     setError(null);
     try {
       const response = await pylon.verifyOTP(data);
+
       setIsLoading(false);
+
       return response;
     } catch (err) {
       setIsLoading(false);
-      setError(err instanceof Error ? err.message : 'An error occurred');
+      setError(err instanceof Error ? err.message : "An error occurred");
+
       return null;
     }
   };

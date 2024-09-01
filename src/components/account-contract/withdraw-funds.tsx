@@ -10,7 +10,14 @@ import {
 } from "@nextui-org/modal";
 import { Checkbox } from "@nextui-org/checkbox";
 import { Divider } from "@nextui-org/divider";
-import { Table, TableBody, TableCell, TableColumn, TableHeader, TableRow } from "@nextui-org/table";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableColumn,
+  TableHeader,
+  TableRow,
+} from "@nextui-org/table";
 
 interface WithdrawFundsModalProps {
   isOpen: boolean;
@@ -28,17 +35,21 @@ export default function WithdrawFundsModal({
   isOpen,
   onClose,
 }: WithdrawFundsModalProps) {
-  const [selectedBalances, setSelectedBalances] = useState<Set<string>>(new Set([]));
+  const [selectedBalances, setSelectedBalances] = useState<Set<string>>(
+    new Set([]),
+  );
   const [withdrawAmount, setWithdrawAmount] = useState("");
 
   const handleSelectionChange = (id: string) => {
     setSelectedBalances((prev) => {
       const next = new Set(prev);
+
       if (next.has(id)) {
         next.delete(id);
       } else {
         next.add(id);
       }
+
       return next;
     });
   };
@@ -76,12 +87,11 @@ export default function WithdrawFundsModal({
                 <TableRow key={item.id}>
                   <TableCell>
                     <Checkbox
-                      isSelected={selectedBalances.has(item.id)}
-                      onValueChange={() => handleSelectionChange(item.id)}
                       classNames={{
-                        
                         icon: " text-notpurple-500",
                       }}
+                      isSelected={selectedBalances.has(item.id)}
+                      onValueChange={() => handleSelectionChange(item.id)}
                     />
                   </TableCell>
                   <TableCell>{item.network}</TableCell>
@@ -94,13 +104,14 @@ export default function WithdrawFundsModal({
 
           <Input
             className="mt-4"
+            classNames={{
+              inputWrapper:
+                "bg-charyo-400 text-notpurple-500 border border-ualert-500",
+            }}
             label="Withdraw Amount"
             placeholder="Enter amount to withdraw"
             value={withdrawAmount}
             onChange={(e) => setWithdrawAmount(e.target.value)}
-            classNames={{
-              inputWrapper: "bg-charyo-400 text-notpurple-500 border border-ualert-500",
-            }}
           />
 
           <Divider className="my-4" />
@@ -113,7 +124,9 @@ export default function WithdrawFundsModal({
             </div>
             <div className="flex justify-between border-b border-gray-300 pb-4">
               <span>Amount to Withdraw:</span>
-              <span className="font-medium">${amountToWithdraw.toFixed(2)}</span>
+              <span className="font-medium">
+                ${amountToWithdraw.toFixed(2)}
+              </span>
             </div>
             <Divider className="my-2" />
             <div className="flex justify-between text-lg font-bold">
@@ -123,10 +136,17 @@ export default function WithdrawFundsModal({
           </div>
         </ModalBody>
         <ModalFooter>
-          <Button variant="light" onPress={onClose} className="text-notpurple-500">
+          <Button
+            className="text-notpurple-500"
+            variant="light"
+            onPress={onClose}
+          >
             Cancel
           </Button>
-          <Button onPress={handleWithdraw} className="bg-ualert-500 text-notpurple-500">
+          <Button
+            className="bg-ualert-500 text-notpurple-500"
+            onPress={handleWithdraw}
+          >
             Confirm Withdrawal
           </Button>
         </ModalFooter>

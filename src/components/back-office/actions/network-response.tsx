@@ -21,7 +21,11 @@ interface NetworkResponseProps {
   };
 }
 
-export function NetworkResponse({ isOpen, onClose, response }: NetworkResponseProps) {
+export function NetworkResponse({
+  isOpen,
+  onClose,
+  response,
+}: NetworkResponseProps) {
   return (
     <Modal isOpen={isOpen} size="lg" onClose={onClose}>
       <ModalContent>
@@ -43,8 +47,8 @@ export function NetworkResponse({ isOpen, onClose, response }: NetworkResponsePr
                       response.responseStatus === "Approved"
                         ? "text-ualert-100"
                         : response.responseStatus === "Pending"
-                        ? "text-ualert-300"
-                        : "text-ualert-500"
+                          ? "text-ualert-300"
+                          : "text-ualert-500"
                     }`}
                   >
                     {response.responseStatus}
@@ -61,8 +65,8 @@ export function NetworkResponse({ isOpen, onClose, response }: NetworkResponsePr
                       response.riskScore < 50
                         ? "text-ualert-200"
                         : response.riskScore < 75
-                        ? "text-ualert-500"
-                        : "text-ualert-900"
+                          ? "text-ualert-500"
+                          : "text-ualert-900"
                     }`}
                   >
                     {response.riskScore}
@@ -77,7 +81,11 @@ export function NetworkResponse({ isOpen, onClose, response }: NetworkResponsePr
             </ModalBody>
             <Divider />
             <ModalFooter className="flex justify-center">
-              <Button color="primary" onPress={onClose} className="bg-ualert-500 text-notpurple-500">
+              <Button
+                className="bg-ualert-500 text-notpurple-500"
+                color="primary"
+                onPress={onClose}
+              >
                 Close
               </Button>
             </ModalFooter>

@@ -34,9 +34,7 @@ export function CancelConfirmationModal({
           <>
             <ModalHeader className="flex flex-col items-center">
               <h2 className="text-2xl font-bold">Cancel Order Confirmation</h2>
-              <p className="text-sm text-gray-500">
-                Order ID: {order.orderId}
-              </p>
+              <p className="text-sm text-gray-500">Order ID: {order.orderId}</p>
             </ModalHeader>
             <Divider />
             <ModalBody>
@@ -60,10 +58,16 @@ export function CancelConfirmationModal({
             </ModalBody>
             <Divider />
             <ModalFooter className="flex justify-center space-x-4">
-              <Button onPress={onClose} className="bg-ualert-500 text-notpurple-500">
+              <Button
+                className="bg-ualert-500 text-notpurple-500"
+                onPress={onClose}
+              >
                 Go Back
               </Button>
-              <Button onPress={onConfirm} className="bg-ualert-500 text-notpurple-500">
+              <Button
+                className="bg-ualert-500 text-notpurple-500"
+                onPress={onConfirm}
+              >
                 Confirm Cancel
               </Button>
             </ModalFooter>

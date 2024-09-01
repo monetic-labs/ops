@@ -39,6 +39,7 @@ export function RefundModal({
 
   const handleRefundAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = parseFloat(e.target.value);
+
     if (!isNaN(value) && value <= order.totalAmount) {
       setRefundAmount(value);
     }
@@ -51,9 +52,7 @@ export function RefundModal({
           <>
             <ModalHeader className="flex flex-col items-center">
               <h2 className="text-2xl font-bold">Refund Order</h2>
-              <p className="text-sm text-gray-500">
-                Order ID: {order.orderId}
-              </p>
+              <p className="text-sm text-gray-500">Order ID: {order.orderId}</p>
             </ModalHeader>
             <Divider />
             <ModalBody>
@@ -100,15 +99,17 @@ export function RefundModal({
                 </div>
                 <Divider />
                 <div className="flex flex-col">
-                  <label htmlFor="refundAmount" className="mb-2">Refund Amount:</label>
+                  <label className="mb-2" htmlFor="refundAmount">
+                    Refund Amount:
+                  </label>
                   <Input
                     id="refundAmount"
+                    max={order.totalAmount}
+                    min={0}
+                    step={0.01}
                     type="number"
                     value={refundAmount.toString()}
                     onChange={handleRefundAmountChange}
-                    min={0}
-                    max={order.totalAmount}
-                    step={0.01}
                   />
                 </div>
               </div>

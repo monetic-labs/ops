@@ -101,10 +101,17 @@ export default function AddFundsModal({ isOpen, onClose }: AddFundsModalProps) {
           </div>
         </ModalBody>
         <ModalFooter>
-          <Button variant="light" onPress={onClose} className="text-notpurple-500">
+          <Button
+            className="text-notpurple-500"
+            variant="light"
+            onPress={onClose}
+          >
             Cancel
           </Button>
-          <Button onPress={handleAddFunds} className="bg-ualert-500 text-notpurple-500">
+          <Button
+            className="bg-ualert-500 text-notpurple-500"
+            onPress={handleAddFunds}
+          >
             Confirm Add Funds
           </Button>
         </ModalFooter>

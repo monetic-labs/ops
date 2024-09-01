@@ -1,13 +1,8 @@
-import { Button } from "@nextui-org/button";
-import { Input } from "@nextui-org/input";
-import { Kbd } from "@nextui-org/kbd";
 import { Link } from "@nextui-org/link";
 import {
   NavbarBrand,
   NavbarContent,
   NavbarItem,
-  NavbarMenu,
-  NavbarMenuItem,
   NavbarMenuToggle,
   Navbar as NextUINavbar,
 } from "@nextui-org/navbar";
@@ -15,21 +10,19 @@ import { link as linkStyles } from "@nextui-org/theme";
 import clsx from "clsx";
 import NextLink from "next/link";
 
-import {
-  DiscordIcon,
-  GithubIcon,
-  HeartFilledIcon,
-  Logo,
-  SearchIcon,
-  TwitterIcon,
-} from "@/components/icons";
+import { DiscordIcon, GithubIcon, Logo, TwitterIcon } from "@/components/icons";
 import { ThemeSwitch } from "@/components/theme-switch";
 import { siteConfig } from "@/config/site";
 
 export const Navbar = () => {
-
   return (
-    <NextUINavbar maxWidth="xl" position="sticky" classNames={{ base: "bg-charyo-900/70 text-notpurple-500 backdrop-blur-lg border-none" }}>
+    <NextUINavbar
+      classNames={{
+        base: "bg-charyo-900/70 text-notpurple-500 backdrop-blur-lg border-none",
+      }}
+      maxWidth="xl"
+      position="sticky"
+    >
       <NavbarContent className="basis-1/5 sm:basis-full" justify="start">
         <NavbarBrand as="li" className="gap-3 max-w-fit">
           <NextLink className="flex justify-start items-center gap-1" href="/">
@@ -70,7 +63,7 @@ export const Navbar = () => {
           <Link isExternal aria-label="Github" href={siteConfig.links.github}>
             <GithubIcon className="text-default-500" />
           </Link>
-        </NavbarItem> 
+        </NavbarItem>
       </NavbarContent>
 
       <NavbarContent className="sm:hidden basis-1 pl-4" justify="end">
@@ -80,6 +73,6 @@ export const Navbar = () => {
         <ThemeSwitch />
         <NavbarMenuToggle />
       </NavbarContent>
-  </NextUINavbar>
+    </NextUINavbar>
   );
 };

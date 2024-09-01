@@ -2,8 +2,7 @@ export type SiteConfig = typeof siteConfig;
 
 export const siteConfig = {
   name: "Self Banking Services",
-  description:
-    "Financial autonomy",
+  description: "Financial autonomy",
   version: "0.2.0",
   navItems: [
     {

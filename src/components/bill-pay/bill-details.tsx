@@ -7,6 +7,7 @@ import {
   ModalFooter,
   ModalHeader,
 } from "@nextui-org/modal";
+
 import { BillPay } from "@/data";
 
 interface BillPayDetailsModalProps {
@@ -27,9 +28,7 @@ export default function BillPayDetailsModal({
           <>
             <ModalHeader className="flex flex-col items-center">
               <h2 className="text-2xl font-bold">Bill Pay Details</h2>
-              <p className="text-sm text-gray-500">
-                ID: {billPay.id}
-              </p>
+              <p className="text-sm text-gray-500">ID: {billPay.id}</p>
             </ModalHeader>
             <Divider />
             <ModalBody>
@@ -48,7 +47,9 @@ export default function BillPayDetailsModal({
                 </div>
                 <div className="flex justify-between">
                   <span>Account Number:</span>
-                  <span>**** {billPay.receivingBank.accountNumber.slice(-4)}</span>
+                  <span>
+                    **** {billPay.receivingBank.accountNumber.slice(-4)}
+                  </span>
                 </div>
                 <Divider />
                 <div className="flex justify-between">
@@ -80,8 +81,8 @@ export default function BillPayDetailsModal({
                       billPay.status === "Completed"
                         ? "text-ualert-100"
                         : billPay.status === "Pending"
-                        ? "text-ualert-300"
-                        : "text-ualert-500"
+                          ? "text-ualert-300"
+                          : "text-ualert-500"
                     }`}
                   >
                     {billPay.status}
@@ -91,7 +92,10 @@ export default function BillPayDetailsModal({
             </ModalBody>
             <Divider />
             <ModalFooter className="flex justify-center">
-              <Button onPress={onClose} className="bg-ualert-500 text-notpurple-500">
+              <Button
+                className="bg-ualert-500 text-notpurple-500"
+                onPress={onClose}
+              >
                 Close
               </Button>
             </ModalFooter>

@@ -63,22 +63,22 @@ export default function UserTab() {
           return (
             <div className="flex items-center justify-center gap-2">
               <Button
+                className="bg-charyo-400 text-notpurple-500"
                 size="sm"
                 onPress={() => {
                   setSelectedUser(card);
                   setIsDetailsModalOpen(true);
                 }}
-                className="bg-charyo-400 text-notpurple-500"
               >
                 Details
               </Button>
               <Button
+                className="bg-charyo-400 text-notpurple-500"
                 size="sm"
                 onPress={() => {
                   setSelectedUser(card);
                   setIsEditModalOpen(true);
                 }}
-                className="bg-charyo-400 text-notpurple-500"
               >
                 Edit
               </Button>
@@ -94,7 +94,10 @@ export default function UserTab() {
   return (
     <>
       <div className="flex justify-end items-center mb-4">
-        <Button onPress={() => setIsCreateModalOpen(true)} className="bg-ualert-500 text-notpurple-500">
+        <Button
+          className="bg-ualert-500 text-notpurple-500"
+          onPress={() => setIsCreateModalOpen(true)}
+        >
           Create User
         </Button>
       </div>
