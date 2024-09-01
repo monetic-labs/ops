@@ -9,3 +9,17 @@ body {
     background-size: cover;
     background-attachment: fixed;
   }
+
+@keyframes flash {
+  0%, 50%, 100% { border-color: theme('colors.ualert.500'); }
+  25%, 75% { border-color: transparent; }
+}
+
+.animate-flash {
+  animation: flash 0.5s linear 2;
+}
+
+/* Define styles for disabled buttons */
+.button-disabled {
+  @apply bg-charyo-500/30 text-notpurple-500/60 cursor-not-allowed hover:bg-charyo-500;
+}

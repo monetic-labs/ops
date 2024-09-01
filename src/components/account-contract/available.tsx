@@ -25,16 +25,14 @@ export default function AvailableCard() {
           <h4 className="font-bold text-large pb-2">{balance}</h4>
           <div className="flex gap-2">
             <Button
-              className="w-1/2"
-              color="default"
+              className="w-1/2 bg-charyo-200 text-notpurple-500"
               size="sm"
               onPress={() => setIsAddFundsOpen(true)}
             >
               Add Funds
             </Button>
             <Button
-              className="w-1/2"
-              color="default"
+              className="w-1/2 bg-charyo-200 text-notpurple-500"
               size="sm"
               onPress={() => setIsWithdrawFundsOpen(true)}
             >

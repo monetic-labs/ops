@@ -81,7 +81,10 @@ export default function CreateUserModal({
         </ModalBody>
         <ModalFooter>
           <Button onPress={onClose}>Cancel</Button>
-          <Button color="primary" onPress={handleSave}>
+          <Button
+            className="bg-ualert-500 text-notpurple-500"
+            onPress={handleSave}
+          >
             Create
           </Button>
         </ModalFooter>

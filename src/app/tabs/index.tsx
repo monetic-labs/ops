@@ -66,7 +66,11 @@ export default function MerchantServicesTabs() {
     <div className="w-full">
       <Tabs
         aria-label="Service options"
-        className="w-full"
+        classNames={{
+          tabList:
+            "bg-charyo-900/30 text-notpurple-500 backdrop-blur-sm border-none",
+          tabContent: "text-charyo-500",
+        }}
         selectedKey={selectedService}
         onSelectionChange={(key) => setSelectedService(key as string)}
       >

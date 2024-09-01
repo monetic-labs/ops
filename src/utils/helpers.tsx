@@ -40,3 +40,19 @@ export function getOpepenAvatar(address: string, size: number): string {
 
   return canvas.toDataURL();
 }
+
+export const lookupZipCode = async (zipCode: string) => {
+  try {
+    const response = await fetch(`/api/lookup-zip?zipCode=${zipCode}`);
+
+    if (!response.ok) {
+      throw new Error("Zipcode not found");
+    }
+    const result = await response.json();
+
+    return result;
+  } catch (error) {
+    console.error("Error looking up zip code:", error);
+    throw error;
+  }
+};
