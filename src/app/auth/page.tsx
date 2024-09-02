@@ -16,16 +16,8 @@ export default function AuthPage() {
   const [showOtpInput, setShowOtpInput] = useState(false);
   const [otpSubmitted, setOtpSubmitted] = useState(false);
   const [isOtpComplete, setIsOtpComplete] = useState(false);
-  const {
-    issueOTP,
-    isLoading: isIssueLoading,
-    error: issueError,
-  } = useIssueOTP();
-  const {
-    verifyOTP,
-    isLoading: isVerifyLoading,
-    error: verifyError,
-  } = useVerifyOTP();
+  const { issueOTP, isLoading: isIssueLoading, error: issueError } = useIssueOTP();
+  const { verifyOTP, isLoading: isVerifyLoading, error: verifyError } = useVerifyOTP();
   const otpInputs = useRef<(HTMLInputElement | null)[]>([]);
   const router = useRouter();
 
@@ -43,7 +35,7 @@ export default function AuthPage() {
         setShowOtpInput(true);
         // In a real-world scenario, you wouldn't display the OTP to the user
         // This is just for demonstration purposes
-        console.log("OTP issued:", response.email);
+        console.log("OTP issued:", response ? email : "Failed to issue OTP");
       }
     }
   };
@@ -101,6 +93,27 @@ export default function AuthPage() {
     }
   };
 
+  const handlePaste = (e: React.ClipboardEvent) => {
+    e.preventDefault();
+    const pasteData = e.clipboardData.getData("text");
+    if (pasteData.length === OTP_LENGTH) {
+      const newOtp = pasteData.split("");
+      setOtp(newOtp.join(""));
+
+      newOtp.forEach((char, i) => {
+        otpInputs.current[i]?.focus();
+      });
+
+      if (newOtp.length === OTP_LENGTH) {
+        setIsOtpComplete(true);
+        setTimeout(() => setIsOtpComplete(false), 1000); // Reset after 1 second
+        handleVerify(newOtp.join(""));
+      } else {
+        setIsOtpComplete(false);
+      }
+    }
+  };
+
   return (
     <section className="flex flex-col items-center justify-center gap-6 py-12 px-4 max-w-3xl mx-auto">
       <h1 className={title({ color: "chardient" })}>Self Banking Portal</h1>
@@ -117,35 +130,28 @@ export default function AuthPage() {
           />
           {showOtpInput && (
             <>
-              <div className="flex flex-col items-center space-y-2">
-                <label className="text-white" htmlFor="otp-input">
-                  Enter OTP
-                </label>
-                <div className="flex justify-center space-x-2">
-                  {Array.from({ length: OTP_LENGTH }).map((_, index) => (
-                    <input
-                      key={index}
-                      ref={(el) => {
-                        otpInputs.current[index] = el;
-                      }}
-                      className={`w-10 h-12 text-center text-xl border-2 rounded-md bg-charyo-500 text-white 
-                        ${isOtpComplete ? "animate-flash border-ualert-500" : otpSubmitted ? "border-green-500" : "border-gray-300"}
-                        focus:border-ualert-500 focus:outline-none`}
-                      maxLength={1}
-                      type="text"
-                      value={otp[index] || ""}
-                      onChange={(e) => handleOtpChange(index, e.target.value)}
-                      onKeyDown={(e) => {
-                        if (e.key === "Backspace" && !otp[index] && index > 0) {
-                          otpInputs.current[index - 1]?.focus();
-                        }
-                      }}
-                    />
-                  ))}
-                </div>
-                {otpSubmitted && (
-                  <p className="text-notpurple-500 mt-2">OTP submitted</p>
-                )}
+              <div className="flex justify-center space-x-2">
+                {Array.from({ length: OTP_LENGTH }).map((_, index) => (
+                  <input
+                    key={index}
+                    ref={(el) => {
+                      otpInputs.current[index] = el;
+                    }}
+                    className={`w-10 h-12 text-center text-xl border-2 rounded-md bg-charyo-500 text-white 
+        ${isOtpComplete ? "animate-flash border-ualert-500" : otpSubmitted ? "border-green-500" : "border-gray-300"}
+        focus:border-ualert-500 focus:outline-none`}
+                    maxLength={1}
+                    type="text"
+                    value={otp[index] || ""}
+                    onChange={(e) => handleOtpChange(index, e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Backspace" && !otp[index] && index > 0) {
+                        otpInputs.current[index - 1]?.focus();
+                      }
+                    }}
+                    onPaste={handlePaste}
+                  />
+                ))}
               </div>
               <div className="flex gap-2 justify-between">
                 <Button
@@ -190,9 +196,7 @@ export default function AuthPage() {
             </div>
           )}
         </form>
-        {(issueError || verifyError) && (
-          <p className="!text-ualert-500 mt-2">{issueError || verifyError}</p>
-        )}
+        {(issueError || verifyError) && <p className="!text-ualert-500 mt-2">{issueError || verifyError}</p>}
       </div>
     </section>
   );
