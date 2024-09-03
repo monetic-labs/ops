@@ -65,7 +65,6 @@ export const AddressModal: React.FC<AddressModalProps> = ({
                 placeholder="Enter street address"
               />
             )}
-            rules={{ required: "Street address is required" }}
           />
           <Controller
             control={control}
@@ -78,8 +77,15 @@ export const AddressModal: React.FC<AddressModalProps> = ({
             defaultValue={defaultValues.state}
             name="company.mailingAddress.state"
             render={({ field }) => (
-              <Input {...field} isReadOnly label="State" />
+              <Input
+                {...field}
+                isReadOnly
+                label="State"
+                maxLength={2} // Restrict to 2 characters
+                placeholder="Enter state code (e.g., CA)"
+              />
             )}
+            rules={{ required: "State is required", maxLength: 2 }}
           />
           <Controller
             control={control}
@@ -99,9 +105,10 @@ export const AddressModal: React.FC<AddressModalProps> = ({
                 errorMessage={errors.company?.mailingAddress?.country?.message}
                 isInvalid={!!errors.company?.mailingAddress?.country}
                 label="Country"
+                placeholder="Enter country code (e.g., US)"
               />
             )}
-            rules={{ required: "Country is required" }}
+            rules={{ required: "Country is required", pattern: /^[A-Z]{2}$/ }}
           />
         </ModalBody>
         <ModalFooter>

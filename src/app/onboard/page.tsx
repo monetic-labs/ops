@@ -2,8 +2,12 @@
 
 import { KYBMerchantForm } from "@/components/onboard/merchant";
 import { title } from "@/components/primitives";
+import { useSearchParams } from "next/navigation";
 
 export default function OnboardPage() {
+  const searchParams = useSearchParams();
+  const email = searchParams.get('email') || '';
+  
   return (
     <section className="flex flex-col items-center justify-center gap-4 py-8 md:py-10">
       <div className="inline-block max-w-lg text-center justify-center">
@@ -15,6 +19,7 @@ export default function OnboardPage() {
             onCancel={function (): void {
               throw new Error("Function not implemented.");
             }}
+            initialEmail={email}
           />
         </div>
       </div>

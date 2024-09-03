@@ -23,7 +23,7 @@ export default function AuthPage() {
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
-    router.push("/onboard");
+    router.push(`/onboard?email=${encodeURIComponent(email)}`);
   };
 
   const handleLogin = async (e: React.FormEvent) => {

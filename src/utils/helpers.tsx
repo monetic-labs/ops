@@ -50,7 +50,13 @@ export const lookupZipCode = async (zipCode: string) => {
     }
     const result = await response.json();
 
-    return result;
+    // Ensure the state and country are in the correct format
+    return {
+      ...result,
+      state: result.state,
+      country: result.country,
+    };
+
   } catch (error) {
     console.error("Error looking up zip code:", error);
     throw error;

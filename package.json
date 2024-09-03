@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint . --ext .ts,.tsx -c .eslintrc.json --fix",
-    "fuck": "next lint --fix"
+    "unfuck": "rm -rf .next && rm -rf node_modules && rm -rf package-lock.json && pnpm i"
   },
   "dependencies": {
     "@backpack-fux/pylon-sdk": "0.2.79",

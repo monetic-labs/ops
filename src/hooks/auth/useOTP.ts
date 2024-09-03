@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { IssueOTP, VerifyOTP } from "@backpack-fux/pylon-sdk";
 
-import pylon from "@/libs/pylon-sdk"; // Adjust this import path as needed
+import pylon from "@/libs/pylon-sdk";
 
 export function useIssueOTP() {
   const [isLoading, setIsLoading] = useState(false);

@@ -8,17 +8,19 @@ import { Button } from "@nextui-org/button";
 import { Tooltip } from "@nextui-org/tooltip";
 import { useRouter } from "next/navigation";
 
-import { MerchantFormData } from "@/data/merchant";
-import { FormCard } from "@/components/onboard/form-card";
-import { useIssueOTP, useVerifyOTP } from "@/hooks/auth/useOTP";
-import { lookupZipCode } from "@/utils/helpers";
-
 import { AddressModal } from "./address-modal";
+import { FormCard } from "@/components/onboard/form-card";
+import { MerchantFormData } from "@/data/merchant";
+import { useIssueOTP, useVerifyOTP } from "@/hooks/auth/useOTP";
+import { useCreateMerchant } from "@/hooks/merchant/useCreateMerchant";
+import { lookupZipCode } from "@/utils/helpers";
+import { ISO3166Alpha2Country, MerchantCreateInput, MerchantCreateOutput } from "@backpack-fux/pylon-sdk";
+import { merchantConfig } from "@/config/merchant";
 
 const OTP_LENGTH = 6;
 
 // TODO: these rendering functions should be converted to a reusable component
-export const KYBMerchantForm: React.FC<{ onCancel: () => void }> = ({ onCancel }) => {
+export const KYBMerchantForm: React.FC<{ onCancel: () => void; initialEmail: string }> = ({ onCancel, initialEmail }) => {
   const [activeTab, setActiveTab] = useState("company-info");
   const {
     control,
@@ -29,7 +31,7 @@ export const KYBMerchantForm: React.FC<{ onCancel: () => void }> = ({ onCancel }
     watch,
   } = useForm<MerchantFormData>({
     defaultValues: {
-      representatives: [{ name: "", surname: "", email: "", phoneNumber: "" }],
+      representatives: [{ name: "", surname: "", email: initialEmail, phoneNumber: "" }],
     },
   });
   const { fields, append, remove } = useFieldArray({
@@ -55,14 +57,23 @@ export const KYBMerchantForm: React.FC<{ onCancel: () => void }> = ({ onCancel }
     step3: false,
   });
   const router = useRouter();
-
+  const { createMerchant, isLoading: isCreatingMerchant, error: createMerchantError, data: createMerchantData } = useCreateMerchant();
+  const [tosLink, setTosLink] = useState<string | null>(null);
   const handleZipCodeLookup = async (zipCode: string) => {
     if (zipCode.length === 5) {
       // Assuming US zip code
       try {
         const result = await lookupZipCode(zipCode);
 
-        setAddressLookup(result);
+        const formattedResult = {
+          ...result,
+          state: result.state,
+          country: result.country,
+        };
+
+        console.log("Formatted result:", formattedResult);
+
+        setAddressLookup(formattedResult);
         setIsAddressModalOpen(true);
       } catch (error) {
         console.error("Error looking up zip code:", error);
@@ -128,23 +139,71 @@ export const KYBMerchantForm: React.FC<{ onCancel: () => void }> = ({ onCancel }
 
     if (step === 1) {
       setStepCompletion({ ...stepCompletion, step1: true });
+
     } else if (step === 2) {
       setStepCompletion({ ...stepCompletion, step2: true });
-    } else if (step === 3) {
-      // Combine data from steps 1 and 2 and send to pylon service
-      const combinedData = {
-        company: data.company,
-        representatives: data.representatives,
+
+      const combinedData: MerchantCreateInput = {
+        fee: merchantConfig.fee,
+        walletAddress: data.company.settlementAddress as `0x${string}`,
+        company: {
+          name: data.company.name,
+          email: data.company.email,
+          registeredAddress: {
+            street1: data.company.mailingAddress.street1,
+            street2: data.company.mailingAddress.street2 || "",
+            city: data.company.mailingAddress.city,
+            postcode: data.company.mailingAddress.postcode || "",
+            state: data.company.mailingAddress.state || "",
+            country: (data.company.mailingAddress.country || "US") as ISO3166Alpha2Country,    
+            // Add other address fields if available
+          },
+        },
+        representatives: data.representatives.map(rep => ({
+          name: rep.name,
+          surname: rep.surname,
+          email: rep.email,
+          phoneNumber: rep.phoneNumber,
+        })),
       };
 
       console.log("Combined data to send to pylon service:", combinedData);
-      // TODO: Implement pylon service integration
-      // await sendToPylonService(combinedData);
+      try {
+        const response = await createMerchant(combinedData);
+        console.log("Response from createMerchant:", response);
+
+        if (response) {
+          const merchantResponse = response as MerchantCreateOutput;
+          const newTosLink = merchantResponse.data.compliance.tosLink;
+          setTosLink(newTosLink);
+          console.log("TOS link extracted:", newTosLink);
+        }
+        
+        // we need to use our useIssueOTP to send the OTP to the user
+        const email = getValues("representatives.0.email");
+        console.log("Email:", email);
+
+        if (email) {
+          console.log("Issuing OTP to:", email);
+          const otpResponse = await issueOTP(email);
+          if (otpResponse) {
+            console.log("OTP issued successfully");
+            // You might want to show a success message to the user here
+          } else {
+            console.error("Failed to issue OTP");
+            // Handle OTP issuance failure (e.g., show error message)
+          }
+        }
+      } catch (error) {
+        console.error("Error creating merchant:", error);
+        // Handle error (e.g., show error message to user)
+      }
+    } else if (step === 3) {
       setStepCompletion({ ...stepCompletion, step3: true });
     }
 
     // Move to the next tab
-    const tabKeys = ["company-info", "company-owner", "documents", "validate"];
+    const tabKeys = ["company-info", "company-owner", "validate", "documents"];
     const nextTabIndex = tabKeys.indexOf(activeTab) + 1;
 
     if (nextTabIndex < tabKeys.length) {
@@ -164,7 +223,8 @@ export const KYBMerchantForm: React.FC<{ onCancel: () => void }> = ({ onCancel }
 
   // Check if step 1 is complete
   const isStep1Complete = companyName && companyEmail && companyPostcode && companySettlementAddress;
-
+  const isStep2Complete = fields.every((field) => field.name && field.surname && field.email && field.phoneNumber);
+  
   const renderCompanyInfo = () => (
     <div className="space-y-4">
       <Controller
@@ -200,6 +260,7 @@ export const KYBMerchantForm: React.FC<{ onCancel: () => void }> = ({ onCancel }
               isInvalid={!!errors.company?.email}
               label="Company Email"
               placeholder="Enter company email"
+              defaultValue={initialEmail}
             />
           </Tooltip>
         )}
@@ -275,96 +336,122 @@ export const KYBMerchantForm: React.FC<{ onCancel: () => void }> = ({ onCancel }
 
   const renderCompanyOwner = () => (
     <div className="space-y-4">
+          <Tabs aria-label="Company Owners">
       {fields.map((field, index) => (
-        <div key={field.id} className="space-y-4">
-          <p className="text-notpurple-100">Owner {index + 1}</p>
-          <Controller
-            control={control}
-            name={`representatives.${index}.name`}
-            render={({ field }) => (
-              <Tooltip className="tooltip-left-align" content="First name of the company owner (e.g., John)">
-                <Input
-                  {...field}
-                  errorMessage={errors.representatives?.[index]?.name?.message}
-                  isInvalid={!!errors.representatives?.[index]?.name}
-                  label="Owner Name"
-                  placeholder="Enter owner name"
-                />
-              </Tooltip>
-            )}
-            rules={{ required: "Owner name is required" }}
-          />
-          <Controller
-            control={control}
-            name={`representatives.${index}.surname`}
-            render={({ field }) => (
-              <Tooltip className="tooltip-left-align" content="Last name of the company owner (e.g., Doe)">
-                <Input
-                  {...field}
-                  errorMessage={errors.representatives?.[index]?.surname?.message}
-                  isInvalid={!!errors.representatives?.[index]?.surname}
-                  label="Owner Surname"
-                  placeholder="Enter owner last name"
-                />
-              </Tooltip>
-            )}
-            rules={{ required: "Owner last name is required" }}
-          />
-          <Controller
-            control={control}
-            name={`representatives.${index}.email`}
-            render={({ field }) => (
-              <Tooltip
-                className="tooltip-left-align"
-                content="Email address of the company owner (e.g., john.doe@acmecorp.com)"
-              >
-                <Input
-                  {...field}
-                  errorMessage={errors.representatives?.[index]?.email?.message}
-                  isInvalid={!!errors.representatives?.[index]?.email}
-                  label="Owner Email"
-                  placeholder="Enter owner email"
-                />
-              </Tooltip>
-            )}
-            rules={{
-              required: "Owner email is required",
-              pattern: { value: /^\S+@\S+$/i, message: "Invalid email address" },
-            }}
-          />
-          <Controller
-            control={control}
-            name={`representatives.${index}.phoneNumber`}
-            render={({ field }) => (
-              <Tooltip
-                className="tooltip-left-align"
-                content="Phone number of the company owner (e.g., +1 234 567 890)"
-              >
-                <Input
-                  {...field}
-                  errorMessage={errors.representatives?.[index]?.phoneNumber?.message}
-                  isInvalid={!!errors.representatives?.[index]?.phoneNumber}
-                  label="Owner Phone"
-                  placeholder="Enter owner phone"
-                />
-              </Tooltip>
-            )}
-            rules={{ required: "Owner phone is required" }}
-          />
-          {index > 0 && (
-            <Button className="text-notpurple-500" variant="light" onClick={() => remove(index)}>
-              Remove Owner
-            </Button>
-          )}
-        </div>
+        <Tab key={field.id} title={`Owner ${index + 1}`}>
+          <div className="space-y-4 mt-4">
+            <Controller
+              control={control}
+              name={`representatives.${index}.name`}
+              render={({ field }) => (
+                <Tooltip className="tooltip-left-align" content="First name of the company owner (e.g., John)">
+                  <Input
+                    {...field}
+                    errorMessage={errors.representatives?.[index]?.name?.message}
+                    isInvalid={!!errors.representatives?.[index]?.name}
+                    label="Owner Name"
+                    placeholder="Enter owner name"
+                    labelPlacement="outside"
+                    classNames={{
+                      label: "desktop-hidden-label"
+                    }}
+                  />
+                </Tooltip>
+              )}
+              rules={{ required: "Owner name is required" }}
+            />
+            <Controller
+              control={control}
+              name={`representatives.${index}.surname`}
+              render={({ field }) => (
+                <Tooltip className="tooltip-left-align" content="Last name of the company owner (e.g., Doe)">
+                  <Input
+                    {...field}
+                    errorMessage={errors.representatives?.[index]?.surname?.message}
+                    isInvalid={!!errors.representatives?.[index]?.surname}
+                    label="Owner Surname"
+                    placeholder="Enter owner last name"
+                    labelPlacement="outside"
+                    classNames={{
+                      label: "desktop-hidden-label"
+                    }}
+                  />
+                </Tooltip>
+              )}
+              rules={{ required: "Owner last name is required" }}
+            />
+            <Controller
+              control={control}
+              name={`representatives.${index}.email`}
+              render={({ field }) => (
+                <Tooltip
+                  className="tooltip-left-align"
+                  content="Email address of the company owner (e.g., john.doe@acmecorp.com)"
+                >
+                  <Input
+                    {...field}
+                    errorMessage={errors.representatives?.[index]?.email?.message}
+                    isInvalid={!!errors.representatives?.[index]?.email}
+                    label="Owner Email"
+                    placeholder="Enter owner email"
+                    defaultValue={index === 0 ? initialEmail : ""}
+                    labelPlacement="outside"
+                    classNames={{
+                      label: "desktop-hidden-label"
+                    }}
+                  />
+                </Tooltip>
+              )}
+              rules={{
+                required: "Owner email is required",
+                pattern: { value: /^\S+@\S+$/i, message: "Invalid email address" },
+              }}
+            />
+            <Controller
+              control={control}
+              name={`representatives.${index}.phoneNumber`}
+              render={({ field }) => (
+                <Tooltip
+                  className="tooltip-left-align"
+                  content="Phone number of the company owner (e.g., +1 234 567 890)"
+                >
+                  <Input
+                    {...field}
+                    errorMessage={errors.representatives?.[index]?.phoneNumber?.message}
+                    isInvalid={!!errors.representatives?.[index]?.phoneNumber}
+                    label="Owner Phone"
+                    placeholder="Enter owner phone"
+                    labelPlacement="outside"
+                    classNames={{
+                      label: "desktop-hidden-label"
+                    }}
+                  />
+                </Tooltip>
+              )}
+              rules={{ required: "Owner phone is required" }}
+            />
+          </div>
+        </Tab>
       ))}
-      <Button
-        className="text-notpurple-500"
-        variant="light"
-        onClick={() => append({ name: "", surname: "", email: "", phoneNumber: "" })}
-      >
-        Add Additional Owner(s)
-      </Button>
+    </Tabs>
+      <div className="flex justify-between mt-4">
+        <Button
+          className="text-notpurple-500"
+          variant="light"
+          onClick={() => append({ name: "", surname: "", email: "", phoneNumber: "" })}
+        >
+          Add Additional Owner
+        </Button>
+        {fields.length > 1 && (
+          <Button
+            className="text-notpurple-500"
+            variant="light"
+            onClick={() => remove(fields.length - 1)}
+          >
+            Remove Last Owner
+          </Button>
+        )}
+      </div>
       <div className="flex justify-between mt-4">
         <Button className="text-notpurple-500" variant="light" onClick={handleCancel}>
           Cancel
@@ -378,27 +465,6 @@ export const KYBMerchantForm: React.FC<{ onCancel: () => void }> = ({ onCancel }
         </Button>
       </div>
     </div>
-  );
-
-  const renderDocuments = () => (
-    <>
-      <div className="h-96">
-        {/* Add your iframe for document flow here */}
-        <iframe className="w-full h-full" src="your-document-flow-url" title="Bridge Flow" />
-      </div>
-      <div className="flex justify-between mt-4">
-        <Button className="text-notpurple-500" variant="light" onClick={handleCancel}>
-          Cancel
-        </Button>
-        <Button
-          className={`bg-ualert-500 ${!stepCompletion.step1 || !stepCompletion.step2 ? "button-disabled" : ""}`}
-          disabled={!stepCompletion.step1 || !stepCompletion.step2}
-          onClick={() => onSubmitStep(3)}
-        >
-          Step 3: Submit Documents
-        </Button>
-      </div>
-    </>
   );
 
   const renderValidate = () => (
@@ -435,7 +501,7 @@ export const KYBMerchantForm: React.FC<{ onCancel: () => void }> = ({ onCancel }
         </div>
         {otpSubmitted && <p className="text-notpurple-500 mt-2">OTP submitted</p>}
       </div>
-
+  
       {(issueError || verifyError) && <p className="text-ualert-500 mt-2">{issueError || verifyError}</p>}
       <div className="flex justify-between mt-4">
         <div className="flex space-x-2">
@@ -453,15 +519,39 @@ export const KYBMerchantForm: React.FC<{ onCancel: () => void }> = ({ onCancel }
         </div>
         <Button
           className={`bg-ualert-500 ${
-            !stepCompletion.step1 || !stepCompletion.step2 || !stepCompletion.step3 ? "button-disabled" : ""
+            !stepCompletion.step1 && !stepCompletion.step2 ? "button-disabled" : ""
           }`}
-          disabled={!stepCompletion.step1 || !stepCompletion.step2 || !stepCompletion.step3}
-          onClick={() => onSubmitStep(4)}
+          disabled={!stepCompletion.step1 && !stepCompletion.step2}
+          onClick={() => onSubmitStep(3)}
         >
-          Step 4: Complete Validation
+          Step 3: Complete Validation
         </Button>
       </div>
     </div>
+  );
+
+  const renderDocuments = () => (
+    <>
+      <div className="h-96">
+      {tosLink ? (
+          <iframe className="w-full h-full" src={tosLink} title="Terms of Service" />
+        ) : (
+          <p>Loading Terms of Service...</p>
+        )}
+      </div>
+      <div className="flex justify-between mt-4">
+        <Button className="text-notpurple-500" variant="light" onClick={handleCancel}>
+          Cancel
+        </Button>
+        <Button
+          className={`bg-ualert-500 ${!stepCompletion.step1 || !stepCompletion.step2 || !stepCompletion.step3 ? "button-disabled" : ""}`}
+          disabled={!stepCompletion.step1 || !stepCompletion.step2 || !stepCompletion.step3}
+          onClick={() => onSubmitStep(4)}
+        >
+          Step 4: Submit Documents
+        </Button>
+      </div>
+    </>
   );
 
   return (
@@ -473,11 +563,11 @@ export const KYBMerchantForm: React.FC<{ onCancel: () => void }> = ({ onCancel }
         <Tab key="company-owner" title="Company Owner">
           {renderCompanyOwner()}
         </Tab>
-        <Tab key="documents" title="Documents">
-          {renderDocuments()}
-        </Tab>
         <Tab key="validate" title="Validate">
           {renderValidate()}
+        </Tab>
+        <Tab key="documents" title="Documents">
+          {renderDocuments()}
         </Tab>
       </Tabs>
     </FormCard>

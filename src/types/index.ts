@@ -87,3 +87,67 @@ export const countryCodes: CountryCode = {
     country: "Singapore",
   },
 };
+
+export type StateCode = {
+  [key: string]: {
+    state: string;
+    code: string;
+  };
+};
+
+export const stateCodes: StateCode = {
+  US: {
+    state: "California",
+    code: "CA",
+  },
+  GB: {
+    state: "London",
+    code: "LDN",
+  },
+  CA: {
+    state: "Ontario",
+    code: "ON",
+  },
+  AU: {
+    state: "New South Wales",
+    code: "NSW",
+  },
+  FR: {
+    state: "Paris",
+    code: "PRS",
+  },
+  IT: {
+    state: "Rome",
+    code: "RM",
+  },
+  DE: {
+    state: "Berlin",
+    code: "BR",
+  },
+  JP: {
+    state: "Tokyo",
+    code: "TK",
+  },
+  IN: {
+    state: "Delhi",
+    code: "DL",
+  },
+  BR: {
+    state: "Sao Paulo",
+    code: "SP",
+  },
+  ZA: {
+    state: "Cape Town",
+    code: "CT",
+  },
+  NZ: {
+    state: "Auckland",
+    code: "AK",
+  },
+  SG: {
+    state: "Singapore",
+    code: "SG",
+  },
+};
+
+export type ISO3166Alpha2Country = "US" | "CA" | "GB" | "FR" | "DE" | "JP" | "AU" | "IN" | "BR" | "ZA" | "NZ" | "SG" | "MX" | "IT" | "ES";

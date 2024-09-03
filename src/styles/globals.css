@@ -23,3 +23,15 @@ body {
 .button-disabled {
   @apply bg-charyo-500/30 text-notpurple-500/60 cursor-not-allowed hover:bg-charyo-500;
 }
+
+@media (min-width: 768px) {
+  .desktop-hidden-label {
+    display: none;
+  }
+}
+
+@media (max-width: 767px) {
+  .desktop-hidden-label {
+    display: block;
+  }
+}

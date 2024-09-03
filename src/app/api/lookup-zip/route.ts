@@ -1,3 +1,4 @@
+import { merchantConfig } from "@/config/merchant";
 import { NextResponse } from "next/server";
 import { lookupZip } from "zipcode-detail-lookup";
 
@@ -17,9 +18,9 @@ export async function GET(request: Request) {
     if (result) {
       return NextResponse.json({
         city: result.city,
-        state: result.stateName,
+        state: result.stateAbbreviation,
         postcode: zipCode,
-        country: "United States",
+        country: merchantConfig.country,
       });
     } else {
       return NextResponse.json(
