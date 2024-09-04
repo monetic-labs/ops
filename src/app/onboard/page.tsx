@@ -3,10 +3,15 @@
 import { KYBMerchantForm } from "@/components/onboard/merchant";
 import { title } from "@/components/primitives";
 import { useSearchParams } from "next/navigation";
+import router from "next/router";
 
 export default function OnboardPage() {
   const searchParams = useSearchParams();
   const email = searchParams.get('email') || '';
+
+  const handleCancel = () => {
+    router.push('/auth');
+  };
   
   return (
     <section className="flex flex-col items-center justify-center gap-4 py-8 md:py-10">
@@ -16,9 +21,7 @@ export default function OnboardPage() {
       <div className="flex flex-col sm:flex-row gap-4 w-full max-w-7xl justify-between mb-8">
         <div className="w-full sm:w-1/4 mb-4 sm:mb-0 flex">
           <KYBMerchantForm
-            onCancel={function (): void {
-              throw new Error("Function not implemented.");
-            }}
+            onCancel={handleCancel}
             initialEmail={email}
           />
         </div>
