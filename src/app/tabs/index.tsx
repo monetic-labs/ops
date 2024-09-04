@@ -65,7 +65,9 @@ export default function MerchantServicesTabs() {
       <Tabs
         aria-label="Service options"
         classNames={{
+          base: "w-full overflow-x-auto sm:overflow-x-visible",
           tabList: "bg-charyo-500/60 backdrop-blur-sm border-none",
+          tab: "flex-grow sm:flex-grow-0",
           tabContent: "text-notpurple-500/60",
         }}
         selectedKey={selectedService}
@@ -73,7 +75,7 @@ export default function MerchantServicesTabs() {
       >
         {tabsConfig.map((tab) => (
           <Tab key={tab.id} title={tab.label}>
-            <Card className="bg-charyo-500/60 backdrop-blur-sm border-none">
+            <Card className="bg-charyo-500/60 backdrop-blur-sm">
               <CardHeader className="flex flex-col items-start">
                 <h3 className="text-lg font-semibold">{tab.label} Services</h3>
                 <p className="text-small text-notpurple-500">{tab.content}</p>
