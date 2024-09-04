@@ -8,9 +8,7 @@ import CreateOrders from "./orders-tab";
 import WidgetManagement from "./widget-tab";
 
 export default function BackOfficeTabs() {
-  const [selectedService, setSelectedService] = useState<string>(
-    backOfficeConfig[0].id,
-  );
+  const [selectedService, setSelectedService] = useState<string>(backOfficeConfig[0].id);
 
   const renderTabContent = (tabId: string) => {
     switch (tabId) {

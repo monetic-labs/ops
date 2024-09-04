@@ -17,9 +17,7 @@ export default function AvailableCard() {
       <Card className="flex-grow bg-charyo-500/60">
         <CardHeader className="flex-col items-start px-4 pt-2 pb-0">
           <p className="text-tiny uppercase font-bold">Available</p>
-          <small className="text-default-500">
-            Available to spend or withdraw
-          </small>
+          <small className="text-default-500">Available to spend or withdraw</small>
         </CardHeader>
         <CardBody className="py-2">
           <h4 className="font-bold text-large pb-2">{balance}</h4>
@@ -42,15 +40,9 @@ export default function AvailableCard() {
         </CardBody>
       </Card>
 
-      <AddFundsModal
-        isOpen={isAddFundsOpen}
-        onClose={() => setIsAddFundsOpen(false)}
-      />
+      <AddFundsModal isOpen={isAddFundsOpen} onClose={() => setIsAddFundsOpen(false)} />
 
-      <WithdrawFundsModal
-        isOpen={isWithdrawFundsOpen}
-        onClose={() => setIsWithdrawFundsOpen(false)}
-      />
+      <WithdrawFundsModal isOpen={isWithdrawFundsOpen} onClose={() => setIsWithdrawFundsOpen(false)} />
     </>
   );
 }

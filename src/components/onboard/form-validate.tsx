@@ -1,5 +1,6 @@
 import React from "react";
 import { Button } from "@nextui-org/button";
+
 import { otpConfig } from "@/config/otp";
 
 interface ValidateProps {
@@ -40,7 +41,7 @@ export const Validate: React.FC<ValidateProps> = ({
   createMerchantError,
 }) => {
   return (
-<div className="space-y-4">
+    <div className="space-y-4">
       <p className="text-notpurple-100">Enter the 6-digit OTP sent to your email.</p>
       <div className="flex flex-col items-center py-10">
         <div className="flex justify-center space-x-6">
@@ -55,8 +56,8 @@ export const Validate: React.FC<ValidateProps> = ({
                   isOtpComplete
                     ? "animate-flash border-ualert-500"
                     : otpSubmitted
-                    ? "border-green-500"
-                    : "border-gray-300"
+                      ? "border-green-500"
+                      : "border-gray-300"
                 }
                 focus:border-ualert-500 focus:outline-none`}
               maxLength={1}
@@ -73,7 +74,7 @@ export const Validate: React.FC<ValidateProps> = ({
         </div>
         {otpSubmitted && <p className="text-notpurple-500 mt-2">OTP submitted</p>}
       </div>
-  
+
       {(issueError || verifyError) && <p className="text-ualert-500 mt-2">{issueError || verifyError}</p>}
       <div className="flex justify-between mt-4">
         <div className="flex space-x-2">
@@ -90,9 +91,7 @@ export const Validate: React.FC<ValidateProps> = ({
           </Button>
         </div>
         <Button
-          className={`bg-ualert-500 ${
-            !stepCompletion.step1 && !stepCompletion.step2 ? "button-disabled" : ""
-          }`}
+          className={`bg-ualert-500 ${!stepCompletion.step1 && !stepCompletion.step2 ? "button-disabled" : ""}`}
           disabled={!stepCompletion.step1 && !stepCompletion.step2}
           onClick={() => onSubmitStep(3)}
         >

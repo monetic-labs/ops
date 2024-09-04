@@ -1,13 +1,6 @@
 import { Button } from "@nextui-org/button";
 import { Chip } from "@nextui-org/chip";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableColumn,
-  TableHeader,
-  TableRow,
-} from "@nextui-org/table";
+import { Table, TableBody, TableCell, TableColumn, TableHeader, TableRow } from "@nextui-org/table";
 import { User } from "@nextui-org/user";
 import React, { ReactNode, useState } from "react";
 
@@ -24,75 +17,70 @@ export default function BillPayTable() {
   const [selectedBillPay, setSelectedBillPay] = useState<BillPay | null>(null);
   const [isSaveModalOpen, setIsSaveModalOpen] = useState(false);
 
-  const renderCell = React.useCallback(
-    (billPay: BillPay, columnKey: React.Key): ReactNode => {
-      const cellValue = billPay[columnKey as keyof BillPay];
+  const renderCell = React.useCallback((billPay: BillPay, columnKey: React.Key): ReactNode => {
+    const cellValue = billPay[columnKey as keyof BillPay];
 
-      switch (columnKey) {
-        case "vendor":
-          return (
-            <User
-              avatarProps={{
-                radius: "lg",
-                src: `https://i.pravatar.cc/150?u=${billPay.internalNote}`,
-              }}
-              description={billPay.internalNote}
-              name={billPay.vendor}
-            >
-              {billPay.vendor}
-            </User>
-          );
-        case "status":
-          return (
-            <Chip
-              className="capitalize"
-              color={
-                statusColorMap[billPay.status as keyof typeof statusColorMap]
-              }
+    switch (columnKey) {
+      case "vendor":
+        return (
+          <User
+            avatarProps={{
+              radius: "lg",
+              src: `https://i.pravatar.cc/150?u=${billPay.internalNote}`,
+            }}
+            description={billPay.internalNote}
+            name={billPay.vendor}
+          >
+            {billPay.vendor}
+          </User>
+        );
+      case "status":
+        return (
+          <Chip
+            className="capitalize"
+            color={statusColorMap[billPay.status as keyof typeof statusColorMap]}
+            size="sm"
+            variant="flat"
+          >
+            {billPay.status}
+          </Chip>
+        );
+      case "actions":
+        return (
+          <div className="relative flex items-center justify-center gap-2">
+            <Button
               size="sm"
-              variant="flat"
+              onPress={() => {
+                setSelectedBillPay(billPay);
+                setIsDetailsModalOpen(true);
+              }}
             >
-              {billPay.status}
-            </Chip>
-          );
-        case "actions":
-          return (
-            <div className="relative flex items-center justify-center gap-2">
-              <Button
-                size="sm"
-                onPress={() => {
-                  setSelectedBillPay(billPay);
-                  setIsDetailsModalOpen(true);
-                }}
-              >
-                Details
-              </Button>
-              <Button
-                size="sm"
-                onPress={() => {
-                  setSelectedBillPay(billPay);
-                  setIsSaveModalOpen(true);
-                }}
-              >
-                Save
-              </Button>
-              <Button
-                size="sm"
-                onPress={() => {
-                  setSelectedBillPay(billPay);
-                  setIsCloneModalOpen(true);
-                }}
-              >
-                Clone
-              </Button>
-            </div>
-          );
-        default:
-          return cellValue as ReactNode;
-      }
-    },
-    [],
-  );
+              Details
+            </Button>
+            <Button
+              size="sm"
+              onPress={() => {
+                setSelectedBillPay(billPay);
+                setIsSaveModalOpen(true);
+              }}
+            >
+              Save
+            </Button>
+            <Button
+              size="sm"
+              onPress={() => {
+                setSelectedBillPay(billPay);
+                setIsCloneModalOpen(true);
+              }}
+            >
+              Clone
+            </Button>
+          </div>
+        );
+      default:
+        return cellValue as ReactNode;
+    }
+  }, []);
 
   return (
     <>
@@ -104,10 +92,7 @@ export default function BillPayTable() {
       <Table aria-label="Bill Pay table">
         <TableHeader columns={billPayColumns}>
           {(column) => (
-            <TableColumn
-              key={column.uid}
-              align={column.uid === "actions" ? "center" : "start"}
-            >
+            <TableColumn key={column.uid} align={column.uid === "actions" ? "center" : "start"}>
               {column.name}
             </TableColumn>
           )}
@@ -115,11 +100,7 @@ export default function BillPayTable() {
         <TableBody items={billPayData}>
           {(item) => (
             <TableRow key={item.id}>
-              {(columnKey) => (
-                <TableCell>
-                  {renderCell(item, columnKey as keyof BillPay)}
-                </TableCell>
-              )}
+              {(columnKey) => <TableCell>{renderCell(item, columnKey as keyof BillPay)}</TableCell>}
             </TableRow>
           )}
         </TableBody>

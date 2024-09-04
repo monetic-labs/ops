@@ -8,16 +8,11 @@ interface DocumentsProps {
   stepCompletion: { step1: boolean; step2: boolean; step3: boolean };
 }
 
-export const Documents: React.FC<DocumentsProps> = ({
-  tosLink,
-  handleCancel,
-  onSubmitStep,
-  stepCompletion,
-}) => {
+export const Documents: React.FC<DocumentsProps> = ({ tosLink, handleCancel, onSubmitStep, stepCompletion }) => {
   return (
-<>
+    <>
       <div className="h-96">
-      {tosLink ? (
+        {tosLink ? (
           <iframe className="w-full h-full" src={tosLink} title="Terms of Service" />
         ) : (
           <p>Loading Terms of Service...</p>

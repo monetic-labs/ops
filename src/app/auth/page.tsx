@@ -96,8 +96,10 @@ export default function AuthPage() {
   const handlePaste = (e: React.ClipboardEvent) => {
     e.preventDefault();
     const pasteData = e.clipboardData.getData("text");
+
     if (pasteData.length === OTP_LENGTH) {
       const newOtp = pasteData.split("");
+
       setOtp(newOtp.join(""));
 
       newOtp.forEach((char, i) => {

@@ -1,13 +1,6 @@
 import React, { useState } from "react";
 import { Chip } from "@nextui-org/chip";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableColumn,
-  TableHeader,
-  TableRow,
-} from "@nextui-org/table";
+import { Table, TableBody, TableCell, TableColumn, TableHeader, TableRow } from "@nextui-org/table";
 import { Tooltip } from "@nextui-org/tooltip";
 import { User } from "@nextui-org/user";
 import { Button } from "@nextui-org/button";
@@ -72,15 +65,10 @@ const statusColorMap: Record<string, "success" | "warning" | "danger"> = {
 };
 
 export default function Transactions() {
-  const [selectedTransaction, setSelectedTransaction] = useState<
-    (typeof transactions)[0] | null
-  >(null);
+  const [selectedTransaction, setSelectedTransaction] = useState<(typeof transactions)[0] | null>(null);
 
   const renderCell = React.useCallback(
-    (
-      transaction: (typeof transactions)[0],
-      columnKey: keyof (typeof transactions)[0],
-    ) => {
+    (transaction: (typeof transactions)[0], columnKey: keyof (typeof transactions)[0]) => {
       const cellValue = transaction[columnKey];
 
       switch (columnKey) {
@@ -99,12 +87,7 @@ export default function Transactions() {
           );
         case "amount":
           return (
-            <Chip
-              className="capitalize"
-              color={statusColorMap[transaction.amount]}
-              size="sm"
-              variant="flat"
-            >
+            <Chip className="capitalize" color={statusColorMap[transaction.amount]} size="sm" variant="flat">
               {cellValue}
             </Chip>
           );
@@ -113,10 +96,7 @@ export default function Transactions() {
             <div className="relative flex items-center justify-center">
               <Tooltip content="View Transaction Details">
                 <span className="text-lg text-default-400 cursor-pointer active:opacity-50">
-                  <Button
-                    size="sm"
-                    onPress={() => setSelectedTransaction(transaction)}
-                  >
+                  <Button size="sm" onPress={() => setSelectedTransaction(transaction)}>
                     Details
                   </Button>
                 </span>
@@ -127,7 +107,7 @@ export default function Transactions() {
           return cellValue;
       }
     },
-    [],
+    []
   );
 
   return (
@@ -135,10 +115,7 @@ export default function Transactions() {
       <Table aria-label="Example table with custom cells">
         <TableHeader columns={columns}>
           {(column) => (
-            <TableColumn
-              key={column.uid}
-              align={column.uid === "actions" ? "center" : "start"}
-            >
+            <TableColumn key={column.uid} align={column.uid === "actions" ? "center" : "start"}>
               {column.name}
             </TableColumn>
           )}
@@ -146,14 +123,7 @@ export default function Transactions() {
         <TableBody items={transactions}>
           {(item) => (
             <TableRow key={item.merchantId}>
-              {(columnKey) => (
-                <TableCell>
-                  {renderCell(
-                    item,
-                    columnKey as keyof (typeof transactions)[0],
-                  )}
-                </TableCell>
-              )}
+              {(columnKey) => <TableCell>{renderCell(item, columnKey as keyof (typeof transactions)[0])}</TableCell>}
             </TableRow>
           )}
         </TableBody>

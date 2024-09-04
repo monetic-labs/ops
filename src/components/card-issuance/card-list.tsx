@@ -1,13 +1,6 @@
 import { Button } from "@nextui-org/button";
 import { Chip } from "@nextui-org/chip";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableColumn,
-  TableHeader,
-  TableRow,
-} from "@nextui-org/table";
+import { Table, TableBody, TableCell, TableColumn, TableHeader, TableRow } from "@nextui-org/table";
 import { Tooltip } from "@nextui-org/tooltip";
 import { User } from "@nextui-org/user";
 import React, { useState } from "react";
@@ -45,9 +38,7 @@ export default function CardListTable() {
 
   const handleSaveLimit = (amount: string, cycle: string) => {
     if (selectedCard) {
-      console.log(
-        `New limit for ${selectedCard.cardName}: ${amount} per ${cycle}`,
-      );
+      console.log(`New limit for ${selectedCard.cardName}: ${amount} per ${cycle}`);
       // Here you would update the card's limit in your state or send it to an API
     }
     handleCloseModal();
@@ -70,12 +61,7 @@ export default function CardListTable() {
         );
       case "status":
         return (
-          <Chip
-            className="capitalize"
-            color={statusColorMap[card.status]}
-            size="sm"
-            variant="flat"
-          >
+          <Chip className="capitalize" color={statusColorMap[card.status]} size="sm" variant="flat">
             {card.status}
           </Chip>
         );
@@ -116,10 +102,7 @@ export default function CardListTable() {
       <Table aria-label="Example table with custom cells">
         <TableHeader columns={cardsColumns}>
           {(column) => (
-            <TableColumn
-              key={column.uid}
-              align={column.uid === "actions" ? "center" : "start"}
-            >
+            <TableColumn key={column.uid} align={column.uid === "actions" ? "center" : "start"}>
               {column.name}
             </TableColumn>
           )}
@@ -127,11 +110,7 @@ export default function CardListTable() {
         <TableBody items={cards}>
           {(item) => (
             <TableRow key={item.cardName}>
-              {(columnKey) => (
-                <TableCell>
-                  {renderCell(item, columnKey as ColumnKey)}
-                </TableCell>
-              )}
+              {(columnKey) => <TableCell>{renderCell(item, columnKey as ColumnKey)}</TableCell>}
             </TableRow>
           )}
         </TableBody>
@@ -139,21 +118,13 @@ export default function CardListTable() {
 
       <CardLimitModal
         cardName={selectedCard?.cardName || ""}
-        currentLimit={
-          selectedCard?.limit
-            ? `${selectedCard.limit.amount} per ${selectedCard.limit.cycle}`
-            : ""
-        }
+        currentLimit={selectedCard?.limit ? `${selectedCard.limit.amount} per ${selectedCard.limit.cycle}` : ""}
         isOpen={openModal === "limit"}
         onClose={handleCloseModal}
         onSave={handleSaveLimit}
       />
 
-      <CardDetailsModal
-        card={selectedCard}
-        isOpen={openModal === "details"}
-        onClose={handleCloseModal}
-      />
+      <CardDetailsModal card={selectedCard} isOpen={openModal === "details"} onClose={handleCloseModal} />
     </>
   );
 }

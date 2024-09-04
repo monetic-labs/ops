@@ -1,13 +1,6 @@
 import React, { useState } from "react";
 import { Chip } from "@nextui-org/chip";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableColumn,
-  TableHeader,
-  TableRow,
-} from "@nextui-org/table";
+import { Table, TableBody, TableCell, TableColumn, TableHeader, TableRow } from "@nextui-org/table";
 import { Tooltip } from "@nextui-org/tooltip";
 import { User } from "@nextui-org/user";
 import { Button } from "@nextui-org/button";
@@ -52,15 +45,9 @@ const statusColorMap: Record<string, "success" | "warning" | "danger"> = {
 };
 
 export default function PaymentsTab() {
-  const [selectedPayment, setSelectedPayment] = useState<
-    (typeof payments)[0] | null
-  >(null);
-  const [cancelPayment, setCancelPayment] = useState<
-    (typeof payments)[0] | null
-  >(null);
-  const [refundPayment, setRefundPayment] = useState<
-    (typeof payments)[0] | null
-  >(null);
+  const [selectedPayment, setSelectedPayment] = useState<(typeof payments)[0] | null>(null);
+  const [cancelPayment, setCancelPayment] = useState<(typeof payments)[0] | null>(null);
+  const [refundPayment, setRefundPayment] = useState<(typeof payments)[0] | null>(null);
 
   const handleViewDetails = (payment: (typeof payments)[0]) => {
     setSelectedPayment(payment);
@@ -92,12 +79,7 @@ export default function PaymentsTab() {
 
   const handleConfirmRefund = (refundAmount: number) => {
     if (refundPayment) {
-      console.log(
-        "Refund initiated for order:",
-        refundPayment.orderId,
-        "Amount:",
-        refundAmount,
-      );
+      console.log("Refund initiated for order:", refundPayment.orderId, "Amount:", refundAmount);
       // Implement refund logic here
       setRefundPayment(null);
     }
@@ -112,75 +94,63 @@ export default function PaymentsTab() {
     // Implement resend receipt logic here
   };
 
-  const renderCell = React.useCallback(
-    (payment: (typeof payments)[0], columnKey: React.Key) => {
-      const cellValue = payment[columnKey as keyof (typeof payments)[0]];
+  const renderCell = React.useCallback((payment: (typeof payments)[0], columnKey: React.Key) => {
+    const cellValue = payment[columnKey as keyof (typeof payments)[0]];
 
-      switch (columnKey) {
-        case "customer":
-          return (
-            <User
-              avatarProps={{
-                radius: "lg",
-                src: `https://i.pravatar.cc/150?u=${payment.orderId}`,
-              }}
-              description={payment.orderId}
-              name={cellValue}
-            >
-              {payment.customer}
-            </User>
-          );
-        case "paymentStatus":
-          return (
-            <Chip
-              className="capitalize"
-              color={statusColorMap[payment.paymentStatus]}
-              size="sm"
-              variant="flat"
-            >
-              {cellValue}
-            </Chip>
-          );
-        case "actions":
-          return (
-            <div className="flex items-center justify-center gap-2">
-              <Tooltip content="View Payment Details">
-                <Button
-                  className="bg-charyo-200 text-notpurple-500"
-                  size="sm"
-                  onPress={() => handleViewDetails(payment)}
-                >
-                  Details
-                </Button>
-              </Tooltip>
-              <Tooltip content="Cancel Order">
-                <Button
-                  className="bg-charyo-200 text-notpurple-500"
-                  color="danger"
-                  size="sm"
-                  onPress={() => handleCancelOrder(payment)}
-                >
-                  Cancel
-                </Button>
-              </Tooltip>
-              <Tooltip content="Refund Order">
-                <Button
-                  className="bg-charyo-200 text-notpurple-500"
-                  color="warning"
-                  size="sm"
-                  onPress={() => handleRefund(payment)}
-                >
-                  Refund
-                </Button>
-              </Tooltip>
-            </div>
-          );
-        default:
-          return cellValue;
-      }
-    },
-    [],
-  );
+    switch (columnKey) {
+      case "customer":
+        return (
+          <User
+            avatarProps={{
+              radius: "lg",
+              src: `https://i.pravatar.cc/150?u=${payment.orderId}`,
+            }}
+            description={payment.orderId}
+            name={cellValue}
+          >
+            {payment.customer}
+          </User>
+        );
+      case "paymentStatus":
+        return (
+          <Chip className="capitalize" color={statusColorMap[payment.paymentStatus]} size="sm" variant="flat">
+            {cellValue}
+          </Chip>
+        );
+      case "actions":
+        return (
+          <div className="flex items-center justify-center gap-2">
+            <Tooltip content="View Payment Details">
+              <Button className="bg-charyo-200 text-notpurple-500" size="sm" onPress={() => handleViewDetails(payment)}>
+                Details
+              </Button>
+            </Tooltip>
+            <Tooltip content="Cancel Order">
+              <Button
+                className="bg-charyo-200 text-notpurple-500"
+                color="danger"
+                size="sm"
+                onPress={() => handleCancelOrder(payment)}
+              >
+                Cancel
+              </Button>
+            </Tooltip>
+            <Tooltip content="Refund Order">
+              <Button
+                className="bg-charyo-200 text-notpurple-500"
+                color="warning"
+                size="sm"
+                onPress={() => handleRefund(payment)}
+              >
+                Refund
+              </Button>
+            </Tooltip>
+          </div>
+        );
+      default:
+        return cellValue;
+    }
+  }, []);
 
   return (
     <>
@@ -193,10 +163,7 @@ export default function PaymentsTab() {
       >
         <TableHeader columns={columns}>
           {(column) => (
-            <TableColumn
-              key={column.uid}
-              align={column.uid === "actions" ? "center" : "start"}
-            >
+            <TableColumn key={column.uid} align={column.uid === "actions" ? "center" : "start"}>
               {column.name}
             </TableColumn>
           )}
@@ -204,11 +171,7 @@ export default function PaymentsTab() {
         <TableBody items={payments}>
           {(item) => (
             <TableRow key={item.orderId}>
-              {(columnKey) => (
-                <TableCell>
-                  {renderCell(item, columnKey as keyof (typeof payments)[0])}
-                </TableCell>
-              )}
+              {(columnKey) => <TableCell>{renderCell(item, columnKey as keyof (typeof payments)[0])}</TableCell>}
             </TableRow>
           )}
         </TableBody>

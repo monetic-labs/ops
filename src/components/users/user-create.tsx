@@ -1,12 +1,6 @@
 import { Button } from "@nextui-org/button";
 import { Input } from "@nextui-org/input";
-import {
-  Modal,
-  ModalBody,
-  ModalContent,
-  ModalFooter,
-  ModalHeader,
-} from "@nextui-org/modal";
+import { Modal, ModalBody, ModalContent, ModalFooter, ModalHeader } from "@nextui-org/modal";
 import { Select, SelectItem } from "@nextui-org/select";
 import { useState } from "react";
 
@@ -25,11 +19,7 @@ interface NewUser {
 
 const roles = ["Member", "Developer", "Bookkeeper", "Admin", "Super Admin"];
 
-export default function CreateUserModal({
-  isOpen,
-  onClose,
-  onSave,
-}: CreateUserModalProps) {
+export default function CreateUserModal({ isOpen, onClose, onSave }: CreateUserModalProps) {
   const [newUser, setNewUser] = useState<NewUser>({
     firstName: "",
     lastName: "",
@@ -50,16 +40,12 @@ export default function CreateUserModal({
           <Input
             label="First Name"
             value={newUser.firstName}
-            onChange={(e) =>
-              setNewUser({ ...newUser, firstName: e.target.value })
-            }
+            onChange={(e) => setNewUser({ ...newUser, firstName: e.target.value })}
           />
           <Input
             label="Last Name"
             value={newUser.lastName}
-            onChange={(e) =>
-              setNewUser({ ...newUser, lastName: e.target.value })
-            }
+            onChange={(e) => setNewUser({ ...newUser, lastName: e.target.value })}
           />
           <Input
             label="Email"
@@ -81,10 +67,7 @@ export default function CreateUserModal({
         </ModalBody>
         <ModalFooter>
           <Button onPress={onClose}>Cancel</Button>
-          <Button
-            className="bg-ualert-500 text-notpurple-500"
-            onPress={handleSave}
-          >
+          <Button className="bg-ualert-500 text-notpurple-500" onPress={handleSave}>
             Create
           </Button>
         </ModalFooter>

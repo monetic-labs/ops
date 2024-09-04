@@ -13,6 +13,7 @@ export function useIssueOTP() {
       return await pylon.initiateLoginOTP({ email });
     } catch (err) {
       setError(err instanceof Error ? err.message : "An error occurred");
+
       return null;
     } finally {
       setIsLoading(false);
@@ -30,9 +31,11 @@ export function useVerifyOTP() {
     setIsLoading(true);
     try {
       const resp = await pylon.verifyLoginOTP(data);
+
       return resp;
     } catch (err) {
       setError(err instanceof Error ? err.message : "An error occurred");
+
       return null;
     } finally {
       setIsLoading(false);

@@ -1,11 +1,5 @@
 import React from "react";
-import {
-  Modal,
-  ModalContent,
-  ModalHeader,
-  ModalBody,
-  ModalFooter,
-} from "@nextui-org/modal";
+import { Modal, ModalContent, ModalHeader, ModalBody, ModalFooter } from "@nextui-org/modal";
 import { Input } from "@nextui-org/input";
 import { Button } from "@nextui-org/button";
 import { Controller, Control } from "react-hook-form";
@@ -91,9 +85,7 @@ export const AddressModal: React.FC<AddressModalProps> = ({
             control={control}
             defaultValue={defaultValues.postcode}
             name="company.mailingAddress.postcode"
-            render={({ field }) => (
-              <Input {...field} isReadOnly label="Postal Code" />
-            )}
+            render={({ field }) => <Input {...field} isReadOnly label="Postal Code" />}
           />
           <Controller
             control={control}
@@ -112,11 +104,7 @@ export const AddressModal: React.FC<AddressModalProps> = ({
           />
         </ModalBody>
         <ModalFooter>
-          <Button
-            className="text-notpurple-500"
-            variant="light"
-            onPress={onClose}
-          >
+          <Button className="text-notpurple-500" variant="light" onPress={onClose}>
             Cancel
           </Button>
           <Button className="bg-ualert-500" onPress={onConfirm}>

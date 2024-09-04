@@ -3,9 +3,7 @@ import { createIcon } from "opepen-standard";
 import { ChainAddress, OrderID } from "@/types";
 
 export function formatBalance(balance: number, currency: string): string {
-  return `${mapCurrencyToSymbol[currency]} ${balance.toFixed(
-    2,
-  )} ${currency.toUpperCase()}`;
+  return `${mapCurrencyToSymbol[currency]} ${balance.toFixed(2)} ${currency.toUpperCase()}`;
 }
 
 export const mapCurrencyToSymbol: Record<string, string> = {
@@ -18,8 +16,7 @@ export const mapCurrencyToSymbol: Record<string, string> = {
 };
 
 export function generatePlaceholderOrderID(): OrderID {
-  const generateGroup = () =>
-    Math.floor(1000 + Math.random() * 9000).toString();
+  const generateGroup = () => Math.floor(1000 + Math.random() * 9000).toString();
 
   return `${generateGroup()}-${generateGroup()}-${generateGroup()}-${generateGroup()}` as OrderID;
 }
@@ -56,7 +53,6 @@ export const lookupZipCode = async (zipCode: string) => {
       state: result.state,
       country: result.country,
     };
-
   } catch (error) {
     console.error("Error looking up zip code:", error);
     throw error;

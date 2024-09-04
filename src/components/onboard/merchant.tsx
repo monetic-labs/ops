@@ -2,14 +2,21 @@
 
 import React from "react";
 import { Tabs, Tab } from "@nextui-org/tabs";
+import { useRouter } from "next/navigation";
+
 import { FormCard } from "@/components/onboard/form-card";
+import { useMerchantForm } from "@/hooks/merchant/useMerchantForm";
+
 import { CompanyInfo } from "./form-company-info";
 import { CompanyOwner } from "./form-company-owners";
 import { Validate } from "./form-validate";
 import { Documents } from "./form-documents";
-import { useMerchantForm } from "@/hooks/merchant/useMerchantForm";
 
-export const KYBMerchantForm: React.FC<{ onCancel: () => void; initialEmail: string }> = ({ onCancel, initialEmail }) => {
+export const KYBMerchantForm: React.FC<{ onCancel: () => void; initialEmail: string }> = ({
+  onCancel,
+  initialEmail,
+}) => {
+  const router = useRouter();
   const {
     activeTab,
     setActiveTab,
@@ -40,66 +47,63 @@ export const KYBMerchantForm: React.FC<{ onCancel: () => void; initialEmail: str
     createMerchantError,
     createMerchantData,
     formKey,
-    watch
-  } = useMerchantForm(initialEmail, onCancel);
+  } = useMerchantForm(initialEmail, () => router.push("/auth"));
 
   return (
-    <FormCard title="KYB Merchant Onboarding" className="overflow-y-auto max-h-screen">
+    <FormCard className="overflow-y-auto max-h-screen" title="KYB Merchant Onboarding">
       <Tabs key={formKey} selectedKey={activeTab} onSelectionChange={(key) => setActiveTab(key as string)}>
         <Tab key="company-info" title="Company Info">
           <CompanyInfo
+            addressLookup={addressLookup}
             control={control}
             errors={errors}
+            handleCancel={handleCancel}
             handleZipCodeLookup={handleZipCodeLookup}
-            addressLookup={addressLookup}
+            initialEmail={initialEmail}
             isAddressModalOpen={isAddressModalOpen}
             setIsAddressModalOpen={setIsAddressModalOpen}
-            handleCancel={handleCancel}
             onSubmitStep={onSubmitStep}
-            initialEmail={initialEmail}
-            watch={watch}
           />
         </Tab>
         <Tab key="company-owner" title="Company Owner">
           <CompanyOwner
+            append={append as () => void}
             control={control}
             errors={errors}
             fields={fields}
-            append={append as () => void}
-            remove={remove}
             handleCancel={handleCancel}
-            onSubmitStep={onSubmitStep}
-            stepCompletion={stepCompletion}
             initialEmail={initialEmail}
-            watch={watch}
+            remove={remove}
+            stepCompletion={stepCompletion}
+            onSubmitStep={onSubmitStep}
           />
         </Tab>
         <Tab key="validate" title="Validate">
           <Validate
-            otp={otp}
-            isOtpComplete={isOtpComplete}
-            otpSubmitted={otpSubmitted}
-            otpInputs={otpInputs}
-            handleOtpChange={handleOtpChange}
-            handleCancel={handleCancel}
-            handleResendOTP={handleResendOTP}
-            onSubmitStep={onSubmitStep}
-            stepCompletion={stepCompletion}
-            isIssueLoading={isIssueLoading}
-            issueError={issueError}
-            verifyError={verifyError}
             createMerchant={createMerchant}
-            isCreatingMerchant={isCreatingMerchant}
-            createMerchantError={createMerchantError}
             createMerchantData={createMerchantData}
+            createMerchantError={createMerchantError}
+            handleCancel={handleCancel}
+            handleOtpChange={handleOtpChange}
+            handleResendOTP={handleResendOTP}
+            isCreatingMerchant={isCreatingMerchant}
+            isIssueLoading={isIssueLoading}
+            isOtpComplete={isOtpComplete}
+            issueError={issueError}
+            otp={otp}
+            otpInputs={otpInputs}
+            otpSubmitted={otpSubmitted}
+            stepCompletion={stepCompletion}
+            verifyError={verifyError}
+            onSubmitStep={onSubmitStep}
           />
         </Tab>
         <Tab key="documents" title="Documents">
           <Documents
-            tosLink={tosLink}
             handleCancel={handleCancel}
-            onSubmitStep={onSubmitStep}
             stepCompletion={stepCompletion}
+            tosLink={tosLink}
+            onSubmitStep={onSubmitStep}
           />
         </Tab>
       </Tabs>

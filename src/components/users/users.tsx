@@ -1,13 +1,6 @@
 import { Button } from "@nextui-org/button";
 import { Chip } from "@nextui-org/chip";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableColumn,
-  TableHeader,
-  TableRow,
-} from "@nextui-org/table";
+import { Table, TableBody, TableCell, TableColumn, TableHeader, TableRow } from "@nextui-org/table";
 import { User } from "@nextui-org/user";
 import React, { useState } from "react";
 
@@ -23,91 +16,75 @@ const statusColorMap: Record<string, "success" | "danger"> = {
 };
 
 export default function UserTab() {
-  const [selectedUser, setSelectedUser] = useState<(typeof users)[0] | null>(
-    null,
-  );
+  const [selectedUser, setSelectedUser] = useState<(typeof users)[0] | null>(null);
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
-  const renderCell = React.useCallback(
-    (card: (typeof users)[0], columnKey: keyof (typeof users)[0]) => {
-      const cellValue = card[columnKey];
+  const renderCell = React.useCallback((card: (typeof users)[0], columnKey: keyof (typeof users)[0]) => {
+    const cellValue = card[columnKey];
 
-      switch (columnKey) {
-        case "name":
-          return (
-            <User
-              avatarProps={{
-                radius: "lg",
-                src: `https://i.pravatar.cc/150?u=${card.name}`,
-              }}
-              description={card.name}
-              name={cellValue}
-            >
-              {card.name}
-            </User>
-          );
-        case "status":
-          return (
-            <Chip
-              className="capitalize"
-              color={statusColorMap[card.status]}
+    switch (columnKey) {
+      case "name":
+        return (
+          <User
+            avatarProps={{
+              radius: "lg",
+              src: `https://i.pravatar.cc/150?u=${card.name}`,
+            }}
+            description={card.name}
+            name={cellValue}
+          >
+            {card.name}
+          </User>
+        );
+      case "status":
+        return (
+          <Chip className="capitalize" color={statusColorMap[card.status]} size="sm" variant="flat">
+            {cellValue}
+          </Chip>
+        );
+      case "actions":
+        return (
+          <div className="flex items-center justify-center gap-2">
+            <Button
+              className="bg-charyo-400 text-notpurple-500"
               size="sm"
-              variant="flat"
+              onPress={() => {
+                setSelectedUser(card);
+                setIsDetailsModalOpen(true);
+              }}
             >
-              {cellValue}
-            </Chip>
-          );
-        case "actions":
-          return (
-            <div className="flex items-center justify-center gap-2">
-              <Button
-                className="bg-charyo-400 text-notpurple-500"
-                size="sm"
-                onPress={() => {
-                  setSelectedUser(card);
-                  setIsDetailsModalOpen(true);
-                }}
-              >
-                Details
-              </Button>
-              <Button
-                className="bg-charyo-400 text-notpurple-500"
-                size="sm"
-                onPress={() => {
-                  setSelectedUser(card);
-                  setIsEditModalOpen(true);
-                }}
-              >
-                Edit
-              </Button>
-            </div>
-          );
-        default:
-          return cellValue;
-      }
-    },
-    [],
-  );
+              Details
+            </Button>
+            <Button
+              className="bg-charyo-400 text-notpurple-500"
+              size="sm"
+              onPress={() => {
+                setSelectedUser(card);
+                setIsEditModalOpen(true);
+              }}
+            >
+              Edit
+            </Button>
+          </div>
+        );
+      default:
+        return cellValue;
+    }
+  }, []);
 
   return (
     <>
       <div className="flex justify-end items-center mb-4">
-        <Button
-          className="bg-ualert-500 text-notpurple-500"
-          onPress={() => setIsCreateModalOpen(true)}
-        >
+        <Button className="bg-ualert-500 text-notpurple-500" onPress={() => setIsCreateModalOpen(true)}>
           Create User
         </Button>
       </div>
       <Table aria-label="Example table with custom cells">
         <TableHeader columns={usersColumns}>
           {(column) => (
-            <TableColumn
-              key={column.uid}
-              align={column.uid === "actions" ? "center" : "start"}
-            >
+            <TableColumn key={column.uid} align={column.uid === "actions" ? "center" : "start"}>
               {column.name}
             </TableColumn>
           )}
@@ -115,11 +92,7 @@ export default function UserTab() {
         <TableBody items={users}>
           {(item) => (
             <TableRow key={item.name}>
-              {(columnKey) => (
-                <TableCell>
-                  {renderCell(item, columnKey as keyof (typeof users)[0])}
-                </TableCell>
-              )}
+              {(columnKey) => <TableCell>{renderCell(item, columnKey as keyof (typeof users)[0])}</TableCell>}
             </TableRow>
           )}
         </TableBody>

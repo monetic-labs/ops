@@ -1,11 +1,5 @@
 import { Button } from "@nextui-org/button";
-import {
-  Modal,
-  ModalBody,
-  ModalContent,
-  ModalFooter,
-  ModalHeader,
-} from "@nextui-org/modal";
+import { Modal, ModalBody, ModalContent, ModalFooter, ModalHeader } from "@nextui-org/modal";
 
 interface UserDetailsModalProps {
   isOpen: boolean;
@@ -13,11 +7,7 @@ interface UserDetailsModalProps {
   user: any;
 }
 
-export default function UserDetailsModal({
-  isOpen,
-  onClose,
-  user,
-}: UserDetailsModalProps) {
+export default function UserDetailsModal({ isOpen, onClose, user }: UserDetailsModalProps) {
   return (
     <Modal isOpen={isOpen} onClose={onClose}>
       <ModalContent>

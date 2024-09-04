@@ -1,13 +1,7 @@
 import { useState } from "react";
 import { Button } from "@nextui-org/button";
 import { Input } from "@nextui-org/input";
-import {
-  Modal,
-  ModalBody,
-  ModalContent,
-  ModalFooter,
-  ModalHeader,
-} from "@nextui-org/modal";
+import { Modal, ModalBody, ModalContent, ModalFooter, ModalHeader } from "@nextui-org/modal";
 import { Select, SelectItem } from "@nextui-org/select";
 
 interface CreateCardModalProps {
@@ -20,10 +14,7 @@ const cardTypes = [
   { value: "virtual", label: "Virtual" },
 ];
 
-export default function CreateCardModal({
-  isOpen,
-  onClose,
-}: CreateCardModalProps) {
+export default function CreateCardModal({ isOpen, onClose }: CreateCardModalProps) {
   const [cardName, setCardName] = useState("");
   const [cardHolder, setCardHolder] = useState("");
   const [cardType, setCardType] = useState("");
@@ -43,9 +34,7 @@ export default function CreateCardModal({
   return (
     <Modal isOpen={isOpen} size="lg" onClose={onClose}>
       <ModalContent>
-        <ModalHeader className="flex flex-col gap-1">
-          Create New Card
-        </ModalHeader>
+        <ModalHeader className="flex flex-col gap-1">Create New Card</ModalHeader>
         <ModalBody>
           <Input
             label="Card Name"

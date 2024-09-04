@@ -1,6 +1,7 @@
-import { merchantConfig } from "@/config/merchant";
 import { NextResponse } from "next/server";
 import { lookupZip } from "zipcode-detail-lookup";
+
+import { merchantConfig } from "@/config/merchant";
 
 export async function GET(request: Request) {
   console.log("lookup-zip API route called", request.url);
@@ -23,17 +24,11 @@ export async function GET(request: Request) {
         country: merchantConfig.country,
       });
     } else {
-      return NextResponse.json(
-        { error: "Zip code not found" },
-        { status: 404 },
-      );
+      return NextResponse.json({ error: "Zip code not found" }, { status: 404 });
     }
   } catch (error) {
     console.error("Error looking up zip code:", error);
 
-    return NextResponse.json(
-      { error: "Error looking up zip code" },
-      { status: 500 },
-    );
+    return NextResponse.json({ error: "Error looking up zip code" }, { status: 500 });
   }
 }
