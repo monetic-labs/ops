@@ -2,13 +2,7 @@ import { useState } from "react";
 import { Button } from "@nextui-org/button";
 import { Divider } from "@nextui-org/divider";
 import { Input } from "@nextui-org/input";
-import {
-  Modal,
-  ModalBody,
-  ModalContent,
-  ModalFooter,
-  ModalHeader,
-} from "@nextui-org/modal";
+import { Modal, ModalBody, ModalContent, ModalFooter, ModalHeader } from "@nextui-org/modal";
 import { Select, SelectItem } from "@nextui-org/select";
 
 interface AddFundsModalProps {
@@ -101,17 +95,10 @@ export default function AddFundsModal({ isOpen, onClose }: AddFundsModalProps) {
           </div>
         </ModalBody>
         <ModalFooter>
-          <Button
-            className="text-notpurple-500"
-            variant="light"
-            onPress={onClose}
-          >
+          <Button className="text-notpurple-500" variant="light" onPress={onClose}>
             Cancel
           </Button>
-          <Button
-            className="bg-ualert-500 text-notpurple-500"
-            onPress={handleAddFunds}
-          >
+          <Button className="bg-ualert-500 text-notpurple-500" onPress={handleAddFunds}>
             Confirm Add Funds
           </Button>
         </ModalFooter>

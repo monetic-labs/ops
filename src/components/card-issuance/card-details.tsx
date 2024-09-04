@@ -1,13 +1,7 @@
 import { Button } from "@nextui-org/button";
 import { Chip } from "@nextui-org/chip";
 import { Input } from "@nextui-org/input";
-import {
-  Modal,
-  ModalBody,
-  ModalContent,
-  ModalFooter,
-  ModalHeader,
-} from "@nextui-org/modal";
+import { Modal, ModalBody, ModalContent, ModalFooter, ModalHeader } from "@nextui-org/modal";
 import { Progress } from "@nextui-org/progress";
 import { Snippet } from "@nextui-org/snippet";
 import { useState } from "react";
@@ -32,11 +26,7 @@ interface CardDetailsModalProps {
   } | null;
 }
 
-export default function CardDetailsModal({
-  isOpen,
-  onClose,
-  card,
-}: CardDetailsModalProps) {
+export default function CardDetailsModal({ isOpen, onClose, card }: CardDetailsModalProps) {
   const [isEditing, setIsEditing] = useState(false);
 
   const handleEdit = () => {
@@ -71,17 +61,10 @@ export default function CardDetailsModal({
       <ModalContent>
         <ModalHeader className="flex flex-col gap-1">Card Details</ModalHeader>
         <ModalBody>
-          <Input
-            isReadOnly={!isEditing}
-            label="Card Name"
-            value={card.cardName}
-          />
+          <Input isReadOnly={!isEditing} label="Card Name" value={card.cardName} />
           <div className="mt-4">
             <div className="flex items-center gap-2 mb-2">
-              <Chip
-                color={card.status === "Active" ? "success" : "danger"}
-                variant="flat"
-              >
+              <Chip color={card.status === "Active" ? "success" : "danger"} variant="flat">
                 {card.status}
               </Chip>
               <Chip color="primary" variant="flat">
@@ -91,53 +74,30 @@ export default function CardDetailsModal({
             <p className="text-small text-default-500 mb-2">
               Limit: ${card.limit.amount} per {card.limit.cycle}
             </p>
-            <Progress
-              className="mt-2"
-              maxValue={10000}
-              value={parseInt(card.limit.amount)}
-            />
+            <Progress className="mt-2" maxValue={10000} value={parseInt(card.limit.amount)} />
           </div>
           <div className="flex flex-col md:flex-row gap-4">
             <div className="flex-grow space-y-2">
               <p className="text-small text-default-500">Card Number</p>
-              <Snippet
-                codeString={card.cardNumber}
-                color="default"
-                symbol=""
-                variant="flat"
-              >
+              <Snippet codeString={card.cardNumber} color="default" symbol="" variant="flat">
                 {card.cardNumber.replace(/(\d{4})/g, "$1 ").trim()}
               </Snippet>
             </div>
             <div className="w-full md:w-1/4 space-y-2">
               <p className="text-small text-default-500">Expiration Date</p>
-              <Snippet
-                codeString={card.expDate}
-                color="default"
-                symbol=""
-                variant="flat"
-              >
+              <Snippet codeString={card.expDate} color="default" symbol="" variant="flat">
                 {card.expDate}
               </Snippet>
             </div>
             <div className="w-full md:w-1/6 space-y-2">
               <p className="text-small text-default-500">CVV</p>
-              <Snippet
-                codeString={card.cvv}
-                color="default"
-                symbol=""
-                variant="flat"
-              >
+              <Snippet codeString={card.cvv} color="default" symbol="" variant="flat">
                 {card.cvv}
               </Snippet>
             </div>
           </div>
           <Input isReadOnly={!isEditing} label="Holder" value={card.holder} />
-          <Input
-            isReadOnly={!isEditing}
-            label="Billing Address"
-            value={card.billingAddress}
-          />
+          <Input isReadOnly={!isEditing} label="Billing Address" value={card.billingAddress} />
           <Input isReadOnly={!isEditing} label="Email" value={card.email} />
         </ModalBody>
         <ModalFooter>

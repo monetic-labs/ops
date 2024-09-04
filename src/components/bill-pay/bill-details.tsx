@@ -1,12 +1,6 @@
 import { Button } from "@nextui-org/button";
 import { Divider } from "@nextui-org/divider";
-import {
-  Modal,
-  ModalBody,
-  ModalContent,
-  ModalFooter,
-  ModalHeader,
-} from "@nextui-org/modal";
+import { Modal, ModalBody, ModalContent, ModalFooter, ModalHeader } from "@nextui-org/modal";
 
 import { BillPay } from "@/data";
 
@@ -16,11 +10,7 @@ interface BillPayDetailsModalProps {
   billPay: BillPay;
 }
 
-export default function BillPayDetailsModal({
-  isOpen,
-  onClose,
-  billPay,
-}: BillPayDetailsModalProps) {
+export default function BillPayDetailsModal({ isOpen, onClose, billPay }: BillPayDetailsModalProps) {
   return (
     <Modal isOpen={isOpen} size="lg" onClose={onClose}>
       <ModalContent>
@@ -47,9 +37,7 @@ export default function BillPayDetailsModal({
                 </div>
                 <div className="flex justify-between">
                   <span>Account Number:</span>
-                  <span>
-                    **** {billPay.receivingBank.accountNumber.slice(-4)}
-                  </span>
+                  <span>**** {billPay.receivingBank.accountNumber.slice(-4)}</span>
                 </div>
                 <Divider />
                 <div className="flex justify-between">
@@ -92,10 +80,7 @@ export default function BillPayDetailsModal({
             </ModalBody>
             <Divider />
             <ModalFooter className="flex justify-center">
-              <Button
-                className="bg-ualert-500 text-notpurple-500"
-                onPress={onClose}
-              >
+              <Button className="bg-ualert-500 text-notpurple-500" onPress={onClose}>
                 Close
               </Button>
             </ModalFooter>

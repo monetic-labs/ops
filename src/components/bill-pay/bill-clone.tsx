@@ -1,12 +1,6 @@
 import { Button } from "@nextui-org/button";
 import { Input } from "@nextui-org/input";
-import {
-  Modal,
-  ModalBody,
-  ModalContent,
-  ModalFooter,
-  ModalHeader,
-} from "@nextui-org/modal";
+import { Modal, ModalBody, ModalContent, ModalFooter, ModalHeader } from "@nextui-org/modal";
 import { Select, SelectItem } from "@nextui-org/select";
 import { useState } from "react";
 
@@ -21,12 +15,7 @@ interface BillPayCloneModalProps {
 
 const paymentMethods = ["ACH", "Wire", "SWIFT", "SEPA", "Stable"];
 
-export default function BillPayCloneModal({
-  isOpen,
-  onClose,
-  billPay,
-  onSave,
-}: BillPayCloneModalProps) {
+export default function BillPayCloneModal({ isOpen, onClose, billPay, onSave }: BillPayCloneModalProps) {
   const [clonedBillPay, setClonedBillPay] = useState<BillPay>({
     ...billPay,
     id: `clone-${Date.now()}`, // Generate a new id for the cloned bill pay
@@ -45,9 +34,7 @@ export default function BillPayCloneModal({
           <Input
             label="Vendor"
             value={clonedBillPay.vendor}
-            onChange={(e) =>
-              setClonedBillPay({ ...clonedBillPay, vendor: e.target.value })
-            }
+            onChange={(e) => setClonedBillPay({ ...clonedBillPay, vendor: e.target.value })}
           />
           <Select
             label="Payment Method"
@@ -79,9 +66,7 @@ export default function BillPayCloneModal({
           <Input
             label="Currency"
             value={clonedBillPay.currency}
-            onChange={(e) =>
-              setClonedBillPay({ ...clonedBillPay, currency: e.target.value })
-            }
+            onChange={(e) => setClonedBillPay({ ...clonedBillPay, currency: e.target.value })}
           />
           <Input
             label="Receiving Bank Name"

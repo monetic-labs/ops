@@ -1,11 +1,5 @@
 import React from "react";
-import {
-  Modal,
-  ModalContent,
-  ModalHeader,
-  ModalBody,
-  ModalFooter,
-} from "@nextui-org/modal";
+import { Modal, ModalContent, ModalHeader, ModalBody, ModalFooter } from "@nextui-org/modal";
 import { Button } from "@nextui-org/button";
 import { Divider } from "@nextui-org/divider";
 
@@ -21,12 +15,7 @@ interface CancelConfirmationModalProps {
   };
 }
 
-export function CancelConfirmationModal({
-  isOpen,
-  onClose,
-  onConfirm,
-  order,
-}: CancelConfirmationModalProps) {
+export function CancelConfirmationModal({ isOpen, onClose, onConfirm, order }: CancelConfirmationModalProps) {
   return (
     <Modal isOpen={isOpen} size="md" onClose={onClose}>
       <ModalContent>
@@ -52,22 +41,14 @@ export function CancelConfirmationModal({
                   <span>{order.amount}</span>
                 </div>
               </div>
-              <p className="mt-4 text-center text-red-500">
-                Are you sure you want to cancel this order?
-              </p>
+              <p className="mt-4 text-center text-red-500">Are you sure you want to cancel this order?</p>
             </ModalBody>
             <Divider />
             <ModalFooter className="flex justify-center space-x-4">
-              <Button
-                className="bg-ualert-500 text-notpurple-500"
-                onPress={onClose}
-              >
+              <Button className="bg-ualert-500 text-notpurple-500" onPress={onClose}>
                 Go Back
               </Button>
-              <Button
-                className="bg-ualert-500 text-notpurple-500"
-                onPress={onConfirm}
-              >
+              <Button className="bg-ualert-500 text-notpurple-500" onPress={onConfirm}>
                 Confirm Cancel
               </Button>
             </ModalFooter>

@@ -1,23 +1,10 @@
 import { useState, useMemo } from "react";
 import { Button } from "@nextui-org/button";
 import { Input } from "@nextui-org/input";
-import {
-  Modal,
-  ModalBody,
-  ModalContent,
-  ModalFooter,
-  ModalHeader,
-} from "@nextui-org/modal";
+import { Modal, ModalBody, ModalContent, ModalFooter, ModalHeader } from "@nextui-org/modal";
 import { Checkbox } from "@nextui-org/checkbox";
 import { Divider } from "@nextui-org/divider";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableColumn,
-  TableHeader,
-  TableRow,
-} from "@nextui-org/table";
+import { Table, TableBody, TableCell, TableColumn, TableHeader, TableRow } from "@nextui-org/table";
 
 interface WithdrawFundsModalProps {
   isOpen: boolean;
@@ -31,13 +18,8 @@ const availableBalances = [
   { id: "4", network: "Arbitrum", token: "USDT", balance: 1500 },
 ];
 
-export default function WithdrawFundsModal({
-  isOpen,
-  onClose,
-}: WithdrawFundsModalProps) {
-  const [selectedBalances, setSelectedBalances] = useState<Set<string>>(
-    new Set([]),
-  );
+export default function WithdrawFundsModal({ isOpen, onClose }: WithdrawFundsModalProps) {
+  const [selectedBalances, setSelectedBalances] = useState<Set<string>>(new Set([]));
   const [withdrawAmount, setWithdrawAmount] = useState("");
 
   const handleSelectionChange = (id: string) => {
@@ -71,9 +53,7 @@ export default function WithdrawFundsModal({
   return (
     <Modal isOpen={isOpen} size="3xl" onClose={onClose}>
       <ModalContent>
-        <ModalHeader className="flex flex-col gap-1">
-          Withdraw Funds
-        </ModalHeader>
+        <ModalHeader className="flex flex-col gap-1">Withdraw Funds</ModalHeader>
         <ModalBody>
           <Table aria-label="Available balances">
             <TableHeader>
@@ -105,8 +85,7 @@ export default function WithdrawFundsModal({
           <Input
             className="mt-4"
             classNames={{
-              inputWrapper:
-                "bg-charyo-400 text-notpurple-500 border border-ualert-500",
+              inputWrapper: "bg-charyo-400 text-notpurple-500 border border-ualert-500",
             }}
             label="Withdraw Amount"
             placeholder="Enter amount to withdraw"
@@ -124,9 +103,7 @@ export default function WithdrawFundsModal({
             </div>
             <div className="flex justify-between border-b border-gray-300 pb-4">
               <span>Amount to Withdraw:</span>
-              <span className="font-medium">
-                ${amountToWithdraw.toFixed(2)}
-              </span>
+              <span className="font-medium">${amountToWithdraw.toFixed(2)}</span>
             </div>
             <Divider className="my-2" />
             <div className="flex justify-between text-lg font-bold">
@@ -136,17 +113,10 @@ export default function WithdrawFundsModal({
           </div>
         </ModalBody>
         <ModalFooter>
-          <Button
-            className="text-notpurple-500"
-            variant="light"
-            onPress={onClose}
-          >
+          <Button className="text-notpurple-500" variant="light" onPress={onClose}>
             Cancel
           </Button>
-          <Button
-            className="bg-ualert-500 text-notpurple-500"
-            onPress={handleWithdraw}
-          >
+          <Button className="bg-ualert-500 text-notpurple-500" onPress={handleWithdraw}>
             Confirm Withdrawal
           </Button>
         </ModalFooter>

@@ -7,10 +7,7 @@ export function formatAmount(value: string): string {
   return parts[0] + (parts.length > 1 ? "." + parts[1].slice(0, 2) : "");
 }
 
-export function validateAmount(
-  value: string,
-  allowZero: boolean = false,
-): string {
+export function validateAmount(value: string, allowZero: boolean = false): string {
   if (value === "") return "";
   const numValue = parseFloat(value);
 
@@ -23,17 +20,14 @@ export function validateAmount(
 
 export function formatName(value: string): string {
   const words = value.split(" ");
-  const formattedWords = words.map(
-    (word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase(),
-  );
+  const formattedWords = words.map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase());
 
   return formattedWords.join(" ");
 }
 
 export function validateName(value: string): string {
   if (value.length < 2) return "Name must be at least 2 characters long";
-  if (!/^[a-zA-Z\s]*$/.test(value))
-    return "Name should only contain letters and spaces";
+  if (!/^[a-zA-Z\s]*$/.test(value)) return "Name should only contain letters and spaces";
 
   return "";
 }
@@ -45,9 +39,7 @@ export function validateEmail(value: string): string {
 }
 
 export function validatePhone(value: string): string {
-  const supportedCountryCodes = Object.values(countryCodes).map(
-    (cc) => cc.areaCode,
-  );
+  const supportedCountryCodes = Object.values(countryCodes).map((cc) => cc.areaCode);
   const countryCode = supportedCountryCodes.find((cc) => value.startsWith(cc));
 
   if (!countryCode) {
@@ -76,8 +68,7 @@ export function formatPhone(value: string): string {
 
   if (digits.length <= 4) return `+1 (${digits.slice(1)}`;
 
-  if (digits.length <= 7)
-    return `+1 (${digits.slice(1, 4)}) ${digits.slice(4)}`;
+  if (digits.length <= 7) return `+1 (${digits.slice(1, 4)}) ${digits.slice(4)}`;
 
   return `+1 (${digits.slice(1, 4)}) ${digits.slice(4, 7)}-${digits.slice(7, 11)}`;
 }

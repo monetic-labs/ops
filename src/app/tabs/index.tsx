@@ -14,9 +14,7 @@ import UsersTab from "@/components/users/users";
 import { tabsConfig } from "@/config/tabs";
 
 export default function MerchantServicesTabs() {
-  const [selectedService, setSelectedService] = useState<string>(
-    tabsConfig[0].id,
-  );
+  const [selectedService, setSelectedService] = useState<string>(tabsConfig[0].id);
 
   const renderTabContent = (tabId: string) => {
     switch (tabId) {
@@ -67,8 +65,7 @@ export default function MerchantServicesTabs() {
       <Tabs
         aria-label="Service options"
         classNames={{
-          tabList:
-            "bg-charyo-900/30 text-notpurple-500 backdrop-blur-sm border-none",
+          tabList: "bg-charyo-900/30 text-notpurple-500 backdrop-blur-sm border-none",
           tabContent: "text-charyo-500",
         }}
         selectedKey={selectedService}

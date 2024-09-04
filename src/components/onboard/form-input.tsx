@@ -1,8 +1,7 @@
 import { InputProps } from "@nextui-org/input";
 import { Control, Controller, FieldValues, Path } from "react-hook-form";
 
-interface FormInputProps<T extends FieldValues>
-  extends Omit<InputProps, "name"> {
+interface FormInputProps<T extends FieldValues> extends Omit<InputProps, "name"> {
   name: Path<T>;
   control: Control<T>;
   errorMessage?: string;
@@ -18,10 +17,7 @@ export const FormInput = <T extends FieldValues>({
 }: FormInputProps<T>) => {
   return (
     <div className="mb-4">
-      <label
-        className="block text-sm font-medium text-notpurple-100 mb-1"
-        htmlFor={name}
-      >
+      <label className="block text-sm font-medium text-notpurple-100 mb-1" htmlFor={name}>
         {props.label}
       </label>
       <Controller
@@ -36,12 +32,8 @@ export const FormInput = <T extends FieldValues>({
           />
         )}
       />
-      {helperText && (
-        <p className="mt-1 text-sm text-notpurple-300">{helperText}</p>
-      )}
-      {errorMessage && (
-        <p className="mt-1 text-sm text-red-500">{errorMessage}</p>
-      )}
+      {helperText && <p className="mt-1 text-sm text-notpurple-300">{helperText}</p>}
+      {errorMessage && <p className="mt-1 text-sm text-red-500">{errorMessage}</p>}
     </div>
   );
 };

@@ -1,11 +1,5 @@
 import React, { useState } from "react";
-import {
-  Modal,
-  ModalContent,
-  ModalHeader,
-  ModalBody,
-  ModalFooter,
-} from "@nextui-org/modal";
+import { Modal, ModalContent, ModalHeader, ModalBody, ModalFooter } from "@nextui-org/modal";
 import { Button } from "@nextui-org/button";
 import { Divider } from "@nextui-org/divider";
 import { Input } from "@nextui-org/input";
@@ -29,12 +23,7 @@ interface RefundModalProps {
   };
 }
 
-export function RefundModal({
-  isOpen,
-  onClose,
-  onConfirm,
-  order,
-}: RefundModalProps) {
+export function RefundModal({ isOpen, onClose, onConfirm, order }: RefundModalProps) {
   const [refundAmount, setRefundAmount] = useState(order.totalAmount);
 
   const handleRefundAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {

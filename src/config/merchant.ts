@@ -1,5 +1,4 @@
-
 export const merchantConfig = {
-    fee: 0,
-    country: "US",
-}
+  fee: 0,
+  country: "US",
+};

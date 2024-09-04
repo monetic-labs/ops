@@ -1,12 +1,6 @@
 import { Button } from "@nextui-org/button";
 import { Input } from "@nextui-org/input";
-import {
-  Modal,
-  ModalBody,
-  ModalContent,
-  ModalFooter,
-  ModalHeader,
-} from "@nextui-org/modal";
+import { Modal, ModalBody, ModalContent, ModalFooter, ModalHeader } from "@nextui-org/modal";
 import { Select, SelectItem } from "@nextui-org/select";
 import { useState } from "react";
 
@@ -30,11 +24,7 @@ interface NewBillPay {
 
 const vendorMethods = ["ACH", "Wire", "SWIFT", "SEPA"];
 
-export default function CreateBillPayModal({
-  isOpen,
-  onClose,
-  onSave,
-}: CreateBillPayModalProps) {
+export default function CreateBillPayModal({ isOpen, onClose, onSave }: CreateBillPayModalProps) {
   const [newBillPay, setNewBillPay] = useState<NewBillPay>({
     vendorName: "",
     vendorMethod: "ACH",
@@ -75,16 +65,12 @@ export default function CreateBillPayModal({
           <Input
             label="Vendor Name"
             value={newBillPay.vendorName}
-            onChange={(e) =>
-              setNewBillPay({ ...newBillPay, vendorName: e.target.value })
-            }
+            onChange={(e) => setNewBillPay({ ...newBillPay, vendorName: e.target.value })}
           />
           <Select
             label="Vendor Method"
             selectedKeys={[newBillPay.vendorMethod]}
-            onChange={(e) =>
-              setNewBillPay({ ...newBillPay, vendorMethod: e.target.value })
-            }
+            onChange={(e) => setNewBillPay({ ...newBillPay, vendorMethod: e.target.value })}
           >
             {vendorMethods.map((method) => (
               <SelectItem key={method} value={method}>
@@ -95,30 +81,22 @@ export default function CreateBillPayModal({
           <Input
             label="Routing Number"
             value={newBillPay.routingNumber}
-            onChange={(e) =>
-              setNewBillPay({ ...newBillPay, routingNumber: e.target.value })
-            }
+            onChange={(e) => setNewBillPay({ ...newBillPay, routingNumber: e.target.value })}
           />
           <Input
             label="Account Number"
             value={newBillPay.accountNumber}
-            onChange={(e) =>
-              setNewBillPay({ ...newBillPay, accountNumber: e.target.value })
-            }
+            onChange={(e) => setNewBillPay({ ...newBillPay, accountNumber: e.target.value })}
           />
           <Input
             label="Memo"
             value={newBillPay.memo}
-            onChange={(e) =>
-              setNewBillPay({ ...newBillPay, memo: e.target.value })
-            }
+            onChange={(e) => setNewBillPay({ ...newBillPay, memo: e.target.value })}
           />
           <Input
             label="Internal Note"
             value={newBillPay.internalNote}
-            onChange={(e) =>
-              setNewBillPay({ ...newBillPay, internalNote: e.target.value })
-            }
+            onChange={(e) => setNewBillPay({ ...newBillPay, internalNote: e.target.value })}
           />
           <Input
             label="Amount"
@@ -132,12 +110,7 @@ export default function CreateBillPayModal({
             value={newBillPay.fee}
             onChange={(e) => handleAmountOrFeeChange("fee", e.target.value)}
           />
-          <Input
-            isReadOnly
-            label="Total"
-            type="number"
-            value={newBillPay.total}
-          />
+          <Input isReadOnly label="Total" type="number" value={newBillPay.total} />
         </ModalBody>
         <ModalFooter>
           <Button onPress={onClose}>Cancel</Button>

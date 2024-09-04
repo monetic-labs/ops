@@ -2,13 +2,7 @@ import { useState } from "react";
 import { Button } from "@nextui-org/button";
 import { Checkbox } from "@nextui-org/checkbox";
 import { Input } from "@nextui-org/input";
-import {
-  Modal,
-  ModalBody,
-  ModalContent,
-  ModalFooter,
-  ModalHeader,
-} from "@nextui-org/modal";
+import { Modal, ModalBody, ModalContent, ModalFooter, ModalHeader } from "@nextui-org/modal";
 
 import { BillPay } from "@/data";
 
@@ -19,12 +13,7 @@ interface BillPaySaveModalProps {
   onSave: (updatedBillPay: BillPay, saveAsTemplate: boolean) => void;
 }
 
-export default function BillPaySaveModal({
-  isOpen,
-  onClose,
-  billPay,
-  onSave,
-}: BillPaySaveModalProps) {
+export default function BillPaySaveModal({ isOpen, onClose, billPay, onSave }: BillPaySaveModalProps) {
   const [editedBillPay, setEditedBillPay] = useState<BillPay>(billPay);
   const [saveAsTemplate, setSaveAsTemplate] = useState(false);
   const [templateName, setTemplateName] = useState("");
@@ -42,9 +31,7 @@ export default function BillPaySaveModal({
           <Input
             label="Vendor"
             value={editedBillPay.vendor}
-            onChange={(e) =>
-              setEditedBillPay({ ...editedBillPay, vendor: e.target.value })
-            }
+            onChange={(e) => setEditedBillPay({ ...editedBillPay, vendor: e.target.value })}
           />
           <Input
             label="Payment Method"
@@ -70,9 +57,7 @@ export default function BillPaySaveModal({
           <Input
             label="Currency"
             value={editedBillPay.currency}
-            onChange={(e) =>
-              setEditedBillPay({ ...editedBillPay, currency: e.target.value })
-            }
+            onChange={(e) => setEditedBillPay({ ...editedBillPay, currency: e.target.value })}
           />
           <Input
             label="Receiving Bank Name"
@@ -126,26 +111,16 @@ export default function BillPaySaveModal({
               })
             }
           />
-          <Checkbox
-            isSelected={saveAsTemplate}
-            onValueChange={setSaveAsTemplate}
-          >
+          <Checkbox isSelected={saveAsTemplate} onValueChange={setSaveAsTemplate}>
             Save as Vendor Template
           </Checkbox>
           {saveAsTemplate && (
-            <Input
-              label="Template Name"
-              value={templateName}
-              onChange={(e) => setTemplateName(e.target.value)}
-            />
+            <Input label="Template Name" value={templateName} onChange={(e) => setTemplateName(e.target.value)} />
           )}
         </ModalBody>
         <ModalFooter>
           <Button onPress={onClose}>Cancel</Button>
-          <Button
-            className="bg-ualert-500 text-notpurple-500"
-            onPress={handleSave}
-          >
+          <Button className="bg-ualert-500 text-notpurple-500" onPress={handleSave}>
             Save
           </Button>
         </ModalFooter>

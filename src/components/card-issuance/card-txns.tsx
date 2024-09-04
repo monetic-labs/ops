@@ -1,12 +1,6 @@
 import { Button } from "@nextui-org/button";
 import { Divider } from "@nextui-org/divider";
-import {
-  Modal,
-  ModalBody,
-  ModalContent,
-  ModalFooter,
-  ModalHeader,
-} from "@nextui-org/modal";
+import { Modal, ModalBody, ModalContent, ModalFooter, ModalHeader } from "@nextui-org/modal";
 
 interface TransactionDetailsModalProps {
   isOpen: boolean;
@@ -23,11 +17,7 @@ interface TransactionDetailsModalProps {
   };
 }
 
-export default function TransactionDetailsModal({
-  isOpen,
-  onClose,
-  transaction,
-}: TransactionDetailsModalProps) {
+export default function TransactionDetailsModal({ isOpen, onClose, transaction }: TransactionDetailsModalProps) {
   return (
     <Modal isOpen={isOpen} size="lg" onClose={onClose}>
       <ModalContent>
@@ -35,9 +25,7 @@ export default function TransactionDetailsModal({
           <>
             <ModalHeader className="flex flex-col items-center">
               <h2 className="text-2xl font-bold">Transaction Receipt</h2>
-              <p className="text-sm text-gray-500">
-                Merchant ID: {transaction.merchantId}
-              </p>
+              <p className="text-sm text-gray-500">Merchant ID: {transaction.merchantId}</p>
             </ModalHeader>
             <Divider />
             <ModalBody>
@@ -84,9 +72,7 @@ export default function TransactionDetailsModal({
             </ModalBody>
             <Divider />
             <ModalFooter className="flex flex-col items-center">
-              <p className="text-sm text-gray-500 mb-2">
-                Thank you for your business!
-              </p>
+              <p className="text-sm text-gray-500 mb-2">Thank you for your business!</p>
               <Button color="primary" onPress={onClose}>
                 Close
               </Button>

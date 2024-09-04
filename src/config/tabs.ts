@@ -12,8 +12,7 @@ export const tabsConfig = [
   {
     id: "card-issuance",
     label: "Card Issuance",
-    content:
-      "These are all your customer transactions, orders that become transactions",
+    content: "These are all your customer transactions, orders that become transactions",
   },
   {
     id: "users",

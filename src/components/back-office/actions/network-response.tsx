@@ -1,11 +1,5 @@
 import React from "react";
-import {
-  Modal,
-  ModalContent,
-  ModalHeader,
-  ModalBody,
-  ModalFooter,
-} from "@nextui-org/modal";
+import { Modal, ModalContent, ModalHeader, ModalBody, ModalFooter } from "@nextui-org/modal";
 import { Button } from "@nextui-org/button";
 import { Divider } from "@nextui-org/divider";
 
@@ -21,11 +15,7 @@ interface NetworkResponseProps {
   };
 }
 
-export function NetworkResponse({
-  isOpen,
-  onClose,
-  response,
-}: NetworkResponseProps) {
+export function NetworkResponse({ isOpen, onClose, response }: NetworkResponseProps) {
   return (
     <Modal isOpen={isOpen} size="lg" onClose={onClose}>
       <ModalContent>
@@ -33,9 +23,7 @@ export function NetworkResponse({
           <>
             <ModalHeader className="flex flex-col items-center">
               <h2 className="text-2xl font-bold">Network Response</h2>
-              <p className="text-sm text-gray-500">
-                Transaction ID: {response.transactionId}
-              </p>
+              <p className="text-sm text-gray-500">Transaction ID: {response.transactionId}</p>
             </ModalHeader>
             <Divider />
             <ModalBody>
@@ -81,11 +69,7 @@ export function NetworkResponse({
             </ModalBody>
             <Divider />
             <ModalFooter className="flex justify-center">
-              <Button
-                className="bg-ualert-500 text-notpurple-500"
-                color="primary"
-                onPress={onClose}
-              >
+              <Button className="bg-ualert-500 text-notpurple-500" color="primary" onPress={onClose}>
                 Close
               </Button>
             </ModalFooter>

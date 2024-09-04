@@ -1,12 +1,6 @@
 import { Button } from "@nextui-org/button";
 import { Input } from "@nextui-org/input";
-import {
-  Modal,
-  ModalBody,
-  ModalContent,
-  ModalFooter,
-  ModalHeader,
-} from "@nextui-org/modal";
+import { Modal, ModalBody, ModalContent, ModalFooter, ModalHeader } from "@nextui-org/modal";
 import { Select, SelectItem } from "@nextui-org/select";
 import { useEffect, useState } from "react";
 
@@ -27,13 +21,7 @@ const cycles = [
   { value: "all-time", label: "All-time" },
 ];
 
-export default function CardLimitModal({
-  isOpen,
-  onClose,
-  cardName,
-  currentLimit,
-  onSave,
-}: CardLimitModalProps) {
+export default function CardLimitModal({ isOpen, onClose, cardName, currentLimit, onSave }: CardLimitModalProps) {
   const [amount, setAmount] = useState("");
   const [cycle, setCycle] = useState("");
 
@@ -54,9 +42,7 @@ export default function CardLimitModal({
   return (
     <Modal isOpen={isOpen} onClose={onClose}>
       <ModalContent>
-        <ModalHeader className="flex flex-col gap-1">
-          Adjust Card Limit
-        </ModalHeader>
+        <ModalHeader className="flex flex-col gap-1">Adjust Card Limit</ModalHeader>
         <ModalBody>
           <p>Card: {cardName}</p>
           <p>Current Limit: {currentLimit}</p>

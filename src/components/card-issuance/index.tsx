@@ -9,9 +9,7 @@ import CardListTable from "./card-list";
 import Transactions from "./transactions";
 
 export default function CardServicesTabs() {
-  const [selectedService, setSelectedService] = useState<string>(
-    cardServicesConfig[0].id,
-  );
+  const [selectedService, setSelectedService] = useState<string>(cardServicesConfig[0].id);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
   const renderTabContent = (tabId: string) => {
@@ -42,10 +40,7 @@ export default function CardServicesTabs() {
         </Button>
       </div>
       <div className="mt-4">{renderTabContent(selectedService)}</div>
-      <CreateCardModal
-        isOpen={isCreateModalOpen}
-        onClose={() => setIsCreateModalOpen(false)}
-      />
+      <CreateCardModal isOpen={isCreateModalOpen} onClose={() => setIsCreateModalOpen(false)} />
     </div>
   );
 }
