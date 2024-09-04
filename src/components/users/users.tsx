@@ -10,9 +10,10 @@ import CreateUserModal from "./user-create";
 import UserEditModal from "./user-edit";
 import UserDetailsModal from "./users-details";
 
-const statusColorMap: Record<string, "success" | "danger"> = {
+const statusColorMap: Record<string, "success" | "danger" | "warning"> = {
   Active: "success",
   Inactive: "danger",
+  Suspended: "warning",
 };
 
 export default function UserTab() {
@@ -77,7 +78,7 @@ export default function UserTab() {
   return (
     <>
       <div className="flex justify-end items-center mb-4">
-        <Button className="bg-ualert-500 text-notpurple-500" onPress={() => setIsCreateModalOpen(true)}>
+        <Button className="text-notpurple-500" onPress={() => setIsCreateModalOpen(true)}>
           Create User
         </Button>
       </div>
