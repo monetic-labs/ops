@@ -121,14 +121,16 @@ export default function PaymentsTab() {
         return (
           <div className="flex items-center justify-center gap-2">
             <Tooltip content="View Payment Details">
-              <Button className="bg-charyo-200 text-notpurple-500" size="sm" onPress={() => handleViewDetails(payment)}>
+              <Button 
+                className="text-notpurple-500" 
+                size="sm" 
+                onPress={() => handleViewDetails(payment)}>
                 Details
               </Button>
             </Tooltip>
             <Tooltip content="Cancel Order">
               <Button
-                className="bg-charyo-200 text-notpurple-500"
-                color="danger"
+                className="text-notpurple-500"
                 size="sm"
                 onPress={() => handleCancelOrder(payment)}
               >
@@ -137,8 +139,7 @@ export default function PaymentsTab() {
             </Tooltip>
             <Tooltip content="Refund Order">
               <Button
-                className="bg-charyo-200 text-notpurple-500"
-                color="warning"
+                className="text-notpurple-500"
                 size="sm"
                 onPress={() => handleRefund(payment)}
               >
@@ -157,8 +158,8 @@ export default function PaymentsTab() {
       <Table
         aria-label="Payments table with custom cells"
         classNames={{
-          wrapper: "bg-charyo-500/40 text-notpurple-500",
-          th: "bg-notpurple-400/20 text-notpurple-500",
+          wrapper: "text-notpurple-500",
+          th: "text-notpurple-500",
         }}
       >
         <TableHeader columns={columns}>

@@ -113,6 +113,12 @@ module.exports = {
             800: '#636365',
             900: '#323232',
           },
+          success: {
+            DEFAULT: "#00FF84",
+          },
+          danger: {
+            DEFAULT: "#ff00c7",
+          },
         }
       }
     }

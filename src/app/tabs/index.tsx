@@ -65,8 +65,8 @@ export default function MerchantServicesTabs() {
       <Tabs
         aria-label="Service options"
         classNames={{
-          tabList: "bg-charyo-900/30 text-notpurple-500 backdrop-blur-sm border-none",
-          tabContent: "text-charyo-500",
+          tabList: "bg-charyo-500/60 backdrop-blur-sm border-none",
+          tabContent: "text-notpurple-500/60",
         }}
         selectedKey={selectedService}
         onSelectionChange={(key) => setSelectedService(key as string)}
@@ -76,7 +76,7 @@ export default function MerchantServicesTabs() {
             <Card className="bg-charyo-500/60 backdrop-blur-sm border-none">
               <CardHeader className="flex flex-col items-start">
                 <h3 className="text-lg font-semibold">{tab.label} Services</h3>
-                <p className="text-small text-default-500">{tab.content}</p>
+                <p className="text-small text-notpurple-500">{tab.content}</p>
               </CardHeader>
               <Divider />
               <CardBody>{renderTabContent(tab.id)}</CardBody>

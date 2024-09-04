@@ -28,6 +28,10 @@ export default function BackOfficeTabs() {
       <div className="flex justify-between items-center mb-4">
         <Tabs
           aria-label="Back Office options"
+          classNames={{
+            tabList: "bg-charyo-500/60",
+            tabContent: "text-notpurple-500/60",
+          }}
           selectedKey={selectedService}
           onSelectionChange={(key) => setSelectedService(key as string)}
         >

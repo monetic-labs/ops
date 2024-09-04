@@ -96,6 +96,9 @@ export default function AddFundsModal({ isOpen, onClose }: AddFundsModalProps) {
         </ModalBody>
         <ModalFooter>
           <Button className="text-notpurple-500" variant="light" onPress={onClose}>
+            Support
+          </Button>
+          <Button className="text-notpurple-500" variant="light" onPress={onClose}>
             Cancel
           </Button>
           <Button className="bg-ualert-500 text-notpurple-500" onPress={handleAddFunds}>
