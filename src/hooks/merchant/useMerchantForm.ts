@@ -28,6 +28,7 @@ export const useMerchantForm = (initialEmail: string, onCancel: () => void) => {
   } | null>(null);
   const [tosLink, setTosLink] = useState<string | null>(null);
   const [formKey, setFormKey] = useState(0);
+  const [merchantResponse, setMerchantResponse] = useState<MerchantCreateOutput | null>(null);
 
   const {
     control,
@@ -120,44 +121,22 @@ export const useMerchantForm = (initialEmail: string, onCancel: () => void) => {
           })),
         };
 
-      try {
-        const { success, data: merchantResponse, error } = await createMerchant(combinedData);
+        try {
+          const { success, data: merchantResponse, error } = await createMerchant(combinedData);
 
-        if (success && merchantResponse) {
-          console.log("useMerchantForm response:", merchantResponse);
-          
-          // Access tosLink directly from merchantResponse.data
-          const tosLink = merchantResponse.data.compliance.tosLink;
-          console.log("TOS link:", tosLink);
-          
-          if (tosLink) {
-            setTosLink(tosLink);
-
-            const email = getValues("representatives.0.email");
-            console.log("Email for OTP:", email);
-
-            if (email) {
-              const otpInitiated = await otpHook.initiateOTP(email);
-              console.log("OTP initiated:", otpInitiated);
-
-              if (otpInitiated) {
-                setActiveTab("validate");
-              } else {
-                console.error("Failed to initiate OTP");
-              }
-            }
+          if (success && merchantResponse) {
+            console.log("useMerchantForm response:", merchantResponse);
+            setMerchantResponse(merchantResponse);
+            setTosLink(merchantResponse.data.tosLink);
+            setActiveTab("documents");
           } else {
-            console.error("TOS link not found in the response");
-            // Handle the case where tosLink is not present
+            console.error("Error creating merchant:", error);
+            // Handle the error, maybe show an error message to the user
           }
-        } else {
+        } catch (error) {
           console.error("Error creating merchant:", error);
           // Handle the error, maybe show an error message to the user
         }
-      } catch (error) {
-        console.error("Error creating merchant:", error);
-        // Handle the error, maybe show an error message to the user
-      }
       } else if (step === 3) {
         setStepCompletion((prev) => ({ ...prev, step3: true }));
         setActiveTab("documents");
