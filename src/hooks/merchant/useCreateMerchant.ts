@@ -8,7 +8,7 @@ export function useCreateMerchant() {
   const [error, setError] = useState<string | null>(null);
   const [data, setData] = useState<MerchantCreateOutput | null>(null);
 
-  const createMerchant = async (input: MerchantCreateInput): Promise<MerchantCreateOutput | null> => {
+  const createMerchant = async (input: MerchantCreateInput): Promise<{ success: boolean; data: MerchantCreateOutput | null; error: string | null }> => {
     setIsLoading(true);
     setError(null);
     try {
@@ -17,15 +17,20 @@ export function useCreateMerchant() {
 
       console.log("useCreateMerchant response:", response);
 
-      setData(response);
-      setIsLoading(false);
-
-      return response;
+      if (response && response.statusCode === 200) {
+        setData(response);
+        setIsLoading(false);
+        return { success: true, data: response, error: null };
+      } else {
+        setError("Merchant creation failed");
+        setIsLoading(false);
+        return { success: false, data: null, error: "Merchant creation failed" };
+      }
     } catch (err) {
       setIsLoading(false);
-      setError(err instanceof Error ? err.message : "An error occurred");
-
-      return null;
+      const errorMessage = err instanceof Error ? err.message : "An error occurred";
+      setError(errorMessage);
+      return { success: false, data: null, error: errorMessage };
     }
   };
 
