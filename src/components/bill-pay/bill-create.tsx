@@ -3,114 +3,97 @@ import { Input } from "@nextui-org/input";
 import { Modal, ModalBody, ModalContent, ModalFooter, ModalHeader } from "@nextui-org/modal";
 import { Select, SelectItem } from "@nextui-org/select";
 import { useState } from "react";
+import { TransactionListItem, PaymentProcessor } from "@backpack-fux/pylon-sdk";
 
 interface CreateBillPayModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSave: (newBillPay: NewBillPay) => void;
+  onSave: (newTransaction: Partial<TransactionListItem>) => void;
 }
 
-interface NewBillPay {
-  vendorName: string;
-  vendorMethod: string;
-  routingNumber: string;
-  accountNumber: string;
-  memo: string;
-  internalNote: string;
-  amount: string;
-  fee: string;
-  total: string;
-}
-
-const vendorMethods = ["ACH", "Wire", "SWIFT", "SEPA"];
+const paymentMethods = ["CARD", "ACH", "WIRE", "CRYPTO"];
+const processors: PaymentProcessor[] = ["WORLDPAY"];
 
 export default function CreateBillPayModal({ isOpen, onClose, onSave }: CreateBillPayModalProps) {
-  const [newBillPay, setNewBillPay] = useState<NewBillPay>({
-    vendorName: "",
-    vendorMethod: "ACH",
-    routingNumber: "",
-    accountNumber: "",
-    memo: "",
-    internalNote: "",
-    amount: "",
-    fee: "",
-    total: "",
+  const [newTransaction, setNewTransaction] = useState<Partial<TransactionListItem>>({
+    status: "PENDING",
+    processor: "WORLDPAY",
+    paymentMethod: "CARD",
+    subtotal: 0,
+    tipAmount: 0,
+    total: 0,
+    currency: "USD",
   });
 
   const handleSave = () => {
-    onSave(newBillPay);
+    onSave(newTransaction);
     onClose();
   };
 
-  const calculateTotal = () => {
-    const amount = parseFloat(newBillPay.amount) || 0;
-    const fee = parseFloat(newBillPay.fee) || 0;
-
-    return (amount + fee).toFixed(2);
+  const calculateTotal = (subtotal: number, tipAmount: number) => {
+    return subtotal + tipAmount;
   };
 
-  const handleAmountOrFeeChange = (field: "amount" | "fee", value: string) => {
-    setNewBillPay((prev) => ({
-      ...prev,
-      [field]: value,
-      total: calculateTotal(),
-    }));
+  const handleAmountChange = (field: "subtotal" | "tipAmount", value: string) => {
+    const numValue = Math.round(parseFloat(value) * 100) || 0;
+    setNewTransaction((prev) => {
+      const updatedTransaction = { ...prev, [field]: numValue };
+      return {
+        ...updatedTransaction,
+        total: calculateTotal(
+          field === "subtotal" ? numValue : prev.subtotal!,
+          field === "tipAmount" ? numValue : prev.tipAmount!
+        ),
+      };
+    });
   };
 
   return (
     <Modal isOpen={isOpen} size="2xl" onClose={onClose}>
       <ModalContent>
-        <ModalHeader>Create New Bill Pay</ModalHeader>
+        <ModalHeader>Create New Transaction</ModalHeader>
         <ModalBody>
-          <Input
-            label="Vendor Name"
-            value={newBillPay.vendorName}
-            onChange={(e) => setNewBillPay({ ...newBillPay, vendorName: e.target.value })}
-          />
           <Select
-            label="Vendor Method"
-            selectedKeys={[newBillPay.vendorMethod]}
-            onChange={(e) => setNewBillPay({ ...newBillPay, vendorMethod: e.target.value })}
+            label="Processor"
+            selectedKeys={[newTransaction.processor!]}
+            onChange={(e) => setNewTransaction({ ...newTransaction, processor: e.target.value as PaymentProcessor })}
           >
-            {vendorMethods.map((method) => (
+            {processors.map((processor) => (
+              <SelectItem key={processor} value={processor}>
+                {processor}
+              </SelectItem>
+            ))}
+          </Select>
+          <Select
+            label="Payment Method"
+            selectedKeys={[newTransaction.paymentMethod!]}
+            onChange={(e) => setNewTransaction({ ...newTransaction, paymentMethod: e.target.value })}
+          >
+            {paymentMethods.map((method) => (
               <SelectItem key={method} value={method}>
                 {method}
               </SelectItem>
             ))}
           </Select>
           <Input
-            label="Routing Number"
-            value={newBillPay.routingNumber}
-            onChange={(e) => setNewBillPay({ ...newBillPay, routingNumber: e.target.value })}
-          />
-          <Input
-            label="Account Number"
-            value={newBillPay.accountNumber}
-            onChange={(e) => setNewBillPay({ ...newBillPay, accountNumber: e.target.value })}
-          />
-          <Input
-            label="Memo"
-            value={newBillPay.memo}
-            onChange={(e) => setNewBillPay({ ...newBillPay, memo: e.target.value })}
-          />
-          <Input
-            label="Internal Note"
-            value={newBillPay.internalNote}
-            onChange={(e) => setNewBillPay({ ...newBillPay, internalNote: e.target.value })}
-          />
-          <Input
-            label="Amount"
+            label="Subtotal"
             type="number"
-            value={newBillPay.amount}
-            onChange={(e) => handleAmountOrFeeChange("amount", e.target.value)}
+            value={(newTransaction.subtotal! / 100).toString()}
+            onChange={(e) => handleAmountChange("subtotal", e.target.value)}
           />
           <Input
-            label="Fee"
+            label="Tip Amount"
             type="number"
-            value={newBillPay.fee}
-            onChange={(e) => handleAmountOrFeeChange("fee", e.target.value)}
+            value={(newTransaction.tipAmount! / 100).toString()}
+            onChange={(e) => handleAmountChange("tipAmount", e.target.value)}
           />
-          <Input isReadOnly label="Total" type="number" value={newBillPay.total} />
+          <Input isReadOnly label="Total" type="number" value={(newTransaction.total! / 100).toString()} />
+          <Input
+            label="Currency"
+            value={newTransaction.currency}
+            onChange={(e) => setNewTransaction({ ...newTransaction, currency: e.target.value })}
+          />
+          {/* Add inputs for billing and shipping addresses if needed */}
         </ModalBody>
         <ModalFooter>
           <Button onPress={onClose}>Cancel</Button>
