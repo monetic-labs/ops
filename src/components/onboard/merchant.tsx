@@ -11,6 +11,8 @@ import { CompanyInfo } from "./form-company-info";
 import { CompanyOwner } from "./form-company-owners";
 import { Validate } from "./form-validate";
 import { Documents } from "./form-documents";
+import { MerchantFormData } from "@/validations/merchant";
+import { Control, FieldErrors } from "react-hook-form";
 
 export const KYBMerchantForm: React.FC<{ onCancel: () => void; initialEmail: string }> = ({
   onCancel,
@@ -55,8 +57,8 @@ export const KYBMerchantForm: React.FC<{ onCancel: () => void; initialEmail: str
         <Tab key="company-info" title="Company Info">
           <CompanyInfo
             addressLookup={addressLookup}
-            control={control}
-            errors={errors}
+            control={control as Control<MerchantFormData>}
+            errors={errors as FieldErrors<MerchantFormData>}
             handleCancel={handleCancel}
             handleZipCodeLookup={handleZipCodeLookup}
             initialEmail={initialEmail}
@@ -68,8 +70,8 @@ export const KYBMerchantForm: React.FC<{ onCancel: () => void; initialEmail: str
         <Tab key="company-owner" title="Company Owner">
           <CompanyOwner
             append={append as () => void}
-            control={control}
-            errors={errors}
+            control={control as Control<MerchantFormData>}
+            errors={errors as FieldErrors<MerchantFormData>}
             fields={fields}
             handleCancel={handleCancel}
             initialEmail={initialEmail}

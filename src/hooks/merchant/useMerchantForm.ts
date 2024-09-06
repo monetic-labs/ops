@@ -3,15 +3,16 @@ import { useForm, useFieldArray } from "react-hook-form";
 import { MerchantCreateInput, ISO3166Alpha2Country, MerchantCreateOutput } from "@backpack-fux/pylon-sdk";
 import { useRouter } from "next/navigation";
 
-import { MerchantFormData } from "@/data/merchant";
+import { merchantCreateSchema, MerchantFormData } from "@/validations/merchant";
 import { useCreateMerchant } from "@/hooks/merchant/useCreateMerchant";
 import { merchantConfig } from "@/config/merchant";
 import { lookupZipCode } from "@/utils/helpers";
 
 import { useSetupOTP } from "./useSetupOTP";
+import { zodResolver } from "@hookform/resolvers/zod";
 
 export const useMerchantForm = (initialEmail: string, onCancel: () => void) => {
-  const router = useRouter();
+  //const router = useRouter();
 
   const [activeTab, setActiveTab] = useState("company-info");
   const [stepCompletion, setStepCompletion] = useState({
@@ -32,14 +33,18 @@ export const useMerchantForm = (initialEmail: string, onCancel: () => void) => {
   const {
     control,
     handleSubmit,
-    formState: { errors },
+    formState: { errors, isValid },
     getValues,
     trigger,
     watch,
     setValue,
   } = useForm<MerchantFormData>({
+    resolver: zodResolver(merchantCreateSchema),
+    mode: "onChange",
     defaultValues: {
-      representatives: [{ name: "", surname: "", email: initialEmail, phoneNumber: "" }],
+      company: { name: "", email: initialEmail, registeredAddress: { street1: "", city: "", country: "US" as ISO3166Alpha2Country } },
+      representatives: [{ name : "", surname: "", email: initialEmail, phoneNumber: "" }],
+      walletAddress: "",
     },
   });
 
@@ -99,25 +104,25 @@ export const useMerchantForm = (initialEmail: string, onCancel: () => void) => {
 
         const combinedData: MerchantCreateInput = {
           fee: merchantConfig.fee,
-          walletAddress: data.company.settlementAddress as `0x${string}`,
+          walletAddress: data.walletAddress as `0x${string}`,
           company: {
             name: data.company.name,
             email: data.company.email,
             registeredAddress: {
-              street1: data.company.mailingAddress.street1,
-              street2: data.company.mailingAddress.street2 || "",
-              city: data.company.mailingAddress.city,
-              postcode: data.company.mailingAddress.postcode || "",
-              state: data.company.mailingAddress.state || "",
-              country: (data.company.mailingAddress.country || "US") as ISO3166Alpha2Country,
+              street1: data.company.registeredAddress.street1,
+              street2: data.company.registeredAddress.street2 || "",
+              city: data.company.registeredAddress.city,
+              postcode: data.company.registeredAddress.postcode || "",
+              state: data.company.registeredAddress.state || "",
+              country: (data.company.registeredAddress.country || "US") as ISO3166Alpha2Country,
             },
           },
-          representatives: data.representatives.map((rep) => ({
-            name: rep.name,
-            surname: rep.surname,
-            email: rep.email,
-            phoneNumber: rep.phoneNumber,
-          })),
+          representatives: [{
+            name: data.representatives[0].name,
+            surname: data.representatives[0].surname,
+            email: data.representatives[0].email,
+            phoneNumber: data.representatives[0].phoneNumber,
+          }],
         };
 
       try {

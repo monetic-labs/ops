@@ -1,14 +1,17 @@
 import React from "react";
-import { Controller, useWatch } from "react-hook-form";
+import { Control, Controller, FieldErrors, useForm, useWatch } from "react-hook-form";
 import { Input } from "@nextui-org/input";
 import { Button } from "@nextui-org/button";
 import { Tooltip } from "@nextui-org/tooltip";
 
 import { AddressModal } from "./address-modal";
+import { MerchantFormData, merchantCreateSchema } from "@/validations/merchant";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { emailRegex, emailSchema } from "@/validations/auth";
 
 interface CompanyInfoProps {
-  control: any;
-  errors: any;
+  control: Control<MerchantFormData>;
+  errors: FieldErrors<MerchantFormData>;
   handleZipCodeLookup: (zipCode: string) => void;
   addressLookup: any;
   isAddressModalOpen: boolean;
@@ -19,8 +22,8 @@ interface CompanyInfoProps {
 }
 
 export const CompanyInfo: React.FC<CompanyInfoProps> = ({
-  control,
-  errors,
+  //control,
+  // errors,
   handleZipCodeLookup,
   addressLookup,
   isAddressModalOpen,
@@ -29,29 +32,51 @@ export const CompanyInfo: React.FC<CompanyInfoProps> = ({
   onSubmitStep,
   initialEmail,
 }) => {
-  const watchedFields = useWatch({
+  const {
     control,
-    name: ["company.name", "company.email", "company.mailingAddress.postcode", "company.settlementAddress"],
+    handleSubmit,
+    formState: { errors, isValid },
+    watch,
+  } = useForm<MerchantFormData>({
+    resolver: zodResolver(merchantCreateSchema),
+    mode: "onChange",
+    defaultValues: {
+      company: {
+        email: initialEmail,
+      },
+    },
   });
 
+  
+  const watchedFields = watch(["company.name", "company.email", "company.registeredAddress.postcode", "walletAddress"]);
   const isStep1Complete = watchedFields.every((field) => field && field.trim() !== "");
 
+  const onSubmit = (data: MerchantFormData) => {
+    if (isValid) {
+      onSubmitStep(1);
+    } else {
+      console.error("Form submitted with invalid data");
+      // Optionally, show an error message to the user
+    }
+  };
+
   return (
-    <div className="space-y-4">
+    <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
       <Controller
         control={control}
         name="company.name"
         render={({ field }) => (
           <Tooltip
             className="tooltip-left-align"
-            content="Official registered name of your company (e.g., Acme Corporation)"
+            content="User your registered LLC or S-Corp name, even if you dba under a different name"
           >
             <Input
               {...field}
               errorMessage={errors.company?.name?.message}
               isInvalid={!!errors.company?.name}
               label="Company Name"
-              placeholder="Enter company name"
+              placeholder="Figgis Agency"
+              maxLength={50} //soft limit -> see absolute limit in validation
             />
           </Tooltip>
         )}
@@ -63,7 +88,7 @@ export const CompanyInfo: React.FC<CompanyInfoProps> = ({
         render={({ field }) => (
           <Tooltip
             className="tooltip-left-align"
-            content="Official email address for business communications (e.g., info@acmecorp.com)"
+            content="This is the email you want company communications sent to, including important notifications and account updates"
           >
             <Input
               {...field}
@@ -71,26 +96,28 @@ export const CompanyInfo: React.FC<CompanyInfoProps> = ({
               errorMessage={errors.company?.email?.message}
               isInvalid={!!errors.company?.email}
               label="Company Email"
-              placeholder="Enter company email"
+              placeholder="dick@figgisagency.xyz"
+              maxLength={50} //soft limit -> see absolute limit in validation              
             />
           </Tooltip>
         )}
         rules={{
           required: "Company email is required",
-          pattern: { value: /^\S+@\S+$/i, message: "Invalid email address" },
+          pattern: { value: emailRegex, message: "Invalid email address" },
         }}
       />
       <Controller
         control={control}
-        name="company.mailingAddress.postcode"
+        name="company.registeredAddress.postcode"
         render={({ field }) => (
           <Tooltip className="tooltip-left-align" content="5-digit ZIP code for US addresses (e.g., 90210)">
             <Input
               {...field}
-              errorMessage={errors.company?.mailingAddress?.postcode?.message}
-              isInvalid={!!errors.company?.mailingAddress?.postcode}
+              errorMessage={errors.company?.registeredAddress?.postcode?.message}
+              isInvalid={!!errors.company?.registeredAddress?.postcode}
               label="Postal Code"
-              placeholder="Enter postal code"
+              placeholder="10001"
+              maxLength={5}
               onChange={(e) => {
                 field.onChange(e);
                 handleZipCodeLookup(e.target.value);
@@ -102,18 +129,19 @@ export const CompanyInfo: React.FC<CompanyInfoProps> = ({
       />
       <Controller
         control={control}
-        name="company.settlementAddress"
+        name="walletAddress"
         render={({ field }) => (
           <Tooltip
             className="tooltip-left-align"
-            content="Full address where payments will be settled (e.g., 123 Main St, Anytown, CA 90210)"
+            content="This is an ethereum style 0x address and where your funds will be settled"
           >
             <Input
               {...field}
-              errorMessage={errors.company?.settlementAddress?.message}
-              isInvalid={!!errors.company?.settlementAddress}
+              errorMessage={errors.walletAddress?.message}
+              isInvalid={!!errors.walletAddress}
               label="Settlement Address"
-              placeholder="Enter settlement address"
+              placeholder="0xdeadbeef"
+              maxLength={42}
             />
           </Tooltip>
         )}
@@ -127,7 +155,6 @@ export const CompanyInfo: React.FC<CompanyInfoProps> = ({
         onClose={() => setIsAddressModalOpen(false)}
         onConfirm={() => {
           setIsAddressModalOpen(false);
-          // You might want to trigger form validation here
         }}
       />
       <div className="flex justify-between mt-4">
@@ -142,6 +169,6 @@ export const CompanyInfo: React.FC<CompanyInfoProps> = ({
           Step 1: Submit Company Info
         </Button>
       </div>
-    </div>
+    </form>
   );
 };

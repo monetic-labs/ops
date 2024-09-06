@@ -2,21 +2,23 @@ import React from "react";
 import { Modal, ModalContent, ModalHeader, ModalBody, ModalFooter } from "@nextui-org/modal";
 import { Input } from "@nextui-org/input";
 import { Button } from "@nextui-org/button";
-import { Controller, Control } from "react-hook-form";
+import { Controller, Control, FieldErrors } from "react-hook-form";
 
-import { MerchantFormData } from "@/data/merchant";
+import { MerchantFormData } from "@/validations/merchant";
+import { companyInfoSchema } from "@/validations/onboard";
+import { ISO3166Alpha2Country } from "@backpack-fux/pylon-sdk";
 
 interface AddressModalProps {
   isOpen: boolean;
   onClose: () => void;
   onConfirm: () => void;
   control: Control<MerchantFormData>;
-  errors: any;
+  errors: FieldErrors<MerchantFormData>;
   defaultValues: {
     city: string;
     state: string;
     postcode: string;
-    country: string;
+    country: ISO3166Alpha2Country;
   };
 }
 
@@ -35,48 +37,48 @@ export const AddressModal: React.FC<AddressModalProps> = ({
         <ModalBody>
           <Controller
             control={control}
-            name="company.mailingAddress.street1"
+            name="company.registeredAddress.street1"
             render={({ field }) => (
               <Input
                 {...field}
-                errorMessage={errors.company?.mailingAddress?.street1?.message}
-                isInvalid={!!errors.company?.mailingAddress?.street1}
+                errorMessage={errors.company?.registeredAddress?.street1?.message}
+                isInvalid={!!errors.company?.registeredAddress?.street1}
                 label="Street Address"
-                placeholder="Enter street address"
+                placeholder="123 Epic St"
               />
             )}
             rules={{ required: "Street address is required" }}
           />
           <Controller
             control={control}
-            name="company.mailingAddress.street2"
+            name="company.registeredAddress.street2"
             render={({ field }) => (
               <Input
                 {...field}
-                errorMessage={errors.company?.mailingAddress?.street2?.message}
-                isInvalid={!!errors.company?.mailingAddress?.street2}
+                errorMessage={errors.company?.registeredAddress?.street2?.message}
+                isInvalid={!!errors.company?.registeredAddress?.street2}
                 label="Street Address Line 2"
-                placeholder="Enter street address"
+                placeholder="Unit B 420"
               />
             )}
           />
           <Controller
             control={control}
             defaultValue={defaultValues.city}
-            name="company.mailingAddress.city"
+            name="company.registeredAddress.city"
             render={({ field }) => <Input {...field} isReadOnly label="City" />}
           />
           <Controller
             control={control}
             defaultValue={defaultValues.state}
-            name="company.mailingAddress.state"
+            name="company.registeredAddress.state"
             render={({ field }) => (
               <Input
                 {...field}
                 isReadOnly
                 label="State"
                 maxLength={2} // Restrict to 2 characters
-                placeholder="Enter state code (e.g., CA)"
+                placeholder="WA"
               />
             )}
             rules={{ required: "State is required", maxLength: 2 }}
@@ -84,20 +86,27 @@ export const AddressModal: React.FC<AddressModalProps> = ({
           <Controller
             control={control}
             defaultValue={defaultValues.postcode}
-            name="company.mailingAddress.postcode"
-            render={({ field }) => <Input {...field} isReadOnly label="Postal Code" />}
+            name="company.registeredAddress.postcode"
+            render={({ field }) => (
+              <Input 
+                {...field} 
+                isReadOnly 
+                label="Postal Code" 
+                placeholder="98101" />
+            )}
           />
           <Controller
             control={control}
             defaultValue={defaultValues.country}
-            name="company.mailingAddress.country"
+            name="company.registeredAddress.country"
             render={({ field }) => (
               <Input
                 {...field}
-                errorMessage={errors.company?.mailingAddress?.country?.message}
-                isInvalid={!!errors.company?.mailingAddress?.country}
+                errorMessage={errors.company?.registeredAddress?.country?.message}
+                isInvalid={!!errors.company?.registeredAddress?.country}
+                isReadOnly
                 label="Country"
-                placeholder="Enter country code (e.g., US)"
+                placeholder="US"
               />
             )}
             rules={{ required: "Country is required", pattern: /^[A-Z]{2}$/ }}
