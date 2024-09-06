@@ -50,7 +50,6 @@ export const CompanyInfo: React.FC<CompanyInfoProps> = ({
     },
   });
 
-  
   const watchedFields = watch(["company.name", "company.email", "company.registeredAddress.postcode", "walletAddress"]);
   const isStep1Complete = watchedFields.every((field) => field && field.trim() !== "");
   console.log("isStep1Complete", isStep1Complete);
@@ -75,14 +74,14 @@ export const CompanyInfo: React.FC<CompanyInfoProps> = ({
         render={({ field }) => (
           <Tooltip
             className="tooltip-left-align"
-            content="User your registered LLC or S-Corp name, even if you dba under a different name"
+            content="Use your registered LLC or S-Corp name, even if you dba under a different name"
           >
             <Input
               {...field}
               errorMessage={errors.company?.name?.message}
               isInvalid={!!errors.company?.name}
               label="Company Name"
-              placeholder="Figgis Agency"
+              placeholder="Figgis Agency LLC"
               maxLength={50} //soft limit -> see absolute limit in validation
             />
           </Tooltip>
@@ -104,7 +103,7 @@ export const CompanyInfo: React.FC<CompanyInfoProps> = ({
               isInvalid={!!errors.company?.email}
               label="Company Email"
               placeholder="dick@figgisagency.xyz"
-              maxLength={50} //soft limit -> see absolute limit in validation              
+              maxLength={50} //soft limit -> see absolute limit in validation
             />
           </Tooltip>
         )}
@@ -147,7 +146,7 @@ export const CompanyInfo: React.FC<CompanyInfoProps> = ({
               errorMessage={errors.walletAddress?.message}
               isInvalid={!!errors.walletAddress}
               label="Settlement Address"
-              placeholder="0xdeadbeef"
+              placeholder="0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045"
               maxLength={42}
             />
           </Tooltip>

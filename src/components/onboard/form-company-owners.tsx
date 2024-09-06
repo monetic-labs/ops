@@ -166,7 +166,7 @@ export const CompanyOwner: React.FC<CompanyOwnerProps> = ({
                         errorMessage={errors.representatives?.[index]?.phoneNumber?.message}
                         isInvalid={!!errors.representatives?.[index]?.phoneNumber}
                         label="Owner Phone"
-                        placeholder="Enter owner phone"
+                        placeholder="5555555555"
                         maxLength={15}
                       />
                     </Tooltip>
