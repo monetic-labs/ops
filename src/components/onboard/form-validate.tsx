@@ -96,7 +96,7 @@ export const Validate: React.FC<ValidateProps> = ({
           disabled={!stepCompletion.step1 && !stepCompletion.step2}
           onClick={() => onSubmitStep(3)}
         >
-          Step 3: Complete Validation
+          Complete Validation
         </Button>
       </div>
     </div>

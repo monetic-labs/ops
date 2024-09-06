@@ -217,7 +217,7 @@ export const CompanyOwner: React.FC<CompanyOwnerProps> = ({
                 disabled={!isStep2Complete}
                 onClick={() => onSubmitStep(2)}
               >
-                Step 2: Submit Owner Info
+                Submit Owner Info
               </Button>
             </div>
           </div>

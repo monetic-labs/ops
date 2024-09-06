@@ -82,7 +82,7 @@ export const Documents: React.FC<DocumentsProps> = ({
           disabled={!stepCompletion.step2}
           onClick={() => onSubmitStep(3)}
         >
-          Step 3: Submit Documents
+          Submit Documents
         </Button>
       </div>
     </div>

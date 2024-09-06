@@ -17,7 +17,7 @@ export function middleware(request: NextRequest) {
     }
     if (isHomePage) {
       // Rewrite authenticated users from home page to the dashboard
-      return NextResponse.rewrite(new URL("/onboard", request.url));
+      return NextResponse.rewrite(new URL("/", request.url));
     }
   } else {
     // User is not authenticated

@@ -13,10 +13,9 @@ import { Validate } from "./form-validate";
 import { Documents } from "./form-documents";
 import { MerchantFormData } from "@/validations/merchant";
 import { Control, FieldErrors } from "react-hook-form";
+import { Review } from "./form-review";
 
-export const KYBMerchantForm: React.FC<{ onCancel: () => void; initialEmail: string }> = ({
-  initialEmail,
-}) => {
+export const KYBMerchantForm: React.FC<{ onCancel: () => void; initialEmail: string }> = ({ initialEmail }) => {
   const router = useRouter();
   const {
     activeTab,
@@ -33,12 +32,6 @@ export const KYBMerchantForm: React.FC<{ onCancel: () => void; initialEmail: str
     setIsAddressModalOpen,
     handleCancel,
     onSubmitStep,
-    otp,
-    isOtpComplete,
-    otpSubmitted,
-    otpInputs,
-    handleOtpChange,
-    handleResendOTP,
     isIssueLoading,
     issueError,
     verifyError,
@@ -48,7 +41,11 @@ export const KYBMerchantForm: React.FC<{ onCancel: () => void; initialEmail: str
     createMerchantError,
     createMerchantData,
     formKey,
-  } = useMerchantForm(initialEmail, () => router.push("/auth"));
+  } = useMerchantForm(initialEmail);
+
+  const handleEditStep = (step: string) => {
+    setActiveTab(step);
+  };
 
   return (
     <FormCard className="overflow-y-auto max-h-screen" title="KYB Merchant Onboarding">
@@ -79,24 +76,11 @@ export const KYBMerchantForm: React.FC<{ onCancel: () => void; initialEmail: str
             onSubmitStep={onSubmitStep}
           />
         </Tab>
-        <Tab key="validate" title="Validate">
-          <Validate
-            createMerchant={createMerchant}
-            createMerchantData={createMerchantData}
-            createMerchantError={createMerchantError}
-            handleCancel={handleCancel}
-            handleOtpChange={handleOtpChange}
-            handleResendOTP={handleResendOTP}
-            isCreatingMerchant={isCreatingMerchant}
-            isIssueLoading={isIssueLoading}
-            isOtpComplete={isOtpComplete}
-            issueError={issueError}
-            otp={otp}
-            otpInputs={otpInputs}
-            otpSubmitted={otpSubmitted}
-            stepCompletion={stepCompletion}
-            verifyError={verifyError}
-            onSubmitStep={onSubmitStep}
+        <Tab key="review" title="Review">
+          <Review
+            data={control._formValues as MerchantFormData}
+            onSubmit={() => onSubmitStep(2)}
+            onEdit={handleEditStep}
           />
         </Tab>
         <Tab key="documents" title="Documents">

@@ -175,7 +175,7 @@ export const CompanyInfo: React.FC<CompanyInfoProps> = ({
             console.log("isStep1Complete", isStep1Complete);
           }}
         >
-          Step 1: Submit Company Info
+          Submit Company Info
         </Button>
       </div>
     </form>

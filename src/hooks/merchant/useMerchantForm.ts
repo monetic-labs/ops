@@ -9,8 +9,9 @@ import { lookupZipCode } from "@/utils/helpers";
 
 import { useSetupOTP } from "./useSetupOTP";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useRouter } from "next/navigation";
 
-export const useMerchantForm = (initialEmail: string, onCancel: () => void) => {
+export const useMerchantForm = (initialEmail: string) => {
   const [activeTab, setActiveTab] = useState("company-info");
   const [stepCompletion, setStepCompletion] = useState({
     step1: false,
@@ -27,6 +28,8 @@ export const useMerchantForm = (initialEmail: string, onCancel: () => void) => {
   const [tosLink, setTosLink] = useState<string | null>(null);
   const [formKey, setFormKey] = useState(0);
   const [merchantResponse, setMerchantResponse] = useState<MerchantCreateOutput | null>(null);
+
+  const router = useRouter();
 
   const {
     control,
@@ -66,10 +69,10 @@ export const useMerchantForm = (initialEmail: string, onCancel: () => void) => {
   useEffect(() => {
     setValue("company.email", initialEmail);
     console.log("initialEmail", initialEmail);
-    
+
     setValue("representatives.0.email", initialEmail);
     console.log("representatives.0.email", getValues("representatives.0.email"));
-    
+
     setFormKey((prevKey) => prevKey + 1);
   }, [setValue, initialEmail, getValues]);
 
@@ -161,9 +164,9 @@ export const useMerchantForm = (initialEmail: string, onCancel: () => void) => {
     [createMerchant, getValues, otpHook.initiateOTP, trigger, watch]
   );
 
-  const handleCancel = useCallback(() => {
-    onCancel();
-  }, [onCancel]);
+  const handleCancel = () => {
+    router.push("/auth");
+  };
 
   return {
     activeTab,
