@@ -2,6 +2,9 @@ import React from "react";
 import { Button } from "@nextui-org/button";
 
 import { otpConfig } from "@/config/otp";
+import { MerchantCreateInput, MerchantCreateOutput } from "@backpack-fux/pylon-sdk";
+import { FieldArrayWithId } from "react-hook-form";
+import { MerchantFormData } from "@/data/merchant";
 
 interface ValidateProps {
   otp: string;
@@ -16,10 +19,15 @@ interface ValidateProps {
   isIssueLoading: boolean;
   issueError: string | boolean;
   verifyError: string | boolean;
-  createMerchant: (data: any) => Promise<any>;
+  createMerchant: (data: MerchantCreateInput) => Promise<{
+    success: boolean;
+    data: MerchantCreateOutput | null;
+    error: string | null;
+  }>;
   isCreatingMerchant: boolean;
-  createMerchantData: any;
+  createMerchantData: MerchantCreateOutput | null;
   createMerchantError: any;
+  fields: FieldArrayWithId<MerchantFormData, "representatives", "id">[];
 }
 
 export const Validate: React.FC<ValidateProps> = ({
@@ -39,6 +47,7 @@ export const Validate: React.FC<ValidateProps> = ({
   isCreatingMerchant,
   createMerchantData,
   createMerchantError,
+  fields,
 }) => {
   return (
     <div className="space-y-4">
@@ -56,8 +65,8 @@ export const Validate: React.FC<ValidateProps> = ({
                   isOtpComplete
                     ? "animate-flash border-ualert-500"
                     : otpSubmitted
-                      ? "border-green-500"
-                      : "border-gray-300"
+                    ? "border-green-500"
+                    : "border-gray-300"
                 }
                 focus:border-ualert-500 focus:outline-none`}
               maxLength={1}
