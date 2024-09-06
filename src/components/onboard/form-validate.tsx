@@ -40,10 +40,6 @@ export const Validate: React.FC<ValidateProps> = ({
   isIssueLoading,
   issueError,
   verifyError,
-  createMerchant,
-  isCreatingMerchant,
-  createMerchantData,
-  createMerchantError,
 }) => {
   return (
     <div className="space-y-4">

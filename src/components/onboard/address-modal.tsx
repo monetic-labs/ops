@@ -1,12 +1,13 @@
 import React from "react";
-import { Modal, ModalContent, ModalHeader, ModalBody, ModalFooter } from "@nextui-org/modal";
-import { Input } from "@nextui-org/input";
 import { Button } from "@nextui-org/button";
+import { Input } from "@nextui-org/input";
+import { Modal, ModalContent, ModalHeader, ModalBody, ModalFooter } from "@nextui-org/modal";
+
 import { Controller, Control, FieldErrors } from "react-hook-form";
 
-import { MerchantFormData } from "@/validations/merchant";
-import { companyInfoSchema } from "@/validations/onboard";
 import { ISO3166Alpha2Country } from "@backpack-fux/pylon-sdk";
+
+import { MerchantFormData } from "@/validations/merchant";
 
 interface AddressModalProps {
   isOpen: boolean;

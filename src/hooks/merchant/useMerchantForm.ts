@@ -30,7 +30,6 @@ export const useMerchantForm = (initialEmail: string, onCancel: () => void) => {
 
   const {
     control,
-    handleSubmit,
     formState: { errors, isValid },
     getValues,
     trigger,
@@ -66,7 +65,11 @@ export const useMerchantForm = (initialEmail: string, onCancel: () => void) => {
 
   useEffect(() => {
     setValue("company.email", initialEmail);
+    console.log("initialEmail", initialEmail);
+    
     setValue("representatives.0.email", initialEmail);
+    console.log("representatives.0.email", getValues("representatives.0.email"));
+    
     setFormKey((prevKey) => prevKey + 1);
   }, [setValue, initialEmail, getValues]);
 
@@ -92,15 +95,18 @@ export const useMerchantForm = (initialEmail: string, onCancel: () => void) => {
     async (step: number) => {
       const isValid = await trigger();
 
-      if (!isValid) return;
+      if (!isValid) {
+        console.error("Form validation failed:", errors);
+        return;
+      }
 
       const data = getValues();
-
       console.log(`Step ${step} data:`, data);
 
       if (step === 1) {
         setStepCompletion((prev) => ({ ...prev, step1: true }));
         setActiveTab("company-owner");
+        console.log("Step 1 data:", data);
       } else if (step === 2) {
         setStepCompletion((prev) => ({ ...prev, step2: true }));
 
@@ -128,6 +134,8 @@ export const useMerchantForm = (initialEmail: string, onCancel: () => void) => {
             },
           ],
         };
+
+        console.log("Step 2 data:", combinedData);
 
         try {
           const { success, data: merchantResponse, error } = await createMerchant(combinedData);

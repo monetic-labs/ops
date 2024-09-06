@@ -15,7 +15,6 @@ import { MerchantFormData } from "@/validations/merchant";
 import { Control, FieldErrors } from "react-hook-form";
 
 export const KYBMerchantForm: React.FC<{ onCancel: () => void; initialEmail: string }> = ({
-  onCancel,
   initialEmail,
 }) => {
   const router = useRouter();
