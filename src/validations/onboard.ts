@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { emailSchema } from "./auth";
-import { ISO3166Alpha2Country } from "@/types";
+import { ISO3166Alpha2Country } from "@backpack-fux/pylon-sdk";
 
 const phoneRegex = /^[+]?[(]?[0-9]{3}[)]?[-s.]?[0-9]{3}[-s.]?[0-9]{4,6}$/;
 const walletAddressRegex = /^0x[a-fA-F0-9]{40}$/;
@@ -37,16 +37,24 @@ export const companyInfoSchema = z.object({
       street1: z.string().max(50),
       street2: z.string().max(50).optional(),
       city: z.string().max(50),
-      postcode: z.string().length(5).regex(/^[0-9]{5}$/, "Invalid postal code"),
-      state: z.string().length(2).regex(/^[a-zA-Z0-9]{2}$/, "Invalid state code"),
-      country: z.string().length(2).regex(/^[a-zA-Z0-9]{2}$/, "Invalid country code"),
+      postcode: z
+        .string()
+        .length(5)
+        .regex(/^[0-9]{5}$/, "Invalid postal code"),
+      state: z
+        .string()
+        .length(2)
+        .regex(/^[a-zA-Z0-9]{2}$/, "Invalid state code"),
+      country: z.custom<ISO3166Alpha2Country>(),
     }),
   }),
 });
 
 export const complianceSchema = z.object({
-  compliance: z.object({
-    bridgeCustomerId: z.string().uuid(),
-    bridgeComplianceId: z.string().uuid(),
-  }).optional(),
+  compliance: z
+    .object({
+      bridgeCustomerId: z.string().uuid(),
+      bridgeComplianceId: z.string().uuid(),
+    })
+    .optional(),
 });

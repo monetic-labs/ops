@@ -7,8 +7,7 @@ import { useRouter } from "next/navigation";
 
 import { useIssueOTP, useVerifyOTP } from "@/hooks/auth/useOTP";
 import { title, subtitle } from "@/components/primitives";
-
-const OTP_LENGTH = 6;
+import { OTP_CODE_LENGTH as OTP_LENGTH } from "@/utils/constants";
 
 export default function AuthPage() {
   const [email, setEmail] = useState("");

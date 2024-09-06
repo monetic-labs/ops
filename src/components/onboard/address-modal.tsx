@@ -87,13 +87,7 @@ export const AddressModal: React.FC<AddressModalProps> = ({
             control={control}
             defaultValue={defaultValues.postcode}
             name="company.registeredAddress.postcode"
-            render={({ field }) => (
-              <Input 
-                {...field} 
-                isReadOnly 
-                label="Postal Code" 
-                placeholder="98101" />
-            )}
+            render={({ field }) => <Input {...field} isReadOnly label="Postal Code" placeholder="98101" />}
           />
           <Controller
             control={control}

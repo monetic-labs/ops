@@ -11,7 +11,6 @@ import { useSetupOTP } from "./useSetupOTP";
 import { zodResolver } from "@hookform/resolvers/zod";
 
 export const useMerchantForm = (initialEmail: string, onCancel: () => void) => {
-
   const [activeTab, setActiveTab] = useState("company-info");
   const [stepCompletion, setStepCompletion] = useState({
     step1: false,
@@ -41,8 +40,12 @@ export const useMerchantForm = (initialEmail: string, onCancel: () => void) => {
     resolver: zodResolver(merchantCreateSchema),
     mode: "onChange",
     defaultValues: {
-      company: { name: "", email: initialEmail, registeredAddress: { street1: "", city: "", country: "US" as ISO3166Alpha2Country } },
-      representatives: [{ name : "", surname: "", email: initialEmail, phoneNumber: "" }],
+      company: {
+        name: "",
+        email: initialEmail,
+        registeredAddress: { street1: "", city: "", country: "US" as ISO3166Alpha2Country },
+      },
+      representatives: [{ name: "", surname: "", email: initialEmail, phoneNumber: "" }],
       walletAddress: "",
     },
   });
@@ -116,12 +119,14 @@ export const useMerchantForm = (initialEmail: string, onCancel: () => void) => {
               country: (data.company.registeredAddress.country || "US") as ISO3166Alpha2Country,
             },
           },
-          representatives: [{
-            name: data.representatives[0].name,
-            surname: data.representatives[0].surname,
-            email: data.representatives[0].email,
-            phoneNumber: data.representatives[0].phoneNumber,
-          }],
+          representatives: [
+            {
+              name: data.representatives[0].name,
+              surname: data.representatives[0].surname,
+              email: data.representatives[0].email,
+              phoneNumber: data.representatives[0].phoneNumber,
+            },
+          ],
         };
 
         try {
@@ -130,7 +135,7 @@ export const useMerchantForm = (initialEmail: string, onCancel: () => void) => {
           if (success && merchantResponse) {
             console.log("useMerchantForm response:", merchantResponse);
             setMerchantResponse(merchantResponse);
-            setTosLink(merchantResponse.data.compliance.tosLink);
+            setTosLink(merchantResponse.data.tosLink);
             setActiveTab("documents");
           } else {
             console.error("Error creating merchant:", error);

@@ -149,20 +149,3 @@ export const stateCodes: StateCode = {
     code: "SG",
   },
 };
-
-export type ISO3166Alpha2Country =
-  | "US"
-  | "CA"
-  | "GB"
-  | "FR"
-  | "DE"
-  | "JP"
-  | "AU"
-  | "IN"
-  | "BR"
-  | "ZA"
-  | "NZ"
-  | "SG"
-  | "MX"
-  | "IT"
-  | "ES";
