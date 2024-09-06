@@ -19,8 +19,8 @@ export const Documents: React.FC<DocumentsProps> = ({
   merchantResponse,
 }) => {
   const [useHostedFlow, setUseHostedFlow] = useState(false);
-  const kycLink = merchantResponse?.data?.kycLink || null;
-  const tosLink = merchantResponse?.data?.tosLink || null;
+  const kycLink = merchantResponse?.data.compliance.kycLink || null;
+  const tosLink = merchantResponse?.data.compliance.tosLink || null;
 
   const handleKYCRedirect = () => {
     if (kycLink) {

@@ -1,13 +1,16 @@
 import React from "react";
-import { Control, Controller, FieldErrors, useForm, useWatch } from "react-hook-form";
+import { Control, Controller, FieldErrors, useForm } from "react-hook-form";
+
+import { zodResolver } from "@hookform/resolvers/zod";
+
 import { Input } from "@nextui-org/input";
 import { Button } from "@nextui-org/button";
 import { Tooltip } from "@nextui-org/tooltip";
 
-import { AddressModal } from "./address-modal";
+import { emailRegex } from "@/validations/auth";
 import { MerchantFormData, merchantCreateSchema } from "@/validations/merchant";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { emailRegex, emailSchema } from "@/validations/auth";
+
+import { AddressModal } from "./address-modal";
 
 interface CompanyInfoProps {
   control: Control<MerchantFormData>;
@@ -50,16 +53,20 @@ export const CompanyInfo: React.FC<CompanyInfoProps> = ({
   
   const watchedFields = watch(["company.name", "company.email", "company.registeredAddress.postcode", "walletAddress"]);
   const isStep1Complete = watchedFields.every((field) => field && field.trim() !== "");
+  console.log("isStep1Complete", isStep1Complete);
+  console.log("watchedFields", watchedFields);
 
   const onSubmit = (data: MerchantFormData) => {
+    console.log("Form submitted with data:", data);
     if (isValid) {
+      console.log("Calling onSubmitStep(1)");
       onSubmitStep(1);
     } else {
-      console.error("Form submitted with invalid data");
-      // Optionally, show an error message to the user
+      console.error("Form submitted with invalid data:", errors);
     }
   };
 
+  console.log("rendering company info");
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
       <Controller
@@ -164,7 +171,10 @@ export const CompanyInfo: React.FC<CompanyInfoProps> = ({
         <Button
           className={`bg-ualert-500 ${!isStep1Complete ? "button-disabled" : ""}`}
           disabled={!isStep1Complete}
-          onClick={() => onSubmitStep(1)}
+          onClick={() => {
+            onSubmitStep(1);
+            console.log("isStep1Complete", isStep1Complete);
+          }}
         >
           Step 1: Submit Company Info
         </Button>

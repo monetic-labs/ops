@@ -1,6 +1,5 @@
 import { z } from "zod";
 import { emailSchema } from "./auth";
-import { ISO3166Alpha2Country } from "@/types";
 
 const phoneRegex = /^[+]?[(]?[0-9]{3}[)]?[-s.]?[0-9]{3}[-s.]?[0-9]{4,6}$/;
 const walletAddressRegex = /^0x[a-fA-F0-9]{40}$/;

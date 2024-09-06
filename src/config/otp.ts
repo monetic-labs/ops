@@ -1,6 +1,6 @@
-import { otpSchema } from "@/validations/auth";
+import { OTP_LENGTH } from "@/validations/auth";
 
 export const otpConfig = {
-  length: otpSchema.length,
+  length: OTP_LENGTH,
   expiry: 10 * 60 * 1000, // 10 minutes
 };

@@ -4,7 +4,7 @@ import { Button } from "@nextui-org/button";
 import { otpConfig } from "@/config/otp";
 import { MerchantCreateInput, MerchantCreateOutput } from "@backpack-fux/pylon-sdk";
 import { FieldArrayWithId } from "react-hook-form";
-import { MerchantFormData } from "@/data/merchant";
+import { MerchantFormData } from "@/validations/merchant";
 
 interface ValidateProps {
   otp: string;
@@ -43,11 +43,6 @@ export const Validate: React.FC<ValidateProps> = ({
   isIssueLoading,
   issueError,
   verifyError,
-  createMerchant,
-  isCreatingMerchant,
-  createMerchantData,
-  createMerchantError,
-  fields,
 }) => {
   return (
     <div className="space-y-4">
