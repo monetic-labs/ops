@@ -2,22 +2,31 @@ import React from "react";
 import { Modal, ModalContent, ModalHeader, ModalBody, ModalFooter } from "@nextui-org/modal";
 import { Button } from "@nextui-org/button";
 import { Divider } from "@nextui-org/divider";
+import { Address } from "@backpack-fux/pylon-sdk";
+import { formattedDate, mapCurrencyToSymbol } from "@/utils/helpers";
 
 interface NetworkResponseProps {
   isOpen: boolean;
   onClose: () => void;
   response: {
     transactionId: string;
-    responseStatus: string;
-    responseCode: string;
-    riskScore: number;
+    transactionStatus: string;
+    transactionProcessor: string;
+    transactionPaymentMethod: string;
+    transactionSubtotal: string;
+    transactionTip: string;
+    transactionTotal: string;
+    transactionCurrency: string;
+    transactionBillingAddress: Address;
+    transactionShippingAddress: Address;
+    transactionCreatedAt: string;
     timestamp: string;
   };
 }
 
 export function NetworkResponse({ isOpen, onClose, response }: NetworkResponseProps) {
   return (
-    <Modal isOpen={isOpen} size="lg" onClose={onClose}>
+    <Modal isOpen={isOpen} size="lg" onClose={onClose} className="">
       <ModalContent>
         {(onClose) => (
           <>
@@ -32,38 +41,72 @@ export function NetworkResponse({ isOpen, onClose, response }: NetworkResponsePr
                   <span>Response Status:</span>
                   <span
                     className={`font-bold ${
-                      response.responseStatus === "Approved"
+                      response.transactionStatus === "Approved"
                         ? "text-ualert-100"
-                        : response.responseStatus === "Pending"
-                          ? "text-ualert-300"
-                          : "text-ualert-500"
+                        : response.transactionStatus === "Failed"
+                        ? "text-ualert-300"
+                        : "text-ualert-500"
                     }`}
                   >
-                    {response.responseStatus}
+                    {response.transactionStatus}
                   </span>
                 </div>
                 <div className="flex justify-between">
-                  <span>Response Code:</span>
-                  <span>{response.responseCode}</span>
+                  <span>Processor:</span>
+                  <span>{response.transactionProcessor}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span>Risk Score:</span>
-                  <span
-                    className={`font-bold ${
-                      response.riskScore < 50
-                        ? "text-ualert-200"
-                        : response.riskScore < 75
-                          ? "text-ualert-500"
-                          : "text-ualert-900"
-                    }`}
-                  >
-                    {response.riskScore}
-                  </span>
+                  <span>Payment Method:</span>
+                  <span>{response.transactionPaymentMethod}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>Subtotal:</span>
+                  <span>{`${mapCurrencyToSymbol[response.transactionCurrency.toLowerCase()]}${
+                    response.transactionSubtotal
+                  } ${response.transactionCurrency}`}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>Tip:</span>
+                  <span>{`${mapCurrencyToSymbol[response.transactionCurrency.toLowerCase()]}${
+                    response.transactionTip
+                  } ${response.transactionCurrency}`}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>Total:</span>
+                  <span>{`${mapCurrencyToSymbol[response.transactionCurrency.toLowerCase()]}${
+                    response.transactionTotal
+                  } ${response.transactionCurrency}`}</span>
+                </div>
+                <Divider />
+                <div className="flex justify-between">
+                  <span>Billing Address:</span>
+                  <span>{response.transactionBillingAddress.firstName}</span>
+                  <span>{response.transactionBillingAddress.lastName}</span>
+                  <span>{response.transactionBillingAddress.address1}</span>
+                  <span>{response.transactionBillingAddress.address2}</span>
+                  <span>{response.transactionBillingAddress.address3}</span>
+                  <span>{response.transactionBillingAddress.city}</span>
+                  <span>{response.transactionBillingAddress.state}</span>
+                  <span>{response.transactionBillingAddress.postalCode}</span>
+                  <span>{response.transactionBillingAddress.state}</span>
+                  <span>{response.transactionBillingAddress.countryCode}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>Shipping Address:</span>
+                  <span>{response.transactionShippingAddress.firstName}</span>
+                  <span>{response.transactionShippingAddress.lastName}</span>
+                  <span>{response.transactionShippingAddress.address1}</span>
+                  <span>{response.transactionShippingAddress.address2}</span>
+                  <span>{response.transactionShippingAddress.address3}</span>
+                  <span>{response.transactionShippingAddress.city}</span>
+                  <span>{response.transactionShippingAddress.state}</span>
+                  <span>{response.transactionShippingAddress.postalCode}</span>
+                  <span>{response.transactionShippingAddress.countryCode}</span>
                 </div>
                 <Divider />
                 <div className="flex justify-between">
                   <span>Timestamp:</span>
-                  <span>{response.timestamp}</span>
+                  <span>{formattedDate(response.timestamp)}</span>
                 </div>
               </div>
             </ModalBody>

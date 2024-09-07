@@ -10,14 +10,9 @@ interface RefundModalProps {
   onConfirm: (refundAmount: number) => void;
   order: {
     orderId: string;
-    worldpayId: string;
+    processor: string;
     networkStatus: string;
     customerName: string;
-    customerEmail: string;
-    customerPhone: string;
-    cardLastFour: string;
-    issuingBank: string;
-    bin: string;
     orderAmount: number;
     totalAmount: number;
   };
@@ -47,37 +42,15 @@ export function RefundModal({ isOpen, onClose, onConfirm, order }: RefundModalPr
             <ModalBody>
               <div className="space-y-4 font-mono">
                 <div className="flex justify-between">
-                  <span>Worldpay ID:</span>
-                  <span>{order.worldpayId}</span>
-                </div>
-                <div className="flex justify-between">
                   <span>Network Status:</span>
                   <span>{order.networkStatus}</span>
                 </div>
+
                 <div className="flex justify-between">
                   <span>Customer Name:</span>
                   <span>{order.customerName}</span>
                 </div>
-                <div className="flex justify-between">
-                  <span>Customer Email:</span>
-                  <span>{order.customerEmail}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span>Customer Phone:</span>
-                  <span>{order.customerPhone}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span>Card Last 4 Digits:</span>
-                  <span>{order.cardLastFour}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span>Issuing Bank:</span>
-                  <span>{order.issuingBank}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span>BIN:</span>
-                  <span>{order.bin}</span>
-                </div>
+
                 <div className="flex justify-between">
                   <span>Order Amount:</span>
                   <span>${order.orderAmount.toFixed(2)}</span>
@@ -94,7 +67,7 @@ export function RefundModal({ isOpen, onClose, onConfirm, order }: RefundModalPr
                   <Input
                     id="refundAmount"
                     max={order.totalAmount}
-                    min={0}
+                    min={0.01}
                     step={0.01}
                     type="number"
                     value={refundAmount.toString()}

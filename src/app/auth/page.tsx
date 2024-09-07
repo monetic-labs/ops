@@ -69,7 +69,7 @@ export default function AuthPage() {
       if (response) {
         // Handle successful verification (e.g., redirect to dashboard)
         console.log("OTP verified successfully");
-        router.push("/dashboard");
+        router.refresh(); // or router.push('/')
       }
       // Clear OTP after verification
       setOtp("");

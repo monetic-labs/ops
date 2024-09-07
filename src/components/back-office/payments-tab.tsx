@@ -1,55 +1,37 @@
-import React, { useState } from "react";
+import React, { useState, useMemo, ReactNode, useCallback } from "react";
 import { Chip } from "@nextui-org/chip";
 import { Table, TableBody, TableCell, TableColumn, TableHeader, TableRow } from "@nextui-org/table";
-import { Tooltip } from "@nextui-org/tooltip";
-import { User } from "@nextui-org/user";
 import { Button } from "@nextui-org/button";
+import { TransactionListItem } from "@backpack-fux/pylon-sdk";
 
 import { NetworkResponse } from "./actions/network-response";
 import { CancelConfirmationModal } from "./actions/order-cancel";
 import { RefundModal } from "./actions/order-refund";
+import { useOrderManagement } from "@/hooks/orders/useOrderManagement";
+import { centsToDollars, formattedDate, getTimeAgo, mapCurrencyToSymbol } from "@/utils/helpers";
 
 const columns = [
-  { name: "CUSTOMER", uid: "customer" },
-  { name: "PAYMENT STATUS", uid: "paymentStatus" },
-  { name: "ORDER ID", uid: "orderId" },
-  { name: "TOTAL", uid: "total" },
-  { name: "ACTIONS", uid: "actions" },
-];
-
-const payments = [
-  {
-    customer: "John Doe",
-    paymentStatus: "Paid",
-    orderId: "ORD-001",
-    total: "$100.00",
-  },
-  {
-    customer: "Jane Smith",
-    paymentStatus: "Pending",
-    orderId: "ORD-002",
-    total: "$75.50",
-  },
-  {
-    customer: "Bob Johnson",
-    paymentStatus: "Failed",
-    orderId: "ORD-003",
-    total: "$150.00",
-  },
+  { name: "ID", uid: "id" },
+  { name: "Status", uid: "status" },
+  { name: "Payment Method", uid: "paymentMethod" },
+  { name: "Total", uid: "total" },
+  { name: "Created", uid: "createdAt" },
+  { name: "Actions", uid: "actions" },
 ];
 
 const statusColorMap: Record<string, "success" | "warning" | "danger"> = {
-  Paid: "success",
-  Pending: "warning",
-  Failed: "danger",
+  COMPLETE: "success",
+  PENDING: "warning",
+  FAILED: "danger",
 };
 
 export default function PaymentsTab() {
-  const [selectedPayment, setSelectedPayment] = useState<(typeof payments)[0] | null>(null);
-  const [cancelPayment, setCancelPayment] = useState<(typeof payments)[0] | null>(null);
-  const [refundPayment, setRefundPayment] = useState<(typeof payments)[0] | null>(null);
+  const { transactions, isLoading, error } = useOrderManagement();
+  const [selectedPayment, setSelectedPayment] = useState<TransactionListItem | null>(null);
+  const [cancelPayment, setCancelPayment] = useState<TransactionListItem | null>(null);
+  const [refundPayment, setRefundPayment] = useState<TransactionListItem | null>(null);
 
-  const handleViewDetails = (payment: (typeof payments)[0]) => {
+  const handleViewDetails = (payment: TransactionListItem) => {
     setSelectedPayment(payment);
   };
 
@@ -57,13 +39,13 @@ export default function PaymentsTab() {
     setSelectedPayment(null);
   };
 
-  const handleCancelOrder = (payment: (typeof payments)[0]) => {
+  const handleCancelOrder = (payment: TransactionListItem) => {
     setCancelPayment(payment);
   };
 
   const handleConfirmCancel = () => {
     if (cancelPayment) {
-      console.log("Order cancelled:", cancelPayment.orderId);
+      console.log("Order cancelled:", cancelPayment.id);
       // Implement cancel logic here
       setCancelPayment(null);
     }
@@ -73,13 +55,13 @@ export default function PaymentsTab() {
     setCancelPayment(null);
   };
 
-  const handleRefund = (payment: (typeof payments)[0]) => {
+  const handleRefund = (payment: TransactionListItem) => {
     setRefundPayment(payment);
   };
 
   const handleConfirmRefund = (refundAmount: number) => {
     if (refundPayment) {
-      console.log("Refund initiated for order:", refundPayment.orderId, "Amount:", refundAmount);
+      console.log("Refund initiated for order:", refundPayment.id, "Amount:", refundAmount);
       // Implement refund logic here
       setRefundPayment(null);
     }
@@ -89,79 +71,60 @@ export default function PaymentsTab() {
     setRefundPayment(null);
   };
 
-  const handleResendReceipt = (payment: (typeof payments)[0]) => {
-    console.log("Resending receipt for order:", payment.orderId);
-    // Implement resend receipt logic here
-  };
-
-  const renderCell = React.useCallback((payment: (typeof payments)[0], columnKey: React.Key) => {
-    const cellValue = payment[columnKey as keyof (typeof payments)[0]];
+  const renderCell = useCallback((transaction: TransactionListItem, columnKey: React.Key): ReactNode => {
+    const cellValue = transaction[columnKey as keyof TransactionListItem];
 
     switch (columnKey) {
-      case "customer":
+      case "id":
+        return transaction.id.split("-")[transaction.id.split("-").length - 1];
+      case "status":
         return (
-          <User
-            avatarProps={{
-              radius: "lg",
-              src: `https://i.pravatar.cc/150?u=${payment.orderId}`,
-            }}
-            description={payment.orderId}
-            name={cellValue}
-          >
-            {payment.customer}
-          </User>
-        );
-      case "paymentStatus":
-        return (
-          <Chip className="capitalize" color={statusColorMap[payment.paymentStatus]} size="sm" variant="flat">
-            {cellValue}
+          <Chip className="capitalize" color={statusColorMap[transaction.status] || "default"} size="sm" variant="flat">
+            {transaction.status}
           </Chip>
         );
+      case "paymentMethod":
+        return `${transaction.paymentMethod.charAt(0).toUpperCase()}${transaction.paymentMethod
+          .slice(1)
+          .toLowerCase()}`;
+      case "total":
+        return `${mapCurrencyToSymbol[transaction.currency.toLowerCase()]}${centsToDollars(transaction.total)}`;
+      case "subtotal":
+        return `${mapCurrencyToSymbol[transaction.currency.toLowerCase()]}${centsToDollars(transaction.subtotal)}`;
+      case "tipAmount":
+        return `${mapCurrencyToSymbol[transaction.currency.toLowerCase()]}${centsToDollars(transaction.tipAmount)}`;
+      case "createdAt":
+        return getTimeAgo(transaction.createdAt);
       case "actions":
         return (
-          <div className="flex items-center justify-center gap-2">
-            <Tooltip content="View Payment Details">
-              <Button 
-                className="text-notpurple-500" 
-                size="sm" 
-                onPress={() => handleViewDetails(payment)}>
-                Details
-              </Button>
-            </Tooltip>
-            <Tooltip content="Cancel Order">
-              <Button
-                className="text-notpurple-500"
-                size="sm"
-                onPress={() => handleCancelOrder(payment)}
-              >
-                Cancel
-              </Button>
-            </Tooltip>
-            <Tooltip content="Refund Order">
-              <Button
-                className="text-notpurple-500"
-                size="sm"
-                onPress={() => handleRefund(payment)}
-              >
-                Refund
-              </Button>
-            </Tooltip>
+          <div className="flex gap-2">
+            <Button size="sm" onPress={() => handleViewDetails(transaction)}>
+              Details
+            </Button>
+            <Button size="sm" onPress={() => handleCancelOrder(transaction)}>
+              Cancel
+            </Button>
+            <Button size="sm" onPress={() => handleRefund(transaction)}>
+              Refund
+            </Button>
           </div>
         );
       default:
-        return cellValue;
+        return cellValue !== null && cellValue !== undefined ? String(cellValue) : "";
     }
   }, []);
 
+  if (isLoading) {
+    return <div>Loading transactions...</div>;
+  }
+
+  if (error) {
+    return <div>Error: {error}</div>;
+  }
+
   return (
     <>
-      <Table
-        aria-label="Payments table with custom cells"
-        classNames={{
-          wrapper: "text-notpurple-500",
-          th: "text-notpurple-500",
-        }}
-      >
+      <Table aria-label="Transactions table with custom cells">
         <TableHeader columns={columns}>
           {(column) => (
             <TableColumn key={column.uid} align={column.uid === "actions" ? "center" : "start"}>
@@ -169,11 +132,9 @@ export default function PaymentsTab() {
             </TableColumn>
           )}
         </TableHeader>
-        <TableBody items={payments}>
+        <TableBody items={transactions}>
           {(item) => (
-            <TableRow key={item.orderId}>
-              {(columnKey) => <TableCell>{renderCell(item, columnKey as keyof (typeof payments)[0])}</TableCell>}
-            </TableRow>
+            <TableRow key={item.id}>{(columnKey) => <TableCell>{renderCell(item, columnKey)}</TableCell>}</TableRow>
           )}
         </TableBody>
       </Table>
@@ -181,11 +142,19 @@ export default function PaymentsTab() {
         <NetworkResponse
           isOpen={!!selectedPayment}
           response={{
-            transactionId: selectedPayment.orderId,
-            responseStatus: selectedPayment.paymentStatus,
-            responseCode: "00", // You'll need to add this to your payment data
-            riskScore: 30, // You'll need to add this to your payment data
-            timestamp: new Date().toISOString(), // You'll need to add this to your payment data
+            transactionId: selectedPayment.id,
+            transactionStatus: selectedPayment.status,
+            transactionProcessor: selectedPayment.processor,
+            transactionPaymentMethod: selectedPayment.paymentMethod,
+            transactionSubtotal: centsToDollars(selectedPayment.subtotal),
+            transactionTip: centsToDollars(selectedPayment.tipAmount),
+            transactionCurrency: selectedPayment.currency,
+            transactionTotal: centsToDollars(selectedPayment.total),
+            transactionBillingAddress: selectedPayment.billingAddress,
+            transactionShippingAddress: selectedPayment.shippingAddress,
+            transactionCreatedAt: selectedPayment.createdAt,
+            timestamp: selectedPayment.createdAt,
+            // TODO: add risk score
           }}
           onClose={handleCloseModal}
         />
@@ -194,10 +163,9 @@ export default function PaymentsTab() {
         <CancelConfirmationModal
           isOpen={!!cancelPayment}
           order={{
-            orderId: cancelPayment.orderId,
-            customerName: cancelPayment.customer,
-            customerEmail: "customer@example.com", // You'll need to add this to your payment data
-            amount: cancelPayment.total,
+            orderId: cancelPayment.id,
+            customerName: `${cancelPayment.billingAddress.firstName} ${cancelPayment.billingAddress.lastName}`,
+            amount: `${mapCurrencyToSymbol[cancelPayment.currency.toLowerCase()]}${cancelPayment.total / 100}`,
           }}
           onClose={handleCloseCancelModal}
           onConfirm={handleConfirmCancel}
@@ -207,17 +175,12 @@ export default function PaymentsTab() {
         <RefundModal
           isOpen={!!refundPayment}
           order={{
-            orderId: refundPayment.orderId,
-            worldpayId: "WP" + refundPayment.orderId, // You'll need to add this to your payment data
-            networkStatus: refundPayment.paymentStatus,
-            customerName: refundPayment.customer,
-            customerEmail: "customer@example.com", // You'll need to add this to your payment data
-            customerPhone: "123-456-7890", // You'll need to add this to your payment data
-            cardLastFour: "1234", // You'll need to add this to your payment data
-            issuingBank: "Example Bank", // You'll need to add this to your payment data
-            bin: "123456", // You'll need to add this to your payment data
-            orderAmount: parseFloat(refundPayment.total.replace("$", "")),
-            totalAmount: parseFloat(refundPayment.total.replace("$", "")),
+            orderId: refundPayment.id,
+            processor: refundPayment.processor,
+            networkStatus: refundPayment.status,
+            customerName: `${refundPayment.billingAddress.firstName} ${refundPayment.billingAddress.lastName}`,
+            orderAmount: refundPayment.subtotal,
+            totalAmount: refundPayment.total,
           }}
           onClose={handleCloseRefundModal}
           onConfirm={handleConfirmRefund}

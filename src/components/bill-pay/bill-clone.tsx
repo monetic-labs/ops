@@ -3,23 +3,24 @@ import { Input } from "@nextui-org/input";
 import { Modal, ModalBody, ModalContent, ModalFooter, ModalHeader } from "@nextui-org/modal";
 import { Select, SelectItem } from "@nextui-org/select";
 import { useState } from "react";
-import { TransactionListItem } from "@backpack-fux/pylon-sdk";
+
+import { BillPay } from "@/data";
 
 interface BillPayCloneModalProps {
   isOpen: boolean;
   onClose: () => void;
-  billPay: TransactionListItem;
-  onSave: (clonedBillPay: TransactionListItem) => void;
+  billPay: BillPay;
+  onSave: (clonedBillPay: BillPay) => void;
 }
 
-const paymentMethods = ["CARD", "ACH", "WIRE", "CRYPTO"];
+const paymentMethods = ["ACH", "Wire", "SWIFT", "SEPA", "Stable"];
 
 export default function BillPayCloneModal({ isOpen, onClose, billPay, onSave }: BillPayCloneModalProps) {
-  const [clonedBillPay, setClonedBillPay] = useState<TransactionListItem>({
+  const [clonedBillPay, setClonedBillPay] = useState<BillPay>({
     ...billPay,
-    id: billPay.id,
-    status: "PENDING",
+    id: `clone-${Date.now()}`, // Generate a new id for the cloned bill pay
   });
+
   const handleSave = () => {
     onSave(clonedBillPay);
     onClose();
@@ -28,25 +29,22 @@ export default function BillPayCloneModal({ isOpen, onClose, billPay, onSave }: 
   return (
     <Modal isOpen={isOpen} size="2xl" onClose={onClose}>
       <ModalContent>
-        <ModalHeader>Clone Transaction</ModalHeader>
+        <ModalHeader>Clone Bill Pay</ModalHeader>
         <ModalBody>
-          <Select
-            label="Processor"
-            selectedKeys={[clonedBillPay.processor]}
-            onChange={(e) =>
-              setClonedBillPay({ ...clonedBillPay, processor: e.target.value as TransactionListItem["processor"] })
-            }
-          >
-            {["WORLDPAY", "STRIPE", "PAYPAL"].map((processor) => (
-              <SelectItem key={processor} value={processor}>
-                {processor}
-              </SelectItem>
-            ))}
-          </Select>
+          <Input
+            label="Vendor"
+            value={clonedBillPay.vendor}
+            onChange={(e) => setClonedBillPay({ ...clonedBillPay, vendor: e.target.value })}
+          />
           <Select
             label="Payment Method"
             selectedKeys={[clonedBillPay.paymentMethod]}
-            onChange={(e) => setClonedBillPay({ ...clonedBillPay, paymentMethod: e.target.value })}
+            onChange={(e) =>
+              setClonedBillPay({
+                ...clonedBillPay,
+                paymentMethod: e.target.value as BillPay["paymentMethod"],
+              })
+            }
           >
             {paymentMethods.map((method) => (
               <SelectItem key={method} value={method}>
@@ -55,33 +53,72 @@ export default function BillPayCloneModal({ isOpen, onClose, billPay, onSave }: 
             ))}
           </Select>
           <Input
-            label="Subtotal"
+            label="Amount"
             type="number"
-            value={(clonedBillPay.subtotal / 100).toString()}
+            value={clonedBillPay.amount.toString()}
             onChange={(e) =>
-              setClonedBillPay({ ...clonedBillPay, subtotal: Math.round(parseFloat(e.target.value) * 100) })
-            }
-          />
-          <Input
-            label="Tip Amount"
-            type="number"
-            value={(clonedBillPay.tipAmount / 100).toString()}
-            onChange={(e) =>
-              setClonedBillPay({ ...clonedBillPay, tipAmount: Math.round(parseFloat(e.target.value) * 100) })
-            }
-          />
-          <Input
-            label="Total"
-            type="number"
-            value={(clonedBillPay.total / 100).toString()}
-            onChange={(e) =>
-              setClonedBillPay({ ...clonedBillPay, total: Math.round(parseFloat(e.target.value) * 100) })
+              setClonedBillPay({
+                ...clonedBillPay,
+                amount: e.target.value,
+              })
             }
           />
           <Input
             label="Currency"
             value={clonedBillPay.currency}
             onChange={(e) => setClonedBillPay({ ...clonedBillPay, currency: e.target.value })}
+          />
+          <Input
+            label="Receiving Bank Name"
+            value={clonedBillPay.receivingBank.name}
+            onChange={(e) =>
+              setClonedBillPay({
+                ...clonedBillPay,
+                receivingBank: {
+                  ...clonedBillPay.receivingBank,
+                  name: e.target.value,
+                },
+              })
+            }
+          />
+          <Input
+            label="Routing Number"
+            value={clonedBillPay.receivingBank.routingNumber}
+            onChange={(e) =>
+              setClonedBillPay({
+                ...clonedBillPay,
+                receivingBank: {
+                  ...clonedBillPay.receivingBank,
+                  routingNumber: e.target.value,
+                },
+              })
+            }
+          />
+          <Input
+            label="Account Number"
+            value={clonedBillPay.receivingBank.accountNumber}
+            onChange={(e) =>
+              setClonedBillPay({
+                ...clonedBillPay,
+                receivingBank: {
+                  ...clonedBillPay.receivingBank,
+                  accountNumber: e.target.value,
+                },
+              })
+            }
+          />
+          <Input
+            label="Memo"
+            value={clonedBillPay.receivingBank.memo}
+            onChange={(e) =>
+              setClonedBillPay({
+                ...clonedBillPay,
+                receivingBank: {
+                  ...clonedBillPay.receivingBank,
+                  memo: e.target.value,
+                },
+              })
+            }
           />
         </ModalBody>
         <ModalFooter>

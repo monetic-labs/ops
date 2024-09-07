@@ -9,6 +9,10 @@ export const useOrderManagement = () => {
 
   const { isAuthenticated, checkAuthStatus } = useAuthStatus(pylon);
 
+  const sortTransactionsByDate = (transactions: TransactionListItem[]) => {
+    return [...transactions].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+  };
+
   const handleTransactionUpdate = useCallback((data: TransactionListOutput) => {
     switch (data.type) {
       case "INITIAL_LIST":
@@ -17,10 +21,18 @@ export const useOrderManagement = () => {
         break;
       case "TRANSACTION_UPDATED":
         setTransactions((prevTransactions) => {
-          const updatedTransaction = data.data as TransactionListItem | Partial<TransactionListItem>;
-          return prevTransactions.map((transaction) =>
-            transaction.id === updatedTransaction.id ? { ...transaction, ...updatedTransaction } : transaction
-          );
+          const updatedTransaction = data.data as TransactionListItem;
+          const existingIndex = prevTransactions.findIndex((t) => t.id === updatedTransaction.id);
+          let newTransactions;
+          if (existingIndex !== -1) {
+            // Update existing transaction
+            newTransactions = [...prevTransactions];
+            newTransactions[existingIndex] = { ...newTransactions[existingIndex], ...updatedTransaction };
+          } else {
+            // Add new transaction
+            newTransactions = [updatedTransaction, ...prevTransactions];
+          }
+          return sortTransactionsByDate(newTransactions);
         });
         break;
       default:

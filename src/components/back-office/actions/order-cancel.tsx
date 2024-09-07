@@ -10,7 +10,6 @@ interface CancelConfirmationModalProps {
   order: {
     orderId: string;
     customerName: string;
-    customerEmail: string;
     amount: string;
   };
 }
@@ -31,10 +30,6 @@ export function CancelConfirmationModal({ isOpen, onClose, onConfirm, order }: C
                 <div className="flex justify-between">
                   <span>Customer Name:</span>
                   <span>{order.customerName}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span>Customer Email:</span>
-                  <span>{order.customerEmail}</span>
                 </div>
                 <div className="flex justify-between">
                   <span>Order Amount:</span>
