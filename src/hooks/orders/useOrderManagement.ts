@@ -7,7 +7,7 @@ export const useOrderManagement = () => {
   const [error, setError] = useState<string | null>(null);
   const [transactions, setTransactions] = useState<TransactionListItem[]>([]);
 
-  const { isAuthenticated, checkAuthStatus } = useAuthStatus(pylon);
+  const { isAuthenticated, checkAuthStatus } = useAuthStatus();
 
   const sortTransactionsByDate = (transactions: TransactionListItem[]) => {
     return [...transactions].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
