@@ -130,8 +130,8 @@ export const useMerchantForm = (initialEmail: string) => {
           },
           representatives: [
             {
-              name: data.representatives[0].name,
-              surname: data.representatives[0].surname,
+              firstName: data.representatives[0].name,
+              lastName: data.representatives[0].surname,
               email: data.representatives[0].email,
               phoneNumber: data.representatives[0].phoneNumber,
             },

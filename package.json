@@ -10,7 +10,7 @@
     "unfuck": "rm -rf .next && rm -rf node_modules && rm -rf package-lock.json && pnpm i"
   },
   "dependencies": {
-    "@backpack-fux/pylon-sdk": "0.2.89",
+    "@backpack-fux/pylon-sdk": "0.2.901",
     "@hookform/resolvers": "^3.9.0",
     "@nextui-org/button": "2.0.37",
     "@nextui-org/card": "^2.0.33",

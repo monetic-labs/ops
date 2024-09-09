@@ -2,7 +2,7 @@ import React from "react";
 import { Modal, ModalContent, ModalHeader, ModalBody, ModalFooter } from "@nextui-org/modal";
 import { Button } from "@nextui-org/button";
 import { Divider } from "@nextui-org/divider";
-import { Address } from "@backpack-fux/pylon-sdk";
+import { BillingAddress, ShippingAddress } from "@backpack-fux/pylon-sdk";
 import { formattedDate, mapCurrencyToSymbol } from "@/utils/helpers";
 
 interface NetworkResponseProps {
@@ -17,8 +17,8 @@ interface NetworkResponseProps {
     transactionTip: string;
     transactionTotal: string;
     transactionCurrency: string;
-    transactionBillingAddress: Address;
-    transactionShippingAddress: Address;
+    transactionBillingAddress: BillingAddress;
+    transactionShippingAddress: ShippingAddress;
     transactionCreatedAt: string;
     timestamp: string;
   };
@@ -82,26 +82,26 @@ export function NetworkResponse({ isOpen, onClose, response }: NetworkResponsePr
                   <span>Billing Address:</span>
                   <span>{response.transactionBillingAddress.firstName}</span>
                   <span>{response.transactionBillingAddress.lastName}</span>
-                  <span>{response.transactionBillingAddress.address1}</span>
-                  <span>{response.transactionBillingAddress.address2}</span>
-                  <span>{response.transactionBillingAddress.address3}</span>
+                  <span>{response.transactionBillingAddress.street1}</span>
+                  <span>{response.transactionBillingAddress.street2}</span>
+                  <span>{response.transactionBillingAddress.street3}</span>
                   <span>{response.transactionBillingAddress.city}</span>
                   <span>{response.transactionBillingAddress.state}</span>
-                  <span>{response.transactionBillingAddress.postalCode}</span>
+                  <span>{response.transactionBillingAddress.postcode}</span>
                   <span>{response.transactionBillingAddress.state}</span>
-                  <span>{response.transactionBillingAddress.countryCode}</span>
+                  <span>{response.transactionBillingAddress.country}</span>
                 </div>
                 <div className="flex justify-between">
                   <span>Shipping Address:</span>
                   <span>{response.transactionShippingAddress.firstName}</span>
                   <span>{response.transactionShippingAddress.lastName}</span>
-                  <span>{response.transactionShippingAddress.address1}</span>
-                  <span>{response.transactionShippingAddress.address2}</span>
-                  <span>{response.transactionShippingAddress.address3}</span>
+                  <span>{response.transactionShippingAddress.street1}</span>
+                  <span>{response.transactionShippingAddress.street2}</span>
+                  <span>{response.transactionShippingAddress.street3}</span>
                   <span>{response.transactionShippingAddress.city}</span>
                   <span>{response.transactionShippingAddress.state}</span>
-                  <span>{response.transactionShippingAddress.postalCode}</span>
-                  <span>{response.transactionShippingAddress.countryCode}</span>
+                  <span>{response.transactionShippingAddress.postcode}</span>
+                  <span>{response.transactionShippingAddress.country}</span>
                 </div>
                 <Divider />
                 <div className="flex justify-between">
