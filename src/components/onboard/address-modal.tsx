@@ -1,121 +1,131 @@
 import React from "react";
-import { Button } from "@nextui-org/button";
-import { Input } from "@nextui-org/input";
-import { Modal, ModalContent, ModalHeader, ModalBody, ModalFooter } from "@nextui-org/modal";
 
-import { Controller, Control, FieldErrors } from "react-hook-form";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 
-import { ISO3166Alpha2Country } from "@backpack-fux/pylon-sdk";
+import { FormModal } from "@/components/generics/form-modal";
+import { FormInput } from "@/components/generics/form-input";
+import { CompanyInfoSchema, companyRegisteredAddressSchema, CompanyRegisteredAddressSchema } from "@/validations/onboard";
+import { Tooltip } from "@nextui-org/tooltip";
 
-import { MerchantFormData } from "@/validations/onboard";
-
-interface AddressModalProps {
+interface AddressFormModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onConfirm: () => void;
-  control: Control<MerchantFormData>;
-  errors: FieldErrors<MerchantFormData>;
-  defaultValues: {
-    city: string;
-    state: string;
-    postcode: string;
-    country: ISO3166Alpha2Country;
-  };
+  onSubmit: (data: CompanyRegisteredAddressSchema) => void;
+  initialData?: Partial<CompanyRegisteredAddressSchema>;
 }
 
-export const AddressModal: React.FC<AddressModalProps> = ({
+export const AddressFormModal: React.FC<AddressFormModalProps> = ({
   isOpen,
   onClose,
-  onConfirm,
-  control,
-  errors,
-  defaultValues,
+  onSubmit,
+  initialData = {},
 }) => {
+  const {
+    control,
+    handleSubmit,
+    formState: { errors, isValid },
+  } = useForm<CompanyRegisteredAddressSchema>({
+    resolver: zodResolver(companyRegisteredAddressSchema),
+    defaultValues: initialData,
+  });
+
+  const handleFormSubmit = (data: CompanyInfoSchema["company"]["registeredAddress"]) => {
+    onSubmit(data);
+    onClose();
+  };
+
   return (
-    <Modal isOpen={isOpen} onClose={onClose}>
-      <ModalContent>
-        <ModalHeader>Complete Address</ModalHeader>
-        <ModalBody>
-          <Controller
-            control={control}
-            name="company.registeredAddress.street1"
-            render={({ field }) => (
-              <Input
-                {...field}
-                errorMessage={errors.company?.registeredAddress?.street1?.message}
-                isInvalid={!!errors.company?.registeredAddress?.street1}
-                label="Street Address"
-                placeholder="123 Epic St"
-              />
-            )}
-            rules={{ required: "Street address is required" }}
-          />
-          <Controller
-            control={control}
-            name="company.registeredAddress.street2"
-            render={({ field }) => (
-              <Input
-                {...field}
-                errorMessage={errors.company?.registeredAddress?.street2?.message}
-                isInvalid={!!errors.company?.registeredAddress?.street2}
-                label="Street Address Line 2"
-                placeholder="Unit B 420"
-              />
-            )}
-          />
-          <Controller
-            control={control}
-            defaultValue={defaultValues.city}
-            name="company.registeredAddress.city"
-            render={({ field }) => <Input {...field} isReadOnly label="City" />}
-          />
-          <Controller
-            control={control}
-            defaultValue={defaultValues.state}
-            name="company.registeredAddress.state"
-            render={({ field }) => (
-              <Input
-                {...field}
-                isReadOnly
-                label="State"
-                maxLength={2} // Restrict to 2 characters
-                placeholder="WA"
-              />
-            )}
-            rules={{ required: "State is required", maxLength: 2 }}
-          />
-          <Controller
-            control={control}
-            defaultValue={defaultValues.postcode}
-            name="company.registeredAddress.postcode"
-            render={({ field }) => <Input {...field} isReadOnly label="Postal Code" placeholder="98101" />}
-          />
-          <Controller
-            control={control}
-            defaultValue={defaultValues.country}
-            name="company.registeredAddress.country"
-            render={({ field }) => (
-              <Input
-                {...field}
-                errorMessage={errors.company?.registeredAddress?.country?.message}
-                isInvalid={!!errors.company?.registeredAddress?.country}
-                isReadOnly
-                label="Country"
-                placeholder="US"
-              />
-            )}
-            rules={{ required: "Country is required", pattern: /^[A-Z]{2}$/ }}
-          />
-        </ModalBody>
-        <ModalFooter>
-          <Button className="text-notpurple-500" variant="light" onPress={onClose}>
-            Cancel
-          </Button>
-          <Button className="bg-ualert-500" onPress={onConfirm}>
-            Confirm Address
-          </Button>
-        </ModalFooter>
-      </ModalContent>
-    </Modal>
+    <FormModal
+      isOpen={isOpen}
+      onClose={onClose}
+      title="Address Details"
+      onSubmit={handleSubmit(handleFormSubmit)}
+      isValid={isValid}
+    >
+      <Tooltip content="Street address is required">
+        <FormInput
+          name="street1"
+          control={control}
+          label="Street Address 1"
+          errorMessage={errors.street1?.message}
+          placeholder="123 Epic St"
+          maxLength={100}
+          minLength={5}
+          required={true}
+        />
+      </Tooltip>
+      <FormInput
+        name="street2"
+        control={control}
+        label="Street Address 2 (Optional)"
+        errorMessage={errors.street2?.message}
+        placeholder="Suite 420"
+        maxLength={100}
+        minLength={5}
+        required={false}
+      />
+      <FormInput
+        name="postcode"
+        control={control}
+        label="Post Code"
+        errorMessage={errors.postcode?.message}
+        placeholder="84101" 
+        maxLength={5}
+        minLength={5}
+        required={true}
+        onKeyDown={(e) => {
+          if (!/[0-9]/.test(e.key)) {
+            e.preventDefault();
+          }
+        }}
+      />
+      <FormInput
+        name="city"
+        control={control}
+        label="City"
+        errorMessage={errors.city?.message}
+        placeholder="Salt Lake City"
+        required={true}
+        maxLength={5}
+        onKeyDown={(e) => {
+          if (!/[0-9]/.test(e.key)) {
+            e.preventDefault();
+          }
+        }}
+      />
+      <FormInput
+        name="state"
+        control={control}
+        label="State"
+        errorMessage={errors.state?.message}
+        placeholder="UT"
+        maxLength={2}
+        required={true}
+        onKeyDown={(e) => {
+          if (!/[A-Z]/.test(e.key)) {
+            e.preventDefault();
+            const newValue = e.currentTarget.value + e.key.toUpperCase();
+            e.currentTarget.value = newValue;
+          }
+        }}
+      />
+      <FormInput
+        name="country"
+        control={control}
+        label="Country"
+        errorMessage={errors.country?.message}
+        placeholder="US"
+        required={true}
+        maxLength={2}
+        onKeyDown={(e) => {
+          if (!/[A-Z]/.test(e.key)) {
+            e.preventDefault();
+            const newValue = e.currentTarget.value + e.key.toUpperCase();
+            e.currentTarget.value = newValue;
+          }
+        }}
+      />
+    </FormModal>
   );
 };

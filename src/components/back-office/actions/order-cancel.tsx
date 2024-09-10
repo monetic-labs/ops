@@ -36,7 +36,7 @@ export function CancelConfirmationModal({ isOpen, onClose, onConfirm, order }: C
                   <span>{order.amount}</span>
                 </div>
               </div>
-              <p className="mt-4 text-center text-red-500">Are you sure you want to cancel this order?</p>
+              <p className="mt-4 text-center text-ualert-500">Are you sure you want to cancel this order?</p>
             </ModalBody>
             <Divider />
             <ModalFooter className="flex justify-center space-x-4">

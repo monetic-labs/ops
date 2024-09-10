@@ -1,181 +1,123 @@
-import React from "react";
-import { Control, Controller, FieldErrors, useForm } from "react-hook-form";
-
+import React, { useState } from "react";
+import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useRouter } from "next/navigation";
 
-import { Input } from "@nextui-org/input";
-import { Button } from "@nextui-org/button";
-import { Tooltip } from "@nextui-org/tooltip";
+import { FormCard } from "@/components/generics/form-card";
+import { FormInput } from "@/components/generics/form-input";
+import { FormButton } from "@/components/generics/form-button";
 
+import { ISO3166Alpha2Country } from "@backpack-fux/pylon-sdk";
+
+import { CompanyInfoSchema, companyInfoSchema, postcodeRegex, walletAddressRegex } from "@/validations/onboard";
 import { emailRegex } from "@/validations/auth";
-import { MerchantFormData, merchantCreateSchema } from "@/validations/merchant";
 
-import { AddressModal } from "./address-modal";
+import { PostcodeInput } from "../generics/form-input-postcode";
 
-interface CompanyInfoProps {
-  control: Control<MerchantFormData>;
-  errors: FieldErrors<MerchantFormData>;
-  handleZipCodeLookup: (zipCode: string) => void;
-  addressLookup: any;
-  isAddressModalOpen: boolean;
-  setIsAddressModalOpen: (isOpen: boolean) => void;
-  handleCancel: () => void;
-  onSubmitStep: (step: number) => void;
-  initialEmail: string;
-}
 
-export const CompanyInfo: React.FC<CompanyInfoProps> = ({
-  handleZipCodeLookup,
-  addressLookup,
-  isAddressModalOpen,
-  setIsAddressModalOpen,
-  handleCancel,
-  onSubmitStep,
-  initialEmail,
-}) => {
+export const FormCompanyInfo: React.FC = () => {
+  const router = useRouter();
+  const [showAddressInputs, setShowAddressInputs] = useState(false);
+
   const {
     control,
+    formState: { errors },
     handleSubmit,
-    formState: { errors, isValid },
-    watch,
-  } = useForm<MerchantFormData>({
-    resolver: zodResolver(merchantCreateSchema),
-    mode: "all",
+    setValue,
+  } = useForm<CompanyInfoSchema>({
+    resolver: zodResolver(companyInfoSchema),
     defaultValues: {
       company: {
-        email: initialEmail,
+        name: "",
+        email: "",
+        registeredAddress: {
+          street1: "",
+          street2: "",
+          city: "",
+          postcode: "",
+          state: "",
+          country: "US" as ISO3166Alpha2Country,
+        },
       },
+      walletAddress: "",
     },
   });
 
-  const watchedFields = watch(["company.name", "company.email", "company.registeredAddress.postcode", "walletAddress"]);
-  const isStep1Complete = watchedFields.every((field) => field && field.trim() !== "");
-  console.log("isStep1Complete", isStep1Complete);
-  console.log("watchedFields", watchedFields);
+  const onSubmit = (data: CompanyInfoSchema) => {
+    console.log("Form data submitted:", data);
+    // Handle form submission
+  };
 
-  const onSubmit = (data: MerchantFormData) => {
-    console.log("Form submitted with data:", data);
-    if (isValid) {
-      console.log("Calling onSubmitStep(1)");
-      onSubmitStep(1);
-    } else {
-      console.error("Form submitted with invalid data:", errors);
+  const onPostcodeLookup = (result: any) => {
+    if (result) {
+    setValue("company.registeredAddress.postcode", result.postcode);
+    setValue("company.registeredAddress.city", result.city);
+    setValue("company.registeredAddress.state", result.state);
+    setShowAddressInputs(true);
+  } else {
+      setShowAddressInputs(false);
     }
   };
 
-  console.log("rendering company info");
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-      <Controller
-        control={control}
-        name="company.name"
-        render={({ field }) => (
-          <Tooltip
-            className="tooltip-left-align"
-            content="Use your registered LLC or S-Corp name, even if you dba under a different name"
-          >
-            <Input
-              {...field}
-              errorMessage={errors.company?.name?.message}
-              isInvalid={!!errors.company?.name}
-              label="Company Name"
-              placeholder="Figgis Agency LLC"
-              maxLength={50} //soft limit -> see absolute limit in validation
-            />
-          </Tooltip>
-        )}
-        rules={{ required: "Company name is required" }}
-      />
-      <Controller
-        control={control}
-        name="company.email"
-        render={({ field }) => (
-          <Tooltip
-            className="tooltip-left-align"
-            content="This is the email you want company communications sent to, including important notifications and account updates"
-          >
-            <Input
-              {...field}
-              defaultValue={initialEmail}
-              errorMessage={errors.company?.email?.message}
-              isInvalid={!!errors.company?.email}
-              label="Company Email"
-              placeholder="dick@figgisagency.xyz"
-              maxLength={50} //soft limit -> see absolute limit in validation
-            />
-          </Tooltip>
-        )}
-        rules={{
-          required: "Company email is required",
-          pattern: { value: emailRegex, message: "Invalid email address" },
-        }}
-      />
-      <Controller
-        control={control}
-        name="company.registeredAddress.postcode"
-        render={({ field }) => (
-          <Tooltip className="tooltip-left-align" content="5-digit ZIP code for US addresses (e.g., 90210)">
-            <Input
-              {...field}
-              errorMessage={errors.company?.registeredAddress?.postcode?.message}
-              isInvalid={!!errors.company?.registeredAddress?.postcode}
-              label="Postal Code"
-              placeholder="10001"
-              maxLength={5}
-              onChange={(e) => {
-                field.onChange(e);
-                handleZipCodeLookup(e.target.value);
-              }}
-            />
-          </Tooltip>
-        )}
-        rules={{ required: "Postal code is required" }}
-      />
-      <Controller
-        control={control}
-        name="walletAddress"
-        render={({ field }) => (
-          <Tooltip
-            className="tooltip-left-align"
-            content="This is an ethereum style 0x address and where your funds will be settled"
-          >
-            <Input
-              {...field}
-              errorMessage={errors.walletAddress?.message}
-              isInvalid={!!errors.walletAddress}
-              label="Settlement Address"
-              placeholder="0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045"
-              maxLength={42}
-            />
-          </Tooltip>
-        )}
-        rules={{ required: "Settlement address is required" }}
-      />
-      <AddressModal
-        control={control}
-        defaultValues={addressLookup || { city: "", state: "", postcode: "", country: "" }}
-        errors={errors}
-        isOpen={isAddressModalOpen}
-        onClose={() => setIsAddressModalOpen(false)}
-        onConfirm={() => {
-          setIsAddressModalOpen(false);
-        }}
-      />
-      <div className="flex justify-between mt-4">
-        <Button className="text-notpurple-500" variant="light" onClick={handleCancel}>
-          Cancel
-        </Button>
-        <Button
-          className={`bg-ualert-500 ${!isStep1Complete ? "button-disabled" : ""}`}
-          disabled={!isStep1Complete}
-          onClick={() => {
-            onSubmitStep(1);
-            console.log("isStep1Complete", isStep1Complete);
-          }}
-        >
-          Submit Company Info
-        </Button>
-      </div>
-    </form>
+    <FormCard title="Onboard Company Step 1">
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+        <FormInput
+          name="company.name"
+          control={control}
+          label="Company Name"
+          errorMessage={errors.company?.name?.message}
+          placeholder="Algersoft, LLC"
+          maxLength={50}
+        />
+        <FormInput
+          name="company.email"
+          control={control}
+          label="Email"
+          errorMessage={errors.company?.email?.message}
+          placeholder="nope@algersoft.com"
+          pattern={emailRegex.source}
+        />
+        <FormInput
+          name="walletAddress"
+          control={control}
+          label="Wallet Address"
+          errorMessage={errors.walletAddress?.message}
+          placeholder="0x1234567890123456789012345678901234567890"
+          maxLength={42}
+          pattern={walletAddressRegex.source}
+        />
+        {/* Go to postcode input component for more prop controls */}
+        <PostcodeInput
+          name="company.registeredAddress.postcode"
+          control={control}
+          errorMessage={errors.company?.registeredAddress?.postcode?.message}
+          onLookupComplete={onPostcodeLookup}
+          showAddressInputs={showAddressInputs}
+        />
+        <div className={`fade-in ${showAddressInputs ? 'show' : ''}`}>
+          <FormInput
+            name="company.registeredAddress.street1"
+            control={control}
+            label="Street Address 1"
+            placeholder="123 Main St"
+            errorMessage={errors.company?.registeredAddress?.street1?.message}
+          />
+        </div>
+        <div className={`fade-in ${showAddressInputs ? 'show' : ''}`}>
+          <FormInput
+            name="company.registeredAddress.street2"
+            control={control}
+            label="Street Address 2"
+            placeholder="Apt 4B"
+            errorMessage={errors.company?.registeredAddress?.street2?.message}
+          />
+        </div>
+        <div className="flex justify-end space-x-4">
+          <FormButton onClick={() => router.push("/auth")} type="button">Cancel</FormButton>
+          <FormButton type="submit">Submit</FormButton>
+        </div>
+      </form>
+    </FormCard>
   );
 };

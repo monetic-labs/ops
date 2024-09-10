@@ -6,7 +6,7 @@ import { Tabs, Tab } from "@nextui-org/tabs";
 import { FormCard } from "@/components/generics/form-card";
 import { useMerchantForm } from "@/hooks/merchant/useMerchantForm";
 
-import { CompanyInfo } from "./form-company-info";
+import { CompanyInfo } from "./DEP-form-company-info";
 import { CompanyOwner } from "./form-company-owners";
 
 import { Documents } from "./form-documents";

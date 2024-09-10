@@ -37,3 +37,16 @@ body {
     display: block;
   }
 }
+
+.fade-in {
+  opacity: 0;
+  max-height: 0;
+  overflow: hidden;
+  transition: opacity 0.3s ease-in-out, max-height 0.3s ease-in-out, margin 0.3s ease-in-out;
+}
+
+.fade-in.show {
+  opacity: 1;
+  max-height: 100px;
+  margin-top: 1rem;
+}

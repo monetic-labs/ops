@@ -16,7 +16,7 @@ export const FormInput = <T extends FieldValues>({
   ...props
 }: FormInputProps<T>) => {
   return (
-    <div className="mb-4">
+    <div>
       <Controller
       control={control}
       name={name}
@@ -26,11 +26,15 @@ export const FormInput = <T extends FieldValues>({
           {...props}
           errorMessage={errorMessage}
           helperText={helperText}
+          onChange={(e) => {
+            field.onChange(e);
+            props.onChange && props.onChange(e);
+          }}
         />
       )}
     />
       {helperText && <p className="mt-1 text-sm text-notpurple-300">{helperText}</p>}
-      {errorMessage && <p className="mt-1 text-sm text-red-500">{errorMessage}</p>}
+      {errorMessage && <p className="mt-1 text-sm text-ualert-500">{errorMessage}</p>}
     </div>
   );
 };

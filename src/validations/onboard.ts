@@ -2,8 +2,9 @@ import { z } from "zod";
 import { emailSchema } from "./auth";
 import { ISO3166Alpha2Country } from "@backpack-fux/pylon-sdk";
 
-const phoneRegex = /^[+]?[(]?[0-9]{3}[)]?[-s.]?[0-9]{3}[-s.]?[0-9]{4,6}$/;
-const walletAddressRegex = /^0x[a-fA-F0-9]{40}$/;
+export const phoneRegex = /^[+]?[(]?[0-9]{3}[)]?[-s.]?[0-9]{3}[-s.]?[0-9]{4,6}$/;
+export const walletAddressRegex = /^0x[a-fA-F0-9]{40}$/;
+export const postcodeRegex = /^[0-9]{5}$/;
 
 export const walletAddressSchema = z.object({
   walletAddress: z.string().regex(walletAddressRegex, "Invalid wallet address").length(42),

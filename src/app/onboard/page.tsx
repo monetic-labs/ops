@@ -1,22 +1,20 @@
 "use client";
 
 import { Suspense } from "react";
-import { useSearchParams, useRouter } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 
-import { KYBMerchantForm } from "@/components/onboard/merchant";
 import { title } from "@/components/primitives";
-import { FormCompanyInfo2 } from "@/components/onboard/form-company-info2";
+import { FormCompanyInfo } from "@/components/onboard/form-company-info";
 
+// This function is used to render the onboarding page and allows us to get the email from the query params submitted from the auth input
 function OnboardContent() {
   const searchParams = useSearchParams();
   const email = searchParams.get("email") || "";
-  const router = useRouter();
 
   return (
     <div className="flex flex-col sm:flex-row gap-4 w-full max-w-7xl justify-between mb-8">
       <div className="w-full sm:w-1/4 mb-4 sm:mb-0 flex">
-        {/* <KYBMerchantForm initialEmail={email} onCancel={() => router.push("/auth")} /> */}
-        <FormCompanyInfo2 />
+        <FormCompanyInfo />
       </div>
     </div>
   );
