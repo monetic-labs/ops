@@ -2,21 +2,20 @@
 
 import React from "react";
 import { Tabs, Tab } from "@nextui-org/tabs";
-import { useRouter } from "next/navigation";
 
-import { FormCard } from "@/components/onboard/form-card";
+import { FormCard } from "@/components/generics/form-card";
 import { useMerchantForm } from "@/hooks/merchant/useMerchantForm";
 
 import { CompanyInfo } from "./form-company-info";
 import { CompanyOwner } from "./form-company-owners";
-import { Validate } from "./form-validate";
+
 import { Documents } from "./form-documents";
-import { MerchantFormData } from "@/validations/merchant";
+import { MerchantFormData } from "@/validations/onboard";
 import { Control, FieldErrors } from "react-hook-form";
 import { Review } from "./form-review";
 
 export const KYBMerchantForm: React.FC<{ onCancel: () => void; initialEmail: string }> = ({ initialEmail }) => {
-  const router = useRouter();
+
   const {
     activeTab,
     setActiveTab,
@@ -26,19 +25,16 @@ export const KYBMerchantForm: React.FC<{ onCancel: () => void; initialEmail: str
     fields,
     append,
     remove,
+
     handleZipCodeLookup,
     addressLookup,
+
     isAddressModalOpen,
     setIsAddressModalOpen,
+    
     handleCancel,
     onSubmitStep,
-    isIssueLoading,
-    issueError,
-    verifyError,
-    tosLink,
-    createMerchant,
-    isCreatingMerchant,
-    createMerchantError,
+
     createMerchantData,
     formKey,
   } = useMerchantForm(initialEmail);

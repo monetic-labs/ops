@@ -7,7 +7,7 @@ import { Controller, Control, FieldErrors } from "react-hook-form";
 
 import { ISO3166Alpha2Country } from "@backpack-fux/pylon-sdk";
 
-import { MerchantFormData } from "@/validations/merchant";
+import { MerchantFormData } from "@/validations/onboard";
 
 interface AddressModalProps {
   isOpen: boolean;

@@ -5,7 +5,7 @@ import { MerchantCreateInput, ISO3166Alpha2Country, MerchantCreateOutput } from 
 import { merchantCreateSchema, MerchantFormData } from "@/validations/merchant";
 import { useCreateMerchant } from "@/hooks/merchant/useCreateMerchant";
 import { merchantConfig } from "@/config/merchant";
-import { lookupZipCode } from "@/utils/helpers";
+import { lookupPostcode } from "@/utils/helpers";
 
 import { useSetupOTP } from "./useSetupOTP";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -79,7 +79,7 @@ export const useMerchantForm = (initialEmail: string) => {
   const handleZipCodeLookup = useCallback(async (zipCode: string) => {
     if (zipCode.length === 5) {
       try {
-        const result = await lookupZipCode(zipCode);
+        const result = await lookupPostcode(zipCode);
         const formattedResult = {
           ...result,
           state: result.state,

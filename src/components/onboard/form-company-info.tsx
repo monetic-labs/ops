@@ -25,8 +25,6 @@ interface CompanyInfoProps {
 }
 
 export const CompanyInfo: React.FC<CompanyInfoProps> = ({
-  //control,
-  // errors,
   handleZipCodeLookup,
   addressLookup,
   isAddressModalOpen,
@@ -42,7 +40,7 @@ export const CompanyInfo: React.FC<CompanyInfoProps> = ({
     watch,
   } = useForm<MerchantFormData>({
     resolver: zodResolver(merchantCreateSchema),
-    mode: "onChange",
+    mode: "all",
     defaultValues: {
       company: {
         email: initialEmail,

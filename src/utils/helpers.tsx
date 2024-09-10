@@ -38,23 +38,23 @@ export function getOpepenAvatar(address: string, size: number): string {
   return canvas.toDataURL();
 }
 
-export const lookupZipCode = async (zipCode: string) => {
+export const lookupPostcode = async (zipCode: string) => {
   try {
     const response = await fetch(`/api/lookup-zip?zipCode=${zipCode}`);
 
     if (!response.ok) {
-      throw new Error("Zipcode not found");
+      throw new Error("Postcode not found");
     }
     const result = await response.json();
 
     // Ensure the state and country are in the correct format
     return {
       ...result,
+      city: result.city,
       state: result.state,
-      country: result.country,
     };
   } catch (error) {
-    console.error("Error looking up zip code:", error);
+    console.error("Error looking up postcode:", error);
     throw error;
   }
 };

@@ -5,6 +5,7 @@ import { useSearchParams, useRouter } from "next/navigation";
 
 import { KYBMerchantForm } from "@/components/onboard/merchant";
 import { title } from "@/components/primitives";
+import { FormCompanyInfo2 } from "@/components/onboard/form-company-info2";
 
 function OnboardContent() {
   const searchParams = useSearchParams();
@@ -14,7 +15,8 @@ function OnboardContent() {
   return (
     <div className="flex flex-col sm:flex-row gap-4 w-full max-w-7xl justify-between mb-8">
       <div className="w-full sm:w-1/4 mb-4 sm:mb-0 flex">
-        <KYBMerchantForm initialEmail={email} onCancel={() => router.push("/auth")} />
+        {/* <KYBMerchantForm initialEmail={email} onCancel={() => router.push("/auth")} /> */}
+        <FormCompanyInfo2 />
       </div>
     </div>
   );
