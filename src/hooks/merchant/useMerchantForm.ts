@@ -36,29 +36,19 @@ export const useMerchantForm = (initialEmail: string) => {
       } else if (step === 2) {
         setStepCompletion((prev) => ({ ...prev, step2: true }));
 
+        const step1Data = JSON.parse(localStorage.getItem('step1Data') || '{}');
+
         const combinedData: MerchantCreateInput = {
           fee: merchantConfig.fee,
-          walletAddress: data.walletAddress,
-          company: {
-            name: data.company.name,
-            email: data.company.email,
-            registeredAddress: {
-              street1: data.company.registeredAddress.street1,
-              street2: data.company.registeredAddress.street2 || "",
-              city: data.company.registeredAddress.city,
-              postcode: data.company.registeredAddress.postcode || "",
-              state: data.company.registeredAddress.state || "",
-              country: (data.company.registeredAddress.country || "US") as ISO3166Alpha2Country,
-            },
-          },
-          representatives: [
-            {
-              firstName: data.representatives[0].name,
-              lastName: data.representatives[0].surname,
-              email: data.representatives[0].email,
-              phoneNumber: data.representatives[0].phoneNumber,
-            },
-          ],
+          company: step1Data.company,
+          representatives: data.representatives.map((rep: any) => ({
+            firstName: rep.name,
+            lastName: rep.surname,
+            email: rep.email,
+            phoneNumber: rep.phoneNumber,
+            walletAddress: rep.walletAddress,
+          })),
+          walletAddress: step1Data.walletAddress,
         };
 
         try {

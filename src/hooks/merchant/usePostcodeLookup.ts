@@ -12,8 +12,6 @@ export const usePostcodeLookup = () => {
   const [result, setResult] = useState<PostcodeLookupResult | null>(null);
 
   const lookup = useCallback(async (zipCode: string) => {
-    console.log('In usePostcodeLookup', zipCode);
-
     setIsLoading(true);
     setError(null);
     setResult(null);

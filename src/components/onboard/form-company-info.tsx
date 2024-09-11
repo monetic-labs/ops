@@ -45,7 +45,6 @@ export const FormCompanyInfo: React.FC<{ onSubmit: (data: CompanyInfoSchema) => 
   });
 
   const watchPostcode = watch("company.registeredAddress.postcode");
-
   useEffect(() => {
     if (watchPostcode && watchPostcode.length === 5) {
       setShowAddressInputs(true);
@@ -60,12 +59,12 @@ export const FormCompanyInfo: React.FC<{ onSubmit: (data: CompanyInfoSchema) => 
 
   const onFormSubmit = handleSubmit(
     (data: CompanyInfoSchema) => {
-      console.log("Form data submitted:", data); // This should log if submission is working
-      onSubmit(data); // Trigger the passed onSubmit handler
+      console.log("Form data submitted:", data);
+      onSubmit(data);
+      localStorage.setItem('step1Data', JSON.stringify(data));
     },
     (errors) => {
-      console.log("Submission errors:", errors); // Log validation errors
-      // You can handle specific errors here
+      console.log("Submission errors:", errors);
     }
   );
 
@@ -82,7 +81,7 @@ export const FormCompanyInfo: React.FC<{ onSubmit: (data: CompanyInfoSchema) => 
   };
 
   return (
-    <FormCard title="Onboard Company Step 1">
+    <FormCard title="Company Information">
       <form onSubmit={onFormSubmit} className="space-y-4">
         <FormInput
           name="company.name"
@@ -117,24 +116,24 @@ export const FormCompanyInfo: React.FC<{ onSubmit: (data: CompanyInfoSchema) => 
           onLookupComplete={onPostcodeLookup}
           showAddressInputs={showAddressInputs}
         />
-    <div className={`fade-in ${showAddressInputs ? 'show' : ''}`}>
-      <FormInput
-        name="company.registeredAddress.street1"
-        control={control}
-        label="Street Address 1"
-        placeholder="123 Main St"
-        errorMessage={errors.company?.registeredAddress?.street1?.message}
-      />
-    </div>
-    <div className={`fade-in ${showAddressInputs ? 'show' : ''}`}>
-      <FormInput
-        name="company.registeredAddress.street2"
-        control={control}
-        label="Street Address 2"
-        placeholder="Apt 4B"
-        errorMessage={errors.company?.registeredAddress?.street2?.message}
-      />
-    </div>
+        <div className={`fade-in ${showAddressInputs ? 'show' : ''}`}>
+          <FormInput
+            name="company.registeredAddress.street1"
+            control={control}
+            label="Street Address 1"
+            placeholder="123 Main St"
+            errorMessage={errors.company?.registeredAddress?.street1?.message}
+          />
+        </div>
+        <div className={`fade-in ${showAddressInputs ? 'show' : ''}`}>
+          <FormInput
+            name="company.registeredAddress.street2"
+            control={control}
+            label="Street Address 2"
+            placeholder="Apt 4B"
+            errorMessage={errors.company?.registeredAddress?.street2?.message}
+          />
+        </div>
         <div className="flex justify-end space-x-4">
           <Button className="text-notpurple-500" variant="light" onClick={onCancel}>
               Cancel
