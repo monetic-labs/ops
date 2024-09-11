@@ -25,8 +25,10 @@ export const usePostcodeLookup = () => {
         state: data.state,
       };
       setResult(formattedData);
+      return formattedData;
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred during zip code lookup');
+      return null;
     } finally {
       setIsLoading(false);
     }

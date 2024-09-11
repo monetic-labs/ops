@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from 'react';
+import React from 'react';
 import { Control, FieldValues, Path } from 'react-hook-form';
 
 import { usePostcodeLookup } from '@/hooks/merchant/usePostcodeLookup';
@@ -20,18 +20,19 @@ export const PostcodeInput = <T extends FieldValues>({
   name, 
   control, 
   onLookupComplete,
+  showAddressInputs,
   ...props
 }: PostcodeInputProps<T>) => {
-  const { lookup, isLoading, error, result, setResult } = usePostcodeLookup();
+  const { lookup, isLoading, error, result } = usePostcodeLookup();
 
   const handlePostcodeChange = async (value: string) => {
     if (value.length === 5) {
-      await lookup(value);
-      if (result && onLookupComplete) {
-        onLookupComplete(result);
+      const lookupResult = await lookup(value); // Capture the result directly
+      if (lookupResult && onLookupComplete) {
+        onLookupComplete(lookupResult); // Pass the result to the parent
       }
     } else if (onLookupComplete) {
-      onLookupComplete(null);
+      onLookupComplete(null); // Pass null to indicate no lookup result
     }
   };
 

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
@@ -15,7 +15,6 @@ import { emailRegex } from "@/validations/auth";
 import { PostcodeInput } from "../generics/form-input-postcode";
 import { Button } from "@nextui-org/button";
 
-
 export const FormCompanyInfo: React.FC<{ onSubmit: (data: CompanyInfoSchema) => void }> = ({ onSubmit }) => {
   const router = useRouter();
   const [showAddressInputs, setShowAddressInputs] = useState(false);
@@ -24,7 +23,7 @@ export const FormCompanyInfo: React.FC<{ onSubmit: (data: CompanyInfoSchema) => 
     control,
     formState: { errors },
     handleSubmit,
-
+    watch,
     setValue,
   } = useForm<CompanyInfoSchema>({
     resolver: zodResolver(companyInfoSchema),
@@ -45,24 +44,41 @@ export const FormCompanyInfo: React.FC<{ onSubmit: (data: CompanyInfoSchema) => 
     },
   });
 
+  const watchPostcode = watch("company.registeredAddress.postcode");
+
+  useEffect(() => {
+    if (watchPostcode && watchPostcode.length === 5) {
+      setShowAddressInputs(true);
+    } else {
+      setShowAddressInputs(false);
+    }
+  }, [watchPostcode]);
+
   const onCancel = () => {
     router.push("/");
   };
 
-  const onFormSubmit = handleSubmit((data: CompanyInfoSchema) => {
-    console.log("Form data submitted:", data);
-    onSubmit(data);
-  });
+  const onFormSubmit = handleSubmit(
+    (data: CompanyInfoSchema) => {
+      console.log("Form data submitted:", data); // This should log if submission is working
+      onSubmit(data); // Trigger the passed onSubmit handler
+    },
+    (errors) => {
+      console.log("Submission errors:", errors); // Log validation errors
+      // You can handle specific errors here
+    }
+  );
 
   const onPostcodeLookup = (result: any) => {
     if (result) {
-    setValue("company.registeredAddress.postcode", result.postcode);
-    setValue("company.registeredAddress.city", result.city);
-    setValue("company.registeredAddress.state", result.state);
-    setShowAddressInputs(true);
-  } else {
+      setValue("company.registeredAddress.postcode", result.postcode, { shouldValidate: true });
+      setValue("company.registeredAddress.city", result.city, { shouldValidate: true });
+      setValue("company.registeredAddress.state", result.state, { shouldValidate: true });
+      setShowAddressInputs(true);
+    } else {
       setShowAddressInputs(false);
     }
+    console.log("Postcode lookup result:", result);
   };
 
   return (
@@ -101,24 +117,24 @@ export const FormCompanyInfo: React.FC<{ onSubmit: (data: CompanyInfoSchema) => 
           onLookupComplete={onPostcodeLookup}
           showAddressInputs={showAddressInputs}
         />
-        <div className={`fade-in ${showAddressInputs ? 'show' : ''}`}>
-          <FormInput
-            name="company.registeredAddress.street1"
-            control={control}
-            label="Street Address 1"
-            placeholder="123 Main St"
-            errorMessage={errors.company?.registeredAddress?.street1?.message}
-          />
-        </div>
-        <div className={`fade-in ${showAddressInputs ? 'show' : ''}`}>
-          <FormInput
-            name="company.registeredAddress.street2"
-            control={control}
-            label="Street Address 2"
-            placeholder="Apt 4B"
-            errorMessage={errors.company?.registeredAddress?.street2?.message}
-          />
-        </div>
+    <div className={`fade-in ${showAddressInputs ? 'show' : ''}`}>
+      <FormInput
+        name="company.registeredAddress.street1"
+        control={control}
+        label="Street Address 1"
+        placeholder="123 Main St"
+        errorMessage={errors.company?.registeredAddress?.street1?.message}
+      />
+    </div>
+    <div className={`fade-in ${showAddressInputs ? 'show' : ''}`}>
+      <FormInput
+        name="company.registeredAddress.street2"
+        control={control}
+        label="Street Address 2"
+        placeholder="Apt 4B"
+        errorMessage={errors.company?.registeredAddress?.street2?.message}
+      />
+    </div>
         <div className="flex justify-end space-x-4">
           <Button className="text-notpurple-500" variant="light" onClick={onCancel}>
               Cancel

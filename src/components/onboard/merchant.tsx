@@ -17,11 +17,8 @@ export const KYBMerchantForm: React.FC<{ onCancel: () => void; initialEmail: str
     activeTab,
     setActiveTab,
     stepCompletion,
-
-
     onSubmitStep,
     handleCancel,
-
     createMerchantData,
   } = useMerchantForm(initialEmail);
 
