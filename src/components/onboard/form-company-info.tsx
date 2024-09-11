@@ -13,9 +13,10 @@ import { CompanyInfoSchema, companyInfoSchema, postcodeRegex, walletAddressRegex
 import { emailRegex } from "@/validations/auth";
 
 import { PostcodeInput } from "../generics/form-input-postcode";
+import { Button } from "@nextui-org/button";
 
 
-export const FormCompanyInfo: React.FC = () => {
+export const FormCompanyInfo: React.FC<{ onSubmit: (data: CompanyInfoSchema) => void }> = ({ onSubmit }) => {
   const router = useRouter();
   const [showAddressInputs, setShowAddressInputs] = useState(false);
 
@@ -23,6 +24,7 @@ export const FormCompanyInfo: React.FC = () => {
     control,
     formState: { errors },
     handleSubmit,
+
     setValue,
   } = useForm<CompanyInfoSchema>({
     resolver: zodResolver(companyInfoSchema),
@@ -43,10 +45,14 @@ export const FormCompanyInfo: React.FC = () => {
     },
   });
 
-  const onSubmit = (data: CompanyInfoSchema) => {
-    console.log("Form data submitted:", data);
-    // Handle form submission
+  const onCancel = () => {
+    router.push("/");
   };
+
+  const onFormSubmit = handleSubmit((data: CompanyInfoSchema) => {
+    console.log("Form data submitted:", data);
+    onSubmit(data);
+  });
 
   const onPostcodeLookup = (result: any) => {
     if (result) {
@@ -61,7 +67,7 @@ export const FormCompanyInfo: React.FC = () => {
 
   return (
     <FormCard title="Onboard Company Step 1">
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+      <form onSubmit={onFormSubmit} className="space-y-4">
         <FormInput
           name="company.name"
           control={control}
@@ -114,7 +120,9 @@ export const FormCompanyInfo: React.FC = () => {
           />
         </div>
         <div className="flex justify-end space-x-4">
-          <FormButton onClick={() => router.push("/auth")} type="button">Cancel</FormButton>
+          <Button className="text-notpurple-500" variant="light" onClick={onCancel}>
+              Cancel
+          </Button>
           <FormButton type="submit">Submit</FormButton>
         </div>
       </form>

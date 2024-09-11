@@ -2,7 +2,7 @@ import { z } from "zod";
 import { emailSchema } from "./auth";
 import { ISO3166Alpha2Country } from "@backpack-fux/pylon-sdk";
 
-export const phoneRegex = /^[+]?[(]?[0-9]{3}[)]?[-s.]?[0-9]{3}[-s.]?[0-9]{4,6}$/;
+export const phoneRegex = /^[+]?[(]?[0-9]{3}[)]?[-\s.]?[0-9]{3}[-\s.]?[0-9]{4,6}$/;
 export const walletAddressRegex = /^0x[a-fA-F0-9]{40}$/;
 export const postcodeRegex = /^[0-9]{5}$/;
 
@@ -37,13 +37,13 @@ export const companyInfoSchema = z.object({
 
 // Onboard step 2
 export const companyRepresentativeSchema = z.object({
-  representative: z.object({
+  representatives: z.array(z.object({
     name: z.string().min(1).max(255),
     surname: z.string().min(1).max(255),
     email: emailSchema,
     phoneNumber: z.string().regex(phoneRegex, "Invalid phone number format"),
     walletAddress: z.string().regex(walletAddressRegex, "Invalid wallet address").length(42),
-  }),
+  })),
 });
 
 // Response data from step 3
@@ -59,7 +59,7 @@ export const complianceSchema = z.object({
 // Onboard step 3
 export const merchantCreateSchema = z.object({    
   company: companyInfoSchema.shape.company,
-  representatives: z.array(companyRepresentativeSchema.shape.representative),
+  representatives: companyRepresentativeSchema.shape.representatives,
   compliance: complianceSchema.shape.compliance.optional(),
 });
 

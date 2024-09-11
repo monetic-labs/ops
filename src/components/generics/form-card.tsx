@@ -9,7 +9,7 @@ interface FormCardProps {
 
 export const FormCard: React.FC<FormCardProps> = ({ title, className, children }) => {
   return (
-    <div className="fixed inset-0 flex items-center justify-center">
+    <div className="flex max-w-7xl mx-auto">
       <Card
         className={`w-full max-w-3xl mx-auto bg-charyo-700/60 backdrop-blur-md text-notpurple-100 p-6 rounded-lg shadow-lg ${className}`}
       >
