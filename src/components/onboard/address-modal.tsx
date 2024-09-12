@@ -2,9 +2,7 @@ import React from "react";
 import { Button } from "@nextui-org/button";
 import { Input } from "@nextui-org/input";
 import { Modal, ModalContent, ModalHeader, ModalBody, ModalFooter } from "@nextui-org/modal";
-
 import { Controller, Control, FieldErrors } from "react-hook-form";
-
 import { ISO3166Alpha2Country } from "@backpack-fux/pylon-sdk";
 
 import { MerchantFormData } from "@/validations/merchant";
@@ -97,9 +95,9 @@ export const AddressModal: React.FC<AddressModalProps> = ({
             render={({ field }) => (
               <Input
                 {...field}
+                isReadOnly
                 errorMessage={errors.company?.registeredAddress?.country?.message}
                 isInvalid={!!errors.company?.registeredAddress?.country}
-                isReadOnly
                 label="Country"
                 placeholder="US"
               />

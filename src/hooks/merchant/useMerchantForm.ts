@@ -1,6 +1,8 @@
 import { useEffect, useState, useCallback } from "react";
 import { useForm, useFieldArray } from "react-hook-form";
 import { MerchantCreateInput, ISO3166Alpha2Country, MerchantCreateOutput } from "@backpack-fux/pylon-sdk";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useRouter } from "next/navigation";
 
 import { merchantCreateSchema, MerchantFormData } from "@/validations/merchant";
 import { useCreateMerchant } from "@/hooks/merchant/useCreateMerchant";
@@ -8,8 +10,6 @@ import { merchantConfig } from "@/config/merchant";
 import { lookupZipCode } from "@/utils/helpers";
 
 import { useSetupOTP } from "./useSetupOTP";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useRouter } from "next/navigation";
 
 export const useMerchantForm = (initialEmail: string) => {
   const [activeTab, setActiveTab] = useState("company-info");
@@ -100,10 +100,12 @@ export const useMerchantForm = (initialEmail: string) => {
 
       if (!isValid) {
         console.error("Form validation failed:", errors);
+
         return;
       }
 
       const data = getValues();
+
       console.log(`Step ${step} data:`, data);
 
       if (step === 1) {

@@ -3,6 +3,7 @@ import { Modal, ModalContent, ModalHeader, ModalBody, ModalFooter } from "@nextu
 import { Button } from "@nextui-org/button";
 import { Divider } from "@nextui-org/divider";
 import { BillingAddress, ShippingAddress } from "@backpack-fux/pylon-sdk";
+
 import { formattedDate, mapCurrencyToSymbol } from "@/utils/helpers";
 
 interface DetailsResponseProps {
@@ -26,7 +27,7 @@ interface DetailsResponseProps {
 
 export function DetailsResponse({ isOpen, response, onClose }: DetailsResponseProps) {
   return (
-    <Modal isOpen={isOpen} onClose={onClose} className="">
+    <Modal className="" isOpen={isOpen} onClose={onClose}>
       <ModalContent>
         {(onClose) => (
           <>
@@ -44,8 +45,8 @@ export function DetailsResponse({ isOpen, response, onClose }: DetailsResponsePr
                       response.transactionStatus === "Approved"
                         ? "text-ualert-100"
                         : response.transactionStatus === "Failed"
-                        ? "text-ualert-300"
-                        : "text-ualert-500"
+                          ? "text-ualert-300"
+                          : "text-ualert-500"
                     }`}
                   >
                     {response.transactionStatus}

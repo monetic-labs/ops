@@ -18,6 +18,7 @@ export const OTPVerificationModal: React.FC<OTPVerificationModalProps> = ({ isOp
   const handleVerify = async () => {
     try {
       const verified = await onVerify(otp);
+
       if (verified) {
         onClose();
       } else {
@@ -34,7 +35,7 @@ export const OTPVerificationModal: React.FC<OTPVerificationModalProps> = ({ isOp
         <ModalHeader>Verify Email</ModalHeader>
         <ModalBody>
           <p>Please enter the OTP sent to {email}</p>
-          <Input value={otp} onChange={(e) => setOtp(e.target.value)} placeholder="Enter OTP" errorMessage={error} />
+          <Input errorMessage={error} placeholder="Enter OTP" value={otp} onChange={(e) => setOtp(e.target.value)} />
         </ModalBody>
         <ModalFooter>
           <Button className="text-notpurple-500" variant="light" onPress={onClose}>

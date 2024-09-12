@@ -1,14 +1,15 @@
-import React, { useState, useMemo, ReactNode, useCallback } from "react";
+import React, { useState, ReactNode, useCallback } from "react";
 import { Chip } from "@nextui-org/chip";
 import { Table, TableBody, TableCell, TableColumn, TableHeader, TableRow } from "@nextui-org/table";
 import { Button } from "@nextui-org/button";
 import { TransactionListItem } from "@backpack-fux/pylon-sdk";
 
+import { useOrderManagement } from "@/hooks/orders/useOrderManagement";
+import { centsToDollars, getTimeAgo, mapCurrencyToSymbol } from "@/utils/helpers";
+
 import { DetailsResponse } from "./actions/order-details";
 import { CancelConfirmationModal } from "./actions/order-cancel";
 import { RefundModal } from "./actions/order-refund";
-import { useOrderManagement } from "@/hooks/orders/useOrderManagement";
-import { centsToDollars, getTimeAgo, mapCurrencyToSymbol } from "@/utils/helpers";
 
 const columns = [
   { name: "ID", uid: "id" },
@@ -111,7 +112,7 @@ export default function PaymentsTab() {
         const isCancelDisabled = true;
 
         return (
-          <div className="flex gap-2" onClick={(e) => e.stopPropagation()}>
+          <span className="flex gap-2">
             <Button
               isDisabled={isCancelDisabled}
               size="sm"
@@ -130,7 +131,7 @@ export default function PaymentsTab() {
             >
               Refund
             </Button>
-          </div>
+          </span>
         );
       default:
         return cellValue !== null && cellValue !== undefined ? String(cellValue) : "";
@@ -151,7 +152,7 @@ export default function PaymentsTab() {
         <TableHeader columns={columns}>
           {(column) => <TableColumn key={column.uid}>{column.name}</TableColumn>}
         </TableHeader>
-        <TableBody items={transactions} emptyContent={isLoading ? null : "No transactions found"}>
+        <TableBody emptyContent={isLoading ? null : "No transactions found"} items={transactions}>
           {(item) => {
             return (
               <TableRow
@@ -159,7 +160,8 @@ export default function PaymentsTab() {
                 className="cursor-pointer transition-all hover:bg-gray-100 dark:hover:bg-charyo-500"
                 onClick={(e) => {
                   const target = e.target as HTMLElement;
-                  if (!target.closest("button")) {
+
+                  if (!target.closest("button") && !target.closest(".flex.gap-2")) {
                     handleViewDetails(item);
                   }
                 }}

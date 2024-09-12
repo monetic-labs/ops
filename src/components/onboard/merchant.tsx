@@ -3,16 +3,15 @@
 import React from "react";
 import { Tabs, Tab } from "@nextui-org/tabs";
 import { useRouter } from "next/navigation";
+import { Control, FieldErrors } from "react-hook-form";
 
 import { FormCard } from "@/components/onboard/form-card";
 import { useMerchantForm } from "@/hooks/merchant/useMerchantForm";
+import { MerchantFormData } from "@/validations/merchant";
 
 import { CompanyInfo } from "./form-company-info";
 import { CompanyOwner } from "./form-company-owners";
-import { Validate } from "./form-validate";
 import { Documents } from "./form-documents";
-import { MerchantFormData } from "@/validations/merchant";
-import { Control, FieldErrors } from "react-hook-form";
 import { Review } from "./form-review";
 
 export const KYBMerchantForm: React.FC<{ onCancel: () => void; initialEmail: string }> = ({ initialEmail }) => {
@@ -79,15 +78,15 @@ export const KYBMerchantForm: React.FC<{ onCancel: () => void; initialEmail: str
         <Tab key="review" title="Review">
           <Review
             data={control._formValues as MerchantFormData}
-            onSubmit={() => onSubmitStep(2)}
             onEdit={handleEditStep}
+            onSubmit={() => onSubmitStep(2)}
           />
         </Tab>
         <Tab key="documents" title="Documents">
           <Documents
             handleCancel={handleCancel}
-            stepCompletion={stepCompletion}
             merchantResponse={createMerchantData}
+            stepCompletion={stepCompletion}
             onSubmitStep={onSubmitStep}
           />
         </Tab>

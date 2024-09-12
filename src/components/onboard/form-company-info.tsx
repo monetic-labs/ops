@@ -1,8 +1,6 @@
 import React from "react";
 import { Control, Controller, FieldErrors, useForm } from "react-hook-form";
-
 import { zodResolver } from "@hookform/resolvers/zod";
-
 import { Input } from "@nextui-org/input";
 import { Button } from "@nextui-org/button";
 import { Tooltip } from "@nextui-org/tooltip";
@@ -52,6 +50,7 @@ export const CompanyInfo: React.FC<CompanyInfoProps> = ({
 
   const watchedFields = watch(["company.name", "company.email", "company.registeredAddress.postcode", "walletAddress"]);
   const isStep1Complete = watchedFields.every((field) => field && field.trim() !== "");
+
   console.log("isStep1Complete", isStep1Complete);
   console.log("watchedFields", watchedFields);
 
@@ -66,8 +65,9 @@ export const CompanyInfo: React.FC<CompanyInfoProps> = ({
   };
 
   console.log("rendering company info");
+
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+    <form className="space-y-4" onSubmit={handleSubmit(onSubmit)}>
       <Controller
         control={control}
         name="company.name"
@@ -81,8 +81,8 @@ export const CompanyInfo: React.FC<CompanyInfoProps> = ({
               errorMessage={errors.company?.name?.message}
               isInvalid={!!errors.company?.name}
               label="Company Name"
-              placeholder="Figgis Agency LLC"
               maxLength={50} //soft limit -> see absolute limit in validation
+              placeholder="Figgis Agency LLC"
             />
           </Tooltip>
         )}
@@ -102,8 +102,8 @@ export const CompanyInfo: React.FC<CompanyInfoProps> = ({
               errorMessage={errors.company?.email?.message}
               isInvalid={!!errors.company?.email}
               label="Company Email"
-              placeholder="dick@figgisagency.xyz"
               maxLength={50} //soft limit -> see absolute limit in validation
+              placeholder="dick@figgisagency.xyz"
             />
           </Tooltip>
         )}
@@ -122,8 +122,8 @@ export const CompanyInfo: React.FC<CompanyInfoProps> = ({
               errorMessage={errors.company?.registeredAddress?.postcode?.message}
               isInvalid={!!errors.company?.registeredAddress?.postcode}
               label="Postal Code"
-              placeholder="10001"
               maxLength={5}
+              placeholder="10001"
               onChange={(e) => {
                 field.onChange(e);
                 handleZipCodeLookup(e.target.value);
@@ -146,8 +146,8 @@ export const CompanyInfo: React.FC<CompanyInfoProps> = ({
               errorMessage={errors.walletAddress?.message}
               isInvalid={!!errors.walletAddress}
               label="Settlement Address"
-              placeholder="0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045"
               maxLength={42}
+              placeholder="0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045"
             />
           </Tooltip>
         )}

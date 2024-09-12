@@ -74,6 +74,7 @@ export const formattedDate = (timestamp: string): string => {
     second: "2-digit",
     hour12: false,
   };
+
   return date.toLocaleString("en-GB", options);
 };
 
@@ -87,15 +88,18 @@ export const getTimeAgo = (timestamp: string): string => {
   }
 
   const diffInMinutes = Math.floor(diffInSeconds / 60);
+
   if (diffInMinutes < 60) {
     return `${diffInMinutes} minute${diffInMinutes !== 1 ? "s" : ""} ago`;
   }
 
   const diffInHours = Math.floor(diffInMinutes / 60);
+
   if (diffInHours < 24) {
     return `${diffInHours} hour${diffInHours !== 1 ? "s" : ""} ago`;
   }
 
   const diffInDays = Math.floor(diffInHours / 24);
+
   return `${diffInDays} day${diffInDays !== 1 ? "s" : ""} ago`;
 };

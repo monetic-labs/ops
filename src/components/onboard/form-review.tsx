@@ -1,6 +1,7 @@
 import React from "react";
 import { Button } from "@nextui-org/button";
 import { Divider } from "@nextui-org/divider";
+
 import { MerchantFormData } from "@/validations/merchant";
 
 interface ReviewProps {

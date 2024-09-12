@@ -49,7 +49,7 @@ export const Documents: React.FC<DocumentsProps> = ({
         <div className="mb-4">
           <h3 className="text-lg font-semibold mb-2">KYC Verification</h3>
           <p>Please complete your KYC verification by clicking the button below:</p>
-          <Button onClick={handleKYCRedirect} className="mt-2">
+          <Button className="mt-2" onClick={handleKYCRedirect}>
             Start KYC Verification
           </Button>
         </div>
@@ -57,8 +57,8 @@ export const Documents: React.FC<DocumentsProps> = ({
         kycLink && (
           <PersonaVerification
             kycLink={kycLink}
-            onComplete={handlePersonaComplete}
             onCancel={handlePersonaCancel}
+            onComplete={handlePersonaComplete}
             onError={handlePersonaError}
           />
         )
@@ -67,9 +67,9 @@ export const Documents: React.FC<DocumentsProps> = ({
         <div className="mb-4">
           <h3 className="text-lg font-semibold mb-2">Terms of Service</h3>
           <iframe
+            className="w-full h-96 border border-gray-300 rounded"
             src={tosLink}
             title="Terms of Service Document"
-            className="w-full h-96 border border-gray-300 rounded"
           />
         </div>
       )}

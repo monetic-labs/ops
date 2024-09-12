@@ -1,7 +1,8 @@
 import { useState, useEffect, useCallback } from "react";
 import { TransactionListOutput, TransactionListItem, useAuthStatus } from "@backpack-fux/pylon-sdk";
-import pylon from "@/libs/pylon-sdk";
 import { useRouter } from "next/navigation";
+
+import pylon from "@/libs/pylon-sdk";
 
 export const useOrderManagement = () => {
   const [isLoading, setIsLoading] = useState(true);
@@ -26,6 +27,7 @@ export const useOrderManagement = () => {
           const updatedTransaction = data.data as TransactionListItem;
           const existingIndex = prevTransactions.findIndex((t) => t.id === updatedTransaction.id);
           let newTransactions;
+
           if (existingIndex !== -1) {
             // Update existing transaction
             newTransactions = [...prevTransactions];
@@ -34,6 +36,7 @@ export const useOrderManagement = () => {
             // Add new transaction
             newTransactions = [updatedTransaction, ...prevTransactions];
           }
+
           return sortTransactionsByDate(newTransactions);
         });
         break;
