@@ -25,9 +25,6 @@ function OnboardContent() {
 export default function OnboardPage() {
   return (
     <section className="relative">
-      <div className="text-center justify-center">
-        <h1 className={title({ color: "charyo" })}>Onboarding</h1>
-      </div>
       <Suspense fallback={<div>Loading...</div>}>
         <OnboardContent />
 

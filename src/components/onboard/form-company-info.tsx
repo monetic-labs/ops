@@ -15,7 +15,11 @@ import { emailRegex } from "@/validations/auth";
 import { PostcodeInput } from "../generics/form-input-postcode";
 import { Button } from "@nextui-org/button";
 
-export const FormCompanyInfo: React.FC<{ onSubmit: (data: CompanyInfoSchema) => void }> = ({ onSubmit }) => {
+export const FormCompanyInfo: React.FC<{ 
+  onSubmit: (data: CompanyInfoSchema) => void; 
+  initialData: CompanyInfoSchema;
+  updateFormData: (data: CompanyInfoSchema) => void;
+}> = ({ onSubmit, initialData, updateFormData }) => {
   const router = useRouter();
   const [showAddressInputs, setShowAddressInputs] = useState(false);
 
@@ -61,12 +65,20 @@ export const FormCompanyInfo: React.FC<{ onSubmit: (data: CompanyInfoSchema) => 
     (data: CompanyInfoSchema) => {
       console.log("Form data submitted:", data);
       onSubmit(data);
-      localStorage.setItem('step1Data', JSON.stringify(data));
+      updateFormData(data);
     },
     (errors) => {
       console.log("Submission errors:", errors);
     }
   );
+
+  useEffect(() => {
+    const subscription = watch((value) => {
+      console.log("Form data updated:", value);
+      updateFormData(value as CompanyInfoSchema);
+    });
+    return () => subscription.unsubscribe();
+  }, [watch, updateFormData]);
 
   const onPostcodeLookup = (result: any) => {
     if (result) {
@@ -81,7 +93,7 @@ export const FormCompanyInfo: React.FC<{ onSubmit: (data: CompanyInfoSchema) => 
   };
 
   return (
-    <FormCard title="Company Information">
+    <FormCard title="Company Information" className="w-full">
       <form onSubmit={onFormSubmit} className="space-y-4">
         <FormInput
           name="company.name"

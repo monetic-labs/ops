@@ -1,21 +1,50 @@
 import { useState, useCallback } from "react";
-import { MerchantCreateInput, ISO3166Alpha2Country, MerchantCreateOutput } from "@backpack-fux/pylon-sdk";
-import { useCreateMerchant } from "@/hooks/merchant/useCreateMerchant";
-import { merchantConfig } from "@/config/merchant";
-import { useSetupOTP } from "./useSetupOTP";
 import { useRouter } from "next/navigation";
 
+import { ISO3166Alpha2Country, MerchantCreateInput, MerchantCreateOutput } from "@backpack-fux/pylon-sdk";
+
+import { useFormPersistence } from "@/hooks/generic/useFormPersistence";
+import { useCreateMerchant } from "@/hooks/merchant/useCreateMerchant";
+import { useSetupOTP } from "@/hooks/merchant/useSetupOTP";
+import { merchantConfig } from "@/config/merchant";
+
 export const useMerchantForm = (initialEmail: string) => {
+  const router = useRouter();
+  const otpHook = useSetupOTP(initialEmail);
+  const [tosLink, setTosLink] = useState<string | null>(null);
+  const [merchantResponse, setMerchantResponse] = useState<MerchantCreateOutput | null>(null);
+
+  const handleCancel = () => {
+    router.push("/auth");
+  };
+
   const [activeTab, setActiveTab] = useState("company-info");
+  
+  const { data: formData, updateData: updateFormData, resetData: resetFormData } = useFormPersistence('merchantFormData', {
+    companyInfo: {
+      company: {
+        name: "",
+        email: "",
+        registeredAddress: {
+          street1: "",
+          city: "",
+          postcode: "",
+          state: "",
+          country: "US" as ISO3166Alpha2Country,
+        },
+      },
+      walletAddress: "",
+    },
+    companyUsers: {
+      representatives: [],
+    },
+  });
+
   const [stepCompletion, setStepCompletion] = useState({
     step1: false,
     step2: false,
     step3: false,
   });
-  const [tosLink, setTosLink] = useState<string | null>(null);
-  const [merchantResponse, setMerchantResponse] = useState<MerchantCreateOutput | null>(null);
-
-  const router = useRouter();
 
   const {
     createMerchant,
@@ -24,23 +53,23 @@ export const useMerchantForm = (initialEmail: string) => {
     data: createMerchantData,
   } = useCreateMerchant();
 
-  const otpHook = useSetupOTP(initialEmail);
-
   const onSubmitStep = useCallback(
     async (step: number, data: any) => {
       console.log(`Step ${step} data:`, data);
 
       if (step === 1) {
+        updateFormData({ companyInfo: data });
         setStepCompletion((prev) => ({ ...prev, step1: true }));
         setActiveTab("company-owner");
       } else if (step === 2) {
+        updateFormData({ companyUsers: data });
         setStepCompletion((prev) => ({ ...prev, step2: true }));
 
-        const step1Data = JSON.parse(localStorage.getItem('step1Data') || '{}');
+        const step1Data = formData.companyInfo;
 
         const combinedData: MerchantCreateInput = {
           fee: merchantConfig.fee,
-          company: step1Data.company,
+          company: step1Data?.company,
           representatives: data.representatives.map((rep: any) => ({
             firstName: rep.name,
             lastName: rep.surname,
@@ -73,16 +102,14 @@ export const useMerchantForm = (initialEmail: string) => {
     [createMerchant]
   );
 
-  const handleCancel = () => {
-    router.push("/auth");
-  };
-
   return {
     activeTab,
     setActiveTab,
     stepCompletion,
     handleCancel,
     onSubmitStep,
+    formData,
+    updateFormData,
     createMerchant,
     isCreatingMerchant,
     createMerchantError,
