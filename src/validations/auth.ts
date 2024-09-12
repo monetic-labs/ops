@@ -1,5 +1,6 @@
-import { OTP_CODE_LENGTH } from "@/utils/constants";
 import { z } from "zod";
+
+import { OTP_CODE_LENGTH } from "@/utils/constants";
 
 export const emailRegex = /[^@ \t\r\n]+@[^@ \t\r\n]+\.[^@ \t\r\n]+/;
 

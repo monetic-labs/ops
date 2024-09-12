@@ -53,11 +53,11 @@ export function RefundModal({ isOpen, onClose, onConfirm, order }: RefundModalPr
 
                 <div className="flex justify-between">
                   <span>Order Amount:</span>
-                  <span>${order.orderAmount.toFixed(2)}</span>
+                  <span>${order.orderAmount}</span>
                 </div>
                 <div className="flex justify-between">
                   <span>Total Amount:</span>
-                  <span>${order.totalAmount.toFixed(2)}</span>
+                  <span>${order.totalAmount}</span>
                 </div>
                 <Divider />
                 <div className="flex flex-col">

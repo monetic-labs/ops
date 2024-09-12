@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { TransactionListOutput, TransactionListItem, useAuthStatus } from "@backpack-fux/pylon-sdk";
 import pylon from "@/libs/pylon-sdk";
+import { useRouter } from "next/navigation";
 
 export const useOrderManagement = () => {
   const [isLoading, setIsLoading] = useState(true);
@@ -8,6 +9,7 @@ export const useOrderManagement = () => {
   const [transactions, setTransactions] = useState<TransactionListItem[]>([]);
 
   const { isAuthenticated, checkAuthStatus } = useAuthStatus();
+  const router = useRouter();
 
   const sortTransactionsByDate = (transactions: TransactionListItem[]) => {
     return [...transactions].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
@@ -65,6 +67,10 @@ export const useOrderManagement = () => {
         }
       }
     };
+
+    if (!isAuthenticated) {
+      router.refresh();
+    }
 
     setupConnection();
 

@@ -4,11 +4,11 @@ import { Table, TableBody, TableCell, TableColumn, TableHeader, TableRow } from 
 import { Button } from "@nextui-org/button";
 import { TransactionListItem } from "@backpack-fux/pylon-sdk";
 
-import { NetworkResponse } from "./actions/network-response";
+import { DetailsResponse } from "./actions/order-details";
 import { CancelConfirmationModal } from "./actions/order-cancel";
 import { RefundModal } from "./actions/order-refund";
 import { useOrderManagement } from "@/hooks/orders/useOrderManagement";
-import { centsToDollars, formattedDate, getTimeAgo, mapCurrencyToSymbol } from "@/utils/helpers";
+import { centsToDollars, getTimeAgo, mapCurrencyToSymbol } from "@/utils/helpers";
 
 const columns = [
   { name: "ID", uid: "id" },
@@ -19,10 +19,19 @@ const columns = [
   { name: "Actions", uid: "actions" },
 ];
 
-const statusColorMap: Record<string, "success" | "warning" | "danger"> = {
-  COMPLETE: "success",
-  PENDING: "warning",
-  FAILED: "danger",
+const statusColorMap: Record<string, "success" | "warning" | "danger" | "primary" | "secondary"> = {
+  SENT_FOR_AUTHORIZATION: "primary",
+  AUTHORIZED: "secondary",
+  SENT_FOR_SETTLEMENT: "warning",
+  SETTLED: "success",
+  SETTLEMENT_FAILED: "danger",
+  CANCELLED: "danger",
+  ERROR: "danger",
+  EXPIRED: "danger",
+  REFUSED: "danger",
+  SENT_FOR_REFUND: "warning",
+  REFUNDED: "success",
+  REFUND_FAILED: "danger",
 };
 
 export default function PaymentsTab() {
@@ -74,13 +83,15 @@ export default function PaymentsTab() {
   const renderCell = useCallback((transaction: TransactionListItem, columnKey: React.Key): ReactNode => {
     const cellValue = transaction[columnKey as keyof TransactionListItem];
 
+    const statusLength = transaction.transactionStatusHistory.length;
+    const lastStatus = transaction.transactionStatusHistory[statusLength - 1].status;
+    const isSettled = lastStatus === "SETTLED";
+
     switch (columnKey) {
-      case "id":
-        return transaction.id.split("-")[transaction.id.split("-").length - 1];
       case "status":
         return (
-          <Chip className="capitalize" color={statusColorMap[transaction.status] || "default"} size="sm" variant="flat">
-            {transaction.status}
+          <Chip className="capitalize" color={statusColorMap[lastStatus] || "default"} size="sm" variant="flat">
+            {lastStatus}
           </Chip>
         );
       case "paymentMethod":
@@ -96,15 +107,27 @@ export default function PaymentsTab() {
       case "createdAt":
         return getTimeAgo(transaction.createdAt);
       case "actions":
+        const isRefundDisabled = process.env.NODE_ENV === "development" ? false : !isSettled;
+        const isCancelDisabled = true;
+
         return (
-          <div className="flex gap-2">
-            <Button size="sm" onPress={() => handleViewDetails(transaction)}>
-              Details
-            </Button>
-            <Button size="sm" onPress={() => handleCancelOrder(transaction)}>
+          <div className="flex gap-2" onClick={(e) => e.stopPropagation()}>
+            <Button
+              isDisabled={isCancelDisabled}
+              size="sm"
+              onPress={() => {
+                if (!isCancelDisabled) handleCancelOrder(transaction);
+              }}
+            >
               Cancel
             </Button>
-            <Button size="sm" onPress={() => handleRefund(transaction)}>
+            <Button
+              isDisabled={isRefundDisabled}
+              size="sm"
+              onPress={() => {
+                if (!isRefundDisabled) handleRefund(transaction);
+              }}
+            >
               Refund
             </Button>
           </div>
@@ -126,24 +149,34 @@ export default function PaymentsTab() {
     <>
       <Table aria-label="Transactions table with custom cells">
         <TableHeader columns={columns}>
-          {(column) => (
-            <TableColumn key={column.uid} align={column.uid === "actions" ? "center" : "start"}>
-              {column.name}
-            </TableColumn>
-          )}
+          {(column) => <TableColumn key={column.uid}>{column.name}</TableColumn>}
         </TableHeader>
-        <TableBody items={transactions}>
-          {(item) => (
-            <TableRow key={item.id}>{(columnKey) => <TableCell>{renderCell(item, columnKey)}</TableCell>}</TableRow>
-          )}
+        <TableBody items={transactions} emptyContent={isLoading ? null : "No transactions found"}>
+          {(item) => {
+            return (
+              <TableRow
+                key={item.id}
+                className="cursor-pointer transition-all hover:bg-gray-100 dark:hover:bg-charyo-500"
+                onClick={(e) => {
+                  const target = e.target as HTMLElement;
+                  if (!target.closest("button")) {
+                    handleViewDetails(item);
+                  }
+                }}
+              >
+                {(columnKey) => <TableCell>{renderCell(item, columnKey)}</TableCell>}
+              </TableRow>
+            );
+          }}
         </TableBody>
       </Table>
       {selectedPayment && (
-        <NetworkResponse
+        <DetailsResponse
           isOpen={!!selectedPayment}
           response={{
             transactionId: selectedPayment.id,
-            transactionStatus: selectedPayment.status,
+            transactionStatus:
+              selectedPayment.transactionStatusHistory[selectedPayment.transactionStatusHistory.length - 1].status,
             transactionProcessor: selectedPayment.processor,
             transactionPaymentMethod: selectedPayment.paymentMethod,
             transactionSubtotal: centsToDollars(selectedPayment.subtotal),
@@ -177,10 +210,11 @@ export default function PaymentsTab() {
           order={{
             orderId: refundPayment.id,
             processor: refundPayment.processor,
-            networkStatus: refundPayment.status,
+            networkStatus:
+              refundPayment.transactionStatusHistory[refundPayment.transactionStatusHistory.length - 1].status,
             customerName: `${refundPayment.billingAddress.firstName} ${refundPayment.billingAddress.lastName}`,
-            orderAmount: refundPayment.subtotal,
-            totalAmount: refundPayment.total,
+            orderAmount: parseFloat(centsToDollars(refundPayment.subtotal)),
+            totalAmount: parseFloat(centsToDollars(refundPayment.total)),
           }}
           onClose={handleCloseRefundModal}
           onConfirm={handleConfirmRefund}
