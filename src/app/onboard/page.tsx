@@ -2,10 +2,9 @@
 
 import { Suspense } from "react";
 import { useSearchParams } from "next/navigation";
-
-import { title } from "@/components/primitives";
-import { KYBMerchantForm } from "@/components/onboard/merchant";
 import { useRouter } from "next/navigation";
+
+import { KYBMerchantForm } from "@/components/onboard/merchant";
 
 // This function is used to render the onboarding page and allows us to get the email from the query params submitted from the auth input
 function OnboardContent() {
@@ -17,9 +16,7 @@ function OnboardContent() {
     router.push("/");
   };
 
-  return (
-    <KYBMerchantForm initialEmail={email} onCancel={onCancel} />
-  );
+  return <KYBMerchantForm initialEmail={email} onCancel={onCancel} />;
 }
 
 export default function OnboardPage() {
@@ -27,7 +24,6 @@ export default function OnboardPage() {
     <section className="relative">
       <Suspense fallback={<div>Loading...</div>}>
         <OnboardContent />
-
       </Suspense>
     </section>
   );

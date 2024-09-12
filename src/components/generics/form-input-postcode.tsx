@@ -1,11 +1,11 @@
 "use client";
 
-import React from 'react';
-import { Control, FieldValues, Path } from 'react-hook-form';
+import React from "react";
+import { Control, FieldValues, Path } from "react-hook-form";
 
-import { usePostcodeLookup } from '@/hooks/generic/usePostcodeLookup';
-import { FormInput } from '@/components/generics/form-input';
-import { postcodeRegex } from '@/validations/onboard';
+import { usePostcodeLookup } from "@/hooks/generic/usePostcodeLookup";
+import { FormInput } from "@/components/generics/form-input";
+import { postcodeRegex } from "@/validations/onboard";
 
 interface PostcodeInputProps<T extends FieldValues> {
   name: Path<T>;
@@ -16,9 +16,9 @@ interface PostcodeInputProps<T extends FieldValues> {
   showAddressInputs?: boolean;
 }
 
-export const PostcodeInput = <T extends FieldValues>({ 
-  name, 
-  control, 
+export const PostcodeInput = <T extends FieldValues>({
+  name,
+  control,
   onLookupComplete,
   showAddressInputs,
   ...props
@@ -28,6 +28,7 @@ export const PostcodeInput = <T extends FieldValues>({
   const handlePostcodeChange = async (value: string) => {
     if (value.length === 5) {
       const lookupResult = await lookup(value); // Capture the result directly
+
       if (lookupResult && onLookupComplete) {
         onLookupComplete(lookupResult); // Pass the result to the parent
       }
@@ -41,30 +42,30 @@ export const PostcodeInput = <T extends FieldValues>({
       <div className="flex items-center space-x-4 p-1 bg-charyo-800/30 rounded-lg">
         <div className="w-1/4">
           <FormInput
-            name={name}
+            className="text-notpurple-500"
             control={control}
             label="Postcode"
-            placeholder="12345"
             maxLength={5}
             minLength={5}
+            name={name}
             pattern={postcodeRegex.source}
+            placeholder="12345"
             onChange={(e) => handlePostcodeChange(e.target.value)}
-            className='text-notpurple-500'
             {...props}
           />
         </div>
         <div className="w-3/4 flex space-x-4 mb-1 ">
           <div className="w-1/3">
             <p className="text-sm text-notpurple-100 mb-1">City</p>
-            <p className="text-sm text-notpurple-300">{result?.city || '-'}</p>
+            <p className="text-sm text-notpurple-300">{result?.city || "-"}</p>
           </div>
           <div className="w-1/3">
             <p className="text-sm text-notpurple-100 mb-1">State</p>
-            <p className="text-sm text-notpurple-300">{result?.state || '-'}</p>
+            <p className="text-sm text-notpurple-300">{result?.state || "-"}</p>
           </div>
           <div className="w-1/3">
             <p className="text-sm text-notpurple-100 mb-1">Country</p>
-            <p className="text-sm text-notpurple-300">{result ? 'US' : '-'}</p>
+            <p className="text-sm text-notpurple-300">{result ? "US" : "-"}</p>
           </div>
         </div>
       </div>
@@ -73,7 +74,5 @@ export const PostcodeInput = <T extends FieldValues>({
         {error && <p className="text-sm text-ualert-500">{error}</p>}
       </div>
     </div>
-   
-
   );
 };

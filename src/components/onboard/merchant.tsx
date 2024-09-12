@@ -6,13 +6,11 @@ import { Tabs, Tab } from "@nextui-org/tabs";
 import { FormCard } from "@/components/generics/form-card";
 import { useMerchantForm } from "@/hooks/merchant/useMerchantForm";
 
-import { Documents } from "./form-documents";
-import { Review } from "./form-review";
 import { FormCompanyUsers } from "./form-company-users";
 import { FormCompanyInfo } from "./form-company-info";
+import { TermsAndKYB } from "./form-bridge-kyb";
 
 export const KYBMerchantForm: React.FC<{ onCancel: () => void; initialEmail: string }> = ({ initialEmail }) => {
-
   const {
     activeTab,
     setActiveTab,
@@ -33,15 +31,15 @@ export const KYBMerchantForm: React.FC<{ onCancel: () => void; initialEmail: str
       <Tabs selectedKey={activeTab} onSelectionChange={(key) => setActiveTab(key as string)}>
         <Tab key="company-info" title="Company Info">
           <FormCompanyInfo
-            onSubmit={(data) => onSubmitStep(1, data)}
             initialData={formData.companyInfo}
             updateFormData={(data) => updateFormData({ companyInfo: data })}
+            onSubmit={(data) => onSubmitStep(1, data)}
           />
         </Tab>
         <Tab key="company-owner" title="Company Owner">
           <FormCompanyUsers onSubmit={(data) => onSubmitStep(2, data)} />
         </Tab>
-        <Tab key="review" title="Review">
+        {/* <Tab key="review" title="Review">
           <Review
             data={createMerchantData}
             onSubmit={() => onSubmitStep(2, createMerchantData)}
@@ -54,6 +52,13 @@ export const KYBMerchantForm: React.FC<{ onCancel: () => void; initialEmail: str
             stepCompletion={stepCompletion}
             merchantResponse={createMerchantData}
             onSubmitStep={(step) => onSubmitStep(step, createMerchantData)}
+          />
+        </Tab> */}
+        <Tab key="documents" title="Documents">
+          <TermsAndKYB
+            kybLink={createMerchantData?.data.kycLink || null}
+            tosLink={createMerchantData?.data.tosLink || null}
+            onCancel={handleCancel}
           />
         </Tab>
       </Tabs>

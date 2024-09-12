@@ -1,22 +1,20 @@
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
+import { ISO3166Alpha2Country } from "@backpack-fux/pylon-sdk";
+import { Button } from "@nextui-org/button";
 
 import { FormCard } from "@/components/generics/form-card";
 import { FormInput } from "@/components/generics/form-input";
 import { FormButton } from "@/components/generics/form-button";
-
-import { ISO3166Alpha2Country } from "@backpack-fux/pylon-sdk";
-
-import { CompanyInfoSchema, companyInfoSchema, postcodeRegex, walletAddressRegex } from "@/validations/onboard";
+import { CompanyInfoSchema, companyInfoSchema, walletAddressRegex } from "@/validations/onboard";
 import { emailRegex } from "@/validations/auth";
 
 import { PostcodeInput } from "../generics/form-input-postcode";
-import { Button } from "@nextui-org/button";
 
-export const FormCompanyInfo: React.FC<{ 
-  onSubmit: (data: CompanyInfoSchema) => void; 
+export const FormCompanyInfo: React.FC<{
+  onSubmit: (data: CompanyInfoSchema) => void;
   initialData: CompanyInfoSchema;
   updateFormData: (data: CompanyInfoSchema) => void;
 }> = ({ onSubmit, initialData, updateFormData }) => {
@@ -49,6 +47,7 @@ export const FormCompanyInfo: React.FC<{
   });
 
   const watchPostcode = watch("company.registeredAddress.postcode");
+
   useEffect(() => {
     if (watchPostcode && watchPostcode.length === 5) {
       setShowAddressInputs(true);
@@ -63,7 +62,6 @@ export const FormCompanyInfo: React.FC<{
 
   const onFormSubmit = handleSubmit(
     (data: CompanyInfoSchema) => {
-      console.log("Form data submitted:", data);
       onSubmit(data);
       updateFormData(data);
     },
@@ -74,9 +72,9 @@ export const FormCompanyInfo: React.FC<{
 
   useEffect(() => {
     const subscription = watch((value) => {
-      console.log("Form data updated:", value);
       updateFormData(value as CompanyInfoSchema);
     });
+
     return () => subscription.unsubscribe();
   }, [watch, updateFormData]);
 
@@ -93,62 +91,62 @@ export const FormCompanyInfo: React.FC<{
   };
 
   return (
-    <FormCard title="Company Information" className="w-full">
-      <form onSubmit={onFormSubmit} className="space-y-4">
+    <FormCard className="w-full" title="Company Information">
+      <form className="space-y-4" onSubmit={onFormSubmit}>
         <FormInput
-          name="company.name"
           control={control}
-          label="Company Name"
           errorMessage={errors.company?.name?.message}
-          placeholder="Algersoft, LLC"
+          label="Company Name"
           maxLength={50}
+          name="company.name"
+          placeholder="Algersoft, LLC"
         />
         <FormInput
-          name="company.email"
           control={control}
-          label="Email"
           errorMessage={errors.company?.email?.message}
-          placeholder="nope@algersoft.com"
+          label="Email"
+          name="company.email"
           pattern={emailRegex.source}
+          placeholder="nope@algersoft.com"
         />
         <FormInput
-          name="walletAddress"
           control={control}
-          label="Wallet Address"
           errorMessage={errors.walletAddress?.message}
-          placeholder="0x1234567890123456789012345678901234567890"
+          label="Wallet Address"
           maxLength={42}
+          name="walletAddress"
           pattern={walletAddressRegex.source}
+          placeholder="0x1234567890123456789012345678901234567890"
         />
         {/* Go to postcode input component for more prop controls */}
         <PostcodeInput
-          name="company.registeredAddress.postcode"
           control={control}
           errorMessage={errors.company?.registeredAddress?.postcode?.message}
-          onLookupComplete={onPostcodeLookup}
+          name="company.registeredAddress.postcode"
           showAddressInputs={showAddressInputs}
+          onLookupComplete={onPostcodeLookup}
         />
-        <div className={`fade-in ${showAddressInputs ? 'show' : ''}`}>
+        <div className={`fade-in ${showAddressInputs ? "show" : ""}`}>
           <FormInput
-            name="company.registeredAddress.street1"
             control={control}
-            label="Street Address 1"
-            placeholder="123 Main St"
             errorMessage={errors.company?.registeredAddress?.street1?.message}
+            label="Street Address 1"
+            name="company.registeredAddress.street1"
+            placeholder="123 Main St"
           />
         </div>
-        <div className={`fade-in ${showAddressInputs ? 'show' : ''}`}>
+        <div className={`fade-in ${showAddressInputs ? "show" : ""}`}>
           <FormInput
-            name="company.registeredAddress.street2"
             control={control}
-            label="Street Address 2"
-            placeholder="Apt 4B"
             errorMessage={errors.company?.registeredAddress?.street2?.message}
+            label="Street Address 2"
+            name="company.registeredAddress.street2"
+            placeholder="Apt 4B"
           />
         </div>
         <div className="flex justify-end space-x-4">
           <Button className="text-notpurple-500" variant="light" onClick={onCancel}>
-              Cancel
+            Cancel
           </Button>
           <FormButton type="submit">Submit</FormButton>
         </div>

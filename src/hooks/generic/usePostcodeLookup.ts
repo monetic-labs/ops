@@ -1,5 +1,6 @@
-import { useState, useCallback } from 'react';
-import { lookupPostcode } from '@/utils/helpers';
+import { useState, useCallback } from "react";
+
+import { lookupPostcode } from "@/utils/helpers";
 
 interface PostcodeLookupResult {
   city: string;
@@ -22,10 +23,13 @@ export const usePostcodeLookup = () => {
         ...data,
         state: data.state,
       };
+
       setResult(formattedData);
+
       return formattedData;
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'An error occurred during zip code lookup');
+      setError(err instanceof Error ? err.message : "An error occurred during zip code lookup");
+
       return null;
     } finally {
       setIsLoading(false);

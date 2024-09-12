@@ -6,9 +6,8 @@ import { BillingAddress, ShippingAddress } from "@backpack-fux/pylon-sdk";
 
 import { formattedDate, mapCurrencyToSymbol } from "@/utils/helpers";
 
-interface NetworkResponseProps {
+interface DetailsResponseProps {
   isOpen: boolean;
-  onClose: () => void;
   response: {
     transactionId: string;
     transactionStatus: string;
@@ -23,16 +22,17 @@ interface NetworkResponseProps {
     transactionCreatedAt: string;
     timestamp: string;
   };
+  onClose: () => void;
 }
 
-export function NetworkResponse({ isOpen, onClose, response }: NetworkResponseProps) {
+export function DetailsResponse({ isOpen, response, onClose }: DetailsResponseProps) {
   return (
-    <Modal className="" isOpen={isOpen} size="lg" onClose={onClose}>
+    <Modal className="" isOpen={isOpen} onClose={onClose}>
       <ModalContent>
         {(onClose) => (
           <>
             <ModalHeader className="flex flex-col items-center">
-              <h2 className="text-2xl font-bold">Network Response</h2>
+              <h2 className="text-2xl font-bold">Details Response</h2>
               <p className="text-sm text-gray-500">Transaction ID: {response.transactionId}</p>
             </ModalHeader>
             <Divider />

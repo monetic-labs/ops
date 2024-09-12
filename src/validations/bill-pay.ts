@@ -1,5 +1,6 @@
 // create dummy schema for bill pay
 import { z } from "zod";
+
 import { emailSchema } from "./auth";
 
 export const billPaySchema = z.object({

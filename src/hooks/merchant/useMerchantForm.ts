@@ -1,6 +1,5 @@
 import { useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
-
 import { ISO3166Alpha2Country, MerchantCreateInput, MerchantCreateOutput } from "@backpack-fux/pylon-sdk";
 
 import { useFormPersistence } from "@/hooks/generic/useFormPersistence";
@@ -19,8 +18,12 @@ export const useMerchantForm = (initialEmail: string) => {
   };
 
   const [activeTab, setActiveTab] = useState("company-info");
-  
-  const { data: formData, updateData: updateFormData, resetData: resetFormData } = useFormPersistence('merchantFormData', {
+
+  const {
+    data: formData,
+    updateData: updateFormData,
+    resetData: resetFormData,
+  } = useFormPersistence("merchantFormData", {
     companyInfo: {
       company: {
         name: "",

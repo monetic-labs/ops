@@ -44,51 +44,36 @@ export const Documents: React.FC<DocumentsProps> = ({
   };
 
   return (
-    <div className="space-y-4 max-w-2xl mx-auto">      
+    <div className="space-y-4">
       {useHostedFlow ? (
-        <div className="mb-4 p-4 border rounded-lg shadow-sm">
+        <div className="mb-4">
           <h3 className="text-lg font-semibold mb-2">KYC Verification</h3>
           <p>Please complete your KYC verification by clicking the button below:</p>
-          <Button onClick={handleKYCRedirect} className="mt-2">
+          <Button className="mt-2" onClick={handleKYCRedirect}>
             Start KYC Verification
           </Button>
         </div>
       ) : (
         kycLink && (
-          <div className="mb-4 p-4 border rounded-lg shadow-sm">
-            <h3 className="text-lg font-semibold mb-2">KYC Verification</h3>
-            <PersonaVerification
-              kycLink={kycLink}
-              onComplete={handlePersonaComplete}
-              onCancel={handlePersonaCancel}
-              onError={handlePersonaError}
-            />
-          </div>
+          <PersonaVerification
+            kycLink={kycLink}
+            onCancel={handlePersonaCancel}
+            onComplete={handlePersonaComplete}
+            onError={handlePersonaError}
+          />
         )
       )}
-      
       {tosLink && (
         <div className="mb-4">
           <h3 className="text-lg font-semibold mb-2">Terms of Service</h3>
-          <div className="border rounded-lg overflow-hidden">
-            <iframe
-              src={tosLink}
-              title="Terms of Service Document"
-              className="w-full h-96 border-none"
-            />
-          </div>
-          <div className="mt-4 p-4 bg-white rounded-lg border">
-            <p className="mb-2">This application uses Bridge to securely connect accounts and move funds.</p>
-            <p className="mb-4">By clicking "Accept", you agree to Bridge's Terms of Service and Privacy Policy.</p>
-            <Button onClick={() => {/* Handle TOS acceptance */}} className="mb-2">
-              Accept
-            </Button>
-            <p className="text-green-500">Success! Thanks for accepting our Terms of Service and Privacy Policy!</p>
-          </div>
+          <iframe
+            className="w-full h-96 border border-gray-300 rounded"
+            src={tosLink}
+            title="Terms of Service Document"
+          />
         </div>
       )}
-      
-      <div className="flex justify-between mt-6">
+      <div className="flex justify-between">
         <Button className="text-notpurple-500" variant="light" onClick={handleCancel}>
           Cancel
         </Button>

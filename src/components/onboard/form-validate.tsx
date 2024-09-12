@@ -1,8 +1,8 @@
 import React from "react";
 import { Button } from "@nextui-org/button";
+import { MerchantCreateInput, MerchantCreateOutput } from "@backpack-fux/pylon-sdk";
 
 import { otpConfig } from "@/config/otp";
-import { MerchantCreateInput, MerchantCreateOutput } from "@backpack-fux/pylon-sdk";
 
 interface ValidateProps {
   otp: string;
@@ -57,8 +57,8 @@ export const Validate: React.FC<ValidateProps> = ({
                   isOtpComplete
                     ? "animate-flash border-ualert-500"
                     : otpSubmitted
-                    ? "border-green-500"
-                    : "border-gray-300"
+                      ? "border-green-500"
+                      : "border-gray-300"
                 }
                 focus:border-ualert-500 focus:outline-none`}
               maxLength={1}
