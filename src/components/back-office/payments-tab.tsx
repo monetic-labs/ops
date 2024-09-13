@@ -2,7 +2,8 @@ import React, { useState, ReactNode, useCallback } from "react";
 import { Chip } from "@nextui-org/chip";
 import { Table, TableBody, TableCell, TableColumn, TableHeader, TableRow } from "@nextui-org/table";
 import { Button } from "@nextui-org/button";
-import { TransactionListItem } from "@backpack-fux/pylon-sdk";
+import { ISO4217Currency, TransactionListItem } from "@backpack-fux/pylon-sdk";
+import pylon from "@/libs/pylon-sdk";
 
 import { useOrderManagement } from "@/hooks/orders/useOrderManagement";
 import { centsToDollars, getTimeAgo, mapCurrencyToSymbol } from "@/utils/helpers";
@@ -10,6 +11,7 @@ import { centsToDollars, getTimeAgo, mapCurrencyToSymbol } from "@/utils/helpers
 import { DetailsResponse } from "./actions/order-details";
 import { CancelConfirmationModal } from "./actions/order-cancel";
 import { RefundModal } from "./actions/order-refund";
+import { RefundSuccessModal } from "./actions/order-success";
 
 const columns = [
   { name: "ID", uid: "id" },
@@ -40,6 +42,8 @@ export default function PaymentsTab() {
   const [selectedPayment, setSelectedPayment] = useState<TransactionListItem | null>(null);
   const [cancelPayment, setCancelPayment] = useState<TransactionListItem | null>(null);
   const [refundPayment, setRefundPayment] = useState<TransactionListItem | null>(null);
+  const [showRefundSuccessModal, setShowRefundSuccessModal] = useState(false);
+  const [refundReference, setRefundReference] = useState("");
 
   const handleViewDetails = (payment: TransactionListItem) => {
     setSelectedPayment(payment);
@@ -69,11 +73,26 @@ export default function PaymentsTab() {
     setRefundPayment(payment);
   };
 
-  const handleConfirmRefund = (refundAmount: number) => {
+  const handleConfirmRefund = async (refundAmount: number) => {
     if (refundPayment) {
-      console.log("Refund initiated for order:", refundPayment.id, "Amount:", refundAmount);
-      // Implement refund logic here
-      setRefundPayment(null);
+      try {
+        const refundResponse = await pylon.processRefund({
+          transactionId: refundPayment.id,
+          amount: refundAmount,
+          currency: refundPayment.currency,
+          ...(refundReference && { reference: refundReference }),
+        });
+        if (refundResponse.statusCode === 200 && refundResponse.data.success) {
+          console.log("Refund request successful for transaction:", refundPayment.id);
+          setShowRefundSuccessModal(true);
+        } else {
+          throw new Error("Refund request failed");
+        }
+      } catch (error) {
+        console.error("Error processing refund:", error);
+      } finally {
+        setRefundPayment(null);
+      }
     }
   };
 
@@ -87,6 +106,9 @@ export default function PaymentsTab() {
     const statusLength = transaction.transactionStatusHistory.length;
     const lastStatus = transaction.transactionStatusHistory[statusLength - 1].status;
     const isSettled = lastStatus === "SETTLED";
+    const isRefunded = lastStatus === "SENT_FOR_REFUND" || lastStatus === "REFUNDED";
+    const isRefundDisabled = !isSettled || isRefunded;
+    const isCancelDisabled = true;
 
     switch (columnKey) {
       case "status":
@@ -108,9 +130,6 @@ export default function PaymentsTab() {
       case "createdAt":
         return getTimeAgo(transaction.createdAt);
       case "actions":
-        const isRefundDisabled = process.env.NODE_ENV === "development" ? false : !isSettled;
-        const isCancelDisabled = true;
-
         return (
           <span className="flex gap-2">
             <Button
@@ -218,8 +237,19 @@ export default function PaymentsTab() {
             orderAmount: parseFloat(centsToDollars(refundPayment.subtotal)),
             totalAmount: parseFloat(centsToDollars(refundPayment.total)),
           }}
+          setRefundReference={setRefundReference}
+          refundReference={refundReference}
           onClose={handleCloseRefundModal}
           onConfirm={handleConfirmRefund}
+        />
+      )}
+      {showRefundSuccessModal && (
+        <RefundSuccessModal
+          isOpen={showRefundSuccessModal}
+          title="Refund Successful"
+          message="The refund has been processed successfully."
+          onClose={() => setShowRefundSuccessModal(false)}
+          fadeOutOpts={{ autoFadeOut: false }}
         />
       )}
     </>
