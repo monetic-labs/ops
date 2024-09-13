@@ -2,7 +2,7 @@ import { useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { ISO3166Alpha2Country, MerchantCreateInput, MerchantCreateOutput } from "@backpack-fux/pylon-sdk";
 
-import { useFormPersistence } from "@/hooks/generic/useFormPersistence";
+import { useFormPersistence } from "@/hooks/generics/useFormPersistence";
 import { useCreateMerchant } from "@/hooks/merchant/useCreateMerchant";
 import { useSetupOTP } from "@/hooks/merchant/useSetupOTP";
 import { merchantConfig } from "@/config/merchant";

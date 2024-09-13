@@ -3,7 +3,7 @@
 import React from "react";
 import { Control, FieldValues, Path } from "react-hook-form";
 
-import { usePostcodeLookup } from "@/hooks/generic/usePostcodeLookup";
+import { usePostcodeLookup } from "@/hooks/generics/usePostcodeLookup";
 import { FormInput } from "@/components/generics/form-input";
 import { postcodeRegex } from "@/validations/onboard";
 
