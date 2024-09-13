@@ -29,23 +29,11 @@ export const FormCompanyInfo: React.FC<{
     setValue,
   } = useForm<CompanyInfoSchema>({
     resolver: zodResolver(companyInfoSchema),
-    defaultValues: {
-      company: {
-        name: "",
-        email: "",
-        registeredAddress: {
-          street1: "",
-          street2: "",
-          city: "",
-          postcode: "",
-          state: "",
-          country: "US" as ISO3166Alpha2Country,
-        },
-      },
-      walletAddress: "",
-    },
+    defaultValues: initialData,
   });
 
+  const onCancel = () => router.push("/auth");
+  
   const watchPostcode = watch("company.registeredAddress.postcode");
 
   useEffect(() => {
@@ -56,9 +44,14 @@ export const FormCompanyInfo: React.FC<{
     }
   }, [watchPostcode]);
 
-  const onCancel = () => {
-    router.push("/");
-  };
+  useEffect(() => {
+    const subscription = watch((value) => {
+      updateFormData(value as CompanyInfoSchema);
+    });
+
+    return () => subscription.unsubscribe();
+  }, [watch, updateFormData]);
+
 
   const onFormSubmit = handleSubmit(
     (data: CompanyInfoSchema) => {
@@ -70,13 +63,7 @@ export const FormCompanyInfo: React.FC<{
     }
   );
 
-  useEffect(() => {
-    const subscription = watch((value) => {
-      updateFormData(value as CompanyInfoSchema);
-    });
 
-    return () => subscription.unsubscribe();
-  }, [watch, updateFormData]);
 
   const onPostcodeLookup = (result: any) => {
     if (result) {

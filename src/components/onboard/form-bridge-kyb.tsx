@@ -14,7 +14,6 @@ interface TermsAndKYBProps {
 }
 
 export const TermsAndKYB: React.FC<TermsAndKYBProps> = ({ tosLink, kybLink, onCancel }) => {
-  const router = useRouter();
   const [termsAccepted, setTermsAccepted] = useState(false);
 
   const handleAcceptTerms = async () => {

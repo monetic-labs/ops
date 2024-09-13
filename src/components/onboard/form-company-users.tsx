@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { useFieldArray, useForm } from "react-hook-form";
 import { useRouter } from "next/navigation";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -13,27 +13,33 @@ import {
   walletAddressRegex,
 } from "@/validations/onboard";
 
-export const FormCompanyUsers: React.FC<{ onSubmit: (data: CompanyRepresentativeSchema) => void }> = ({ onSubmit }) => {
+export const FormCompanyUsers: React.FC<{ 
+  onSubmit: (data: CompanyRepresentativeSchema) => void 
+  initialData: CompanyRepresentativeSchema
+  updateFormData: (data: CompanyRepresentativeSchema) => void
+}> = ({ onSubmit, initialData, updateFormData }) => {
   const router = useRouter();
+  
   const {
     control,
     handleSubmit,
     formState: { errors },
+    watch,
   } = useForm<CompanyRepresentativeSchema>({
     resolver: zodResolver(companyRepresentativeSchema),
-    defaultValues: {
-      representatives: [
-        {
-          name: "",
-          surname: "",
-          email: "",
-          phoneNumber: "",
-          walletAddress: "",
-        },
-      ],
-    },
+    defaultValues: initialData,
   });
+  
+  const onCancel = () => router.push("/auth");
 
+  useEffect(() => {
+    const subscription = watch((value) => {
+      updateFormData(value as CompanyRepresentativeSchema);
+    });
+  
+    return () => subscription.unsubscribe();
+  }, [watch, updateFormData]);
+  
   const { fields, append, remove } = useFieldArray({
     control,
     name: "representatives",
@@ -44,7 +50,6 @@ export const FormCompanyUsers: React.FC<{ onSubmit: (data: CompanyRepresentative
     onSubmit(data);
   });
 
-  const handleCancel = () => router.push("/auth");
 
   const addUser = () => {
     append({
@@ -121,9 +126,9 @@ export const FormCompanyUsers: React.FC<{ onSubmit: (data: CompanyRepresentative
         fields={fields}
         renderTabContent={renderTabContent}
         renderTabTitle={renderTabTitle}
-        title="Company Users: Step 2"
+        title="Company Owners & Representatives"
         onAdd={addUser}
-        onCancel={handleCancel}
+        onCancel={onCancel}
         onRemove={removeUser}
         onSubmit={handleFormSubmit}
       />

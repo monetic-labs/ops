@@ -37,22 +37,12 @@ export const KYBMerchantForm: React.FC<{ onCancel: () => void; initialEmail: str
           />
         </Tab>
         <Tab key="company-owner" title="Company Owner">
-          <FormCompanyUsers onSubmit={(data) => onSubmitStep(2, data)} />
-        </Tab>
-        {/* <Tab key="review" title="Review">
-          <Review
-            data={createMerchantData}
-            onSubmit={() => onSubmitStep(2, createMerchantData)}
-            onEdit={handleEditStep}
+          <FormCompanyUsers
+            initialData={formData.companyUsers}
+            updateFormData={(data) => updateFormData({ companyUsers: data })}
+            onSubmit={(data) => onSubmitStep(2, data)}
           />
         </Tab>
-        <Tab key="documents" title="Documents">
-          <Documents
-            handleCancel={handleCancel}
-            merchantResponse={createMerchantData}
-            onSubmitStep={(step) => onSubmitStep(step, createMerchantData)}
-          />
-        </Tab> */}
         <Tab key="documents" title="Documents">
           <TermsAndKYB
             kybLink={createMerchantData?.data.kycLink || null}

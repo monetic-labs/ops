@@ -19,11 +19,7 @@ export const useMerchantForm = (initialEmail: string) => {
 
   const [activeTab, setActiveTab] = useState("company-info");
 
-  const {
-    data: formData,
-    updateData: updateFormData,
-    resetData: resetFormData,
-  } = useFormPersistence("merchantFormData", {
+  const initialData = {
     companyInfo: {
       company: {
         name: "",
@@ -39,9 +35,23 @@ export const useMerchantForm = (initialEmail: string) => {
       walletAddress: "",
     },
     companyUsers: {
-      representatives: [],
+      representatives: [
+        {
+          name: "",
+          surname: "",
+          email: "",
+          phoneNumber: "",
+          walletAddress: "",
+        },
+      ],
     },
-  });
+  }
+
+  const {
+    data: formData,
+    updateData: updateFormData,
+    resetData: resetFormData,
+  } = useFormPersistence("merchantFormData", initialData);
 
   const [stepCompletion, setStepCompletion] = useState({
     step1: false,
@@ -68,11 +78,11 @@ export const useMerchantForm = (initialEmail: string) => {
         updateFormData({ companyUsers: data });
         setStepCompletion((prev) => ({ ...prev, step2: true }));
 
-        const step1Data = formData.companyInfo;
+        //const step1Data = formData.companyInfo;
 
         const combinedData: MerchantCreateInput = {
           fee: merchantConfig.fee,
-          company: step1Data?.company,
+          company: formData.companyInfo.company,
           representatives: data.representatives.map((rep: any) => ({
             firstName: rep.name,
             lastName: rep.surname,
@@ -80,7 +90,7 @@ export const useMerchantForm = (initialEmail: string) => {
             phoneNumber: rep.phoneNumber,
             walletAddress: rep.walletAddress,
           })),
-          walletAddress: step1Data.walletAddress,
+          walletAddress: formData.companyInfo.walletAddress,
         };
 
         try {
@@ -102,7 +112,7 @@ export const useMerchantForm = (initialEmail: string) => {
         setActiveTab("documents");
       }
     },
-    [createMerchant]
+    [createMerchant, formData, updateFormData]
   );
 
   return {
