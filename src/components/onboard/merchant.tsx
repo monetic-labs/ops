@@ -49,7 +49,6 @@ export const KYBMerchantForm: React.FC<{ onCancel: () => void; initialEmail: str
         <Tab key="documents" title="Documents">
           <Documents
             handleCancel={handleCancel}
-            stepCompletion={stepCompletion}
             merchantResponse={createMerchantData}
             onSubmitStep={(step) => onSubmitStep(step, createMerchantData)}
           />

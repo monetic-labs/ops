@@ -7,9 +7,9 @@ import { TransactionListItem } from "@backpack-fux/pylon-sdk";
 import { useOrderManagement } from "@/hooks/orders/useOrderManagement";
 import { centsToDollars, getTimeAgo, mapCurrencyToSymbol } from "@/utils/helpers";
 
-import { DetailsResponse } from "@/components/back-office/actions/order-details";
-import { CancelConfirmationModal } from "@/components/back-office/actions/order-cancel";
-import { RefundModal } from "@/components/back-office/actions/order-refund";
+import { DetailsResponse } from "./actions/order-details";
+import { CancelConfirmationModal } from "./actions/order-cancel";
+import { RefundModal } from "./actions/order-refund";
 
 const columns = [
   { name: "ID", uid: "id" },

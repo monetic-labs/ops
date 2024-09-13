@@ -9,6 +9,7 @@ export const useOrderManagement = () => {
   const [transactions, setTransactions] = useState<TransactionListItem[]>([]);
 
   const { isAuthenticated, checkAuthStatus } = useAuthStatus();
+  const router = useRouter();
 
   const sortTransactionsByDate = (transactions: TransactionListItem[]) => {
     return [...transactions].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
@@ -26,6 +27,7 @@ export const useOrderManagement = () => {
           const existingIndex = prevTransactions.findIndex((t) => t.id === updatedTransaction.id);
           let newTransactions;
 
+
           if (existingIndex !== -1) {
             // Update existing transaction
             newTransactions = [...prevTransactions];
@@ -34,6 +36,7 @@ export const useOrderManagement = () => {
             // Add new transaction
             newTransactions = [updatedTransaction, ...prevTransactions];
           }
+
 
           return sortTransactionsByDate(newTransactions);
         });
@@ -68,6 +71,10 @@ export const useOrderManagement = () => {
         }
       }
     };
+
+    if (!isAuthenticated) {
+      router.refresh();
+    }
 
     setupConnection();
 
