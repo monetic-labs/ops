@@ -37,7 +37,7 @@ const statusColorMap: Record<string, "success" | "warning" | "danger" | "primary
   REFUND_FAILED: "danger",
 };
 
-export default function PaymentsTab() {
+export default function PaymentsTab() { 
   const { transactions, isLoading, error } = useOrderManagement();
   const [selectedPayment, setSelectedPayment] = useState<TransactionListItem | null>(null);
   const [cancelPayment, setCancelPayment] = useState<TransactionListItem | null>(null);
@@ -171,7 +171,11 @@ export default function PaymentsTab() {
         <TableHeader columns={columns}>
           {(column) => <TableColumn key={column.uid}>{column.name}</TableColumn>}
         </TableHeader>
-        <TableBody emptyContent={isLoading ? null : "No transactions found"} items={transactions}>
+        <TableBody
+          emptyContent={isLoading ? null : "No transactions found"}
+          items={transactions}
+          key={transactions.length}
+        >
           {(item) => {
             return (
               <TableRow
