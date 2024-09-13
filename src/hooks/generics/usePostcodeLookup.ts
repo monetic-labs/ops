@@ -19,12 +19,15 @@ export const usePostcodeLookup = () => {
 
     try {
       const data = await lookupPostcode(zipCode);
+
       if (data) {
         const formattedData = {
           ...data,
           state: data.state,
         };
+
         setResult(formattedData);
+
         return formattedData;
       } else {
         throw new Error("No data returned from postcode lookup");
@@ -32,6 +35,7 @@ export const usePostcodeLookup = () => {
     } catch (err) {
       console.error("Postcode lookup error:", err);
       setError("Unable to lookup postcode. Please enter address manually.");
+
       // Return a null result to indicate lookup failure
       return null;
     } finally {

@@ -13,13 +13,13 @@ import {
   walletAddressRegex,
 } from "@/validations/onboard";
 
-export const FormCompanyUsers: React.FC<{ 
-  onSubmit: (data: CompanyRepresentativeSchema) => void 
-  initialData: CompanyRepresentativeSchema
-  updateFormData: (data: CompanyRepresentativeSchema) => void
+export const FormCompanyUsers: React.FC<{
+  onSubmit: (data: CompanyRepresentativeSchema) => void;
+  initialData: CompanyRepresentativeSchema;
+  updateFormData: (data: CompanyRepresentativeSchema) => void;
 }> = ({ onSubmit, initialData, updateFormData }) => {
   const router = useRouter();
-  
+
   const {
     control,
     handleSubmit,
@@ -29,17 +29,17 @@ export const FormCompanyUsers: React.FC<{
     resolver: zodResolver(companyRepresentativeSchema),
     defaultValues: initialData,
   });
-  
+
   const onCancel = () => router.push("/auth");
 
   useEffect(() => {
     const subscription = watch((value) => {
       updateFormData(value as CompanyRepresentativeSchema);
     });
-  
+
     return () => subscription.unsubscribe();
   }, [watch, updateFormData]);
-  
+
   const { fields, append, remove } = useFieldArray({
     control,
     name: "representatives",
@@ -49,7 +49,6 @@ export const FormCompanyUsers: React.FC<{
     console.log("Representatives submitted:", data);
     onSubmit(data);
   });
-
 
   const addUser = () => {
     append({
