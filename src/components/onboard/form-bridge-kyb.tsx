@@ -2,7 +2,6 @@ import React, { useState } from "react";
 import { Button } from "@nextui-org/button";
 import { Card, CardHeader, CardBody, CardFooter } from "@nextui-org/card";
 import { Link } from "@nextui-org/link";
-import { useRouter } from "next/navigation";
 
 import { FormCard } from "@/components/generics/form-card";
 import { signBridgeTermsOfService } from "@/utils/merchant/signBridgeTOS";
@@ -11,9 +10,10 @@ interface TermsAndKYBProps {
   tosLink: string | null;
   kybLink: string | null;
   onCancel: () => void;
+  onKYCDone: () => void;
 }
 
-export const TermsAndKYB: React.FC<TermsAndKYBProps> = ({ tosLink, kybLink, onCancel }) => {
+export const TermsAndKYB: React.FC<TermsAndKYBProps> = ({ tosLink, kybLink, onCancel, onKYCDone }) => {
   const [termsAccepted, setTermsAccepted] = useState(false);
 
   const handleAcceptTerms = async () => {
@@ -33,7 +33,13 @@ export const TermsAndKYB: React.FC<TermsAndKYBProps> = ({ tosLink, kybLink, onCa
   const handleStartKYB = () => {
     if (kybLink) {
       window.open(kybLink, "_blank");
+      onKYCDone();
+      console.log("KYB done");
     }
+  };
+
+  const handleTestRedirect = () => {
+    onKYCDone();
   };
 
   return (
@@ -83,9 +89,12 @@ export const TermsAndKYB: React.FC<TermsAndKYBProps> = ({ tosLink, kybLink, onCa
       )}
 
       <div className="flex justify-between mt-4">
-        <Button className="text-notpurple-500" variant="light" onClick={onCancel}>
-          Cancel
-        </Button>
+          <Button className="text-notpurple-500" variant="light" onClick={onCancel}>
+            Cancel
+          </Button>
+          <Button className="text-notpurple-500" variant="light" onClick={handleTestRedirect}>
+            Test Redirect
+          </Button>
       </div>
     </FormCard>
   );

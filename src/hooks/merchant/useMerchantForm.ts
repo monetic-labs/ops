@@ -4,16 +4,20 @@ import { ISO3166Alpha2Country, MerchantCreateInput, MerchantCreateOutput } from 
 
 import { useFormPersistence } from "@/hooks/generics/useFormPersistence";
 import { useCreateMerchant } from "@/hooks/merchant/useCreateMerchant";
-import { useSetupOTP } from "@/hooks/merchant/useSetupOTP";
+//import { useSetupOTP } from "@/hooks/merchant/useSetupOTP";
 import { merchantConfig } from "@/config/merchant";
 
 export const useMerchantForm = (initialEmail: string) => {
   const router = useRouter();
-  const otpHook = useSetupOTP(initialEmail);
+  //const otpHook = useSetupOTP(initialEmail);
   const [tosLink, setTosLink] = useState<string | null>(null);
   const [merchantResponse, setMerchantResponse] = useState<MerchantCreateOutput | null>(null);
 
   const handleCancel = () => {
+    router.push("/auth");
+  };
+
+  const handleKYCDone = () => {
     router.push("/auth");
   };
 
@@ -120,6 +124,7 @@ export const useMerchantForm = (initialEmail: string) => {
     setActiveTab,
     stepCompletion,
     handleCancel,
+    handleKYCDone,
     onSubmitStep,
     formData,
     updateFormData,
@@ -128,6 +133,6 @@ export const useMerchantForm = (initialEmail: string) => {
     createMerchantError,
     createMerchantData,
     tosLink,
-    ...otpHook,
+    //...otpHook,
   };
 };

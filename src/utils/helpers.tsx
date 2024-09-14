@@ -38,9 +38,10 @@ export function getOpepenAvatar(address: string, size: number): string {
   return canvas.toDataURL();
 }
 
-export const lookupPostcode = async (zipCode: string) => {
+export const lookupPostcode = async (postcode: string) => {
   try {
-    const response = await fetch(`/api/lookup-zip?zipCode=${zipCode}`);
+    const response = await fetch(`/api/lookup-postcode?postcode=${postcode}`);
+    console.log("response", response);
 
     if (!response.ok) {
       throw new Error("Postcode not found");
