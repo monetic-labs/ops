@@ -2,7 +2,6 @@ import React, { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
-import { ISO3166Alpha2Country } from "@backpack-fux/pylon-sdk";
 import { Button } from "@nextui-org/button";
 
 import { FormCard } from "@/components/generics/form-card";
@@ -33,7 +32,7 @@ export const FormCompanyInfo: React.FC<{
   });
 
   const onCancel = () => router.push("/auth");
-  
+
   const watchPostcode = watch("company.registeredAddress.postcode");
 
   useEffect(() => {
@@ -52,7 +51,6 @@ export const FormCompanyInfo: React.FC<{
     return () => subscription.unsubscribe();
   }, [watch, updateFormData]);
 
-
   const onFormSubmit = handleSubmit(
     (data: CompanyInfoSchema) => {
       onSubmit(data);
@@ -62,8 +60,6 @@ export const FormCompanyInfo: React.FC<{
       console.log("Submission errors:", errors);
     }
   );
-
-
 
   const onPostcodeLookup = (result: any) => {
     if (result) {

@@ -19,17 +19,24 @@ export const usePostcodeLookup = () => {
 
     try {
       const data = await lookupPostcode(zipCode);
-      const formattedData = {
-        ...data,
-        state: data.state,
-      };
 
-      setResult(formattedData);
+      if (data) {
+        const formattedData = {
+          ...data,
+          state: data.state,
+        };
 
-      return formattedData;
+        setResult(formattedData);
+
+        return formattedData;
+      } else {
+        throw new Error("No data returned from postcode lookup");
+      }
     } catch (err) {
-      setError(err instanceof Error ? err.message : "An error occurred during zip code lookup");
+      console.error("Postcode lookup error:", err);
+      setError("Unable to lookup postcode. Please enter address manually.");
 
+      // Return a null result to indicate lookup failure
       return null;
     } finally {
       setIsLoading(false);
@@ -44,3 +51,4 @@ export const usePostcodeLookup = () => {
     setResult,
   };
 };
+
