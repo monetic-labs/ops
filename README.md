@@ -37,7 +37,7 @@ If you want to develop this project together with the Pylon SDK and make changes
 Add the following to package.json
 
 ```bash
-    "@backpack-fux/pylon-sdk": "file:../YOUR_PATH_TO_PYLON_SDK",
+    "@backpack-fux/pylon-sdk": "file:../pylon-sdk-your-path",
 ```
 
 You might need to clear NextJS cache

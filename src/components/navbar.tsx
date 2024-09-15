@@ -13,9 +13,9 @@ import pylon from "@/libs/pylon-sdk";
 export const Navbar = () => {
   const router = useRouter();
 
-  const handleSignOut = () => {
+  const handleSignOut = async () => {
     //TODO implment this in pylon
-    // pylon.clearSession();
+    await pylon.logout();
 
     router.push("/");
   };
