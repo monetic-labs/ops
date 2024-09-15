@@ -30,12 +30,18 @@ pnpm install
 pnpm run dev
 ```
 
-### Setup pnpm (optional)
+### Run together with local pylon-sdk
 
-If you are using `pnpm`, you need to add the following code to your `.npmrc` file:
+If you want to develop this project together with the Pylon SDK and make changes to both, you can add a symlink to your local SDK. Make sure your local Pylon-SDK is built and has a 'dist' folder.
+
+Add the following to package.json
 
 ```bash
-public-hoist-pattern[]=*@nextui-org/*
+    "@backpack-fux/pylon-sdk": "file:../YOUR_PATH_TO_PYLON_SDK",
 ```
 
-After modifying the `.npmrc` file, you need to run `pnpm install` again to ensure that the dependencies are installed correctly.
+You might need to clear NextJS cache
+
+```bash
+rm -rf .next
+```

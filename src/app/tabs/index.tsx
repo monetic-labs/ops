@@ -1,9 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Card, CardBody, CardHeader } from "@nextui-org/card";
 import { Divider } from "@nextui-org/divider";
 import { Tab, Tabs } from "@nextui-org/tabs";
+import { useRouter } from "next/navigation";
 
 import WidgetManagement from "@/components/back-office/widget-tab";
 import BackOfficeTabs from "@/components/back-office/back-office";
@@ -12,9 +13,18 @@ import CardServicesTabs from "@/components/card-issuance";
 import ComplianceTable from "@/components/compliance/compliance";
 import UsersTab from "@/components/users/users";
 import { tabsConfig } from "@/config/tabs";
+import { useGetComplianceStatus } from "@/hooks/merchant/useGetComplianceStatus";
 
 export default function MerchantServicesTabs() {
   const [selectedService, setSelectedService] = useState<string>(tabsConfig[0].id);
+  const { complianceStatus } = useGetComplianceStatus();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (complianceStatus?.kycStatus !== "approved") {
+      router.push("/unapproved-kyb");
+    }
+  }, [complianceStatus]);
 
   const renderTabContent = (tabId: string) => {
     switch (tabId) {
