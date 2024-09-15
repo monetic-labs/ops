@@ -1,3 +1,4 @@
+"use client";
 import AvailableCard from "@/components/account-contract/available";
 import LockedCard from "@/components/account-contract/locked";
 import PendingCard from "@/components/account-contract/pending";
