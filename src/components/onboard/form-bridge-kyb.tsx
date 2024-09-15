@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Button } from "@nextui-org/button";
 import { Card, CardHeader, CardBody, CardFooter } from "@nextui-org/card";
 import { Link } from "@nextui-org/link";
+import { useRouter } from "next/navigation";
 
 import { FormCard } from "@/components/generics/form-card";
 import { signBridgeTermsOfService } from "@/utils/merchant/signBridgeTOS";
@@ -14,12 +15,14 @@ interface TermsAndKYBProps {
 
 export const TermsAndKYB: React.FC<TermsAndKYBProps> = ({ tosLink, kybLink, onCancel }) => {
   const [termsAccepted, setTermsAccepted] = useState(false);
+  const router = useRouter();
 
   const handleAcceptTerms = async () => {
+    console.log("HANDLING ACCEPT TERMS wats res?");
     if (tosLink) {
       try {
         const result = await signBridgeTermsOfService(tosLink);
-
+        console.log(result, "wats res?");
         if (result.signed_agreement_id) {
           setTermsAccepted(true);
         }
@@ -29,8 +32,11 @@ export const TermsAndKYB: React.FC<TermsAndKYBProps> = ({ tosLink, kybLink, onCa
     }
   };
 
+  console.log(termsAccepted, "terms accepted", tosLink);
+
   const handleStartKYB = () => {
     if (kybLink) {
+      router.push("/auth");
       window.open(kybLink, "_blank");
     }
   };
@@ -57,7 +63,7 @@ export const TermsAndKYB: React.FC<TermsAndKYBProps> = ({ tosLink, kybLink, onCa
         <CardFooter>
           <Button
             className="w-full bg-ualert-500 text-notpurple-100"
-            disabled={termsAccepted}
+            isDisabled={termsAccepted || !tosLink}
             onClick={handleAcceptTerms}
           >
             {termsAccepted ? "Terms Accepted" : "Accept Terms"}

@@ -57,8 +57,8 @@ export const Validate: React.FC<ValidateProps> = ({
                   isOtpComplete
                     ? "animate-flash border-ualert-500"
                     : otpSubmitted
-                      ? "border-green-500"
-                      : "border-gray-300"
+                    ? "border-green-500"
+                    : "border-gray-300"
                 }
                 focus:border-ualert-500 focus:outline-none`}
               maxLength={1}
@@ -84,7 +84,7 @@ export const Validate: React.FC<ValidateProps> = ({
           </Button>
           <Button
             className="text-notpurple-500 hover:bg-ualert-900"
-            disabled={isIssueLoading}
+            isDisabled={isIssueLoading}
             variant="light"
             onClick={handleResendOTP}
           >
@@ -93,7 +93,7 @@ export const Validate: React.FC<ValidateProps> = ({
         </div>
         <Button
           className={`bg-ualert-500 ${!stepCompletion.step1 && !stepCompletion.step2 ? "button-disabled" : ""}`}
-          disabled={!stepCompletion.step1 && !stepCompletion.step2}
+          isDisabled={!stepCompletion.step1 && !stepCompletion.step2}
           onClick={() => onSubmitStep(3)}
         >
           Complete Validation

@@ -22,7 +22,7 @@ export const FormModal: React.FC<FormModalProps> = ({ isOpen, onClose, title, ch
           <FormButton className="text-notpurple-500" variant="light" onClick={onClose}>
             Cancel
           </FormButton>
-          <FormButton disabled={!isValid} onClick={onSubmit}>
+          <FormButton isDisabled={!isValid} onClick={onSubmit}>
             Submit
           </FormButton>
         </ModalFooter>

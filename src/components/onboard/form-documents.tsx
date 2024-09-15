@@ -79,7 +79,7 @@ export const Documents: React.FC<DocumentsProps> = ({
         </Button>
         <Button
           className={`bg-ualert-500 ${!stepCompletion.step2 ? "button-disabled" : ""}`}
-          disabled={!stepCompletion.step2}
+          isDisabled={!stepCompletion.step2}
           onClick={() => onSubmitStep(3)}
         >
           Submit Documents
