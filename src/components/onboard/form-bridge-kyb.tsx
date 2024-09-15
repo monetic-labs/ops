@@ -35,6 +35,8 @@ export const TermsAndKYB: React.FC<TermsAndKYBProps> = ({ tosLink, kybLink, onCa
     if (kybLink) {
       onKYCDone();
       window.open(kybLink, "_blank");
+      onKYCDone();
+      console.log("KYB done");
     }
   };
 
