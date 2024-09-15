@@ -1,5 +1,9 @@
 # See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
 
+# postcode data needed to create json mapping
+data/postcodes.json
+data/postcodes.csv
+
 # dependencies
 /node_modules
 /.pnp

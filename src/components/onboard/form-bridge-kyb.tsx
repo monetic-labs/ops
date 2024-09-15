@@ -11,9 +11,10 @@ interface TermsAndKYBProps {
   tosLink: string | null;
   kybLink: string | null;
   onCancel: () => void;
+  onKYCDone: () => void;
 }
 
-export const TermsAndKYB: React.FC<TermsAndKYBProps> = ({ tosLink, kybLink, onCancel }) => {
+export const TermsAndKYB: React.FC<TermsAndKYBProps> = ({ tosLink, kybLink, onCancel, onKYCDone }) => {
   const [termsAccepted, setTermsAccepted] = useState(false);
   const router = useRouter();
 
@@ -38,7 +39,13 @@ export const TermsAndKYB: React.FC<TermsAndKYBProps> = ({ tosLink, kybLink, onCa
     if (kybLink) {
       router.push("/auth");
       window.open(kybLink, "_blank");
+      onKYCDone();
+      console.log("KYB done");
     }
+  };
+
+  const handleTestRedirect = () => {
+    onKYCDone();
   };
 
   return (
@@ -88,9 +95,12 @@ export const TermsAndKYB: React.FC<TermsAndKYBProps> = ({ tosLink, kybLink, onCa
       )}
 
       <div className="flex justify-between mt-4">
-        <Button className="text-notpurple-500" variant="light" onClick={onCancel}>
-          Cancel
-        </Button>
+          <Button className="text-notpurple-500" variant="light" onClick={onCancel}>
+            Cancel
+          </Button>
+          <Button className="text-notpurple-500" variant="light" onClick={handleTestRedirect}>
+            Test Redirect
+          </Button>
       </div>
     </FormCard>
   );

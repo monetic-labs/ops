@@ -14,17 +14,13 @@ export const KYBMerchantForm: React.FC<{ onCancel: () => void; initialEmail: str
   const {
     activeTab,
     setActiveTab,
-    stepCompletion,
     onSubmitStep,
     handleCancel,
+    handleKYCDone,
     createMerchantData,
     formData,
     updateFormData,
   } = useMerchantForm(initialEmail);
-
-  const handleEditStep = (step: string) => {
-    setActiveTab(step);
-  };
 
   return (
     <FormCard className="overflow-y-auto max-h-screen" title="Know Your Business">
@@ -48,6 +44,7 @@ export const KYBMerchantForm: React.FC<{ onCancel: () => void; initialEmail: str
             kybLink={createMerchantData?.data.kycLink || null}
             tosLink={createMerchantData?.data.tosLink || null}
             onCancel={handleCancel}
+            onKYCDone={handleKYCDone}
           />
         </Tab>
       </Tabs>
