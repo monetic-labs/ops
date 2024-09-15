@@ -11,18 +11,17 @@ interface TermsAndKYBProps {
   tosLink: string | null;
   kybLink: string | null;
   onCancel: () => void;
+  onKYCDone: () => void;
 }
 
-export const TermsAndKYB: React.FC<TermsAndKYBProps> = ({ tosLink, kybLink, onCancel }) => {
+export const TermsAndKYB: React.FC<TermsAndKYBProps> = ({ tosLink, kybLink, onCancel, onKYCDone }) => {
   const [termsAccepted, setTermsAccepted] = useState(false);
   const router = useRouter();
 
   const handleAcceptTerms = async () => {
-    console.log("HANDLING ACCEPT TERMS wats res?");
     if (tosLink) {
       try {
         const result = await signBridgeTermsOfService(tosLink);
-        console.log(result, "wats res?");
         if (result.signed_agreement_id) {
           setTermsAccepted(true);
         }
@@ -32,13 +31,15 @@ export const TermsAndKYB: React.FC<TermsAndKYBProps> = ({ tosLink, kybLink, onCa
     }
   };
 
-  console.log(termsAccepted, "terms accepted", tosLink);
-
   const handleStartKYB = () => {
     if (kybLink) {
-      router.push("/auth");
+      onKYCDone();
       window.open(kybLink, "_blank");
     }
+  };
+
+  const handleTestRedirect = () => {
+    onKYCDone();
   };
 
   return (
@@ -90,6 +91,9 @@ export const TermsAndKYB: React.FC<TermsAndKYBProps> = ({ tosLink, kybLink, onCa
       <div className="flex justify-between mt-4">
         <Button className="text-notpurple-500" variant="light" onClick={onCancel}>
           Cancel
+        </Button>
+        <Button className="text-notpurple-500" variant="light" onClick={handleTestRedirect}>
+          Test Redirect
         </Button>
       </div>
     </FormCard>

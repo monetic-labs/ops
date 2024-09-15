@@ -1,14 +1,25 @@
+"use client";
 import { Link } from "@nextui-org/link";
 import { NavbarBrand, NavbarContent, NavbarItem, NavbarMenuToggle, Navbar as NextUINavbar } from "@nextui-org/navbar";
 import { link as linkStyles } from "@nextui-org/theme";
 import clsx from "clsx";
 import NextLink from "next/link";
-
+import { useRouter } from "next/navigation";
 import { DiscordIcon, GithubIcon, Logo, TwitterIcon } from "@/components/icons";
 import { ThemeSwitch } from "@/components/theme-switch";
 import { siteConfig } from "@/config/site";
+import pylon from "@/libs/pylon-sdk";
 
 export const Navbar = () => {
+  const router = useRouter();
+
+  const handleSignOut = () => {
+    //TODO implment this in pylon
+    // pylon.clearSession();
+
+    router.push("/");
+  };
+
   return (
     <NextUINavbar
       classNames={{
@@ -27,16 +38,30 @@ export const Navbar = () => {
         <ul className="hidden lg:flex gap-4 justify-start ml-2">
           {siteConfig.navItems.map((item) => (
             <NavbarItem key={item.href}>
-              <NextLink
-                className={clsx(
-                  linkStyles({ color: "foreground" }),
-                  "data-[active=true]:text-primary data-[active=true]:font-medium"
-                )}
-                color="foreground"
-                href={item.href}
-              >
-                {item.label}
-              </NextLink>
+              {item.label === "Sign Out" ? (
+                <Link
+                  className={clsx(
+                    linkStyles({ color: "foreground" }),
+                    "data-[active=true]:text-primary data-[active=true]:font-medium"
+                  )}
+                  color="foreground"
+                  href="#"
+                  onClick={handleSignOut}
+                >
+                  {item.label}
+                </Link>
+              ) : (
+                <NextLink
+                  className={clsx(
+                    linkStyles({ color: "foreground" }),
+                    "data-[active=true]:text-primary data-[active=true]:font-medium"
+                  )}
+                  color="foreground"
+                  href={item.href}
+                >
+                  {item.label}
+                </NextLink>
+              )}
             </NavbarItem>
           ))}
         </ul>
