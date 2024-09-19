@@ -5,16 +5,18 @@ import pylon from "@/libs/pylon-sdk";
 
 export function useIssueOTP() {
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | boolean>(false);
+  const [error, setError] = useState<string | null>(null);
 
   const issueOTP = async (email: string): Promise<IssueOTP | null> => {
     setIsLoading(true);
     try {
-      return await pylon.initiateLoginOTP({ email });
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "An error occurred");
-
-      return null;
+      const response = await pylon.initiateLoginOTP({ email });
+      return response;
+    } catch (err: any) {
+      if (err.response && err.response.status === 404) {
+        throw { statusCode: 404, message: "User not found" };
+      }
+      throw err;
     } finally {
       setIsLoading(false);
     }

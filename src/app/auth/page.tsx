@@ -6,6 +6,7 @@ import { Input } from "@nextui-org/input";
 import { useRouter } from "next/navigation";
 
 import { useIssueOTP, useVerifyOTP } from "@/hooks/auth/useOTP";
+import Notification from "@/components/generics/notification";
 import { title, subtitle } from "@/components/primitives";
 import { OTP_CODE_LENGTH as OTP_LENGTH } from "@/utils/constants";
 
@@ -18,6 +19,7 @@ export default function AuthPage() {
   const { issueOTP, isLoading: isIssueLoading, error: issueError } = useIssueOTP();
   const { verifyOTP, isLoading: isVerifyLoading, error: verifyError } = useVerifyOTP();
   const otpInputs = useRef<(HTMLInputElement | null)[]>([]);
+  const [notification, setNotification] = useState<string | null>(null);
   const router = useRouter();
 
   const handleSignUp = async (e: React.FormEvent) => {
@@ -28,13 +30,23 @@ export default function AuthPage() {
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     if (email) {
-      const response = await issueOTP(email);
-
-      if (response) {
-        setShowOtpInput(true);
-        // In a real-world scenario, you wouldn't display the OTP to the user
-        // This is just for demonstration purposes
-        console.log("OTP issued:", response ? email : "Failed to issue OTP");
+      try {
+        const response = await issueOTP(email);
+        if (response) {
+          setShowOtpInput(true);
+          console.log("OTP issued:", email);
+        }
+      } catch (error: any) {
+        console.error("Error issuing OTP:", error);
+        if (error.statusCode === 404) {
+          setNotification("New User Detected. Redirecting to registration...");
+          setTimeout(() => {
+            setNotification(null);
+            router.push(`/onboard?email=${encodeURIComponent(email)}`);
+          }, 3000); // Delay to allow the user to read the toast
+        } else {
+          console.log("How did I get here?", error);
+        }
       }
     }
   };
@@ -199,6 +211,7 @@ export default function AuthPage() {
         </form>
         {(issueError || verifyError) && <p className="!text-ualert-500 mt-2">{issueError || verifyError}</p>}
       </div>
+      {notification && <Notification message={notification} />}
     </section>
   );
 }
