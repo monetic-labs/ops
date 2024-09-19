@@ -2,45 +2,33 @@ export const tabsConfig = [
   {
     id: "bill-pay",
     label: "Bill Pay",
-    content: "This is where you manage your account",
+    content: "Here you can manage payments for bills, vendors, and more.",
   },
   {
     id: "back-office",
     label: "Back Office",
-    content: "This is where you manage your settings",
+    content: "However you create value, you need a way to accept receive payments for it. You manage that stream of value here.",
   },
   {
     id: "card-issuance",
     label: "Card Issuance",
-    content: "These are all your customer transactions, orders that become transactions",
+    content: "Now that your value streams and bills are managed, we need a way for you to use your money. You can issue cards for your needs from here.",
   },
   {
     id: "users",
     label: "Users",
-    content: "This is where you create orders for customers",
+    content: "Create roles for the various different ways you need others to assist in your operations.",
   },
-  // {
-  //   id: "widgets",
-  //   label: "Widgets",
-  //   content: "This is where you manage your widgets",
-  // },
-  // {
-  //   id: "compliance",
-  //   label: "Compliance",
-  //   content: "This is where you manage your settings",
-  // },
 ];
 
 export const cardServicesConfig = [
   {
     id: "transactions",
     label: "Transactions",
-    content: "This is where you manage your transactions",
   },
   {
     id: "card-list",
     label: "Card List",
-    content: "This is where you manage your cards",
   },
 ];
 

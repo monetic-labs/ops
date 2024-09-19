@@ -94,8 +94,6 @@ export const users = [
   },
 ];
 
-// ... existing imports and data ...
-
 export interface BillPay {
   id: string;
   vendor: string;
@@ -118,19 +116,17 @@ export interface BillPay {
 
 export const billPayColumns = [
   { name: "VENDOR", uid: "vendor" },
-  { name: "INTERNAL NOTE", uid: "internalNote" },
-  { name: "MEMO", uid: "memo" },
   { name: "STATUS", uid: "status" },
   { name: "AMOUNT", uid: "amount" },
-  { name: "FEES", uid: "fees" },
-  { name: "ACTIONS", uid: "actions" },
+  { name: "MEMO", uid: "memo" },
+  { name: "INTERNAL NOTE", uid: "internalNote" },
 ];
 
 export const billPayData: BillPay[] = [
   {
     id: "1",
     vendor: "Acme, LTD",
-    internalNote: "ai-generated-note",
+    internalNote: "supplies",
     memo: "",
     status: "Active",
     amount: "$10,000.00",
@@ -149,7 +145,7 @@ export const billPayData: BillPay[] = [
   {
     id: "2",
     vendor: "Design Contractor",
-    internalNote: "ai-generated-note",
+    internalNote: "marketing",
     memo: "",
     status: "Active",
     amount: "$10,000.00",
@@ -168,11 +164,11 @@ export const billPayData: BillPay[] = [
   {
     id: "3",
     vendor: "UPS Shipping Account",
-    internalNote: "ai-generated-note",
+    internalNote: "fullfilment operations",
     memo: "Physical",
     status: "Inactive",
-    amount: "$5000",
-    fees: "$100",
+    amount: "$5000.00",
+    fees: "$100.00",
     paymentMethod: "SWIFT",
     currency: "EUR",
     transactionCost: 50,

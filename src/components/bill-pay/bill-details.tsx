@@ -1,8 +1,13 @@
+"use client";
+
 import { Button } from "@nextui-org/button";
 import { Divider } from "@nextui-org/divider";
 import { Modal, ModalBody, ModalContent, ModalFooter, ModalHeader } from "@nextui-org/modal";
 
 import { BillPay } from "@/data";
+import { useState } from "react";
+import BillPaySaveModal from "./bill-save";
+import BillPayCloneModal from "./bill-clone";
 
 interface BillPayDetailsModalProps {
   isOpen: boolean;
@@ -11,7 +16,11 @@ interface BillPayDetailsModalProps {
 }
 
 export default function BillPayDetailsModal({ isOpen, onClose, billPay }: BillPayDetailsModalProps) {
+  const [isSaveModalOpen, setIsSaveModalOpen] = useState(false);
+  const [isCloneModalOpen, setIsCloneModalOpen] = useState(false);
+  
   return (
+    <>
     <Modal isOpen={isOpen} size="lg" onClose={onClose}>
       <ModalContent>
         {(onClose) => (
@@ -80,6 +89,12 @@ export default function BillPayDetailsModal({ isOpen, onClose, billPay }: BillPa
             </ModalBody>
             <Divider />
             <ModalFooter className="flex justify-center">
+              <Button className="bg-ualert-500 text-notpurple-500" onPress={() => setIsSaveModalOpen(true)}>
+                Save
+              </Button>
+              <Button className="bg-ualert-500 text-notpurple-500" onPress={() => setIsCloneModalOpen(true)}>
+                Clone
+              </Button>
               <Button className="bg-ualert-500 text-notpurple-500" onPress={onClose}>
                 Close
               </Button>
@@ -88,5 +103,28 @@ export default function BillPayDetailsModal({ isOpen, onClose, billPay }: BillPa
         )}
       </ModalContent>
     </Modal>
+    <BillPaySaveModal
+    billPay={billPay}
+    isOpen={isSaveModalOpen}
+    onClose={() => setIsSaveModalOpen(false)}
+    onSave={(updatedBillPay, saveAsTemplate) => {
+      console.log("Saving bill pay:", updatedBillPay);
+      if (saveAsTemplate) {
+        console.log("Saving as template");
+        // Implement logic to save as template
+      }
+      setIsSaveModalOpen(false);
+    }}
+  />
+  <BillPayCloneModal
+    billPay={billPay}
+    isOpen={isCloneModalOpen}
+    onClose={() => setIsCloneModalOpen(false)}
+    onSave={(clonedBillPay) => {
+      console.log("Cloning bill pay:", clonedBillPay);
+      setIsCloneModalOpen(false);
+    }}
+  />
+  </>
   );
 }
