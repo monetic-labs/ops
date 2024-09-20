@@ -1,12 +1,13 @@
+import { useState } from "react";
+
 import { Button } from "@nextui-org/button";
 import { Tab, Tabs } from "@nextui-org/tabs";
-import { useState } from "react";
 
 import { cardServicesConfig } from "@/config/tabs";
 import CreateCardModal from "@/components/card-issuance/card-create";
 
 import CardListTable from "./card-list";
-import Transactions from "./transactions";
+import TransactionListTable from "./transactions";
 
 export default function CardServicesTabs() {
   const [selectedService, setSelectedService] = useState<string>(cardServicesConfig[0].id);
@@ -15,7 +16,7 @@ export default function CardServicesTabs() {
   const renderTabContent = (tabId: string) => {
     switch (tabId) {
       case "transactions":
-        return <Transactions />;
+        return <TransactionListTable />;
       case "card-list":
         return <CardListTable />;
       default:

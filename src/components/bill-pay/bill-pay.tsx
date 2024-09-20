@@ -1,7 +1,6 @@
 
 import { Button } from "@nextui-org/button";
 import { Chip } from "@nextui-org/chip";
-import { Table, TableBody, TableCell, TableColumn, TableHeader, TableRow } from "@nextui-org/table";
 import { User } from "@nextui-org/user";
 import React, { ReactNode, useCallback, useEffect, useState } from "react";
 

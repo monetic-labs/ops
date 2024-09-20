@@ -1,62 +1,12 @@
-import React, { useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { Chip } from "@nextui-org/chip";
-import { Table, TableBody, TableCell, TableColumn, TableHeader, TableRow } from "@nextui-org/table";
-import { Tooltip } from "@nextui-org/tooltip";
 import { User } from "@nextui-org/user";
-import { Button } from "@nextui-org/button";
 
 import TransactionDetailsModal from "@/components/card-issuance/card-txns";
-
-const columns = [
-  { name: "MERCHANT ID", uid: "merchantId" },
-  { name: "AMOUNT", uid: "amount" },
-  { name: "SPENDER", uid: "spender" },
-  { name: "MEMO", uid: "memo" },
-  { name: "RECEIPT", uid: "receipt" },
-  { name: "ACTIONS", uid: "actions" },
-];
-
-const transactions = [
-  {
-    merchantId: "0001",
-    amount: "$100.00",
-    spender: "Sterling Archer",
-    memo: "some a.i. notes about the transaction",
-    receipt: "attach",
-    actions: "modal",
-    date: "2023-04-15",
-    category: "Office Supplies",
-    cardName: "Company Card",
-    cardLastFour: "1234",
-    status: "Completed",
-  },
-  {
-    merchantId: "0002",
-    amount: "$100.00",
-    spender: "Mallory Archer",
-    memo: "some a.i. notes about the transaction",
-    receipt: "attach",
-    actions: "modal",
-    date: "2023-04-15",
-    category: "Office Supplies",
-    cardName: "Company Card",
-    cardLastFour: "1234",
-    status: "Completed",
-  },
-  {
-    merchantId: "0003",
-    amount: "$100.00",
-    spender: "Lana Kane",
-    memo: "some a.i. notes about the transaction",
-    receipt: "attach",
-    actions: "modal",
-    date: "2023-04-15",
-    category: "Office Supplies",
-    cardName: "Company Card",
-    cardLastFour: "1234",
-    status: "Completed",
-  },
-];
+import InfiniteTable from "@/components/generics/table-infinite";
+import { cardTransactionColumns, CardTransactions } from "@/data";
+import { getOpepenAvatar } from "@/utils/helpers";
+import { cardTransactionData } from "@/data";
 
 const statusColorMap: Record<string, "success" | "warning" | "danger"> = {
   Completed: "success",
@@ -64,12 +14,20 @@ const statusColorMap: Record<string, "success" | "warning" | "danger"> = {
   Cancelled: "danger",
 };
 
-export default function Transactions() {
-  const [selectedTransaction, setSelectedTransaction] = useState<(typeof transactions)[0] | null>(null);
+export default function TransactionListTable() {
+  const [selectedTransaction, setSelectedTransaction] = useState<(typeof cardTransactionData)[0] | null>(null);
+  const [avatars, setAvatars] = useState<Record<string, string>>({});
 
-  const renderCell = React.useCallback(
-    (transaction: (typeof transactions)[0], columnKey: keyof (typeof transactions)[0]) => {
-      const cellValue = transaction[columnKey];
+  useEffect(() => {
+    const newAvatars: Record<string, string> = {};
+    cardTransactionData.forEach((transaction) => {
+      newAvatars[transaction.id] = getOpepenAvatar(transaction.id, 32);
+    });
+    setAvatars(newAvatars);
+  }, []);
+
+  const renderCell = useCallback((transaction: CardTransactions, columnKey: keyof CardTransactions) => {
+    const cellValue = transaction[columnKey];
 
       switch (columnKey) {
         case "merchantId":
@@ -77,12 +35,12 @@ export default function Transactions() {
             <User
               avatarProps={{
                 radius: "lg",
-                src: `https://i.pravatar.cc/150?u=${transaction.merchantId}`,
+                src: avatars[transaction.id],
               }}
-              description={transaction.merchantId}
+              description={transaction.id}
               name={cellValue}
             >
-              {transaction.merchantId}
+              {transaction.id}
             </User>
           );
         case "amount":
@@ -91,46 +49,32 @@ export default function Transactions() {
               {cellValue}
             </Chip>
           );
-        case "actions":
-          return (
-            <div className="relative flex items-center justify-center">
-              <Tooltip content="View Transaction Details">
-                <span className="text-lg text-default-400 cursor-pointer active:opacity-50">
-                  <Button size="sm" onPress={() => setSelectedTransaction(transaction)}>
-                    Details
-                  </Button>
-                </span>
-              </Tooltip>
-            </div>
-          );
         default:
           return cellValue;
-      }
-    },
-    []
-  );
+    }
+  }, [avatars]);
+
+  const loadMore = async (cursor: string | undefined) => {
+    const pageSize = 10;
+    const startIndex = cursor ? parseInt(cursor) : 0;
+    const endIndex = startIndex + pageSize;
+    const newItems = cardTransactionData.slice(startIndex, endIndex);
+    const newCursor = endIndex < cardTransactionData.length ? endIndex.toString() : undefined;
+    
+    return { items: newItems, cursor: newCursor };
+  };
 
   return (
     <>
-      <Table aria-label="Example table with custom cells">
-        <TableHeader columns={columns}>
-          {(column) => (
-            <TableColumn key={column.uid} align={column.uid === "actions" ? "center" : "start"}>
-              {column.name}
-            </TableColumn>
-          )}
-        </TableHeader>
-        <TableBody items={transactions}>
-          {(item) => (
-            <TableRow key={item.merchantId}>
-              {(columnKey) => <TableCell>{renderCell(item, columnKey as keyof (typeof transactions)[0])}</TableCell>}
-            </TableRow>
-          )}
-        </TableBody>
-      </Table>
+      <InfiniteTable
+        columns={cardTransactionColumns}
+        initialData={cardTransactionData}
+        renderCell={renderCell}
+        loadMore={loadMore}
+      />
       <TransactionDetailsModal
         isOpen={!!selectedTransaction}
-        transaction={selectedTransaction || transactions[0]}
+        transaction={selectedTransaction || cardTransactionData[0]}
         onClose={() => setSelectedTransaction(null)}
       />
     </>

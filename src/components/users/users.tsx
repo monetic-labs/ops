@@ -2,28 +2,33 @@ import { Button } from "@nextui-org/button";
 import { Chip } from "@nextui-org/chip";
 import { Table, TableBody, TableCell, TableColumn, TableHeader, TableRow } from "@nextui-org/table";
 import { User } from "@nextui-org/user";
-import React, { useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 
-import { users, usersColumns } from "@/data";
+import { userData, usersColumns, usersStatusColorMap, User as CardUser, cardTransactionData } from "@/data";
 
 import CreateUserModal from "./user-create";
 import UserEditModal from "./user-edit";
 import UserDetailsModal from "./users-details";
-
-const statusColorMap: Record<string, "success" | "danger" | "warning"> = {
-  Active: "success",
-  Inactive: "danger",
-  Suspended: "warning",
-};
+import { getOpepenAvatar } from "@/utils/helpers";
+import InfiniteTable from "../generics/table-infinite";
 
 export default function UserTab() {
-  const [selectedUser, setSelectedUser] = useState<(typeof users)[0] | null>(null);
+  const [selectedUser, setSelectedUser] = useState<(typeof userData)[0] | null>(null);
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [avatars, setAvatars] = useState<Record<string, string>>({});
 
-  const renderCell = React.useCallback((card: (typeof users)[0], columnKey: keyof (typeof users)[0]) => {
-    const cellValue = card[columnKey];
+  useEffect(() => {
+    const newAvatars: Record<string, string> = {};
+    userData.forEach((user) => {
+      newAvatars[user.id] = getOpepenAvatar(user.id, 32);
+    });
+    setAvatars(newAvatars);
+  }, []);
+
+  const renderCell = useCallback((user: CardUser, columnKey: keyof CardUser) => {
+    const cellValue = user[columnKey];
 
     switch (columnKey) {
       case "name":
@@ -31,17 +36,17 @@ export default function UserTab() {
           <User
             avatarProps={{
               radius: "lg",
-              src: `https://i.pravatar.cc/150?u=${card.name}`,
+              src: avatars[user.id],
             }}
-            description={card.name}
+            description={user.name}
             name={cellValue}
           >
-            {card.name}
+            {cellValue}
           </User>
         );
       case "status":
         return (
-          <Chip className="capitalize" color={statusColorMap[card.status]} size="sm" variant="flat">
+          <Chip className="capitalize" color={usersStatusColorMap[user.status]} size="sm" variant="flat">
             {cellValue}
           </Chip>
         );
@@ -52,7 +57,7 @@ export default function UserTab() {
               className="bg-charyo-400 text-notpurple-500"
               size="sm"
               onPress={() => {
-                setSelectedUser(card);
+                setSelectedUser(user);
                 setIsDetailsModalOpen(true);
               }}
             >
@@ -62,7 +67,7 @@ export default function UserTab() {
               className="bg-charyo-400 text-notpurple-500"
               size="sm"
               onPress={() => {
-                setSelectedUser(card);
+                setSelectedUser(user);
                 setIsEditModalOpen(true);
               }}
             >
@@ -73,7 +78,17 @@ export default function UserTab() {
       default:
         return cellValue;
     }
-  }, []);
+  }, [avatars]);
+
+  const loadMore = async (cursor: string | undefined) => {
+    const pageSize = 10; 
+    const startIndex = cursor ? parseInt(cursor) : 0;
+    const endIndex = startIndex + pageSize;
+    const newItems = userData.slice(startIndex, endIndex);
+    const newCursor = endIndex < userData.length ? endIndex.toString() : undefined;
+    
+    return { items: newItems, cursor: newCursor };
+  };
 
   return (
     <>
@@ -82,22 +97,12 @@ export default function UserTab() {
           Create User
         </Button>
       </div>
-      <Table aria-label="Example table with custom cells">
-        <TableHeader columns={usersColumns}>
-          {(column) => (
-            <TableColumn key={column.uid} align={column.uid === "actions" ? "center" : "start"}>
-              {column.name}
-            </TableColumn>
-          )}
-        </TableHeader>
-        <TableBody items={users}>
-          {(item) => (
-            <TableRow key={item.name}>
-              {(columnKey) => <TableCell>{renderCell(item, columnKey as keyof (typeof users)[0])}</TableCell>}
-            </TableRow>
-          )}
-        </TableBody>
-      </Table>
+      <InfiniteTable
+        columns={usersColumns}
+        initialData={userData}
+        renderCell={renderCell}
+        loadMore={loadMore}
+      />
 
       {selectedUser && (
         <>

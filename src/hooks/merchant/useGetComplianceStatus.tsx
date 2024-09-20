@@ -8,9 +8,9 @@ export function useGetComplianceStatus() {
 
   useEffect(() => {
     async function checkCompliance() {
-      const isCompliant = await pylon.getComplianceStatus();
+      const complianceStatus = await pylon.getComplianceStatus();
 
-      setComplianceStatus(isCompliant);
+      setComplianceStatus(complianceStatus);
     }
     checkCompliance();
   }, []);
