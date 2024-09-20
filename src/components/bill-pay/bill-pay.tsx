@@ -18,7 +18,7 @@ export default function BillPayTable() {
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
   const [selectedBillPay, setSelectedBillPay] = useState<BillPay | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [hasMore, setHasMore] = useState(false);
+  const [hasMore, setHasMore] = useState(true);
   const [avatars, setAvatars] = useState<Record<string, string>>({});
 
   useEffect(() => {
@@ -63,28 +63,27 @@ export default function BillPayTable() {
     }
   }, []);
 
-  let list = useAsyncList({
-    async load({signal, cursor}) {
-
-      if (cursor) {
+  let list = useAsyncList<BillPay>({
+    async load({ signal }) {
+      setIsLoading(true);
+      try {
+        // Simulate API delay
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        
+        setHasMore(false); // No more data to load
+        return {
+          items: billPayData,
+        };
+      } finally {
         setIsLoading(false);
       }
-
-      // If no cursor is available, then we're loading the first page.
-      // Otherwise, the cursor is the next URL to load, as returned from the previous page.
-      const res = await fetch(cursor || "https://swapi.py4e.com/api/people/?search=", {signal});
-      let json = await res.json();
-
-      setHasMore(json.next !== null);
-
-      return {
-        items: json.results,
-        cursor: json.next,
-      };
     },
   });
 
-  const [loaderRef, scrollerRef] = useInfiniteScroll({hasMore, onLoadMore: list.loadMore});
+  const [loaderRef, scrollerRef] = useInfiniteScroll({
+    hasMore, 
+    onLoadMore: list.loadMore,
+  });
 
   return (
     <>
@@ -97,11 +96,13 @@ export default function BillPayTable() {
       isHeaderSticky
       aria-label="Bill Pay table"
       baseRef={scrollerRef}
-      bottomContent={hasMore ? (
-      <div className="flex justify-center items-center py-4">
-        <Spinner ref={loaderRef} color="white" />
-      </div>
-        ) : null}
+      bottomContent={
+        hasMore ? (
+          <div className="flex justify-center items-center py-4">
+            <Spinner ref={loaderRef} color="primary" />
+          </div>
+        ) : null
+      }
       className="cursor-pointer" 
       classNames={{
         tr: "transition-colors hover:bg-ualert-500/60 data-[hover=true]:bg-ualert-500/40 rounded-lg"
@@ -118,20 +119,21 @@ export default function BillPayTable() {
             </TableColumn>
           )}
         </TableHeader>
-        <TableBody items={billPayData}>
-          {(item) => (
+        <TableBody items={list.items}>
+          {(item: BillPay) => (
             <TableRow 
-            key={item.id}
-            onClick={() => {
-              setSelectedBillPay(item);
-              setIsDetailsModalOpen(true);
-            }}
+              key={item.id}
+              onClick={() => {
+                setSelectedBillPay(item as BillPay);
+                setIsDetailsModalOpen(true);
+              }}
             >
               {(columnKey) => (
                 <TableCell 
+                  key={`${item.id}-${columnKey}`}
                   className={columnKey === "memo" || columnKey === "internalNote" ? "hidden md:table-cell" : ""}
                 >
-                  {renderCell(item, columnKey as keyof BillPay)}
+                  {renderCell(item, columnKey)}
                 </TableCell>
               )}
             </TableRow>
