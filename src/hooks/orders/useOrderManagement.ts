@@ -80,7 +80,7 @@ export const useOrderManagement = () => {
     let closeConnection: (() => void) | undefined;
 
     const setupConnection = async () => {
-      setState((prevState) => ({ ...prevState, isLoading: true }));
+      setState((prevState) => ({ ...prevState, isLoading: true, error: null }));
       try {
         closeConnection = await pylon.getTransactionList(handleTransactionUpdate);
       } catch (error) {

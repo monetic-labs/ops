@@ -9,8 +9,16 @@ export function useGetComplianceStatus() {
   useEffect(() => {
     async function checkCompliance() {
       const complianceStatus = await pylon.getComplianceStatus();
+       console.log("complianceStatus", complianceStatus);
 
-      setComplianceStatus(complianceStatus);
+      setComplianceStatus({
+        data: {
+          kycLink: complianceStatus.kycLink,
+          tosLink: complianceStatus.tosLink,
+          kycStatus: complianceStatus.kycStatus,
+          tosStatus: complianceStatus.tosStatus
+        }
+      });
     }
     checkCompliance();
   }, []);
