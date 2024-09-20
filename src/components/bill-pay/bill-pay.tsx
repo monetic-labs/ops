@@ -24,6 +24,11 @@ export default function BillPayTable() {
     setAvatars(newAvatars);
   }, []);
 
+  const handleRowSelect = useCallback((billPay: BillPay) => {
+    setSelectedBillPay(billPay);
+    setIsDetailsModalOpen(true);
+  }, []);
+
   const renderCell = useCallback((billPay: BillPay, columnKey: React.Key): ReactNode => {
     const cellValue = billPay[columnKey as keyof BillPay];
 
@@ -58,7 +63,7 @@ export default function BillPayTable() {
   }, [avatars]);
 
   const loadMore = async (cursor: string | undefined) => {
-    const pageSize = 10;
+    const pageSize = 3;
     const startIndex = cursor ? parseInt(cursor) : 0;
     const endIndex = startIndex + pageSize;
     const newItems = billPayData.slice(startIndex, endIndex);
@@ -76,9 +81,10 @@ export default function BillPayTable() {
       </div>
       <InfiniteTable
         columns={billPayColumns}
-        initialData={billPayData}
+        initialData={billPayData.slice(0, 3)} // Load first 3 items initially
         renderCell={renderCell}
         loadMore={loadMore}
+        onRowSelect={handleRowSelect}
       />
       <CreateBillPayModal
         isOpen={isCreateModalOpen}

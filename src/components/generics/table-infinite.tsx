@@ -14,6 +14,7 @@ interface InfiniteTableProps<T> {
   initialData: T[];
   renderCell: (item: T, columnKey: keyof T) => ReactNode;
   loadMore: (cursor: string | undefined) => Promise<{ items: T[]; cursor: string | undefined }>;
+  onRowSelect?: (item: T) => void;
 }
 
 export default function InfiniteTable<T extends { id: string }>({
@@ -21,18 +22,19 @@ export default function InfiniteTable<T extends { id: string }>({
   initialData,
   renderCell,
   loadMore,
+  onRowSelect,
 }: InfiniteTableProps<T>) {
   const [isLoading, setIsLoading] = React.useState(false);
   const [hasMore, setHasMore] = React.useState(true);
 
   const list = useAsyncList<T>({
-    async load({ signal, cursor }) {
+    async load({ cursor }) {
       setIsLoading(true);
       try {
         if (!cursor) {
           setIsLoading(false);
           setHasMore(true);
-          return { items: initialData, cursor: "1" };
+          return { items: initialData, cursor: initialData.length.toString() };
         }
         const { items, cursor: newCursor } = await loadMore(cursor);
         setHasMore(!!newCursor);
@@ -53,6 +55,8 @@ export default function InfiniteTable<T extends { id: string }>({
       isHeaderSticky
       aria-label="Generic table with infinite scroll"
       baseRef={scrollerRef}
+      selectionMode="single"
+      onRowAction={(key) => onRowSelect && onRowSelect(list.items.find(item => item.id === key) as T)}
       bottomContent={
         hasMore ? (
           <div className="flex justify-center items-center py-4">
