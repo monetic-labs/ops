@@ -114,13 +114,13 @@ export interface BillPay {
   };
 }
 
-export const billPayColumns = [
+export const billPayColumns: Array<{name: string; uid: keyof BillPay}> = [
   { name: "VENDOR", uid: "vendor" },
   { name: "STATUS", uid: "status" },
   { name: "AMOUNT", uid: "amount" },
   { name: "MEMO", uid: "memo" },
   { name: "INTERNAL NOTE", uid: "internalNote" },
-];
+] as const;
 
 export const billPayData: BillPay[] = [
   {
