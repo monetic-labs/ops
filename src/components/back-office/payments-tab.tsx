@@ -13,29 +13,8 @@ import { CancelConfirmationModal } from "./actions/order-cancel";
 import { RefundModal } from "./actions/order-refund";
 import { RefundSuccessModal } from "./actions/order-success";
 
-const columns = [
-  { name: "ID", uid: "id" },
-  { name: "Status", uid: "status" },
-  { name: "Payment Method", uid: "paymentMethod" },
-  { name: "Total", uid: "total" },
-  { name: "Created", uid: "createdAt" },
-  { name: "Actions", uid: "actions" },
-];
-
-const statusColorMap: Record<string, "success" | "warning" | "danger" | "primary" | "secondary"> = {
-  SENT_FOR_AUTHORIZATION: "primary",
-  AUTHORIZED: "secondary",
-  SENT_FOR_SETTLEMENT: "warning",
-  SETTLED: "success",
-  SETTLEMENT_FAILED: "danger",
-  CANCELLED: "danger",
-  ERROR: "danger",
-  EXPIRED: "danger",
-  REFUSED: "danger",
-  SENT_FOR_REFUND: "warning",
-  REFUNDED: "success",
-  REFUND_FAILED: "danger",
-};
+import { paymentsColumns, paymentsStatusColorMap } from "@/data";
+import InfiniteTable from "../generics/table-infinite";
 
 export default function PaymentsTab() { 
   const { transactions, isLoading, error } = useOrderManagement();
@@ -100,8 +79,8 @@ export default function PaymentsTab() {
     setRefundPayment(null);
   };
 
-  const renderCell = useCallback((transaction: TransactionListItem, columnKey: React.Key): ReactNode => {
-    const cellValue = transaction[columnKey as keyof TransactionListItem];
+  const renderCell = useCallback((transaction: TransactionListItem, columnKey: keyof TransactionListItem): React.ReactNode => {
+    const cellValue = transaction[columnKey];
 
     const statusLength = transaction.transactionStatusHistory.length;
     const lastStatus = transaction.transactionStatusHistory[statusLength - 1].status;
@@ -111,9 +90,9 @@ export default function PaymentsTab() {
     const isCancelDisabled = true;
 
     switch (columnKey) {
-      case "status":
+      case "id":
         return (
-          <Chip className="capitalize" color={statusColorMap[lastStatus] || "default"} size="sm" variant="flat">
+          <Chip className="capitalize" color={paymentsStatusColorMap[lastStatus] || "default"} size="sm" variant="flat">
             {lastStatus}
           </Chip>
         );
@@ -129,33 +108,20 @@ export default function PaymentsTab() {
         return `${mapCurrencyToSymbol[transaction.currency.toLowerCase()]}${centsToDollars(transaction.tipAmount)}`;
       case "createdAt":
         return getTimeAgo(transaction.createdAt);
-      case "actions":
-        return (
-          <span className="flex gap-2">
-            <Button
-              isDisabled={isCancelDisabled}
-              size="sm"
-              onPress={() => {
-                if (!isCancelDisabled) handleCancelOrder(transaction);
-              }}
-            >
-              Cancel
-            </Button>
-            <Button
-              isDisabled={isRefundDisabled}
-              size="sm"
-              onPress={() => {
-                if (!isRefundDisabled) handleRefund(transaction);
-              }}
-            >
-              Refund
-            </Button>
-          </span>
-        );
       default:
         return cellValue !== null && cellValue !== undefined ? String(cellValue) : "";
     }
   }, []);
+
+  const loadMore = async (cursor: string | undefined) => {
+    const pageSize = 10;
+    const startIndex = cursor ? parseInt(cursor) : 0;
+    const endIndex = startIndex + pageSize;
+    const newItems = transactions.slice(startIndex, endIndex);
+    const newCursor = endIndex < transactions.length ? endIndex.toString() : undefined;
+    
+    return { items: newItems, cursor: newCursor };
+  };
 
   if (isLoading) {
     return <div>Loading transactions...</div>;
@@ -167,34 +133,12 @@ export default function PaymentsTab() {
 
   return (
     <>
-      <Table aria-label="Transactions table with custom cells">
-        <TableHeader columns={columns}>
-          {(column) => <TableColumn key={column.uid}>{column.name}</TableColumn>}
-        </TableHeader>
-        <TableBody
-          emptyContent={isLoading ? null : "No transactions found"}
-          items={transactions}
-          key={transactions.length}
-        >
-          {(item) => {
-            return (
-              <TableRow
-                key={item.id}
-                className="cursor-pointer transition-all hover:bg-gray-100 dark:hover:bg-charyo-500"
-                onClick={(e) => {
-                  const target = e.target as HTMLElement;
-
-                  if (!target.closest("button") && !target.closest(".flex.gap-2")) {
-                    handleViewDetails(item);
-                  }
-                }}
-              >
-                {(columnKey) => <TableCell>{renderCell(item, columnKey)}</TableCell>}
-              </TableRow>
-            );
-          }}
-        </TableBody>
-      </Table>
+      <InfiniteTable
+        columns={paymentsColumns}
+        initialData={transactions}
+        renderCell={renderCell}
+        loadMore={loadMore}
+      />
       {selectedPayment && (
         <DetailsResponse
           isOpen={!!selectedPayment}

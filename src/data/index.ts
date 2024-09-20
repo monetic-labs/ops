@@ -1,3 +1,5 @@
+import { TransactionListItem } from "@backpack-fux/pylon-sdk";
+
 export interface Column<T> {
   name: string;
   uid: keyof T;
@@ -54,6 +56,14 @@ export interface IssuedCards {
   email: string;
 }
 
+export interface Payment {
+  id: string;
+  status: string;
+  paymentMethod: string;
+  total: string;
+  createdAt: string;
+  actions: string;
+}
 export interface User {
   id: string;
   name: string;
@@ -77,7 +87,7 @@ export const cardTransactionColumns: Column<CardTransactions>[] = [
   { name: "SPENDER", uid: "spender" },
   { name: "MEMO", uid: "memo" },
   { name: "RECEIPT", uid: "receipt" },
-];
+] as const;
 
 export const issuedCardColumns: Column<IssuedCards>[] = [
   { name: "CARD NAME", uid: "cardName" },
@@ -88,13 +98,21 @@ export const issuedCardColumns: Column<IssuedCards>[] = [
   //{ name: "ACTIONS", uid: "actions" },
 ] as const;
 
+export const paymentsColumns: Column<TransactionListItem>[] = [
+  { name: "ID", uid: "id" },
+  { name: "Status", uid: "transactionStatusHistory" }, // We'll use this to get the latest status
+  { name: "Payment Method", uid: "paymentMethod" },
+  { name: "Total", uid: "total" },
+  { name: "Created", uid: "createdAt" },
+] as const;
+
 export const usersColumns: Column<User>[] = [
   { name: "NAME", uid: "name" },
   { name: "ROLE", uid: "role" },
   { name: "EMAIL", uid: "email" },
   { name: "STATUS", uid: "status" },
   { name: "ACTIONS", uid: "actions" },
-];
+] as const;
 
 export const billPayData: BillPay[] = [
   {
@@ -288,6 +306,21 @@ export const userData: User[] = [
 export const statusColorMap: Record<string, "success" | "danger"> = {
   Active: "success",
   Inactive: "danger",
+};
+
+export const paymentsStatusColorMap: Record<string, "success" | "warning" | "danger" | "primary" | "secondary"> = {
+  SENT_FOR_AUTHORIZATION: "primary",
+  AUTHORIZED: "secondary",
+  SENT_FOR_SETTLEMENT: "warning",
+  SETTLED: "success",
+  SETTLEMENT_FAILED: "danger",
+  CANCELLED: "danger",
+  ERROR: "danger",
+  EXPIRED: "danger",
+  REFUSED: "danger",
+  SENT_FOR_REFUND: "warning",
+  REFUNDED: "success",
+  REFUND_FAILED: "danger",
 };
 
 export const usersStatusColorMap: Record<string, "success" | "danger" | "warning"> = {
