@@ -21,7 +21,7 @@ export default function MerchantServicesTabs() {
   const router = useRouter();
 
   useEffect(() => {
-    if (complianceStatus && complianceStatus.data.kycStatus !== "approved") {
+    if (complianceStatus && complianceStatus.kycStatus !== "approved") {
       router.push("/unapproved-kyb");
     }
   }, [complianceStatus]);

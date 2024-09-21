@@ -11,14 +11,7 @@ export function useGetComplianceStatus() {
       const complianceStatus = await pylon.getComplianceStatus();
        console.log("complianceStatus", complianceStatus);
 
-      setComplianceStatus({
-        data: {
-          kycLink: complianceStatus.kycLink,
-          tosLink: complianceStatus.tosLink,
-          kycStatus: complianceStatus.kycStatus,
-          tosStatus: complianceStatus.tosStatus
-        }
-      });
+      setComplianceStatus(complianceStatus);
     }
     checkCompliance();
   }, []);

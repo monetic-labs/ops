@@ -2,9 +2,8 @@
 @tailwind components;
 @tailwind utilities;
 
-
 body {
-  background-image: url('/bg-celestial.svg');
+  background-image: url('/bg-auth.svg');
   background-repeat: repeat;
   background-size: cover;
   background-attachment: fixed;

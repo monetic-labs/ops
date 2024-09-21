@@ -5,12 +5,12 @@ import { useInfiniteScroll } from "@nextui-org/use-infinite-scroll";
 import { useAsyncList } from "@react-stately/data";
 
 interface Column<T> {
-  name: string;
-  uid: keyof T;
+  readonly name: string;
+  readonly uid: keyof T;
 }
 
 interface InfiniteTableProps<T> {
-  columns: Column<T>[];
+  columns: readonly Column<T>[];
   initialData: T[];
   renderCell: (item: T, columnKey: keyof T) => ReactNode;
   loadMore: (cursor: string | undefined) => Promise<{ items: T[]; cursor: string | undefined }>;
@@ -69,7 +69,7 @@ export default function InfiniteTable<T extends { id: string }>({
         tr: "transition-colors hover:bg-ualert-500/60 data-[hover=true]:bg-ualert-500/40 rounded-lg"
       }}
     >
-      <TableHeader columns={columns}>
+      <TableHeader columns={columns as Column<T>[]}>
         {(column) => (
           <TableColumn key={column.uid.toString()}>{column.name}</TableColumn>
         )}

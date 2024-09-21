@@ -30,6 +30,7 @@ export default function CreateOrders() {
         },
       });
 
+      console.log("response", response);
       setOrderId(response.orderLink); // Assuming the response includes an id field
       // Handle successful order creation (e.g., show a success message)
     } catch (err) {

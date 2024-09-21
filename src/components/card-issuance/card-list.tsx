@@ -5,7 +5,7 @@ import { Tooltip } from "@nextui-org/tooltip";
 import { User } from "@nextui-org/user";
 import React, { useCallback, useEffect, useState } from "react";
 
-import { billPayData, issuedCardData, issuedCardColumns } from "@/data";
+import { issuedCardData, issuedCardColumns } from "@/data";
 import CardLimitModal from "@/components/card-issuance/card-limit";
 import CardDetailsModal from "@/components/card-issuance/card-details";
 import { getOpepenAvatar } from "@/utils/helpers";
@@ -23,6 +23,7 @@ export default function CardListTable() {
   const [openModal, setOpenModal] = useState<"details" | "limit" | null>(null);
   const [selectedCard, setSelectedCard] = useState<Card | null>(null);
   const [avatars, setAvatars] = useState<Record<string, string>>({});
+  const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
 
   useEffect(() => {
     const newAvatars: Record<string, string> = {};
@@ -92,6 +93,11 @@ export default function CardListTable() {
     return { items: newItems, cursor: newCursor };
   };
 
+  const handleRowSelect = useCallback((card: Card) => {
+    setSelectedCard(card);
+    setIsDetailsModalOpen(true);
+  }, []);
+
   return (
     <>
       <InfiniteTable
@@ -99,6 +105,7 @@ export default function CardListTable() {
         initialData={issuedCardData}
         renderCell={renderCell}
         loadMore={loadMore}
+        onRowSelect={handleRowSelect}
       />
       <CardLimitModal
         cardName={selectedCard?.cardName || ""}
@@ -107,8 +114,9 @@ export default function CardListTable() {
         onClose={handleCloseModal}
         onSave={handleSaveLimit}
       />
-
-      <CardDetailsModal card={selectedCard} isOpen={openModal === "details"} onClose={handleCloseModal} />
+      {selectedCard && (
+        <CardDetailsModal card={selectedCard} isOpen={isDetailsModalOpen} onClose={() => setIsDetailsModalOpen(false)} />
+      )}
     </>
   );
 }

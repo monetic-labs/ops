@@ -24,7 +24,7 @@ export function middleware(request: NextRequest) {
     // User is not authenticated
     if (!isAuthRoute && !isOnboardRoute) {
       // Rewrite unauthenticated users from home page to the auth route
-      return NextResponse.rewrite(new URL("/auth", request.url));
+      return NextResponse.rewrite(new URL("/", request.url));
     }
   }
 

@@ -2,6 +2,7 @@
 
 import React from 'react';
 import { motion, useScroll, useSpring, useTransform } from 'framer-motion';
+import bgCelestial from '@/assets/bg-celestial.svg';
 
 const ScrollBackground: React.FC = () => {
   const { scrollY } = useScroll();
@@ -20,7 +21,6 @@ const ScrollBackground: React.FC = () => {
 
   return (
     <>
-      {/* Base layer with parallax effect */}
       <motion.div
         style={{
           position: 'fixed',
@@ -28,7 +28,7 @@ const ScrollBackground: React.FC = () => {
           left: 0,
           right: 0,
           bottom: 0,
-          backgroundImage: 'url(/bg-celestial.svg)',
+          backgroundImage: `url(${bgCelestial.src})`,
           backgroundSize: 'cover',
           backgroundPosition: 'center',
           backgroundRepeat: 'no-repeat',

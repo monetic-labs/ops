@@ -1,8 +1,6 @@
 import React, { useState, ReactNode, useCallback } from "react";
 import { Chip } from "@nextui-org/chip";
-import { Table, TableBody, TableCell, TableColumn, TableHeader, TableRow } from "@nextui-org/table";
-import { Button } from "@nextui-org/button";
-import { ISO4217Currency, TransactionListItem } from "@backpack-fux/pylon-sdk";
+import { TransactionListItem } from "@backpack-fux/pylon-sdk";
 import pylon from "@/libs/pylon-sdk";
 
 import { useOrderManagement } from "@/hooks/orders/useOrderManagement";

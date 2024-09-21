@@ -57,35 +57,37 @@ module.exports = {
     },
   },
   darkMode: "class",
-  plugins: [nextui({
-    themes: {
-      light: {
-        colors: {
-          primary: {
-            DEFAULT: "#ff00c7",
-            50: '#fff0fd',
-            100: '#ffe0fb',
-            200: '#ffc0f7',
-            300: '#ffa0f3',
-            400: '#ff80ef',
-            500: '#ff00c7',
-            600: '#cc00a0',
-            700: '#990078',
-            800: '#660050',
-            900: '#330028',
-          },
-          ualert: {
-            DEFAULT: "#ff00c7",
-            50: '#fff0fd',
-            100: '#ffe0fb',
-            200: '#ffc0f7',
-            300: '#ffa0f3',
-            400: '#ff80ef',
-            500: '#ff00c7',
-            600: '#cc00a0',
-            700: '#990078',
-            800: '#660050',
-            900: '#330028',
+  plugins: [
+    nextui({
+      addCommonColors: true,
+      themes: {
+        light: {
+          colors: {
+            primary: {
+              DEFAULT: "#ff00c7",
+              50: '#fff0fd',
+              100: '#ffe0fb',
+              200: '#ffc0f7',
+              300: '#ffa0f3',
+              400: '#ff80ef',
+              500: '#ff00c7',
+              600: '#cc00a0',
+              700: '#990078',
+              800: '#660050',
+              900: '#330028',
+            },
+            ualert: {
+              DEFAULT: "#ff00c7",
+              50: '#fff0fd',
+              100: '#ffe0fb',
+              200: '#ffc0f7',
+              300: '#ffa0f3',
+              400: '#ff80ef',
+              500: '#ff00c7',
+              600: '#cc00a0',
+              700: '#990078',
+              800: '#660050',
+              900: '#330028',
           },
           charyo: {
             DEFAULT: "#1f1f1f",
@@ -112,6 +114,18 @@ module.exports = {
             700: '#959597',
             800: '#636365',
             900: '#323232',
+          },
+          ugh: {
+            DEFAULT: "#00FF84",
+            50: '#e6ffe6',
+            100: '#ccffe0',
+            200: '#99ffd9',
+            300: '#66ffd2',
+            400: '#33ffcb',
+            500: '#00FF84',
+            600: '#00cc66',
+            700: '#009949',
+            
           },
           success: {
             DEFAULT: "#00FF84",

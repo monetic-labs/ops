@@ -73,7 +73,7 @@ export interface User {
   actions: string;
 }
 
-export const billPayColumns: Column<BillPay>[] = [
+export const billPayColumns: readonly Column<BillPay>[] = [
   { name: "VENDOR", uid: "vendor" },
   { name: "STATUS", uid: "status" },
   { name: "AMOUNT", uid: "amount" },
@@ -81,7 +81,7 @@ export const billPayColumns: Column<BillPay>[] = [
   { name: "INTERNAL NOTE", uid: "internalNote" },
 ] as const;
 
-export const cardTransactionColumns: Column<CardTransactions>[] = [
+export const cardTransactionColumns: readonly Column<CardTransactions>[] = [
   { name: "MERCHANT ID", uid: "merchantId" },
   { name: "AMOUNT", uid: "amount" },
   { name: "SPENDER", uid: "spender" },
@@ -89,7 +89,7 @@ export const cardTransactionColumns: Column<CardTransactions>[] = [
   { name: "RECEIPT", uid: "receipt" },
 ] as const;
 
-export const issuedCardColumns: Column<IssuedCards>[] = [
+export const issuedCardColumns: readonly Column<IssuedCards>[] = [
   { name: "CARD NAME", uid: "cardName" },
   { name: "HOLDER", uid: "holder" },
   { name: "TYPE", uid: "type" },
@@ -98,7 +98,7 @@ export const issuedCardColumns: Column<IssuedCards>[] = [
   //{ name: "ACTIONS", uid: "actions" },
 ] as const;
 
-export const paymentsColumns: Column<TransactionListItem>[] = [
+export const paymentsColumns: readonly Column<TransactionListItem>[] = [
   { name: "ID", uid: "id" },
   { name: "Status", uid: "transactionStatusHistory" }, // We'll use this to get the latest status
   { name: "Payment Method", uid: "paymentMethod" },
@@ -106,7 +106,7 @@ export const paymentsColumns: Column<TransactionListItem>[] = [
   { name: "Created", uid: "createdAt" },
 ] as const;
 
-export const usersColumns: Column<User>[] = [
+export const usersColumns: readonly Column<User>[] = [
   { name: "NAME", uid: "name" },
   { name: "ROLE", uid: "role" },
   { name: "EMAIL", uid: "email" },

@@ -17,7 +17,8 @@ const statusColorMap: Record<string, "success" | "warning" | "danger"> = {
 export default function TransactionListTable() {
   const [selectedTransaction, setSelectedTransaction] = useState<(typeof cardTransactionData)[0] | null>(null);
   const [avatars, setAvatars] = useState<Record<string, string>>({});
-
+  const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
+  
   useEffect(() => {
     const newAvatars: Record<string, string> = {};
     cardTransactionData.forEach((transaction) => {
@@ -64,6 +65,11 @@ export default function TransactionListTable() {
     return { items: newItems, cursor: newCursor };
   };
 
+  const handleRowSelect = useCallback((transaction: CardTransactions) => {
+    setSelectedTransaction(transaction);
+    setIsDetailsModalOpen(true);
+  }, []);
+
   return (
     <>
       <InfiniteTable
@@ -71,12 +77,17 @@ export default function TransactionListTable() {
         initialData={cardTransactionData}
         renderCell={renderCell}
         loadMore={loadMore}
+        onRowSelect={handleRowSelect}
       />
-      <TransactionDetailsModal
-        isOpen={!!selectedTransaction}
-        transaction={selectedTransaction || cardTransactionData[0]}
-        onClose={() => setSelectedTransaction(null)}
-      />
+      {selectedTransaction && (
+        <>
+          <TransactionDetailsModal
+            transaction={selectedTransaction}
+            isOpen={isDetailsModalOpen}
+            onClose={() => setIsDetailsModalOpen(false)}
+          />
+        </>
+      )}
     </>
   );
 }

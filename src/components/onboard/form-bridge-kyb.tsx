@@ -24,6 +24,7 @@ export const TermsAndKYB: React.FC<TermsAndKYBProps> = ({ tosLink, kybLink, onCa
         const result = await signBridgeTermsOfService(tosLink);
         if (result.signed_agreement_id) {
           setTermsAccepted(true);
+          console.log("Terms accepted");
         }
       } catch (error) {
         console.error("Error accepting terms:", error);

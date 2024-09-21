@@ -59,7 +59,7 @@ export default function TransactionDetailsModal({ isOpen, onClose, transaction }
                   <span
                     className={`font-bold ${
                       transaction.status === "Completed"
-                        ? "text-green-500"
+                        ? "text-ugh-400"
                         : transaction.status === "Pending"
                           ? "text-yellow-500"
                           : "text-red-500"
@@ -73,7 +73,7 @@ export default function TransactionDetailsModal({ isOpen, onClose, transaction }
             <Divider />
             <ModalFooter className="flex flex-col items-center">
               <p className="text-sm text-gray-500 mb-2">Thank you for your business!</p>
-              <Button color="primary" onPress={onClose}>
+              <Button onPress={onClose} className="bg-ualert-500">
                 Close
               </Button>
             </ModalFooter>
