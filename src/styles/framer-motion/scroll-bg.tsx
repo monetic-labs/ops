@@ -3,6 +3,7 @@
 import React from 'react';
 import { motion, useScroll, useSpring, useTransform } from 'framer-motion';
 import bgCelestial from '@/assets/bg-celestial.svg';
+import bgStellar from '@/assets/bg-stellar.svg';
 
 const ScrollBackground: React.FC = () => {
   const { scrollY } = useScroll();
@@ -44,7 +45,7 @@ const ScrollBackground: React.FC = () => {
           left: 0,
           right: 0,
           bottom: 0,
-          backgroundImage: 'url(/3d-stuff.svg)',
+          backgroundImage: `url(${bgStellar.src})`,
           backgroundSize: 'cover',
           backgroundPosition: 'center',
           backgroundRepeat: 'no-repeat',

@@ -5,11 +5,10 @@ import { Card, CardBody, CardHeader } from "@nextui-org/card";
 import { useState } from "react";
 
 import AddFundsModal from "@/components/account-contract/add-funds";
-import WithdrawFundsModal from "@/components/account-contract/withdraw-funds";
+//import WithdrawFundsModal from "@/components/account-contract/withdraw-funds";
 
 export default function AvailableCard() {
   const [isAddFundsOpen, setIsAddFundsOpen] = useState(false);
-  const [isWithdrawFundsOpen, setIsWithdrawFundsOpen] = useState(false);
   const balance = "$5,000.00";
 
   return (
@@ -23,18 +22,11 @@ export default function AvailableCard() {
           <h4 className="font-bold text-large pb-2">{balance}</h4>
           <div className="flex gap-2">
             <Button
-              className="w-1/2 bg-charyo-200 text-notpurple-500"
+              className="w-full bg-charyo-200 text-notpurple-500"
               size="sm"
               onPress={() => setIsAddFundsOpen(true)}
             >
               Add Funds
-            </Button>
-            <Button
-              className="w-1/2 bg-charyo-200 text-notpurple-500"
-              size="sm"
-              onPress={() => setIsWithdrawFundsOpen(true)}
-            >
-              Withdraw
             </Button>
           </div>
         </CardBody>
@@ -42,7 +34,7 @@ export default function AvailableCard() {
 
       <AddFundsModal isOpen={isAddFundsOpen} onClose={() => setIsAddFundsOpen(false)} />
 
-      <WithdrawFundsModal isOpen={isWithdrawFundsOpen} onClose={() => setIsWithdrawFundsOpen(false)} />
+      
     </>
   );
 }
