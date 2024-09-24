@@ -22,20 +22,6 @@ export default function WithdrawFundsModal({ isOpen, onClose }: WithdrawFundsMod
   const [selectedBalances, setSelectedBalances] = useState<Set<string>>(new Set([]));
   const [withdrawAmount, setWithdrawAmount] = useState("");
 
-  const handleSelectionChange = (id: string) => {
-    setSelectedBalances((prev) => {
-      const next = new Set(prev);
-
-      if (next.has(id)) {
-        next.delete(id);
-      } else {
-        next.add(id);
-      }
-
-      return next;
-    });
-  };
-
   const totalAvailable = useMemo(() => {
     return availableBalances
       .filter((item) => selectedBalances.has(item.id))
@@ -48,6 +34,20 @@ export default function WithdrawFundsModal({ isOpen, onClose }: WithdrawFundsMod
   const handleWithdraw = () => {
     console.log("Withdrawing:", { selectedBalances, withdrawAmount });
     onClose();
+  };
+
+  const handleSelectionChange = (id: string) => {
+    setSelectedBalances((prev) => {
+      const next = new Set(prev);
+
+      if (next.has(id)) {
+        next.delete(id);
+      } else {
+        next.add(id);
+      }
+
+      return next;
+    });
   };
 
   return (
