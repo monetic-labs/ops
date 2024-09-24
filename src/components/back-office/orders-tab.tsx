@@ -3,10 +3,11 @@ import { Input } from "@nextui-org/input";
 import { Button } from "@nextui-org/button";
 import { usePylon } from "@backpack-fux/pylon-sdk";
 import { Card, CardHeader, CardBody } from "@nextui-org/card";
-interface Order {
+
+type Order = {
   orderLink: string;
   expiresAt: string;
-}
+};
 
 export default function CreateOrders() {
   const [orderId, setOrderId] = useState("");
