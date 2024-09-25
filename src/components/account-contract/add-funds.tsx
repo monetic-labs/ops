@@ -25,8 +25,8 @@ const stablecoins = [
 ];
 
 export default function AddFundsModal({ isOpen, onClose }: AddFundsModalProps) {
-  const [network, setNetwork] = useState("");
-  const [stablecoin, setStablecoin] = useState("");
+  const [network, setNetwork] = useState("polygon");
+  const [stablecoin, setStablecoin] = useState("usdc");
   const [amount, setAmount] = useState("");
   const { addFunds, isAddingFunds, currentBalance } = useAddFunds();
 

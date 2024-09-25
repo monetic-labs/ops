@@ -79,7 +79,7 @@ export default function WithdrawFundsModal({ isOpen, onClose }: WithdrawFundsMod
         <ModalHeader className="flex flex-col gap-1">Withdraw Funds</ModalHeader>
         <ModalBody>
         {isLoading ? (
-            <p>Loading contract balances...</p>
+            <p>Loading account balances...</p>
           ) : (
             <>
           <Table aria-label="Available balances">

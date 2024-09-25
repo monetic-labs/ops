@@ -1,4 +1,5 @@
 import { Input, InputProps } from "@nextui-org/input";
+import { Tooltip } from "@nextui-org/tooltip";
 import { Control, Controller, FieldValues, Path } from "react-hook-form";
 
 interface FormInputProps<T extends FieldValues> extends Omit<InputProps, "name"> {
@@ -21,16 +22,18 @@ export const FormInput = <T extends FieldValues>({
         control={control}
         name={name}
         render={({ field }) => (
-          <Input
-            {...field}
-            {...props}
-            errorMessage={errorMessage}
-            helperText={helperText}
+          <Tooltip content={props.about}>
+            <Input
+              {...field}
+              {...props}
+              errorMessage={errorMessage}
+              helperText={helperText}
             onChange={(e) => {
               field.onChange(e);
-              props.onChange && props.onChange(e);
-            }}
-          />
+                props.onChange && props.onChange(e);
+              }}
+            />
+          </Tooltip>
         )}
       />
       {helperText && <p className="mt-1 text-sm text-notpurple-300">{helperText}</p>}
