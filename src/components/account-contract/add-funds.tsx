@@ -5,6 +5,7 @@ import { Input } from "@nextui-org/input";
 import { Modal, ModalBody, ModalContent, ModalFooter, ModalHeader } from "@nextui-org/modal";
 import { Select, SelectItem } from "@nextui-org/select";
 import useAddFunds from "@/hooks/account-contracts/useAddFunds";
+import ModalFooterWithSupport from "../generics/footer-modal-support";
 
 interface AddFundsModalProps {
   isOpen: boolean;
@@ -43,6 +44,24 @@ export default function AddFundsModal({ isOpen, onClose }: AddFundsModalProps) {
       console.error("Failed to add funds");
     }
   };
+
+  const handleSupportClick = () => {
+    // Handle support action
+    console.log("Support clicked");
+  };
+
+  const footerActions = [
+    {
+      label: "Cancel",
+      onClick: onClose,
+    },
+    {
+      label: "Confirm Add Funds",
+      onClick: handleAddFunds,
+      isLoading: isAddingFunds,
+      isDisabled: isAddingFunds || !amount || !network || !stablecoin,
+    },
+  ];
 
   const newBalance = currentBalance + parseFloat(amount || "0");
 
@@ -107,22 +126,10 @@ export default function AddFundsModal({ isOpen, onClose }: AddFundsModalProps) {
             </div>
           </div>
         </ModalBody>
-        <ModalFooter>
-          <Button className="text-notpurple-500" variant="light" onPress={onClose}>
-            Support
-          </Button>
-          <Button className="text-notpurple-500" variant="light" onPress={onClose}>
-            Cancel
-          </Button>
-          <Button 
-            className="bg-ualert-500 text-notpurple-500" 
-            onPress={handleAddFunds}
-            isLoading={isAddingFunds}
-            isDisabled={isAddingFunds || !amount || !network || !stablecoin}
-          >
-            Confirm Add Funds
-          </Button>
-        </ModalFooter>
+        <ModalFooterWithSupport
+            onSupportClick={handleSupportClick}
+            actions={footerActions}
+          />
       </ModalContent>
     </Modal>
   );

@@ -1,8 +1,10 @@
 import { Button } from "@nextui-org/button";
+import { Divider } from "@nextui-org/divider";
 import { Input } from "@nextui-org/input";
 import { Modal, ModalBody, ModalContent, ModalFooter, ModalHeader } from "@nextui-org/modal";
 import { Select, SelectItem } from "@nextui-org/select";
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import ModalFooterWithSupport from "../generics/footer-modal-support";
 
 interface CreateBillPayModalProps {
   isOpen: boolean;
@@ -22,7 +24,9 @@ interface NewBillPay {
   total: string;
 }
 
+// TODO: get this data from backend
 const vendorMethods = ["ACH", "Wire", "SWIFT", "SEPA"];
+const memoRequiredMethods = ["Wire", "SWIFT", "SEPA"];
 
 export default function CreateBillPayModal({ isOpen, onClose, onSave }: CreateBillPayModalProps) {
   const [newBillPay, setNewBillPay] = useState<NewBillPay>({
@@ -37,25 +41,44 @@ export default function CreateBillPayModal({ isOpen, onClose, onSave }: CreateBi
     total: "",
   });
 
+  const [showMemo, setShowMemo] = useState(false);
+  const isMemoRequired = memoRequiredMethods.includes(newBillPay.vendorMethod);
+
+  const fee = useMemo(() => {
+    const amount = parseFloat(newBillPay.amount) || 0;
+    return amount * 0.02; // 2% fee
+  }, [newBillPay.amount]);
+
+  const total = useMemo(() => {
+    const amount = parseFloat(newBillPay.amount) || 0;
+    return amount + fee;
+  }, [newBillPay.amount, fee]);
+
+  useEffect(() => {
+    if (isMemoRequired) {
+      setShowMemo(true);
+    } else {
+      const timer = setTimeout(() => setShowMemo(false), 300); // Match this with your CSS transition time
+      return () => clearTimeout(timer);
+    }
+  }, [isMemoRequired]);
+
   const handleSave = () => {
-    onSave(newBillPay);
+    onSave({ ...newBillPay, fee: fee.toFixed(2), total: total.toFixed(2) });
     onClose();
   };
 
-  const calculateTotal = () => {
-    const amount = parseFloat(newBillPay.amount) || 0;
-    const fee = parseFloat(newBillPay.fee) || 0;
-
-    return (amount + fee).toFixed(2);
+  const handleSupportClick = () => {
+    // Handle support action
+    console.log("Support clicked");
   };
 
-  const handleAmountOrFeeChange = (field: "amount" | "fee", value: string) => {
-    setNewBillPay((prev) => ({
-      ...prev,
-      [field]: value,
-      total: calculateTotal(),
-    }));
-  };
+  const footerActions = [
+    {
+      label: "Create",
+      onClick: handleSave,
+    },
+  ];
 
   return (
     <Modal isOpen={isOpen} size="2xl" onClose={onClose}>
@@ -78,6 +101,15 @@ export default function CreateBillPayModal({ isOpen, onClose, onSave }: CreateBi
               </SelectItem>
             ))}
           </Select>
+          <div className={`fade-in ${isMemoRequired ? 'show' : ''}`}>
+            {showMemo && (
+              <Input
+                label="Memo"
+                value={newBillPay.memo}
+                onChange={(e) => setNewBillPay({ ...newBillPay, memo: e.target.value })}
+              />
+            )}
+          </div>
           <Input
             label="Routing Number"
             value={newBillPay.routingNumber}
@@ -89,11 +121,6 @@ export default function CreateBillPayModal({ isOpen, onClose, onSave }: CreateBi
             onChange={(e) => setNewBillPay({ ...newBillPay, accountNumber: e.target.value })}
           />
           <Input
-            label="Memo"
-            value={newBillPay.memo}
-            onChange={(e) => setNewBillPay({ ...newBillPay, memo: e.target.value })}
-          />
-          <Input
             label="Internal Note"
             value={newBillPay.internalNote}
             onChange={(e) => setNewBillPay({ ...newBillPay, internalNote: e.target.value })}
@@ -102,22 +129,31 @@ export default function CreateBillPayModal({ isOpen, onClose, onSave }: CreateBi
             label="Amount"
             type="number"
             value={newBillPay.amount}
-            onChange={(e) => handleAmountOrFeeChange("amount", e.target.value)}
+            onChange={(e) => setNewBillPay({ ...newBillPay, amount: e.target.value })}
           />
-          <Input
-            label="Fee"
-            type="number"
-            value={newBillPay.fee}
-            onChange={(e) => handleAmountOrFeeChange("fee", e.target.value)}
-          />
-          <Input isReadOnly label="Total" type="number" value={newBillPay.total} />
+          
+          <Divider className="my-4" />
+          
+          <div className="space-y-4 font-mono">
+            <div className="flex justify-between">
+              <span>Amount:</span>
+              <span>${parseFloat(newBillPay.amount || "0").toFixed(2)}</span>
+            </div>
+            <div className="flex justify-between">
+              <span>Fee (2%):</span>
+              <span>${fee.toFixed(2)}</span>
+            </div>
+            <Divider className="my-2" />
+            <div className="flex justify-between text-lg font-bold">
+              <span>Total:</span>
+              <span>${total.toFixed(2)}</span>
+            </div>
+          </div>
         </ModalBody>
-        <ModalFooter>
-          <Button onPress={onClose}>Cancel</Button>
-          <Button color="primary" onPress={handleSave}>
-            Create
-          </Button>
-        </ModalFooter>
+        <ModalFooterWithSupport
+            onSupportClick={handleSupportClick}
+            actions={footerActions}
+          />
       </ModalContent>
     </Modal>
   );

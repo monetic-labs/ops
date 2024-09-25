@@ -6,6 +6,7 @@ import { Checkbox } from "@nextui-org/checkbox";
 import { Divider } from "@nextui-org/divider";
 import { Table, TableBody, TableCell, TableColumn, TableHeader, TableRow } from "@nextui-org/table";
 import useWithdrawal from "@/hooks/account-contracts/useWithdrawal";
+import ModalFooterWithSupport from "../generics/footer-modal-support";
 
 interface WithdrawFundsModalProps {
   isOpen: boolean;
@@ -51,7 +52,26 @@ export default function WithdrawFundsModal({ isOpen, onClose }: WithdrawFundsMod
     });
   };
 
+  const handleSupportClick = () => {
+    // Handle support action
+    console.log("Support clicked");
+  };
+
   const isWithdrawDisabled = isLoading || withdrawalInProgress || amountToWithdraw <= 0 || amountToWithdraw > totalAvailable || selectedBalances.size === 0;
+
+  const footerActions = [
+    {
+      label: "Cancel",
+      onClick: onClose,
+    },
+    {
+      label: "Confirm Withdrawal",
+      onClick: handleWithdraw,
+      className: "bg-ualert-500 text-notpurple-500",
+      isLoading: withdrawalInProgress,
+      isDisabled: isWithdrawDisabled,
+    },
+  ];
 
   return (
     <Modal isOpen={isOpen} size="3xl" onClose={onClose}>
@@ -121,19 +141,10 @@ export default function WithdrawFundsModal({ isOpen, onClose }: WithdrawFundsMod
           </>
           )}
         </ModalBody>
-        <ModalFooter>
-          <Button className="text-notpurple-500" variant="light" onPress={onClose}>
-            Cancel
-          </Button>
-          <Button 
-            className="bg-ualert-500 text-notpurple-500" 
-            onPress={handleWithdraw}
-            isLoading={withdrawalInProgress}
-            isDisabled={isWithdrawDisabled}
-          >
-            Confirm Withdrawal
-          </Button>
-        </ModalFooter>
+        <ModalFooterWithSupport
+        onSupportClick={handleSupportClick}
+          actions={footerActions}
+        />
       </ModalContent>
     </Modal>
   );

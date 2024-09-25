@@ -8,6 +8,8 @@ import { BillPay } from "@/data";
 import { useState } from "react";
 import BillPaySaveModal from "./bill-save";
 import BillPayCloneModal from "./bill-clone";
+import IDSnippet from "../generics/snippet-id";
+import ModalFooterWithSupport from "../generics/footer-modal-support";
 
 interface BillPayDetailsModalProps {
   isOpen: boolean;
@@ -18,6 +20,22 @@ interface BillPayDetailsModalProps {
 export default function BillPayDetailsModal({ isOpen, onClose, billPay }: BillPayDetailsModalProps) {
   const [isSaveModalOpen, setIsSaveModalOpen] = useState(false);
   const [isCloneModalOpen, setIsCloneModalOpen] = useState(false);
+
+  const handleSupportClick = () => {
+    // Handle support action
+    console.log("Support clicked");
+  };
+
+  const footerActions = [
+    {
+      label: "Save",
+      onClick: () => setIsSaveModalOpen(true),
+    },
+    {
+      label: "Clone",
+      onClick: () => setIsCloneModalOpen(true),
+    },
+  ];
   
   return (
     <>
@@ -27,7 +45,7 @@ export default function BillPayDetailsModal({ isOpen, onClose, billPay }: BillPa
           <>
             <ModalHeader className="flex flex-col items-center">
               <h2 className="text-2xl font-bold">Bill Pay Details</h2>
-              <p className="text-sm text-gray-500">ID: {billPay.id}</p>
+              <IDSnippet id={billPay.id} />
             </ModalHeader>
             <Divider />
             <ModalBody>
@@ -88,43 +106,36 @@ export default function BillPayDetailsModal({ isOpen, onClose, billPay }: BillPa
               </div>
             </ModalBody>
             <Divider />
-            <ModalFooter className="flex justify-center">
-              <Button className="bg-ualert-500 text-notpurple-500" onPress={() => setIsSaveModalOpen(true)}>
-                Save
-              </Button>
-              <Button className="bg-ualert-500 text-notpurple-500" onPress={() => setIsCloneModalOpen(true)}>
-                Clone
-              </Button>
-              <Button className="bg-ualert-500 text-notpurple-500" onPress={onClose}>
-                Close
-              </Button>
-            </ModalFooter>
+            <ModalFooterWithSupport
+              onSupportClick={handleSupportClick}
+              actions={footerActions}
+            />
           </>
         )}
       </ModalContent>
     </Modal>
     <BillPaySaveModal
-    billPay={billPay}
-    isOpen={isSaveModalOpen}
-    onClose={() => setIsSaveModalOpen(false)}
-    onSave={(updatedBillPay, saveAsTemplate) => {
-      console.log("Saving bill pay:", updatedBillPay);
-      if (saveAsTemplate) {
-        console.log("Saving as template");
-        // Implement logic to save as template
-      }
-      setIsSaveModalOpen(false);
-    }}
-  />
-  <BillPayCloneModal
-    billPay={billPay}
-    isOpen={isCloneModalOpen}
-    onClose={() => setIsCloneModalOpen(false)}
-    onSave={(clonedBillPay) => {
-      console.log("Cloning bill pay:", clonedBillPay);
-      setIsCloneModalOpen(false);
-    }}
-  />
+      billPay={billPay}
+      isOpen={isSaveModalOpen}
+      onClose={() => setIsSaveModalOpen(false)}
+      onSave={(updatedBillPay, saveAsTemplate) => {
+        console.log("Saving bill pay:", updatedBillPay);
+        if (saveAsTemplate) {
+          console.log("Saving as template");
+          // Implement logic to save as template
+        }
+        setIsSaveModalOpen(false);
+      }}
+    />
+    <BillPayCloneModal
+      billPay={billPay}
+      isOpen={isCloneModalOpen}
+      onClose={() => setIsCloneModalOpen(false)}
+      onSave={(clonedBillPay) => {
+        console.log("Cloning bill pay:", clonedBillPay);
+        setIsCloneModalOpen(false);
+      }}
+    />
   </>
   );
 }
