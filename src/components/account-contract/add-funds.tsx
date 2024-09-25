@@ -4,6 +4,7 @@ import { Divider } from "@nextui-org/divider";
 import { Input } from "@nextui-org/input";
 import { Modal, ModalBody, ModalContent, ModalFooter, ModalHeader } from "@nextui-org/modal";
 import { Select, SelectItem } from "@nextui-org/select";
+import useAddFunds from "@/hooks/account-contracts/useAddFunds";
 
 interface AddFundsModalProps {
   isOpen: boolean;
@@ -26,12 +27,24 @@ export default function AddFundsModal({ isOpen, onClose }: AddFundsModalProps) {
   const [network, setNetwork] = useState("");
   const [stablecoin, setStablecoin] = useState("");
   const [amount, setAmount] = useState("");
+  const { addFunds, isAddingFunds, currentBalance } = useAddFunds();
 
-  const handleAddFunds = () => {
-    // TODO: Implement add funds logic
-    console.log("Adding funds:", { network, stablecoin, amount });
-    onClose();
+  const handleAddFunds = async () => {
+    const success = await addFunds({
+      network,
+      token: stablecoin,
+      amount: parseFloat(amount),
+    });
+
+    if (success) {
+      onClose();
+    } else {
+      // Handle error (e.g., show an error message)
+      console.error("Failed to add funds");
+    }
   };
+
+  const newBalance = currentBalance + parseFloat(amount || "0");
 
   return (
     <Modal isOpen={isOpen} size="lg" onClose={onClose}>
@@ -77,7 +90,7 @@ export default function AddFundsModal({ isOpen, onClose }: AddFundsModalProps) {
             <h4 className="font-semibold text-lg mb-2">Transaction Details</h4>
             <div className="flex justify-between">
               <span>Current Balance:</span>
-              <span className="font-medium">$1,000.00</span>
+              <span className="font-medium">${currentBalance.toFixed(2)}</span>
             </div>
             <div className="flex justify-between">
               <span>Amount to Add:</span>
@@ -90,7 +103,7 @@ export default function AddFundsModal({ isOpen, onClose }: AddFundsModalProps) {
             <Divider className="my-2" />
             <div className="flex justify-between text-lg font-bold">
               <span>New Balance:</span>
-              <span>${(1000 + parseFloat(amount || "0")).toFixed(2)}</span>
+              <span>${newBalance.toFixed(2)}</span>
             </div>
           </div>
         </ModalBody>
@@ -101,7 +114,12 @@ export default function AddFundsModal({ isOpen, onClose }: AddFundsModalProps) {
           <Button className="text-notpurple-500" variant="light" onPress={onClose}>
             Cancel
           </Button>
-          <Button className="bg-ualert-500 text-notpurple-500" onPress={handleAddFunds}>
+          <Button 
+            className="bg-ualert-500 text-notpurple-500" 
+            onPress={handleAddFunds}
+            isLoading={isAddingFunds}
+            isDisabled={isAddingFunds || !amount || !network || !stablecoin}
+          >
             Confirm Add Funds
           </Button>
         </ModalFooter>

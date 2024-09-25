@@ -5,10 +5,11 @@ import { Card, CardBody, CardHeader } from "@nextui-org/card";
 import { useState } from "react";
 
 import WithdrawFundsModal from "@/components/account-contract/withdraw-funds";
+import useAccountContracts from "@/hooks/account-contracts/useAccountContracts";
 
 export default function LockedCard() {
   const [isWithdrawFundsOpen, setIsWithdrawFundsOpen] = useState(false);
-  const balance = "$12,000.00";
+  const { totalLocked, isLoading } = useAccountContracts();
 
   return (
     <>
@@ -18,7 +19,9 @@ export default function LockedCard() {
           <small className="text-default-500">Amount staked in your contract to use</small>
         </CardHeader>
         <CardBody className="py-2">
-          <h4 className="font-bold text-large pb-2">{balance}</h4>
+          <h4 className="font-bold text-large pb-2">
+          {isLoading ? "Loading..." : `$${totalLocked.toFixed(2)}`}
+          </h4>
           <div className="flex gap-2">
             <Button
               className="w-full bg-charyo-200 text-notpurple-500"

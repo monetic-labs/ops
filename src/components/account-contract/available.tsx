@@ -3,12 +3,12 @@
 import { Button } from "@nextui-org/button";
 import { Card, CardBody, CardHeader } from "@nextui-org/card";
 import { useState } from "react";
-
+import useAccountContracts from "@/hooks/account-contracts/useAccountContracts";
 import AddFundsModal from "@/components/account-contract/add-funds";
 
 export default function AvailableCard() {
   const [isAddFundsOpen, setIsAddFundsOpen] = useState(false);
-  const balance = "$5,000.00";
+  const { available, isLoading } = useAccountContracts();
 
   return (
     <>
@@ -18,7 +18,9 @@ export default function AvailableCard() {
           <small className="text-default-500">Available to spend or withdraw from your contract</small>
         </CardHeader>
         <CardBody className="py-2">
-          <h4 className="font-bold text-large pb-2">{balance}</h4>
+          <h4 className="font-bold text-large pb-2">
+            {isLoading ? "Loading..." : `$${available.toFixed(2)}`}
+          </h4>
           <div className="flex gap-2">
             <Button
               className="w-full bg-charyo-200 text-notpurple-500"

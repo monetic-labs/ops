@@ -5,35 +5,36 @@ import { Modal, ModalBody, ModalContent, ModalFooter, ModalHeader } from "@nextu
 import { Checkbox } from "@nextui-org/checkbox";
 import { Divider } from "@nextui-org/divider";
 import { Table, TableBody, TableCell, TableColumn, TableHeader, TableRow } from "@nextui-org/table";
+import useWithdrawal from "@/hooks/account-contracts/useWithdrawal";
 
 interface WithdrawFundsModalProps {
   isOpen: boolean;
   onClose: () => void;
 }
 
-const availableBalances = [
-  { id: "1", network: "Ethereum", token: "USDC", balance: 1000 },
-  { id: "2", network: "Ethereum", token: "DAI", balance: 500 },
-  { id: "3", network: "Polygon", token: "USDC", balance: 2000 },
-  { id: "4", network: "Arbitrum", token: "USDT", balance: 1500 },
-];
-
 export default function WithdrawFundsModal({ isOpen, onClose }: WithdrawFundsModalProps) {
   const [selectedBalances, setSelectedBalances] = useState<Set<string>>(new Set([]));
   const [withdrawAmount, setWithdrawAmount] = useState("");
+  const { contractBalances, isLoading, withdrawFunds, withdrawalInProgress, totalBalance } = useWithdrawal();
 
   const totalAvailable = useMemo(() => {
-    return availableBalances
+    return contractBalances
       .filter((item) => selectedBalances.has(item.id))
       .reduce((sum, item) => sum + item.balance, 0);
-  }, [selectedBalances]);
+  }, [selectedBalances, contractBalances]);
 
   const amountToWithdraw = parseFloat(withdrawAmount) || 0;
   const amountRemaining = Math.max(totalAvailable - amountToWithdraw, 0);
 
-  const handleWithdraw = () => {
-    console.log("Withdrawing:", { selectedBalances, withdrawAmount });
-    onClose();
+  const handleWithdraw = async () => {
+    const amount = parseFloat(withdrawAmount);
+    if (amount > 0 && amount <= totalAvailable) {
+      await withdrawFunds(amount, Array.from(selectedBalances));
+      onClose();
+    } else {
+      // Show an error message
+      console.error("Invalid withdrawal amount");
+    }
   };
 
   const handleSelectionChange = (id: string) => {
@@ -50,11 +51,17 @@ export default function WithdrawFundsModal({ isOpen, onClose }: WithdrawFundsMod
     });
   };
 
+  const isWithdrawDisabled = isLoading || withdrawalInProgress || amountToWithdraw <= 0 || amountToWithdraw > totalAvailable || selectedBalances.size === 0;
+
   return (
     <Modal isOpen={isOpen} size="3xl" onClose={onClose}>
       <ModalContent>
         <ModalHeader className="flex flex-col gap-1">Withdraw Funds</ModalHeader>
         <ModalBody>
+        {isLoading ? (
+            <p>Loading contract balances...</p>
+          ) : (
+            <>
           <Table aria-label="Available balances">
             <TableHeader>
               <TableColumn>SELECT</TableColumn>
@@ -63,7 +70,7 @@ export default function WithdrawFundsModal({ isOpen, onClose }: WithdrawFundsMod
               <TableColumn>BALANCE</TableColumn>
             </TableHeader>
             <TableBody>
-              {availableBalances.map((item) => (
+              {contractBalances.map((item) => (
                 <TableRow key={item.id}>
                   <TableCell>
                     <Checkbox
@@ -111,12 +118,19 @@ export default function WithdrawFundsModal({ isOpen, onClose }: WithdrawFundsMod
               <span>${amountRemaining.toFixed(2)}</span>
             </div>
           </div>
+          </>
+          )}
         </ModalBody>
         <ModalFooter>
           <Button className="text-notpurple-500" variant="light" onPress={onClose}>
             Cancel
           </Button>
-          <Button className="bg-ualert-500 text-notpurple-500" onPress={handleWithdraw}>
+          <Button 
+            className="bg-ualert-500 text-notpurple-500" 
+            onPress={handleWithdraw}
+            isLoading={withdrawalInProgress}
+            isDisabled={isWithdrawDisabled}
+          >
             Confirm Withdrawal
           </Button>
         </ModalFooter>
