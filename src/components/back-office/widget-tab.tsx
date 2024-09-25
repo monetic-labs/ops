@@ -55,8 +55,10 @@ export default function WidgetManagement() {
           </SelectItem>
         ))}
       </Select>
-      <FormButton onClick={handleSaveSettings}>Save Settings</FormButton>
-      <FormButton onClick={() => setIsApiKeysModalOpen(true)}>Manage API Keys</FormButton>
+      <div className="flex flex-col sm:flex-row justify-end space-y-2 sm:space-y-0 sm:space-x-2">
+        <FormButton onClick={handleSaveSettings} className="w-full sm:w-auto">Save Settings</FormButton>
+        <FormButton onClick={() => setIsApiKeysModalOpen(true)} className="w-full sm:w-auto">Manage API Keys</FormButton>
+      </div>
 
       <GenerateApiKeysModal
         isOpen={isApiKeysModalOpen}
