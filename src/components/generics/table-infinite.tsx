@@ -66,7 +66,6 @@ export default function InfiniteTable<T extends { id: string }>({
       }
       classNames={{
         wrapper: "max-h-[400px]",
-        tr: "transition-colors hover:bg-ualert-500/60 data-[hover=true]:bg-ualert-500/40 rounded-lg",
       }}
     >
       <TableHeader columns={columns as Column<T>[]}>
