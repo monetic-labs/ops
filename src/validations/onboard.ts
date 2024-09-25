@@ -3,7 +3,7 @@ import { ISO3166Alpha2Country } from "@backpack-fux/pylon-sdk";
 
 import { emailSchema } from "./auth";
 
-export const phoneRegex = /^[+]?[(]?[0-9]{3}[)]?[-\s.]?[0-9]{3}[-\s.]?[0-9]{4,6}$/;
+export const phoneRegex = /^[0-9]{9,15}$/;
 export const walletAddressRegex = /^0x[a-fA-F0-9]{40}$/;
 export const postcodeRegex = /^[0-9]{5}$/;
 
