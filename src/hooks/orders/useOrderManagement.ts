@@ -4,10 +4,14 @@ import { useRouter } from "next/navigation";
 import pylon from "@/libs/pylon-sdk";
 
 export const useOrderManagement = () => {
-  const [state, setState] = useState({
+  const [state, setState] = useState<{
+    isLoading: boolean;
+    error: string | null;
+    transactions: TransactionListItem[];
+  }>({
     isLoading: true,
-    error: null as string | null,
-    transactions: [] as TransactionListItem[],
+    error: null,
+    transactions: [],
   });
 
   const router = useRouter();
@@ -90,7 +94,6 @@ export const useOrderManagement = () => {
           error: "Failed to connect to transaction list",
         }));
       } finally {
-        console.log(state, "STATEEEE");
         setState((prevState) => ({ ...prevState, isLoading: false }));
       }
     };

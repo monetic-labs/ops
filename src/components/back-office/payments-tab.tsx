@@ -14,7 +14,7 @@ import { RefundSuccessModal } from "./actions/order-success";
 import { paymentsColumns, paymentsStatusColorMap } from "@/data";
 import InfiniteTable from "../generics/table-infinite";
 
-export default function PaymentsTab() { 
+export default function PaymentsTab() {
   const { transactions, isLoading, error } = useOrderManagement();
   const [selectedPayment, setSelectedPayment] = useState<TransactionListItem | null>(null);
   const [cancelPayment, setCancelPayment] = useState<TransactionListItem | null>(null);
@@ -77,39 +77,47 @@ export default function PaymentsTab() {
     setRefundPayment(null);
   };
 
-  const renderCell = useCallback((transaction: TransactionListItem, columnKey: keyof TransactionListItem): React.ReactNode => {
-    const cellValue = transaction[columnKey];
+  const renderCell = useCallback(
+    (transaction: TransactionListItem, columnKey: keyof TransactionListItem): React.ReactNode => {
+      const cellValue = transaction[columnKey];
 
-    const statusLength = transaction.transactionStatusHistory.length;
-    const lastStatus = transaction.transactionStatusHistory[statusLength - 1].status;
-    const isSettled = lastStatus === "SETTLED";
-    const isRefunded = lastStatus === "SENT_FOR_REFUND" || lastStatus === "REFUNDED";
-    const isRefundDisabled = !isSettled || isRefunded;
-    const isCancelDisabled = true;
+      const statusLength = transaction.transactionStatusHistory.length;
+      const lastStatus = transaction.transactionStatusHistory[statusLength - 1].status;
+      const isSettled = lastStatus === "SETTLED";
+      const isRefunded = lastStatus === "SENT_FOR_REFUND" || lastStatus === "REFUNDED";
+      const isRefundDisabled = !isSettled || isRefunded;
+      const isCancelDisabled = true;
 
-    switch (columnKey) {
-      case "id":
-        return (
-          <Chip className="capitalize" color={paymentsStatusColorMap[lastStatus] || "default"} size="sm" variant="flat">
-            {lastStatus}
-          </Chip>
-        );
-      case "paymentMethod":
-        return `${transaction.paymentMethod.charAt(0).toUpperCase()}${transaction.paymentMethod
-          .slice(1)
-          .toLowerCase()}`;
-      case "total":
-        return `${mapCurrencyToSymbol[transaction.currency.toLowerCase()]}${centsToDollars(transaction.total)}`;
-      case "subtotal":
-        return `${mapCurrencyToSymbol[transaction.currency.toLowerCase()]}${centsToDollars(transaction.subtotal)}`;
-      case "tipAmount":
-        return `${mapCurrencyToSymbol[transaction.currency.toLowerCase()]}${centsToDollars(transaction.tipAmount)}`;
-      case "createdAt":
-        return getTimeAgo(transaction.createdAt);
-      default:
-        return cellValue !== null && cellValue !== undefined ? String(cellValue) : "";
-    }
-  }, []);
+      switch (columnKey) {
+        case "id":
+          return (
+            <Chip
+              className="capitalize"
+              color={paymentsStatusColorMap[lastStatus] || "default"}
+              size="sm"
+              variant="flat"
+            >
+              {lastStatus}
+            </Chip>
+          );
+        case "paymentMethod":
+          return `${transaction.paymentMethod.charAt(0).toUpperCase()}${transaction.paymentMethod
+            .slice(1)
+            .toLowerCase()}`;
+        case "total":
+          return `${mapCurrencyToSymbol[transaction.currency.toLowerCase()]}${centsToDollars(transaction.total)}`;
+        case "subtotal":
+          return `${mapCurrencyToSymbol[transaction.currency.toLowerCase()]}${centsToDollars(transaction.subtotal)}`;
+        case "tipAmount":
+          return `${mapCurrencyToSymbol[transaction.currency.toLowerCase()]}${centsToDollars(transaction.tipAmount)}`;
+        case "createdAt":
+          return getTimeAgo(transaction.createdAt);
+        default:
+          return cellValue !== null && cellValue !== undefined ? String(cellValue) : "";
+      }
+    },
+    []
+  );
 
   const loadMore = async (cursor: string | undefined) => {
     const pageSize = 10;
@@ -117,7 +125,7 @@ export default function PaymentsTab() {
     const endIndex = startIndex + pageSize;
     const newItems = transactions.slice(startIndex, endIndex);
     const newCursor = endIndex < transactions.length ? endIndex.toString() : undefined;
-    
+
     return { items: newItems, cursor: newCursor };
   };
 
@@ -131,12 +139,7 @@ export default function PaymentsTab() {
 
   return (
     <>
-      <InfiniteTable
-        columns={paymentsColumns}
-        initialData={transactions}
-        renderCell={renderCell}
-        loadMore={loadMore}
-      />
+      <InfiniteTable columns={paymentsColumns} initialData={transactions} renderCell={renderCell} loadMore={loadMore} />
       {selectedPayment && (
         <DetailsResponse
           isOpen={!!selectedPayment}
