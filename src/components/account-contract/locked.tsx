@@ -7,11 +7,6 @@ import { useState } from "react";
 import WithdrawFundsModal from "@/components/account-contract/withdraw-funds";
 import useAccountContracts from "@/hooks/account-contracts/useAccountContracts";
 
-import WithdrawFundsModal from "@/components/account-contract/withdraw-funds";
-import { useState } from "react";
-import { Button } from "@nextui-org/button";
-
-
 export default function LockedCard() {
   const [isWithdrawFundsOpen, setIsWithdrawFundsOpen] = useState(false);
 
