@@ -22,7 +22,7 @@ export default function Home() {
         <div className="w-full sm:w-1/4 mb-4 sm:mb-0 flex">
           <SpentCard />
         </div>
-        <div className="w-full sm:w-1/4 flex">
+        <div className="w-full sm:w-1/4 mb-4 sm:mb-0 flex">
           <LockedCard />
         </div>
       </div>

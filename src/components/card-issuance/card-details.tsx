@@ -5,6 +5,7 @@ import { Modal, ModalBody, ModalContent, ModalFooter, ModalHeader } from "@nextu
 import { Progress } from "@nextui-org/progress";
 import { Snippet } from "@nextui-org/snippet";
 import { useState } from "react";
+import ModalFooterWithSupport from "../generics/footer-modal-support";
 
 interface CardDetailsModalProps {
   isOpen: boolean;
@@ -54,7 +55,34 @@ export default function CardDetailsModal({ isOpen, onClose, card }: CardDetailsM
     // Implement cancel logic
   };
 
+  const handleSupportClick = () => {
+    console.log("Support clicked");
+  };
+
   if (!card) return null;
+
+  const footerActions = [
+    {
+      label: "Lock",
+      onClick: handleLock,
+      className: "bg-transparent text-notpurple-500 hover:bg-ualert-500",
+    },
+    {
+      label: "Replace",
+      onClick: handleReplace,
+      className: "bg-transparent text-notpurple-500 hover:bg-ualert-500",
+    },
+    {
+      label: "Remove",
+      onClick: handleRemove,
+      className: "bg-transparent text-notpurple-500 hover:bg-ualert-500",
+    },
+    {
+      label: isEditing ? "Save" : "Edit",
+      onClick: isEditing ? handleSave : handleEdit,
+      className: "text-notpurple-500 hover:bg-ualert-500/60",
+    },
+  ];
 
   return (
     <Modal isOpen={isOpen} size="2xl" onClose={onClose}>
@@ -100,29 +128,10 @@ export default function CardDetailsModal({ isOpen, onClose, card }: CardDetailsM
           <Input isReadOnly={!isEditing} label="Billing Address" value={card.billingAddress} />
           <Input isReadOnly={!isEditing} label="Email" value={card.email} />
         </ModalBody>
-        <ModalFooter>
-          <Button color="primary" variant="light" onPress={handleLock}>
-            Lock
-          </Button>
-          <Button color="primary" variant="light" onPress={handleReplace}>
-            Replace
-          </Button>
-          <Button color="danger" variant="light" onPress={handleRemove}>
-            Remove
-          </Button>
-          <Button color="warning" variant="light" onPress={handleCancel}>
-            Cancel
-          </Button>
-          {isEditing ? (
-            <Button color="primary" onPress={handleSave}>
-              Save
-            </Button>
-          ) : (
-            <Button color="primary" onPress={handleEdit}>
-              Edit
-            </Button>
-          )}
-        </ModalFooter>
+        <ModalFooterWithSupport
+          onSupportClick={handleSupportClick}
+          actions={footerActions}
+        />
       </ModalContent>
     </Modal>
   );

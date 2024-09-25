@@ -10,7 +10,6 @@ import {
   companyRepresentativeSchema,
   CompanyRepresentativeSchema,
   phoneRegex,
-  walletAddressRegex,
 } from "@/validations/onboard";
 
 export const FormCompanyUsers: React.FC<{
@@ -66,12 +65,19 @@ export const FormCompanyUsers: React.FC<{
     }
   };
 
+  const renderTabTitle = (field: any, index: number) => {
+    const name = field.name || "";
+    const surname = field.surname || "";
+
+    return name || surname ? `${name} ${surname}`.trim() : `User ${index + 1}`;
+  };
+
   const renderTabContent = (field: any, index: number) => (
     <div className="space-y-4">
       <FormInput
         control={control}
         errorMessage={errors.representatives?.[index]?.name?.message}
-        label="Representative Name"
+        label="First Name"
         maxLength={25}
         name={`representatives.${index}.name`}
         placeholder="Rick"
@@ -79,12 +85,13 @@ export const FormCompanyUsers: React.FC<{
       <FormInput
         control={control}
         errorMessage={errors.representatives?.[index]?.surname?.message}
-        label="Representative Surname"
+        label="Last Name"
         maxLength={25}
         name={`representatives.${index}.surname`}
         placeholder="Sanchez"
       />
       <FormInput
+        about="Use the email for the primary contact for this company."
         control={control}
         errorMessage={errors.representatives?.[index]?.email?.message}
         label="Email"
@@ -100,24 +107,8 @@ export const FormCompanyUsers: React.FC<{
         pattern={phoneRegex.source}
         placeholder="0701234567"
       />
-      <FormInput
-        control={control}
-        errorMessage={errors.representatives?.[index]?.walletAddress?.message}
-        label="Wallet Address"
-        maxLength={42}
-        name={`representatives.${index}.walletAddress`}
-        pattern={walletAddressRegex.source}
-        placeholder="0x1234567890123456789012345678901234567890"
-      />
     </div>
   );
-
-  const renderTabTitle = (field: any, index: number) => {
-    const name = field.name || "";
-    const surname = field.surname || "";
-
-    return name || surname ? `${name} ${surname}`.trim() : `User ${index + 1}`;
-  };
 
   return (
     <form onSubmit={handleFormSubmit}>

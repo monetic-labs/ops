@@ -48,13 +48,13 @@ export const FormCardTabs = <T,>({
       </Tabs>
       <div className="flex justify-between mt-4">
         <div className="space-x-2">
-          <Tooltip content="Add new item">
+          <Tooltip content="Add another user">
             <Button className="text-notpurple-500" variant="light" onClick={onAdd}>
               Add
             </Button>
           </Tooltip>
           {fields.length > 1 && (
-            <Tooltip content="Remove selected item">
+            <Tooltip content="Remove selected user">
               <Button className="text-notpurple-500" variant="light" onClick={() => onRemove(selectedTab)}>
                 Remove
               </Button>

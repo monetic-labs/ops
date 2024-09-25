@@ -56,7 +56,7 @@ export default function InfiniteTable<T extends { id: string }>({
       aria-label="Generic table with infinite scroll"
       baseRef={scrollerRef}
       selectionMode="single"
-      onRowAction={(key) => onRowSelect && onRowSelect(list.items.find(item => item.id === key) as T)}
+      onRowAction={(key) => onRowSelect && onRowSelect(list.items.find((item) => item.id === key) as T)}
       bottomContent={
         hasMore ? (
           <div className="flex justify-center items-center py-4">
@@ -66,20 +66,15 @@ export default function InfiniteTable<T extends { id: string }>({
       }
       classNames={{
         wrapper: "max-h-[400px]",
-        tr: "transition-colors hover:bg-ualert-500/60 data-[hover=true]:bg-ualert-500/40 rounded-lg"
       }}
     >
       <TableHeader columns={columns as Column<T>[]}>
-        {(column) => (
-          <TableColumn key={column.uid.toString()}>{column.name}</TableColumn>
-        )}
+        {(column) => <TableColumn key={column.uid.toString()}>{column.name}</TableColumn>}
       </TableHeader>
       <TableBody items={list.items} loadingContent={<Spinner color="primary" />}>
         {(item) => (
           <TableRow key={item.id}>
-            {(columnKey) => (
-              <TableCell>{renderCell(item, columnKey as keyof T)}</TableCell>
-            )}
+            {(columnKey) => <TableCell>{renderCell(item, columnKey as keyof T)}</TableCell>}
           </TableRow>
         )}
       </TableBody>

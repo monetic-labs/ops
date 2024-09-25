@@ -2,6 +2,8 @@ import React, { useState } from "react";
 import { Input } from "@nextui-org/input";
 import { Select, SelectItem } from "@nextui-org/select";
 import { Button } from "@nextui-org/button";
+import { FormButton } from "../generics/form-button";
+import GenerateApiKeysModal from "./actions/widgets/api-keys";
 
 const networks = ["polygon", "solana", "base", "optimism", "arbitrum"];
 const currencies = ["USDC", "USDT", "DAI", "GLO"];
@@ -10,6 +12,7 @@ export default function WidgetManagement() {
   const [settlementAddress, setSettlementAddress] = useState("");
   const [selectedNetwork, setSelectedNetwork] = useState("");
   const [selectedCurrency, setSelectedCurrency] = useState("");
+  const [isApiKeysModalOpen, setIsApiKeysModalOpen] = useState(false);
 
   const handleSaveSettings = () => {
     console.log("Saving settings:", {
@@ -52,9 +55,15 @@ export default function WidgetManagement() {
           </SelectItem>
         ))}
       </Select>
-      <Button color="primary" onPress={handleSaveSettings}>
-        Save Settings
-      </Button>
+      <div className="flex flex-col sm:flex-row justify-end space-y-2 sm:space-y-0 sm:space-x-2">
+        <FormButton onClick={handleSaveSettings} className="w-full sm:w-auto">Save Settings</FormButton>
+        <FormButton onClick={() => setIsApiKeysModalOpen(true)} className="w-full sm:w-auto">Manage API Keys</FormButton>
+      </div>
+
+      <GenerateApiKeysModal
+        isOpen={isApiKeysModalOpen}
+        onClose={() => setIsApiKeysModalOpen(false)}
+      />
     </div>
   );
 }
