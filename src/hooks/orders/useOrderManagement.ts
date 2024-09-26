@@ -64,10 +64,10 @@ export const useOrderManagement = () => {
           // These are just to keep the connection alive, no need to update state
           break;
         case "INITIAL_LIST":
-          handleInitialList(data.data as TransactionListItem[]);
+          handleInitialList(data.data.transactions as TransactionListItem[]);
           break;
         case "TRANSACTION_UPDATED":
-          handleTransactionUpdated(data.data as TransactionListItem);
+          handleTransactionUpdated(data.data.transactions as TransactionListItem);
           break;
         default:
           setState((prevState) => ({
