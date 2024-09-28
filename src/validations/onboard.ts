@@ -44,7 +44,6 @@ export const companyRepresentativeSchema = z.object({
       surname: z.string().min(1).max(255),
       email: emailSchema,
       phoneNumber: z.string().regex(phoneRegex, "Invalid phone number format"),
-      walletAddress: z.string().regex(walletAddressRegex, "Invalid wallet address").length(42),
     })
   ),
 });
