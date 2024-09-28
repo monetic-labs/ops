@@ -45,7 +45,6 @@ export const useMerchantForm = (initialEmail: string) => {
           surname: "",
           email: "",
           phoneNumber: "",
-          walletAddress: "",
         },
       ],
     },
