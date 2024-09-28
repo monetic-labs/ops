@@ -24,7 +24,7 @@ const Countdown: React.FC<{ expiresAt: string }> = ({ expiresAt }) => {
     return () => clearInterval(timer);
   }, [expiresAt]);
 
-  return timeLeft <= 0 ? "Expired" : formatTimeLeft(timeLeft);
+  return <span>{timeLeft <= 0 ? "Expired" : formatTimeLeft(timeLeft)}</span>;
 };
 
 export default Countdown;
