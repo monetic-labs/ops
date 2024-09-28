@@ -55,7 +55,6 @@ export const FormCompanyUsers: React.FC<{
       surname: "",
       email: "",
       phoneNumber: "",
-      walletAddress: "",
     });
   };
 

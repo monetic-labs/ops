@@ -11,7 +11,7 @@ import { CancelConfirmationModal } from "./actions/order-cancel";
 import { RefundModal } from "./actions/order-refund";
 import { RefundSuccessModal } from "./actions/order-success";
 
-import { paymentsColumns, paymentsStatusColorMap } from "@/data";
+import { Column, paymentsColumns, paymentsStatusColorMap } from "@/data";
 import InfiniteTable from "../generics/table-infinite";
 import { Table, TableBody, TableCell, TableColumn, TableHeader, TableRow } from "@nextui-org/table";
 
@@ -131,7 +131,7 @@ export default function PaymentsTab() {
   return (
     <>
       <Table aria-label="Transactions table with custom cells">
-        <TableHeader columns={paymentsColumns}>
+        <TableHeader columns={paymentsColumns as Column<TransactionListItem>[]}>
           {(column) => <TableColumn key={column.uid}>{column.name}</TableColumn>}
         </TableHeader>
         <TableBody emptyContent={isLoading ? null : "No transactions found"} items={transactions}>
