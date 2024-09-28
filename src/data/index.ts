@@ -98,7 +98,7 @@ export const issuedCardColumns: readonly Column<IssuedCards>[] = [
   //{ name: "ACTIONS", uid: "actions" },
 ] as const;
 
-export const paymentsColumns: readonly Column<TransactionListItem>[] = [
+export const paymentsColumns: Column<TransactionListItem>[] = [
   { name: "ID", uid: "id" },
   { name: "Status", uid: "transactionStatusHistory" }, // We'll use this to get the latest status
   { name: "Payment Method", uid: "paymentMethod" },
@@ -328,5 +328,3 @@ export const usersStatusColorMap: Record<string, "success" | "danger" | "warning
   Inactive: "danger",
   Suspended: "warning",
 };
-
-

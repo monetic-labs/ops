@@ -13,6 +13,7 @@ import { RefundSuccessModal } from "./actions/order-success";
 
 import { paymentsColumns, paymentsStatusColorMap } from "@/data";
 import InfiniteTable from "../generics/table-infinite";
+import { Table, TableBody, TableCell, TableColumn, TableHeader, TableRow } from "@nextui-org/table";
 
 export default function PaymentsTab() {
   const { transactions, isLoading, error } = useOrderManagement();
@@ -89,7 +90,7 @@ export default function PaymentsTab() {
       const isCancelDisabled = true;
 
       switch (columnKey) {
-        case "id":
+        case "transactionStatusHistory":
           return (
             <Chip
               className="capitalize"
@@ -119,16 +120,6 @@ export default function PaymentsTab() {
     []
   );
 
-  const loadMore = async (cursor: string | undefined) => {
-    const pageSize = 10;
-    const startIndex = cursor ? parseInt(cursor) : 0;
-    const endIndex = startIndex + pageSize;
-    const newItems = transactions.slice(startIndex, endIndex);
-    const newCursor = endIndex < transactions.length ? endIndex.toString() : undefined;
-
-    return { items: newItems, cursor: newCursor };
-  };
-
   if (isLoading) {
     return <div>Loading transactions...</div>;
   }
@@ -139,7 +130,30 @@ export default function PaymentsTab() {
 
   return (
     <>
-      <InfiniteTable columns={paymentsColumns} initialData={transactions} renderCell={renderCell} loadMore={loadMore} />
+      <Table aria-label="Transactions table with custom cells">
+        <TableHeader columns={paymentsColumns}>
+          {(column) => <TableColumn key={column.uid}>{column.name}</TableColumn>}
+        </TableHeader>
+        <TableBody emptyContent={isLoading ? null : "No transactions found"} items={transactions}>
+          {(item) => {
+            return (
+              <TableRow
+                key={item.id}
+                className="cursor-pointer transition-all hover:bg-gray-100 dark:hover:bg-charyo-500"
+                onClick={(e) => {
+                  const target = e.target as HTMLElement;
+
+                  if (!target.closest("button") && !target.closest(".flex.gap-2")) {
+                    handleViewDetails(item);
+                  }
+                }}
+              >
+                {(columnKey) => <TableCell>{renderCell(item, columnKey as keyof TransactionListItem)}</TableCell>}
+              </TableRow>
+            );
+          }}
+        </TableBody>
+      </Table>
       {selectedPayment && (
         <DetailsResponse
           isOpen={!!selectedPayment}
