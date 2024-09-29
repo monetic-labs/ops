@@ -5,6 +5,7 @@ import PendingCard from "@/components/account-contract/pending";
 import SpentCard from "@/components/account-contract/spent";
 import { title } from "@/components/primitives";
 import MerchantServicesTabs from "@/app/tabs";
+import AccountMeta from "@/components/account-contract/account-meta";
 
 export default function Home() {
   return (
@@ -13,7 +14,7 @@ export default function Home() {
         <h1 className={title({ color: "charyo" })}>Self Banking Services</h1>
       </div>
       <div className="flex flex-col sm:flex-row gap-4 w-full max-w-7xl justify-between mb-8">
-        <div className="w-full sm:w-1/4 mb-4 sm:mb-0 flex">
+        {/* <div className="w-full sm:w-1/4 mb-4 sm:mb-0 flex">
           <AvailableCard />
         </div>
         <div className="w-full sm:w-1/4 mb-4 sm:mb-0 flex">
@@ -24,7 +25,8 @@ export default function Home() {
         </div>
         <div className="w-full sm:w-1/4 mb-4 sm:mb-0 flex">
           <LockedCard />
-        </div>
+        </div> */}
+        <AccountMeta />
       </div>
       <MerchantServicesTabs />
     </section>

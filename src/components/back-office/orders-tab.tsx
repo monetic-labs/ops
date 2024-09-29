@@ -187,12 +187,12 @@ export default function CreateOrders() {
               onChange={(e) => setOrder({ ...order, amount: e.target.value })}
               onBlur={() => handleBlur("amount")}
             />
-            {touched.amount && validationErrors.amount && <p className="text-red-500">{validationErrors.amount}</p>}
+            {touched.amount && validationErrors.amount && <p className="text-ualert-500">{validationErrors.amount}</p>}
           </div>
           <Button isDisabled={Object.keys(validationErrors).length > 0} onClick={handleCreateOrder}>
             {isLoading ? "Creating..." : "Create Order"}
           </Button>
-          {error && <p className="text-red-500">{error}</p>}
+          {error && <p className="text-ualert-500">{error}</p>}
         </CardBody>
       </Card>
 
@@ -211,7 +211,7 @@ export default function CreateOrders() {
                     {order.id}
                   </Snippet>
                   <p className="mt-2">Expires in {<Countdown expiresAt={order.expiresAt} />}</p>
-                  <Button onClick={() => handleDeleteOrder(order.id)} className="absolute top-0 right-0 bg-red-500">
+                  <Button onClick={() => handleDeleteOrder(order.id)} className="absolute top-0 right-0 bg-ualert-500">
                     Delete
                   </Button>
                 </div>
