@@ -4,12 +4,12 @@ import { ISO3166Alpha2Country, MerchantCreateInput, MerchantCreateOutput } from 
 
 import { useFormPersistence } from "@/hooks/generics/useFormPersistence";
 import { useCreateMerchant } from "@/hooks/merchant/useCreateMerchant";
-//import { useSetupOTP } from "@/hooks/merchant/useSetupOTP";
+
 import { merchantConfig } from "@/config/merchant";
 
 export const useMerchantForm = (initialEmail: string) => {
   const router = useRouter();
-  //const otpHook = useSetupOTP(initialEmail);
+
   const [tosLink, setTosLink] = useState<string | null>(null);
   const [merchantResponse, setMerchantResponse] = useState<MerchantCreateOutput | null>(null);
 
@@ -36,7 +36,12 @@ export const useMerchantForm = (initialEmail: string) => {
           country: "US" as ISO3166Alpha2Country,
         },
       },
+    },
+    companyDetails: {
       walletAddress: "",
+      companyEIN: "",
+      companyType: "",
+      companyDescription: "",
     },
     companyUsers: {
       representatives: [
@@ -45,6 +50,8 @@ export const useMerchantForm = (initialEmail: string) => {
           surname: "",
           email: "",
           phoneNumber: "",
+          bday: "",
+          ssn: "",
         },
       ],
     },
@@ -92,8 +99,10 @@ export const useMerchantForm = (initialEmail: string) => {
             email: rep.email,
             phoneNumber: rep.phoneNumber,
             walletAddress: rep.walletAddress,
+            bday: rep.bday,
+            ssn: rep.ssn,
           })),
-          walletAddress: formData.companyInfo.walletAddress,
+          walletAddress: formData.companyDetails.walletAddress,
         };
 
         try {

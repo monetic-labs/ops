@@ -55,6 +55,8 @@ export const FormCompanyUsers: React.FC<{
       surname: "",
       email: "",
       phoneNumber: "",
+      bday: "",
+      ssn: "",
     });
   };
 
@@ -105,6 +107,20 @@ export const FormCompanyUsers: React.FC<{
         name={`representatives.${index}.phoneNumber`}
         pattern={phoneRegex.source}
         placeholder="0701234567"
+      />
+       <FormInput
+        control={control}
+        errorMessage={errors.representatives?.[index]?.bday?.message}
+        label="Birthday"
+        name={`representatives.${index}.bday`}
+        placeholder="YYYY-MM-DD"
+      />
+      <FormInput
+        control={control}
+        errorMessage={errors.representatives?.[index]?.ssn?.message}
+        label="SSN"
+        name={`representatives.${index}.ssn`}
+        placeholder="123-45-6789"
       />
     </div>
   );

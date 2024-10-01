@@ -31,12 +31,20 @@ export const companyInfoSchema = z.object({
   company: z.object({
     name: z.string().min(1).max(255),
     email: emailSchema,
+    website: z.string().url().optional(),
     registeredAddress: companyRegisteredAddressSchema,
   }),
-  walletAddress: walletAddressSchema.shape.walletAddress,
 });
 
 // Onboard step 2
+export const companyDetailsSchema = z.object({
+  walletAddress: z.string().regex(walletAddressRegex, "Invalid wallet address"),
+  companyEIN: z.string().min(9, "EIN must be at least 9 characters"),
+  companyType: z.string().nonempty("Company type is required"),
+  companyDescription: z.string().nonempty("Company description is required"),
+});
+
+// Onboard step 3
 export const companyRepresentativeSchema = z.object({
   representatives: z.array(
     z.object({
@@ -44,6 +52,8 @@ export const companyRepresentativeSchema = z.object({
       surname: z.string().min(1).max(255),
       email: emailSchema,
       phoneNumber: z.string().regex(phoneRegex, "Invalid phone number format"),
+      bday: z.string().min(6, "Birthday is required"),
+      ssn: z.string().min(9, "SSN must be at least 9 characters"),
     })
   ),
 });
@@ -81,3 +91,4 @@ export type CompanyInfoSchema = z.infer<typeof companyInfoSchema>;
 export type CompanyRepresentativeSchema = z.infer<typeof companyRepresentativeSchema>;
 export type ComplianceSchema = z.infer<typeof complianceSchema>;
 export type MerchantFormData = z.infer<typeof merchantCreateSchema>;
+export type CompanyDetailsSchema = z.infer<typeof companyDetailsSchema>;

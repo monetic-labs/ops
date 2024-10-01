@@ -94,14 +94,11 @@ export const FormCompanyInfo: React.FC<{
         />
         <FormInput
           control={control}
-          errorMessage={errors.walletAddress?.message}
-          label="Wallet Address"
-          maxLength={42}
-          name="walletAddress"
-          pattern={walletAddressRegex.source}
-          placeholder="0x1234567890123456789012345678901234567890"
+          errorMessage={errors.company?.website?.message}
+          label="Website"
+          name="company.website"
+          placeholder="https://www.algersoft.com"
         />
-        {/* Go to postcode input component for more prop controls */}
         <PostcodeInput
           control={control}
           errorMessage={errors.company?.registeredAddress?.postcode?.message}
