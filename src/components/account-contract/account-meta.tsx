@@ -8,11 +8,14 @@ import useAccountContracts from "@/hooks/account-contracts/useAccountContracts";
 import AddFundsModal from "@/components/account-contract/add-funds";
 import WithdrawFundsModal from "@/components/account-contract/withdraw-funds";
 import { FundCard } from "@/components/generics/card-account";
+import PortfolioModal from "./portfolio";
+import LogicModal from "./logic";
 
 export default function AccountOverview() {
   const [isAddFundsOpen, setIsAddFundsOpen] = useState(false);
   const [isWithdrawFundsOpen, setIsWithdrawFundsOpen] = useState(false);
-  const [timeRange, setTimeRange] = useState("1W");
+  const [isPortfolioOpen, setIsPortfolioOpen] = useState(false);
+  const [isRulesOpen, setIsRulesOpen] = useState(false);
 
   const { available, pending, spent, isLoading } = useAccountContracts();
 
@@ -32,6 +35,13 @@ export default function AccountOverview() {
             description="The funds settled to your account this period."
             color="primary"
             isLoading={isLoading}
+            actions={[
+              {
+                label: "Portfolio",
+                onClick: () => setIsPortfolioOpen(true),
+                color: "success",
+              }
+            ]}
           />
           <FundCard       
             title="Available"
@@ -64,6 +74,7 @@ export default function AccountOverview() {
 
       <AddFundsModal isOpen={isAddFundsOpen} onClose={() => setIsAddFundsOpen(false)} />
       <WithdrawFundsModal isOpen={isWithdrawFundsOpen} onClose={() => setIsWithdrawFundsOpen(false)} />
+      <PortfolioModal isOpen={isPortfolioOpen} onClose={() => setIsPortfolioOpen(false)} />
     </Card>
   );
 }

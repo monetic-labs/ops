@@ -39,7 +39,7 @@ export function FundCard({
                 variant="flat"
                 size="sm"
                 onPress={action.onClick}
-                className={`w-1/2 bg-charyo-200 text-notpurple-500`}
+                className={`w-full bg-charyo-200 text-notpurple-500`}
               >
                 {action.label}
               </Button>
