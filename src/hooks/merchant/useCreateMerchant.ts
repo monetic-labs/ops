@@ -3,12 +3,12 @@ import { MerchantCreateInput, MerchantCreateOutput } from "@backpack-fux/pylon-s
 
 import pylon from "@/libs/pylon-sdk";
 
-export function useCreateMerchant() {
+export function useCreateBridgeMerchant() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [data, setData] = useState<MerchantCreateOutput | null>(null);
 
-  const createMerchant = async (
+  const createBridgeMerchant = async (
     input: MerchantCreateInput
   ): Promise<{ success: boolean; data: MerchantCreateOutput | null; error: string | null }> => {
     setIsLoading(true);
@@ -40,5 +40,5 @@ export function useCreateMerchant() {
     }
   };
 
-  return { createMerchant, isLoading, error, data };
+  return { createBridgeMerchant: createBridgeMerchant, isLoading, error, data };
 }

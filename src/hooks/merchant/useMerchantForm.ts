@@ -3,7 +3,7 @@ import { useRouter } from "next/navigation";
 import { ISO3166Alpha2Country, MerchantCreateInput, MerchantCreateOutput } from "@backpack-fux/pylon-sdk";
 
 import { useFormPersistence } from "@/hooks/generics/useFormPersistence";
-import { useCreateMerchant } from "@/hooks/merchant/useCreateMerchant";
+import { useCreateBridgeMerchant } from "@/hooks/merchant/useCreateMerchant";
 
 import { merchantConfig } from "@/config/merchant";
 
@@ -35,6 +35,7 @@ export const useMerchantForm = (initialEmail: string) => {
           state: "",
           country: "US" as ISO3166Alpha2Country,
         },
+        website: "",
       },
     },
     companyDetails: {
@@ -70,11 +71,11 @@ export const useMerchantForm = (initialEmail: string) => {
   });
 
   const {
-    createMerchant,
+    createBridgeMerchant,
     isLoading: isCreatingMerchant,
     error: createMerchantError,
     data: createMerchantData,
-  } = useCreateMerchant();
+  } = useCreateBridgeMerchant();
 
   const onSubmitStep = useCallback(
     async (step: number, data: any) => {
@@ -83,38 +84,54 @@ export const useMerchantForm = (initialEmail: string) => {
       if (step === 1) {
         updateFormData({ companyInfo: data });
         setStepCompletion((prev) => ({ ...prev, step1: true }));
-        setActiveTab("company-owner");
+        setActiveTab("company-details");
       } else if (step === 2) {
-        updateFormData({ companyUsers: data });
+        updateFormData({ companyDetails: data });
         setStepCompletion((prev) => ({ ...prev, step2: true }));
+        setActiveTab("company-owner");
+      } else if (step === 3) {
+        updateFormData({ companyUsers: data });
+        setStepCompletion((prev) => ({ ...prev, step3: true }));
 
-        //const step1Data = formData.companyInfo;
+        const combinedData = {
+          ...formData,
+          companyUsers: data,
+        }
 
-        const combinedData: MerchantCreateInput = {
+        const bridgeData = {
+          company: {
+            name: combinedData.companyInfo.company.name,
+            email: combinedData.companyInfo.company.email,
+            registeredAddress: combinedData.companyInfo.company.registeredAddress,
+          },
           fee: merchantConfig.fee,
-          company: formData.companyInfo.company,
-          representatives: data.representatives.map((rep: any) => ({
-            firstName: rep.name,
-            lastName: rep.surname,
+          representatives: combinedData.companyUsers.representatives.map((rep: any) => ({
+            name: rep.name,
+            surname: rep.surname,
             email: rep.email,
             phoneNumber: rep.phoneNumber,
-            walletAddress: rep.walletAddress,
-            bday: rep.bday,
-            ssn: rep.ssn,
           })),
-          walletAddress: formData.companyDetails.walletAddress,
+          walletAddress: combinedData.companyDetails.walletAddress,
+          compliance: combinedData.companyUsers,
+        };
+
+        const rainData = {
+          company: combinedData.companyInfo.company,
+          representatives: combinedData.companyUsers.representatives,
+          compliance: combinedData.companyUsers,
         };
 
         try {
-          const { success, data: merchantResponse, error } = await createMerchant(combinedData);
+          const { success: bridgeSuccess, data: bridgeResponse, error: bridgeError } = await createBridgeMerchant(bridgeData);
+          //const { success: rainSuccess, data: rainResponse, error: rainError } = await createRainMerchant(rainData);
 
-          if (success && merchantResponse) {
-            console.log("useMerchantForm response:", merchantResponse);
-            setMerchantResponse(merchantResponse);
-            setTosLink(merchantResponse.data.tosLink);
+          if (bridgeSuccess) {
+            console.log("Bridge response:", bridgeResponse);
+            setMerchantResponse(bridgeResponse);
+            setTosLink(bridgeResponse?.data.tosLink || "");
             setActiveTab("documents");
           } else {
-            console.error("Error creating merchant:", error);
+            console.error("Error creating merchant:", bridgeError);
           }
         } catch (error) {
           console.error("Error creating merchant:", error);
@@ -124,7 +141,7 @@ export const useMerchantForm = (initialEmail: string) => {
         setActiveTab("documents");
       }
     },
-    [createMerchant, formData, updateFormData]
+    [createBridgeMerchant, formData, updateFormData]
   );
 
   return {
@@ -136,11 +153,10 @@ export const useMerchantForm = (initialEmail: string) => {
     onSubmitStep,
     formData,
     updateFormData,
-    createMerchant,
+    createBridgeMerchant,
     isCreatingMerchant,
     createMerchantError,
     createMerchantData,
     tosLink,
-    //...otpHook,
   };
 };

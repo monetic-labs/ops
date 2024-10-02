@@ -1,7 +1,5 @@
 import React from "react";
-import { Modal, ModalContent, ModalHeader, ModalBody, ModalFooter } from "@nextui-org/modal";
-
-import { FormButton } from "./form-button";
+import { Modal, ModalContent, ModalHeader, ModalBody } from "@nextui-org/modal";
 
 interface FormModalProps {
   isOpen: boolean;

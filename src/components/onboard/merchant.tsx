@@ -26,7 +26,7 @@ export const KYBMerchantForm: React.FC<{ onCancel: () => void; initialEmail: str
 
   const [notification, setNotification] = useState<string | null>(null);
 
-  const handleStep2Success = () => {
+  const handleStep3Success = () => {
     setNotification("Company Owner information submitted successfully!");
     setTimeout(() => setNotification(null), 3000); // Clear notification after 3 seconds
   };
@@ -46,7 +46,7 @@ export const KYBMerchantForm: React.FC<{ onCancel: () => void; initialEmail: str
           <FormCompanyDetails
             initialData={formData.companyDetails}
             updateFormData={(data) => updateFormData({ companyDetails: data })}
-            onSubmit={(data) => onSubmitStep(3, data)}
+            onSubmit={(data) => onSubmitStep(2, data)}
           />
         </Tab>
         <Tab key="company-owner" title="Company Owner">
@@ -54,8 +54,8 @@ export const KYBMerchantForm: React.FC<{ onCancel: () => void; initialEmail: str
             initialData={formData.companyUsers}
             updateFormData={(data) => updateFormData({ companyUsers: data })}
             onSubmit={(data) => {
-              onSubmitStep(2, data);
-              handleStep2Success();
+              onSubmitStep(3, data);
+              handleStep3Success();
             }}
             />
             {notification && <Notification message={notification} />}
