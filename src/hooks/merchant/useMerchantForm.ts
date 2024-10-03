@@ -6,6 +6,7 @@ import { useFormPersistence } from "@/hooks/generics/useFormPersistence";
 import { useCreateBridgeMerchant } from "@/hooks/merchant/useCreateMerchant";
 
 import { merchantConfig } from "@/config/merchant";
+import { OwnerDetailsSchema } from "@/validations/onboard";
 
 export const useMerchantForm = (initialEmail: string) => {
   const router = useRouter();
@@ -29,11 +30,11 @@ export const useMerchantForm = (initialEmail: string) => {
         name: "",
         email: "",
         registeredAddress: {
-          street1: "",
-          city: "",
           postcode: "",
+          city: "",
           state: "",
           country: "US" as ISO3166Alpha2Country,
+          street1: "",
         },
         website: "",
       },
@@ -51,10 +52,21 @@ export const useMerchantForm = (initialEmail: string) => {
           surname: "",
           email: "",
           phoneNumber: "",
-          bday: "",
-          ssn: "",
+          registeredAddress: {
+            postcode: "",
+            city: "",
+            state: "",
+            country: "US" as ISO3166Alpha2Country,
+            street1: "",
+          },
         },
       ],
+    },
+    ownerDetails: {
+      role: "" as OwnerDetailsSchema["role"],
+      walletAddress: "",
+      birthday: "",
+      ssn: "",
     },
   };
 
@@ -68,6 +80,7 @@ export const useMerchantForm = (initialEmail: string) => {
     step1: false,
     step2: false,
     step3: false,
+    step4: false,
   });
 
   const {
@@ -88,10 +101,12 @@ export const useMerchantForm = (initialEmail: string) => {
       } else if (step === 2) {
         updateFormData({ companyDetails: data });
         setStepCompletion((prev) => ({ ...prev, step2: true }));
-        setActiveTab("company-owner");
+        setActiveTab("owners-users");
       } else if (step === 3) {
         updateFormData({ companyUsers: data });
         setStepCompletion((prev) => ({ ...prev, step3: true }));
+        setActiveTab("owner-details");
+        
 
         const combinedData = {
           ...formData,
@@ -110,6 +125,7 @@ export const useMerchantForm = (initialEmail: string) => {
             surname: rep.surname,
             email: rep.email,
             phoneNumber: rep.phoneNumber,
+            walletAddress: rep.walletAddress,
           })),
           walletAddress: combinedData.companyDetails.walletAddress,
           compliance: combinedData.companyUsers,
@@ -120,6 +136,8 @@ export const useMerchantForm = (initialEmail: string) => {
           representatives: combinedData.companyUsers.representatives,
           compliance: combinedData.companyUsers,
         };
+
+        console.log("combinedData", combinedData);
 
         try {
           const { success: bridgeSuccess, data: bridgeResponse, error: bridgeError } = await createBridgeMerchant(bridgeData);
@@ -136,8 +154,8 @@ export const useMerchantForm = (initialEmail: string) => {
         } catch (error) {
           console.error("Error creating merchant:", error);
         }
-      } else if (step === 3) {
-        setStepCompletion((prev) => ({ ...prev, step3: true }));
+      } else if (step === 4) {
+        setStepCompletion((prev) => ({ ...prev, step4: true }));
         setActiveTab("documents");
       }
     },

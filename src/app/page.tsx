@@ -2,7 +2,7 @@
 import AvailableCard from "@/components/account-contract/available";
 import LockedCard from "@/components/account-contract/locked";
 import PendingCard from "@/components/account-contract/pending";
-import SpentCard from "@/components/account-contract/spent";
+import ExpensesCard from "@/components/account-contract/spent";
 import { title } from "@/components/primitives";
 import MerchantServicesTabs from "@/app/tabs";
 import AccountMeta from "@/components/account-contract/account-meta";

@@ -45,6 +45,7 @@ export const FormCompanyInfo: React.FC<{
 
   useEffect(() => {
     const subscription = watch((value) => {
+      console.log("value", value);
       updateFormData(value as CompanyInfoSchema);
     });
 
@@ -53,6 +54,7 @@ export const FormCompanyInfo: React.FC<{
 
   const onFormSubmit = handleSubmit(
     (data: CompanyInfoSchema) => {
+      console.log("data", data);
       onSubmit(data);
       updateFormData(data);
     },

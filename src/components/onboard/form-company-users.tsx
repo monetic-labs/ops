@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useFieldArray, useForm } from "react-hook-form";
 import { useRouter } from "next/navigation";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -11,19 +11,24 @@ import {
   CompanyRepresentativeSchema,
   phoneRegex,
 } from "@/validations/onboard";
+import { PostcodeInput } from "../generics/form-input-postcode";
+import { ISO3166Alpha2Country } from "@backpack-fux/pylon-sdk";
 
 export const FormCompanyUsers: React.FC<{
   onSubmit: (data: CompanyRepresentativeSchema) => void;
   initialData: CompanyRepresentativeSchema;
   updateFormData: (data: CompanyRepresentativeSchema) => void;
 }> = ({ onSubmit, initialData, updateFormData }) => {
+  
   const router = useRouter();
+  const [showAddressInputs, setShowAddressInputs] = useState(false);
 
   const {
     control,
     handleSubmit,
     formState: { errors },
     watch,
+    setValue,
   } = useForm<CompanyRepresentativeSchema>({
     resolver: zodResolver(companyRepresentativeSchema),
     defaultValues: initialData,
@@ -31,9 +36,22 @@ export const FormCompanyUsers: React.FC<{
 
   const onCancel = () => router.push("/auth");
 
+  const watchPostcode = watch("representatives.0.registeredAddress.postcode");
+
   useEffect(() => {
-    const subscription = watch((value) => {
-      updateFormData(value as CompanyRepresentativeSchema);
+    if (watchPostcode && watchPostcode.length === 5) {
+      setShowAddressInputs(true);
+    } else {
+      setShowAddressInputs(false);
+    }
+  }, [watchPostcode]);
+
+  useEffect(() => {
+    const subscription = watch((value, { name }) => {
+      if (name) {
+        console.log("user form data", value);
+        updateFormData(value as CompanyRepresentativeSchema);
+      }
     });
 
     return () => subscription.unsubscribe();
@@ -43,6 +61,7 @@ export const FormCompanyUsers: React.FC<{
     control,
     name: "representatives",
   });
+  console.log("fields", fields);
 
   const handleFormSubmit = handleSubmit((data) => {
     console.log("Representatives submitted:", data);
@@ -55,8 +74,13 @@ export const FormCompanyUsers: React.FC<{
       surname: "",
       email: "",
       phoneNumber: "",
-      bday: "",
-      ssn: "",
+      registeredAddress: {
+        postcode: "",
+        city: "",
+        state: "",
+        country: "US" as ISO3166Alpha2Country,
+        street1: "",
+      },
     });
   };
 
@@ -108,25 +132,52 @@ export const FormCompanyUsers: React.FC<{
         pattern={phoneRegex.source}
         placeholder="0701234567"
       />
-       <FormInput
+      <PostcodeInput
         control={control}
-        errorMessage={errors.representatives?.[index]?.bday?.message}
-        label="Birthday"
-        name={`representatives.${index}.bday`}
-        placeholder="YYYY-MM-DD"
+        errorMessage={errors.representatives?.[index]?.registeredAddress?.postcode?.message}
+        name={`representatives.${index}.registeredAddress.postcode`}
+        showAddressInputs={showAddressInputs}
+        onLookupComplete={(result) => {
+          if (result) {
+            setValue(`representatives.${index}.registeredAddress.postcode`, result.postcode, { shouldValidate: true });
+            setValue(`representatives.${index}.registeredAddress.city`, result.city, { shouldValidate: true });
+            setValue(`representatives.${index}.registeredAddress.state`, result.state, { shouldValidate: true });
+            setShowAddressInputs(true);
+          } else {
+            setShowAddressInputs(false);
+          }
+          console.log("Postcode lookup result:", result);
+        }}
       />
-      <FormInput
-        control={control}
-        errorMessage={errors.representatives?.[index]?.ssn?.message}
-        label="SSN"
-        name={`representatives.${index}.ssn`}
-        placeholder="123-45-6789"
-      />
+      <div className={`fade-in ${showAddressInputs ? "show" : ""}`}>
+        <FormInput
+          control={control}
+          errorMessage={errors.representatives?.[index]?.registeredAddress?.street1?.message}
+          label="Street Address 1"
+          name={`representatives.${index}.registeredAddress.street1`}
+          placeholder="123 Main St"
+        />
+      </div>
+      <div className={`fade-in ${showAddressInputs ? "show" : ""}`}>
+        <FormInput
+          control={control}
+          errorMessage={errors.representatives?.[index]?.registeredAddress?.street2?.message}
+          label="Street Address 2"
+          name={`representatives.${index}.registeredAddress.street2`}
+          placeholder="Apt 4B"
+        />
+      </div>
     </div>
   );
 
   return (
-    <form onSubmit={handleFormSubmit}>
+    <form
+      onSubmit={(e) => {
+        console.log("Form submit event triggered");
+        e.preventDefault();
+        handleFormSubmit();
+      }}
+    >
       <FormCardTabs
         fields={fields}
         renderTabContent={renderTabContent}

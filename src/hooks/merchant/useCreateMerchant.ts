@@ -35,6 +35,7 @@ export function useCreateBridgeMerchant() {
       const errorMessage = err instanceof Error ? err.message : "An error occurred";
 
       setError(errorMessage);
+      console.log("useCreateMerchant error:", errorMessage);
 
       return { success: false, data: null, error: errorMessage };
     }

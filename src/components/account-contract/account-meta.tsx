@@ -2,20 +2,17 @@
 
 import { useState } from "react";
 import { Card, CardBody, CardHeader } from "@nextui-org/card";
-import { Button } from "@nextui-org/button";
 
 import useAccountContracts from "@/hooks/account-contracts/useAccountContracts";
-import AddFundsModal from "@/components/account-contract/add-funds";
-import WithdrawFundsModal from "@/components/account-contract/withdraw-funds";
+import AddFundsModal from "@/components/account-contract/modal-add-funds";
+import WithdrawFundsModal from "@/components/account-contract/modal-withdraw-funds";
 import { FundCard } from "@/components/generics/card-account";
-import PortfolioModal from "./portfolio";
-import LogicModal from "./logic";
+import PortfolioModal from "./modal-portfolio";
 
 export default function AccountOverview() {
   const [isAddFundsOpen, setIsAddFundsOpen] = useState(false);
   const [isWithdrawFundsOpen, setIsWithdrawFundsOpen] = useState(false);
   const [isPortfolioOpen, setIsPortfolioOpen] = useState(false);
-  const [isRulesOpen, setIsRulesOpen] = useState(false);
 
   const { available, pending, spent, isLoading } = useAccountContracts();
 
@@ -37,7 +34,7 @@ export default function AccountOverview() {
             isLoading={isLoading}
             actions={[
               {
-                label: "Portfolio",
+                label: "Summary",
                 onClick: () => setIsPortfolioOpen(true),
                 color: "success",
               }

@@ -52,10 +52,16 @@ export const companyRepresentativeSchema = z.object({
       surname: z.string().min(1).max(255),
       email: emailSchema,
       phoneNumber: z.string().regex(phoneRegex, "Invalid phone number format"),
-      bday: z.string().min(6, "Birthday is required"),
-      ssn: z.string().min(9, "SSN must be at least 9 characters"),
+      registeredAddress: companyRegisteredAddressSchema,
     })
   ),
+});
+
+export const ownerDetailsSchema = z.object({
+  role: z.enum(["bookkeeper", "developer", "admin", "super admin"]),
+  walletAddress: z.string().regex(/^0x[a-fA-F0-9]{40}$/, "Invalid wallet address"),
+  birthday: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Invalid date format"),
+  ssn: z.string().regex(/^\d{3}-\d{2}-\d{4}$/, "Invalid SSN format"),
 });
 
 // Response data from step 3
@@ -107,6 +113,7 @@ export type CompanyRegisteredAddressSchema = z.infer<typeof companyRegisteredAdd
 export type CompanyInfoSchema = z.infer<typeof companyInfoSchema>;
 export type CompanyDetailsSchema = z.infer<typeof companyDetailsSchema>;
 export type CompanyRepresentativeSchema = z.infer<typeof companyRepresentativeSchema>;
+export type OwnerDetailsSchema = z.infer<typeof ownerDetailsSchema>;
 export type ComplianceSchema = z.infer<typeof complianceSchema>;
 export type MerchantBridgeCreateSchema = z.infer<typeof merchantBridgeCreateSchema>;
 export type MerchantRainCreateSchema = z.infer<typeof merchantRainCreateSchema>;

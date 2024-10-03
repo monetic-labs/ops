@@ -11,6 +11,7 @@ import { FormCompanyUsers } from "./form-company-users";
 import { FormCompanyInfo } from "./form-company-info";
 import { TermsAndKYB } from "./form-bridge-kyb";
 import { FormCompanyDetails } from "./form-company-details";
+import { FormOwnerDetails } from "./form-owner-details";
 
 export const KYBMerchantForm: React.FC<{ onCancel: () => void; initialEmail: string }> = ({ initialEmail }) => {
   const {
@@ -28,28 +29,31 @@ export const KYBMerchantForm: React.FC<{ onCancel: () => void; initialEmail: str
 
   const handleStep3Success = () => {
     setNotification("Company Owner information submitted successfully!");
-    setTimeout(() => setNotification(null), 3000); // Clear notification after 3 seconds
+    setTimeout(() => setNotification(null), 2000); // Clear notification after 3 seconds
   };
 
   return (
     <FormCard className="overflow-y-auto max-h-screen" title="Know Your Business">
       
       <Tabs selectedKey={activeTab} onSelectionChange={(key) => setActiveTab(key as string)}>
-        <Tab key="company-info" title="Company Info">
+        <Tab key="company-info" title="Open Account">
           <FormCompanyInfo
             initialData={formData.companyInfo}
             updateFormData={(data) => updateFormData({ companyInfo: data })}
-            onSubmit={(data) => onSubmitStep(1, data)}
+            onSubmit={(data) => {
+              console.log("data", data);
+              onSubmitStep(1, data);
+            }}
           />
         </Tab>
-        <Tab key="company-details" title="Company Details">
+        <Tab key="company-details" title="Configure Entity">
           <FormCompanyDetails
             initialData={formData.companyDetails}
             updateFormData={(data) => updateFormData({ companyDetails: data })}
             onSubmit={(data) => onSubmitStep(2, data)}
           />
         </Tab>
-        <Tab key="company-owner" title="Company Owner">
+        <Tab key="owners-users" title="Owner(s) & Users">
           <FormCompanyUsers
             initialData={formData.companyUsers}
             updateFormData={(data) => updateFormData({ companyUsers: data })}
@@ -60,6 +64,13 @@ export const KYBMerchantForm: React.FC<{ onCancel: () => void; initialEmail: str
             />
             {notification && <Notification message={notification} />}
         </Tab>
+        <Tab key="owner-details" title="Owner Details">
+          <FormOwnerDetails
+            initialData={formData.ownerDetails}
+            updateFormData={(data) => updateFormData({ ownerDetails: data })}
+            onSubmit={(data) => onSubmitStep(4, data)}
+          />
+      </Tab>
         <Tab key="documents" title="Documents">
           <TermsAndKYB
             kybLink={createMerchantData?.data.kycLink || null}
