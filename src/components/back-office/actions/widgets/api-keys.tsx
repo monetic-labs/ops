@@ -7,6 +7,12 @@ import { Input } from '@nextui-org/input';
 import ModalFooterWithSupport from '@/components/generics/footer-modal-support';
 import { Chip } from '@nextui-org/chip';
 import { FormButton } from '@/components/generics/form-button';
+import pylon from "@/libs/pylon-sdk";
+
+pylon.getApiKeys
+pylon.createApiKey
+pylon.updateApiKey
+
 
 interface GenerateApiKeysModalProps {
   isOpen: boolean;
