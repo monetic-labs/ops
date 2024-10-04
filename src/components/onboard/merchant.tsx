@@ -12,6 +12,7 @@ import { FormCompanyInfo } from "./form-company-info";
 import { TermsAndKYB } from "./form-bridge-kyb";
 import { FormCompanyDetails } from "./form-company-details";
 import { FormOwnerDetails } from "./form-owner-details";
+import { FormCompanyUsers } from "./form-company-users";
 
 export const KYBMerchantForm: React.FC<{ onCancel: () => void; initialEmail: string }> = ({ initialEmail }) => {
   const {
@@ -76,6 +77,13 @@ export const KYBMerchantForm: React.FC<{ onCancel: () => void; initialEmail: str
             tosLink={createMerchantData?.data.tosLink || null}
             onCancel={handleCancel}
             onKYCDone={handleKYCDone}
+          />
+        </Tab>
+        <Tab key="add-users" title="Add Users">
+          <FormCompanyUsers
+            initialData={formData.addUser}
+            updateFormData={(data) => updateFormData({ addUser: { email: data.email || "", phoneNumber: data.phoneNumber || "" } })}
+            onSubmit={(data) => onSubmitStep(6, data)}
           />
         </Tab>
       </Tabs>

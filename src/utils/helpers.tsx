@@ -2,6 +2,10 @@ import { createIcon } from "opepen-standard";
 
 import { ChainAddress, OrderID } from "@/types";
 
+export function generateUserInviteUrl(onboardId: string, email: string): string {
+  return `/onboard/${onboardId}?email=${encodeURIComponent(email)}`;
+}
+
 export function formatBalance(balance: number, currency: string): string {
   return `${mapCurrencyToSymbol[currency]} ${balance.toFixed(2)} ${currency.toUpperCase()}`;
 }

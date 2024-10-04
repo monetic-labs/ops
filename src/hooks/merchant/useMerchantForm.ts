@@ -68,6 +68,10 @@ export const useMerchantForm = (initialEmail: string) => {
       birthday: "",
       ssn: "",
     },
+    addUser: {
+      email: "",
+      phoneNumber: "",
+    }
   };
 
   const {
@@ -82,6 +86,7 @@ export const useMerchantForm = (initialEmail: string) => {
     step3: false,
     step4: false,
     step5: false,
+    step6: false,
   });
 
   const {
@@ -163,10 +168,16 @@ export const useMerchantForm = (initialEmail: string) => {
       } else if (step === 5) {
         setStepCompletion((prev) => ({ ...prev, step5: true }));
         setActiveTab("documents");
+      } else if (step === 6) {
+        updateFormData({ addUser: data });
+        setStepCompletion((prev) => ({ ...prev, step6: true }));
+
       }
     },
     [createBridgeMerchant, formData, updateFormData]
   );
+
+
 
   return {
     activeTab,

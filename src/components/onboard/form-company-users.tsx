@@ -2,7 +2,6 @@ import React from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 
-import { FormCardTabs } from "@/components/generics/form-card-tabs";
 import { FormInput } from "@/components/generics/form-input";
 import { emailRegex } from "@/validations/auth";
 import { addUserSchema, AddUserSchema, phoneRegex } from "@/validations/onboard";
@@ -24,8 +23,8 @@ export const FormCompanyUsers: React.FC<{
   });
 
   return (
-    <form onSubmit={handleFormSubmit}>
-      <FormCard title="Add Users">
+    <FormCard title="Add Users">
+      <form onSubmit={handleFormSubmit} className="space-y-4">
         <FormInput
           control={control}
           errorMessage={errors.email?.message}
@@ -43,7 +42,7 @@ export const FormCompanyUsers: React.FC<{
           placeholder="0701234567"
         />
         <button type="submit">Add User</button>
-      </FormCard>
-    </form>
+      </form>
+    </FormCard>
   );
 };
