@@ -27,7 +27,7 @@ export const companyRegisteredAddressSchema = z.object({
 });
 
 // Onboard step 1
-export const companyInfoSchema = z.object({
+export const companyAccountSchema = z.object({
   company: z.object({
     name: z.string().min(1).max(255),
     email: emailSchema,
@@ -48,8 +48,8 @@ export const companyDetailsSchema = z.object({
 export const companyRepresentativeSchema = z.object({
   representatives: z.array(
     z.object({
-      name: z.string().min(1).max(255),
-      surname: z.string().min(1).max(255),
+      firstName: z.string().min(1).max(255),
+      lastName: z.string().min(1).max(255),
       email: emailSchema,
       phoneNumber: z.string().regex(phoneRegex, "Invalid phone number format"),
       registeredAddress: companyRegisteredAddressSchema,
@@ -83,8 +83,8 @@ export const merchantBridgeCreateSchema = z.object({
   }),
   representatives: z.array(
     z.object({
-      name: z.string().min(1).max(255),
-      surname: z.string().min(1).max(255),
+      firstName: z.string().min(1).max(255),
+      lastName: z.string().min(1).max(255),
       email: emailSchema,
       phoneNumber: z.string().regex(phoneRegex, "Invalid phone number format"),
     })
@@ -94,7 +94,7 @@ export const merchantBridgeCreateSchema = z.object({
 
 // Step 5: Merchant Rain Create Schema
 export const merchantRainCreateSchema = z.object({
-  company: companyInfoSchema.shape.company,
+  company: companyAccountSchema.shape.company,
   representatives: companyRepresentativeSchema.shape.representatives,
   compliance: complianceSchema.shape.compliance.optional(),
 });
@@ -109,8 +109,17 @@ export const merchantFeeSchema = z.object({
   fee: z.number().min(0).max(100),
 });
 
+export const addUserSchema = z.object({
+  email: z.string().email("Invalid email address").optional(),
+  phoneNumber: z.string().regex(phoneRegex, "Invalid phone number format").optional(),
+}).refine(data => data.email || data.phoneNumber, {
+  message: "Either email or phone number must be provided",
+});
+
+export type AddUserSchema = z.infer<typeof addUserSchema>;
+
 export type CompanyRegisteredAddressSchema = z.infer<typeof companyRegisteredAddressSchema>;
-export type CompanyInfoSchema = z.infer<typeof companyInfoSchema>;
+export type CompanyInfoSchema = z.infer<typeof companyAccountSchema>;
 export type CompanyDetailsSchema = z.infer<typeof companyDetailsSchema>;
 export type CompanyRepresentativeSchema = z.infer<typeof companyRepresentativeSchema>;
 export type OwnerDetailsSchema = z.infer<typeof ownerDetailsSchema>;

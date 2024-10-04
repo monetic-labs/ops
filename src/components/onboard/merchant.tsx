@@ -7,7 +7,7 @@ import { FormCard } from "@/components/generics/form-card";
 import Notification from "@/components/generics/notification";
 import { useMerchantForm } from "@/hooks/merchant/useMerchantForm";
 
-import { FormCompanyUsers } from "./form-company-users";
+import { FormCompanyOwner } from "./form-account-owner";
 import { FormCompanyInfo } from "./form-company-info";
 import { TermsAndKYB } from "./form-bridge-kyb";
 import { FormCompanyDetails } from "./form-company-details";
@@ -33,28 +33,27 @@ export const KYBMerchantForm: React.FC<{ onCancel: () => void; initialEmail: str
   };
 
   return (
-    <FormCard className="overflow-y-auto max-h-screen" title="Know Your Business">
-      
+    <FormCard className="overflow-y-auto max-h-screen" title="Know Your Business">  
       <Tabs selectedKey={activeTab} onSelectionChange={(key) => setActiveTab(key as string)}>
-        <Tab key="company-info" title="Open Account">
+        <Tab key="company-account" title="Company Account">
           <FormCompanyInfo
-            initialData={formData.companyInfo}
-            updateFormData={(data) => updateFormData({ companyInfo: data })}
+            initialData={formData.companyAccount}
+            updateFormData={(data) => updateFormData({ companyAccount: data })}
             onSubmit={(data) => {
               console.log("data", data);
               onSubmitStep(1, data);
             }}
           />
         </Tab>
-        <Tab key="company-details" title="Configure Entity">
+        <Tab key="company-details" title="Company Details">
           <FormCompanyDetails
             initialData={formData.companyDetails}
             updateFormData={(data) => updateFormData({ companyDetails: data })}
             onSubmit={(data) => onSubmitStep(2, data)}
           />
         </Tab>
-        <Tab key="owners-users" title="Owner(s) & Users">
-          <FormCompanyUsers
+        <Tab key="account-owner" title="Account Owner">
+          <FormCompanyOwner
             initialData={formData.companyUsers}
             updateFormData={(data) => updateFormData({ companyUsers: data })}
             onSubmit={(data) => {

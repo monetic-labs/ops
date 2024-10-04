@@ -25,7 +25,7 @@ export const useMerchantForm = (initialEmail: string) => {
   const [activeTab, setActiveTab] = useState("company-info");
 
   const initialData = {
-    companyInfo: {
+    companyAccount: {
       company: {
         name: "",
         email: "",
@@ -48,8 +48,8 @@ export const useMerchantForm = (initialEmail: string) => {
     companyUsers: {
       representatives: [
         {
-          name: "",
-          surname: "",
+          firstName: "",
+          lastName: "",
           email: "",
           phoneNumber: "",
           registeredAddress: {
@@ -81,6 +81,7 @@ export const useMerchantForm = (initialEmail: string) => {
     step2: false,
     step3: false,
     step4: false,
+    step5: false,
   });
 
   const {
@@ -95,49 +96,54 @@ export const useMerchantForm = (initialEmail: string) => {
       console.log(`Step ${step} data:`, data);
 
       if (step === 1) {
-        updateFormData({ companyInfo: data });
+        updateFormData({ companyAccount: data });
         setStepCompletion((prev) => ({ ...prev, step1: true }));
         setActiveTab("company-details");
       } else if (step === 2) {
         updateFormData({ companyDetails: data });
         setStepCompletion((prev) => ({ ...prev, step2: true }));
-        setActiveTab("owners-users");
+        setActiveTab("account-owner");
       } else if (step === 3) {
         updateFormData({ companyUsers: data });
         setStepCompletion((prev) => ({ ...prev, step3: true }));
         setActiveTab("owner-details");
-        
-
+      } else if (step === 4) {
+        updateFormData({ ownerDetails: data });
+        setStepCompletion((prev) => ({ ...prev, step4: true }));
+                
         const combinedData = {
           ...formData,
-          companyUsers: data,
+          ownerDetails: data,
         }
+
+        console.log("combinedData", combinedData);
 
         const bridgeData = {
           company: {
-            name: combinedData.companyInfo.company.name,
-            email: combinedData.companyInfo.company.email,
-            registeredAddress: combinedData.companyInfo.company.registeredAddress,
+            name: combinedData.companyAccount.company.name,
+            email: combinedData.companyAccount.company.email,
+            registeredAddress: combinedData.companyAccount.company.registeredAddress,
           },
           fee: merchantConfig.fee,
-          representatives: combinedData.companyUsers.representatives.map((rep: any) => ({
-            name: rep.name,
-            surname: rep.surname,
+          representatives: (combinedData.companyUsers.representatives || []).map((rep: any) => ({
+            firstName: rep.firstName,
+            lastName: rep.lastName,
             email: rep.email,
             phoneNumber: rep.phoneNumber,
             walletAddress: rep.walletAddress,
           })),
           walletAddress: combinedData.companyDetails.walletAddress,
-          compliance: combinedData.companyUsers,
         };
 
+        console.log("bridgeData", bridgeData);
+
         const rainData = {
-          company: combinedData.companyInfo.company,
+          company: combinedData.companyAccount.company,
           representatives: combinedData.companyUsers.representatives,
           compliance: combinedData.companyUsers,
         };
 
-        console.log("combinedData", combinedData);
+        console.log("rainData", rainData);
 
         try {
           const { success: bridgeSuccess, data: bridgeResponse, error: bridgeError } = await createBridgeMerchant(bridgeData);
@@ -154,8 +160,8 @@ export const useMerchantForm = (initialEmail: string) => {
         } catch (error) {
           console.error("Error creating merchant:", error);
         }
-      } else if (step === 4) {
-        setStepCompletion((prev) => ({ ...prev, step4: true }));
+      } else if (step === 5) {
+        setStepCompletion((prev) => ({ ...prev, step5: true }));
         setActiveTab("documents");
       }
     },

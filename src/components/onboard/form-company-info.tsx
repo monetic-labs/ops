@@ -7,7 +7,7 @@ import { Button } from "@nextui-org/button";
 import { FormCard } from "@/components/generics/form-card";
 import { FormInput } from "@/components/generics/form-input";
 import { FormButton } from "@/components/generics/form-button";
-import { CompanyInfoSchema, companyInfoSchema } from "@/validations/onboard";
+import { CompanyInfoSchema, companyAccountSchema } from "@/validations/onboard";
 import { emailRegex } from "@/validations/auth";
 
 import { PostcodeInput } from "../generics/form-input-postcode";
@@ -27,7 +27,7 @@ export const FormCompanyInfo: React.FC<{
     watch,
     setValue,
   } = useForm<CompanyInfoSchema>({
-    resolver: zodResolver(companyInfoSchema),
+    resolver: zodResolver(companyAccountSchema),
     defaultValues: initialData,
   });
 
