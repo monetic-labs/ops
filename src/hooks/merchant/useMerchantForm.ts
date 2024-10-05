@@ -149,6 +149,7 @@ export const useMerchantForm = (initialEmail: string) => {
         };
 
         console.log("rainData", rainData);
+        
 
         try {
           const { success: bridgeSuccess, data: bridgeResponse, error: bridgeError } = await createBridgeMerchant(bridgeData);

@@ -9,7 +9,7 @@ import { useMerchantForm } from "@/hooks/merchant/useMerchantForm";
 
 import { FormCompanyOwner } from "./form-account-owner";
 import { FormCompanyInfo } from "./form-company-info";
-import { TermsAndKYB } from "./form-bridge-kyb";
+import { AccountRegistration } from "./form-bridge-kyb";
 import { FormCompanyDetails } from "./form-company-details";
 import { FormOwnerDetails } from "./form-owner-details";
 import { FormCompanyUsers } from "./form-company-users";
@@ -72,7 +72,7 @@ export const KYBMerchantForm: React.FC<{ onCancel: () => void; initialEmail: str
           />
       </Tab>
         <Tab key="documents" title="Documents">
-          <TermsAndKYB
+          <AccountRegistration
             kybLink={createMerchantData?.data.kycLink || null}
             tosLink={createMerchantData?.data.tosLink || null}
             onCancel={handleCancel}

@@ -65,11 +65,21 @@ export const ownerDetailsSchema = z.object({
 });
 
 // Response data from step 3
-export const complianceSchema = z.object({
+export const bridgeComplianceSchema = z.object({
   compliance: z
     .object({
       bridgeCustomerId: z.string().uuid(),
       bridgeComplianceId: z.string().uuid(),
+    })
+    .optional(),
+});
+
+export const rainComplianceSchema = z.object({
+  compliance: z
+    .object({
+      rainCustomerId: z.string().uuid(),
+      rainToSAccepted: z.boolean(),
+      rainComplianceId: z.string().uuid(),
     })
     .optional(),
 });
@@ -89,14 +99,14 @@ export const merchantBridgeCreateSchema = z.object({
       phoneNumber: z.string().regex(phoneRegex, "Invalid phone number format"),
     })
   ),
-  compliance: complianceSchema.shape.compliance.optional(),
+  compliance: bridgeComplianceSchema.shape.compliance.optional(),
 });
 
 // Step 5: Merchant Rain Create Schema
 export const merchantRainCreateSchema = z.object({
   company: companyAccountSchema.shape.company,
   representatives: companyRepresentativeSchema.shape.representatives,
-  compliance: complianceSchema.shape.compliance.optional(),
+  compliance: bridgeComplianceSchema.shape.compliance.optional(),
 });
 
 export const merchantDeleteSchema = z.object({
@@ -123,7 +133,7 @@ export type CompanyInfoSchema = z.infer<typeof companyAccountSchema>;
 export type CompanyDetailsSchema = z.infer<typeof companyDetailsSchema>;
 export type CompanyRepresentativeSchema = z.infer<typeof companyRepresentativeSchema>;
 export type OwnerDetailsSchema = z.infer<typeof ownerDetailsSchema>;
-export type ComplianceSchema = z.infer<typeof complianceSchema>;
+export type ComplianceSchema = z.infer<typeof bridgeComplianceSchema>;
 export type MerchantBridgeCreateSchema = z.infer<typeof merchantBridgeCreateSchema>;
 export type MerchantRainCreateSchema = z.infer<typeof merchantRainCreateSchema>;
 export type MerchantDeleteSchema = z.infer<typeof merchantDeleteSchema>;
