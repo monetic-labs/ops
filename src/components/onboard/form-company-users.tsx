@@ -1,48 +1,97 @@
-import React from "react";
-import { useForm } from "react-hook-form";
+import React, { useEffect } from "react";
+import { useFieldArray, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 
+import { FormCardTabs } from "@/components/generics/form-card-tabs";
 import { FormInput } from "@/components/generics/form-input";
 import { emailRegex } from "@/validations/auth";
 import { addUserSchema, AddUserSchema, phoneRegex } from "@/validations/onboard";
-import { FormCard } from "../generics/form-card";
+import { useInviteUser } from "@/hooks/merchant/useInviteUser";
 
 export const FormCompanyUsers: React.FC<{
-  onSubmit: (data: AddUserSchema) => void;
-  initialData: AddUserSchema;
-  updateFormData: (data: AddUserSchema) => void;
+  onSubmit: (data: AddUserSchema[]) => void;
+  initialData: AddUserSchema[];
+  updateFormData: (data: AddUserSchema[]) => void;
 }> = ({ onSubmit, initialData, updateFormData }) => {
-  const { control, handleSubmit, formState: { errors } } = useForm<AddUserSchema>({
+  const { control, handleSubmit, formState: { errors }, watch } = useForm<{ users: AddUserSchema[] }>({
     resolver: zodResolver(addUserSchema),
-    defaultValues: initialData,
+    defaultValues: { users: initialData },
   });
 
-  const handleFormSubmit = handleSubmit((data) => {
-    console.log("User addition submitted:", data);
-    onSubmit(data);
+  const { fields, append, remove } = useFieldArray({
+    control,
+    name: "users",
   });
+
+  const { inviteUser, isLoading, error } = useInviteUser();
+
+  useEffect(() => {
+    const subscription = watch((value) => {
+      updateFormData(value.users as AddUserSchema[]);
+    });
+
+    return () => subscription.unsubscribe();
+  }, [watch, updateFormData]);
+
+  const handleFormSubmit = handleSubmit(async (data) => {
+    console.log("Users submitted:", data.users);
+    for (const user of data.users) {
+      await inviteUser(user);
+    }
+    onSubmit(data.users);
+  });
+
+  const addUser = () => {
+    append({
+      email: "",
+      phoneNumber: "",
+    });
+  };
+
+  const removeUser = (index: number) => {
+    if (fields.length > 1) {
+      remove(index);
+    }
+  };
+
+  const renderTabTitle = (field: AddUserSchema, index: number) => {
+    return field.email || `User ${index + 1}`;
+  };
+
+  const renderTabContent = (field: AddUserSchema, index: number) => (
+    <div className="space-y-4">
+      <FormInput
+        control={control}
+        errorMessage={errors.users?.[index]?.email?.message}
+        label="Email"
+        name={`users.${index}.email`}
+        pattern={emailRegex.source}
+        placeholder="user@example.com"
+      />
+      <FormInput
+        control={control}
+        errorMessage={errors.users?.[index]?.phoneNumber?.message}
+        label="Phone Number"
+        name={`users.${index}.phoneNumber`}
+        pattern={phoneRegex.source}
+        placeholder="0701234567"
+      />
+    </div>
+  );
 
   return (
-    <FormCard title="Add Users">
-      <form onSubmit={handleFormSubmit} className="space-y-4">
-        <FormInput
-          control={control}
-          errorMessage={errors.email?.message}
-          label="Email"
-          name="email"
-          pattern={emailRegex.source}
-          placeholder="user@example.com"
-        />
-        <FormInput
-          control={control}
-          errorMessage={errors.phoneNumber?.message}
-          label="Phone Number"
-          name="phoneNumber"
-          pattern={phoneRegex.source}
-          placeholder="0701234567"
-        />
-        <button type="submit">Add User</button>
-      </form>
-    </FormCard>
+    <form onSubmit={handleFormSubmit}>
+      <FormCardTabs
+        fields={fields}
+        renderTabContent={renderTabContent}
+        renderTabTitle={renderTabTitle}
+        title="Company Users"
+        onAdd={addUser}
+        onCancel={() => console.log("Cancel clicked")}
+        onRemove={removeUser}
+        onSubmit={handleFormSubmit}
+      />
+      {error && <p className="text-ualert-500">{error}</p>}  
+    </form>
   );
 };
