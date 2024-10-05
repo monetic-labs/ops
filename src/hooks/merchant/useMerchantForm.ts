@@ -149,7 +149,7 @@ export const useMerchantForm = (initialEmail: string) => {
         };
 
         console.log("rainData", rainData);
-        
+
 
         try {
           const { success: bridgeSuccess, data: bridgeResponse, error: bridgeError } = await createBridgeMerchant(bridgeData);
@@ -159,7 +159,7 @@ export const useMerchantForm = (initialEmail: string) => {
             console.log("Bridge response:", bridgeResponse);
             setMerchantResponse(bridgeResponse);
             setTosLink(bridgeResponse?.data.tosLink || "");
-            setActiveTab("documents");
+            setActiveTab("register-account");
           } else {
             console.error("Error creating merchant:", bridgeError);
           }
@@ -168,7 +168,7 @@ export const useMerchantForm = (initialEmail: string) => {
         }
       } else if (step === 5) {
         setStepCompletion((prev) => ({ ...prev, step5: true }));
-        setActiveTab("documents");
+        setActiveTab("register-account");
       } else if (step === 6) {
         updateFormData({ addUser: data });
         setStepCompletion((prev) => ({ ...prev, step6: true }));

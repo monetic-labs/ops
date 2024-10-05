@@ -71,7 +71,7 @@ export const KYBMerchantForm: React.FC<{ onCancel: () => void; initialEmail: str
             onSubmit={(data) => onSubmitStep(4, data)}
           />
       </Tab>
-        <Tab key="documents" title="Documents">
+        <Tab key="register-account" title="Register Account">
           <AccountRegistration
             kybLink={createMerchantData?.data.kycLink || null}
             tosLink={createMerchantData?.data.tosLink || null}
