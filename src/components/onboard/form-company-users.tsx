@@ -15,7 +15,7 @@ export const FormCompanyUsers: React.FC<{
 }> = ({ onSubmit, initialData, updateFormData }) => {
   const { control, handleSubmit, formState: { errors }, watch } = useForm<{ users: AddUserSchema[] }>({
     resolver: zodResolver(addUserSchema),
-    defaultValues: { users: initialData },
+    defaultValues: { users: initialData.length ? initialData : [{ email: "", phoneNumber: "" }] },
   });
 
   const { fields, append, remove } = useFieldArray({
