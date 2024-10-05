@@ -22,11 +22,16 @@ export const useInviteUser = (): UseInviteUserReturn => {
       // Simulate a delay for the mock call
       await new Promise((resolve) => setTimeout(resolve, 1000));
 
-      // Simulate sending a URL to the user
-      console.log(`URL sent to user: https://example.com/invite?email=${data.email}`);
+      // Simulate sending URLs to the users
+      data.forEach((user, index) => {
+        const inviteUrl = new URL("https://example.com/invite");
+        if (user.email) inviteUrl.searchParams.append("email", user.email);
+        if (user.phoneNumber) inviteUrl.searchParams.append("phoneNumber", user.phoneNumber);
+        console.log(`URL sent to user ${index + 1}:`, inviteUrl.toString());
+      });
     } catch (err) {
-      setError("Failed to invite user. Please try again.");
-      console.error("Error inviting user:", err);
+      setError("Failed to invite user(s). Please try again.");
+      console.error("Error inviting user(s):", err);
     } finally {
       setIsLoading(false);
     }

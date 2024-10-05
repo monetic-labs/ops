@@ -100,7 +100,7 @@ export const AccountRegistration: React.FC<TermsAndKYBProps> = ({ tosLink, kybLi
   const accordionItems = [
     <AccordionItem key="1" aria-label="Bill Pay Agreement" title="Bill Pay Agreement">
       <p className="mb-4">
-        At Bridge, we are advancing the accessibility of stablecoins and stablecoin-based applications. "Stablecoins" are a special type of cryptographic digital asset that can be redeemed at face value for government-issued money (“Fiat Currency”). By clicking 'Accept', you agree to Bridge's{" "}
+        At Bridge, we are advancing the accessibility of stablecoins and stablecoin-based applications. &quot;Stablecoins&quot; are a special type of cryptographic digital asset that can be redeemed at face value for government-issued money (“Fiat Currency”). By clicking &apos;Accept&apos;, you agree to Bridge&apos;s{" "}
         <Link href="https://www.bridge.xyz/legal" target="_blank">
           Terms of Service
         </Link>{" "}
@@ -119,7 +119,9 @@ export const AccountRegistration: React.FC<TermsAndKYBProps> = ({ tosLink, kybLi
     </AccordionItem>,
 
     <AccordionItem key="2" aria-label="Card Program Agreement" title="Card Program Agreement">
-      <p className="mb-4">The Rain Corporate Card (“Rain Card”) is a business card issued to the Account holder under the Rain Platform Agreement and the Rain Corporate Card Agreement. The Rain Corporate Card is issued by Third National (“Issuer”).{" "}
+      <p className="mb-4">
+        The Rain Corporate Card (&quot;Rain Card&quot;) is a business card issued to the Account holder under the Rain Platform
+        Agreement and the Rain Corporate Card Agreement. The Rain Corporate Card is issued by Third National (&quot;Issuer&quot;).
         <Link href="https://www.raincards.xyz/legal/docs/corporate-card-user-agreement" target="_blank">
           Terms of Service
         </Link>{" "}
@@ -141,16 +143,31 @@ export const AccountRegistration: React.FC<TermsAndKYBProps> = ({ tosLink, kybLi
       <p className="mb-4">Upload the following company documents:</p>
       <div className="space-y-4">
         <div className="flex items-center space-x-4">
-          <label className="w-1/3 text-right font-medium">Formation Docs:</label>
-          <input type="file" className="file-input" onChange={(e) => handleFileChange(e, 'formationDocs', true)} />
+          <label htmlFor="formationDocs" className="w-1/3 text-right font-medium">Formation Docs:</label>
+          <input 
+            id="formationDocs"
+            type="file" 
+            className="file-input" 
+            onChange={(e) => handleFileChange(e, 'formationDocs', true)} 
+          />
         </div>
         <div className="flex items-center space-x-4">
-          <label className="w-1/3 text-right font-medium">Entity Ownership:</label>
-          <input type="file" className="file-input" onChange={(e) => handleFileChange(e, 'entityOwnership', true)} />
+          <label htmlFor="entityOwnership" className="w-1/3 text-right font-medium">Entity Ownership:</label>
+          <input 
+            id="entityOwnership"
+            type="file" 
+            className="file-input" 
+            onChange={(e) => handleFileChange(e, 'entityOwnership', true)} 
+          />
         </div>
         <div className="flex items-center space-x-4">
-          <label className="w-1/3 text-right font-medium">Proof of Funds:</label>
-          <input type="file" className="file-input" onChange={(e) => handleFileChange(e, 'proofOfFunds', true)} />
+          <label htmlFor="proofOfFunds" className="w-1/3 text-right font-medium">Proof of Funds:</label>
+          <input 
+            id="proofOfFunds"
+            type="file" 
+            className="file-input" 
+            onChange={(e) => handleFileChange(e, 'proofOfFunds', true)} 
+          />
         </div>
       </div>
     </AccordionItem>,
@@ -159,16 +176,31 @@ export const AccountRegistration: React.FC<TermsAndKYBProps> = ({ tosLink, kybLi
       <p className="mb-4">Upload the following personal documents:</p>
       <div className="space-y-4">
         <div className="flex items-center space-x-4">
-          <label className="w-1/3 text-right font-medium">Photo ID:</label>
-          <input type="file" className="file-input" onChange={(e) => handleFileChange(e, 'photoId', false)} />
+          <label htmlFor="photoId" className="w-1/3 text-right font-medium">Photo ID:</label>
+          <input 
+            id="photoId"
+            type="file" 
+            className="file-input" 
+            onChange={(e) => handleFileChange(e, 'photoId', false)} 
+          />
         </div>
         <div className="flex items-center space-x-4">
-          <label className="w-1/3 text-right font-medium">Proof of Funds:</label>
-          <input type="file" className="file-input" onChange={(e) => handleFileChange(e, 'proofOfFunds', false)} />
+          <label htmlFor="proofOfFunds" className="w-1/3 text-right font-medium">Proof of Funds:</label>
+          <input 
+            id="proofOfFunds"
+            type="file" 
+            className="file-input" 
+            onChange={(e) => handleFileChange(e, 'proofOfFunds', false)} 
+          />
         </div>
         <div className="flex items-center space-x-4">
-          <label className="w-1/3 text-right font-medium">Proof of Residence:</label>
-          <input type="file" className="file-input" onChange={(e) => handleFileChange(e, 'proofOfResidence', false)} />
+          <label htmlFor="proofOfResidence" className="w-1/3 text-right font-medium">Proof of Residence:</label>
+            <input 
+            id="proofOfResidence"
+            type="file" 
+            className="file-input" 
+            onChange={(e) => handleFileChange(e, 'proofOfResidence', false)} 
+          />
         </div>
       </div>
     </AccordionItem>,
