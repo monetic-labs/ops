@@ -13,9 +13,9 @@ export const FormCompanyUsers: React.FC<{
   initialData: AddUserSchema;
   updateFormData: (data: AddUserSchema) => void;
 }> = ({ onSubmit, initialData, updateFormData }) => {
-  const { control, handleSubmit, formState: { errors }, watch } = useForm<AddUserSchema>({
+  const { control, handleSubmit, formState: { errors }, watch } = useForm<{ users: AddUserSchema }>({
     resolver: zodResolver(addUserSchema),
-    defaultValues: initialData,
+    defaultValues: { users: initialData },
   });
 
   const { fields, append, remove } = useFieldArray({
@@ -27,7 +27,7 @@ export const FormCompanyUsers: React.FC<{
 
   useEffect(() => {
     const subscription = watch((value) => {
-      updateFormData(value as AddUserSchema);
+      updateFormData(value.users as AddUserSchema);
     });
 
     return () => subscription.unsubscribe();
@@ -35,10 +35,10 @@ export const FormCompanyUsers: React.FC<{
 
   const handleFormSubmit = handleSubmit(async (data) => {
     console.log("Users submitted:", data);
-    for (const user of data) {
-      await inviteUser(user);
+    for (const user of data.users) {
+      await inviteUser(user as AddUserSchema);
     }
-    onSubmit(data);
+    onSubmit(data.users);
   });
 
   const addUser = () => {
@@ -54,11 +54,13 @@ export const FormCompanyUsers: React.FC<{
     }
   };
 
-  const renderTabTitle = (field: AddUserSchema, index: number) => {
-    return field.email || `User ${index + 1}`;
+  const renderTabTitle = (field: AddUserSchema[number], index: number) => {
+    const email = field.email || "";
+    const phoneNumber = field.phoneNumber || "";
+    return email || `User ${index + 1}`;
   };
 
-  const renderTabContent = (field: AddUserSchema, index: number) => (
+  const renderTabContent = (field: AddUserSchema[number], index: number) => (
     <div className="space-y-4">
       <FormInput
         control={control}

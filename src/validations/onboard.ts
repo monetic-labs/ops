@@ -129,7 +129,6 @@ export const addUserSchema = z.array(
 );
 
 export type AddUserSchema = z.infer<typeof addUserSchema>;
-
 export type CompanyRegisteredAddressSchema = z.infer<typeof companyRegisteredAddressSchema>;
 export type CompanyInfoSchema = z.infer<typeof companyAccountSchema>;
 export type CompanyDetailsSchema = z.infer<typeof companyDetailsSchema>;

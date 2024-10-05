@@ -82,7 +82,7 @@ export const KYBMerchantForm: React.FC<{ onCancel: () => void; initialEmail: str
         <Tab key="add-users" title="Add Users">
           <FormCompanyUsers
             initialData={formData.addUser || [{ email: "", phoneNumber: "" }]}
-            updateFormData={(data) => updateFormData({ addUser: { email: data.email || "", phoneNumber: data.phoneNumber || "" } })}
+            updateFormData={(data) => updateFormData({ addUser: data })}
             onSubmit={(data) => onSubmitStep(6, data)}
           />
         </Tab>

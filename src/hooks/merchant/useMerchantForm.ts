@@ -6,7 +6,7 @@ import { useFormPersistence } from "@/hooks/generics/useFormPersistence";
 import { useCreateBridgeMerchant } from "@/hooks/merchant/useCreateMerchant";
 
 import { merchantConfig } from "@/config/merchant";
-import { OwnerDetailsSchema } from "@/validations/onboard";
+import { AddUserSchema, OwnerDetailsSchema } from "@/validations/onboard";
 
 export const useMerchantForm = (initialEmail: string) => {
   const router = useRouter();
@@ -68,10 +68,12 @@ export const useMerchantForm = (initialEmail: string) => {
       birthday: "",
       ssn: "",
     },
-    addUser: {
+    addUser: [
+      {
       email: "",
       phoneNumber: "",
-    }
+      },
+    ] as AddUserSchema,
   };
 
   const {
