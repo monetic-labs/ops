@@ -9,13 +9,13 @@ import { addUserSchema, AddUserSchema, phoneRegex } from "@/validations/onboard"
 import { useInviteUser } from "@/hooks/merchant/useInviteUser";
 
 export const FormCompanyUsers: React.FC<{
-  onSubmit: (data: AddUserSchema[]) => void;
-  initialData: AddUserSchema[];
-  updateFormData: (data: AddUserSchema[]) => void;
+  onSubmit: (data: AddUserSchema) => void;
+  initialData: AddUserSchema;
+  updateFormData: (data: AddUserSchema) => void;
 }> = ({ onSubmit, initialData, updateFormData }) => {
-  const { control, handleSubmit, formState: { errors }, watch } = useForm<{ users: AddUserSchema[] }>({
+  const { control, handleSubmit, formState: { errors }, watch } = useForm<AddUserSchema>({
     resolver: zodResolver(addUserSchema),
-    defaultValues: { users: initialData.length ? initialData : [{ email: "", phoneNumber: "" }] },
+    defaultValues: initialData,
   });
 
   const { fields, append, remove } = useFieldArray({
@@ -27,18 +27,18 @@ export const FormCompanyUsers: React.FC<{
 
   useEffect(() => {
     const subscription = watch((value) => {
-      updateFormData(value.users as AddUserSchema[]);
+      updateFormData(value as AddUserSchema);
     });
 
     return () => subscription.unsubscribe();
   }, [watch, updateFormData]);
 
   const handleFormSubmit = handleSubmit(async (data) => {
-    console.log("Users submitted:", data.users);
-    for (const user of data.users) {
+    console.log("Users submitted:", data);
+    for (const user of data) {
       await inviteUser(user);
     }
-    onSubmit(data.users);
+    onSubmit(data);
   });
 
   const addUser = () => {

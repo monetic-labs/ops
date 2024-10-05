@@ -119,12 +119,14 @@ export const merchantFeeSchema = z.object({
   fee: z.number().min(0).max(100),
 });
 
-export const addUserSchema = z.object({
-  email: z.string().email("Invalid email address").optional(),
-  phoneNumber: z.string().regex(phoneRegex, "Invalid phone number format").optional(),
-}).refine(data => data.email || data.phoneNumber, {
-  message: "Either email or phone number must be provided",
-});
+export const addUserSchema = z.array(
+  z.object({
+    email: z.string().email("Invalid email address").optional(),
+    phoneNumber: z.string().regex(phoneRegex, "Invalid phone number format").optional(),
+  }).refine(data => data.email || data.phoneNumber, {
+    message: "Either email or phone number must be provided",
+  })
+);
 
 export type AddUserSchema = z.infer<typeof addUserSchema>;
 
