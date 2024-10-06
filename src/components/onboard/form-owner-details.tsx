@@ -31,10 +31,10 @@ export const FormOwnerDetails: React.FC<{
       <form className="space-y-4" onSubmit={onFormSubmit}>
         <FormInput
           control={control}
-          errorMessage={errors.role?.message}
-          label="Role"
-          name="role"
-          placeholder="Select Role"
+          errorMessage={errors.countryOfIssue?.message}
+          label="Country of Issue"
+          name="countryOfIssue"
+          placeholder="Select Country"
           type="autocomplete"
         />
         <FormInput

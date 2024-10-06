@@ -55,8 +55,8 @@ export const KYBMerchantForm: React.FC<{ onCancel: () => void; initialEmail: str
         </Tab>
         <Tab key="account-owner" title="Account Owner">
           <FormCompanyOwner
-            initialData={formData.companyUsers}
-            updateFormData={(data) => updateFormData({ companyUsers: data })}
+            initialData={formData.representatives[0]}
+            updateFormData={(data) => updateFormData({ representatives: [data] })}
             onSubmit={(data) => {
               onSubmitStep(3, data);
               handleStep3Success();

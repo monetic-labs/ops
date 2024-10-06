@@ -43,6 +43,7 @@ export const FormCompanyUsers: React.FC<{
 
   const addUser = () => {
     append({
+      type: undefined,
       email: "",
       phoneNumber: "",
     });
@@ -56,12 +57,18 @@ export const FormCompanyUsers: React.FC<{
 
   const renderTabTitle = (field: AddUserSchema[number], index: number) => {
     const email = field.email || "";
-    const phoneNumber = field.phoneNumber || "";
     return email || `User ${index + 1}`;
   };
 
   const renderTabContent = (field: AddUserSchema[number], index: number) => (
     <div className="space-y-4">
+      <FormInput
+        control={control}
+        errorMessage={errors.users?.[index]?.email?.message}
+        label="Type"
+        name={`users.${index}.email`}
+        placeholder="Representative or Ultimate Beneficial Owner"
+      />
       <FormInput
         control={control}
         errorMessage={errors.users?.[index]?.email?.message}

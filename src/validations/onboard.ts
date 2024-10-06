@@ -58,7 +58,7 @@ export const companyRepresentativeSchema = z.object({
 });
 
 export const ownerDetailsSchema = z.object({
-  role: z.enum(["bookkeeper", "developer", "admin", "super admin"]),
+  countryOfIssue: z.custom<ISO3166Alpha2Country>(),
   walletAddress: z.string().regex(/^0x[a-fA-F0-9]{40}$/, "Invalid wallet address"),
   birthday: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Invalid date format"),
   ssn: z.string().regex(/^\d{3}-\d{2}-\d{4}$/, "Invalid SSN format"),
@@ -121,6 +121,7 @@ export const merchantFeeSchema = z.object({
 
 export const addUserSchema = z.array(
   z.object({
+    type: z.enum(["representative", "ultimate_beneficial_owner"]).optional(),
     email: z.string().email("Invalid email address").optional(),
     phoneNumber: z.string().regex(phoneRegex, "Invalid phone number format").optional(),
   }).refine(data => data.email || data.phoneNumber, {
