@@ -11,11 +11,12 @@ import BackOfficeTabs from "@/components/back-office/back-office";
 import BillPayTab from "@/components/bill-pay/bill-pay";
 import CardServicesTabs from "@/components/card-issuance";
 import ComplianceTable from "@/components/compliance/compliance";
-import UsersTab from "@/components/users/users";
+import UserTab from "@/components/users/users";
 import { tabsConfig } from "@/config/tabs";
 import { useGetComplianceStatus } from "@/hooks/merchant/useGetComplianceStatus";
+import { PersonRole } from "@backpack-fux/pylon-sdk";
 
-export default function MerchantServicesTabs() {
+export default function MerchantServicesTabs({ userId }: { userId: string }) {
   const [selectedService, setSelectedService] = useState<string>(tabsConfig[0].id);
   const { complianceStatus } = useGetComplianceStatus();
   const router = useRouter();
@@ -38,7 +39,7 @@ export default function MerchantServicesTabs() {
       case "users":
         return (
           <>
-            <UsersTab />
+            <UserTab userId={userId} />
             <Divider className="my-4" />
           </>
         );

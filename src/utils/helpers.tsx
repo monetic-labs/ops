@@ -1,6 +1,7 @@
 import { createIcon } from "opepen-standard";
 
 import { ChainAddress, OrderID } from "@/types";
+import { MerchantUserGetOutput } from "@backpack-fux/pylon-sdk";
 
 export function formatBalance(balance: number, currency: string): string {
   return `${mapCurrencyToSymbol[currency]} ${balance.toFixed(2)} ${currency.toUpperCase()}`;
@@ -103,4 +104,8 @@ export const getTimeAgo = (timestamp: string): string => {
   const diffInDays = Math.floor(diffInHours / 24);
 
   return `${diffInDays} day${diffInDays !== 1 ? "s" : ""} ago`;
+};
+
+export const getFullName = (firstName: string, lastName: string) => {
+  return `${firstName} ${lastName}`;
 };

@@ -12,7 +12,7 @@
     "map:postcode": "node scripts/preprocess-postcodes.js"
   },
   "dependencies": {
-    "@backpack-fux/pylon-sdk": "^0.2.941",
+    "@backpack-fux/pylon-sdk": "^0.2.947",
     "@hookform/resolvers": "^3.9.0",
     "@nextui-org/accordion": "^2.0.40",
     "@nextui-org/button": "^2.0.38",
@@ -50,6 +50,7 @@
     "clsx": "2.1.1",
     "framer-motion": "~11.9.0",
     "intl-messageformat": "^10.5.14",
+    "jwt-decode": "^4.0.0",
     "lucide-react": "^0.441.0",
     "next": "14.2.4",
     "next-themes": "^0.2.1",
