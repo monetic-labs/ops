@@ -77,11 +77,13 @@ export default function UserTab({ userId }: { userId: string }) {
 
   return (
     <>
-      <div className="flex justify-end items-center mb-4">
-        <Button className="text-notpurple-500" disabled={!canManageUsers} onPress={() => setIsCreateModalOpen(true)}>
-          Create User
-        </Button>
-      </div>
+      {canManageUsers && (
+        <div className="flex justify-end items-center mb-4">
+          <Button className="text-notpurple-500" onPress={() => setIsCreateModalOpen(true)}>
+            Create User
+          </Button>
+        </div>
+      )}
       <Table aria-label="Transactions table with custom cells">
         <TableHeader columns={usersColumns as Column<MerchantUserGetOutput>[]}>
           {(column) => <TableColumn key={column.uid}>{column.name}</TableColumn>}
@@ -111,7 +113,7 @@ export default function UserTab({ userId }: { userId: string }) {
           <UserEditModal
             isOpen={isEditModalOpen && canManageUsers}
             user={selectedUser}
-            users={users}
+            isSelf={selectedUser.id === userId}
             onClose={() => {
               setSelectedUser(null);
               setIsEditModalOpen(false);

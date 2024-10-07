@@ -9,13 +9,13 @@ import { userRoles } from "@/data";
 interface UserEditModalProps {
   isOpen: boolean;
   user: MerchantUserGetOutput;
-  users: MerchantUserGetOutput[];
+  isSelf: boolean;
   onClose: () => void;
   onSave: (updatedUser: MerchantUserGetOutput) => void;
   onRemove: (userId: string) => void;
 }
 
-export default function UserEditModal({ isOpen, onClose, user, users, onSave, onRemove }: UserEditModalProps) {
+export default function UserEditModal({ isOpen, user, isSelf, onClose, onSave, onRemove }: UserEditModalProps) {
   const [editedUser, setEditedUser] = useState<MerchantUserGetOutput>({ ...user });
   const [isRemoveConfirmOpen, setIsRemoveConfirmOpen] = useState(false);
 
@@ -89,7 +89,11 @@ export default function UserEditModal({ isOpen, onClose, user, users, onSave, on
           </Switch> */}
         </ModalBody>
         <ModalFooter>
-          <Button className="bg-ualert-500 text-notpurple-500" onPress={() => setIsRemoveConfirmOpen(true)}>
+          <Button
+            className="bg-ualert-500 text-notpurple-500"
+            onPress={() => setIsRemoveConfirmOpen(true)}
+            isDisabled={isSelf}
+          >
             Remove User
           </Button>
           <Button onPress={onClose}>Cancel</Button>
