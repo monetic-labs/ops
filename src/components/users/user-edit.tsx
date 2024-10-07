@@ -10,12 +10,23 @@ interface UserEditModalProps {
   isOpen: boolean;
   user: MerchantUserGetOutput;
   isSelf: boolean;
+  isEditable: boolean;
+  availableRoles: PersonRole[];
   onClose: () => void;
   onSave: (updatedUser: MerchantUserGetOutput) => void;
   onRemove: (userId: string) => void;
 }
 
-export default function UserEditModal({ isOpen, user, isSelf, onClose, onSave, onRemove }: UserEditModalProps) {
+export default function UserEditModal({
+  isOpen,
+  user,
+  isSelf,
+  isEditable,
+  availableRoles,
+  onClose,
+  onSave,
+  onRemove,
+}: UserEditModalProps) {
   const [editedUser, setEditedUser] = useState<MerchantUserGetOutput>({ ...user });
   const [isRemoveConfirmOpen, setIsRemoveConfirmOpen] = useState(false);
 
@@ -66,7 +77,7 @@ export default function UserEditModal({ isOpen, user, isSelf, onClose, onSave, o
             selectedKeys={[editedUser.role]}
             onChange={(e) => setEditedUser({ ...editedUser, role: e.target.value as PersonRole })}
           >
-            {userRoles.map((role) => (
+            {availableRoles.map((role) => (
               <SelectItem key={role} value={role}>
                 {role
                   .replace(/_/g, " ")
@@ -92,12 +103,12 @@ export default function UserEditModal({ isOpen, user, isSelf, onClose, onSave, o
           <Button
             className="bg-ualert-500 text-notpurple-500"
             onPress={() => setIsRemoveConfirmOpen(true)}
-            isDisabled={isSelf}
+            isDisabled={isSelf || !isEditable}
           >
             Remove User
           </Button>
           <Button onPress={onClose}>Cancel</Button>
-          <Button color="primary" onPress={handleSave}>
+          <Button color="primary" onPress={handleSave} isDisabled={!isEditable}>
             Save
           </Button>
         </ModalFooter>

@@ -9,11 +9,12 @@ import { useState } from "react";
 
 interface CreateUserModalProps {
   isOpen: boolean;
+  availableRoles: PersonRole[];
   onClose: () => void;
   onSave: (newUser: MerchantUserGetOutput) => void;
 }
 
-export default function CreateUserModal({ isOpen, onClose, onSave }: CreateUserModalProps) {
+export default function CreateUserModal({ isOpen, availableRoles, onClose, onSave }: CreateUserModalProps) {
   const [newUser, setNewUser] = useState<MerchantUserGetOutput>({
     id: "",
     firstName: "",
@@ -104,7 +105,7 @@ export default function CreateUserModal({ isOpen, onClose, onSave }: CreateUserM
             selectedKeys={[newUser.role]}
             onChange={(e) => setNewUser({ ...newUser, role: e.target.value as PersonRole })}
           >
-            {userRoles.map((role) => (
+            {availableRoles.map((role) => (
               <SelectItem key={role} value={role}>
                 {role
                   .replace(/_/g, " ")

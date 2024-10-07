@@ -4,7 +4,7 @@ import { Table, TableBody, TableCell, TableColumn, TableHeader, TableRow } from 
 import { User } from "@nextui-org/user";
 import React, { useCallback, useEffect, useState } from "react";
 
-import { Column, usersColumns, usersStatusColorMap } from "@/data";
+import { Column, userRoles, usersColumns, usersStatusColorMap } from "@/data";
 import CreateUserModal from "./user-create";
 import UserEditModal from "./user-edit";
 import { getFullName, getOpepenAvatar } from "@/utils/helpers";
@@ -19,7 +19,14 @@ export default function UserTab({ userId }: { userId: string }) {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+
   const canManageUsers = userRole === "ADMIN" || userRole === "SUPER_ADMIN";
+  const isEditable = userRole === "SUPER_ADMIN" || (userRole === "ADMIN" && selectedUser?.role !== "SUPER_ADMIN");
+  const availableRoles = userRoles.filter((role) => {
+    if (userRole === "SUPER_ADMIN") return true;
+    if (userRole === "ADMIN") return role !== "SUPER_ADMIN";
+    return role === "MEMBER";
+  });
 
   useEffect(() => {
     const fetchUsers = async () => {
@@ -113,6 +120,8 @@ export default function UserTab({ userId }: { userId: string }) {
           <UserEditModal
             isOpen={isEditModalOpen && canManageUsers}
             user={selectedUser}
+            availableRoles={availableRoles}
+            isEditable={isEditable}
             isSelf={selectedUser.id === userId}
             onClose={() => {
               setSelectedUser(null);
@@ -146,6 +155,7 @@ export default function UserTab({ userId }: { userId: string }) {
       )}
       <CreateUserModal
         isOpen={isCreateModalOpen && canManageUsers}
+        availableRoles={availableRoles}
         onClose={() => setIsCreateModalOpen(false)}
         onSave={(newUser) => {
           setUsers([...users, newUser]);
