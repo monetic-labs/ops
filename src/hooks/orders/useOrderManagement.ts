@@ -43,6 +43,7 @@ export const useOrderManagement = () => {
 
   const handleTransactionUpdated = useCallback(
     (updatedTransaction: TransactionListItem) => {
+      console.log("Updated transaction:", updatedTransaction);
       updateTransactions((prevTransactions) => {
         const existingIndex = prevTransactions.findIndex((t) => t.id === updatedTransaction.id);
         if (existingIndex !== -1) {
@@ -64,17 +65,17 @@ export const useOrderManagement = () => {
           // These are just to keep the connection alive, no need to update state
           break;
         case "INITIAL_LIST":
-          handleInitialList(data.data.transactions as TransactionListItem[]);
+          handleInitialList(data.data.transactions);
           break;
         case "TRANSACTION_UPDATED":
-          handleTransactionUpdated(data.data.transactions as TransactionListItem);
+          handleTransactionUpdated(data.data);
           break;
         default:
           setState((prevState) => ({
             ...prevState,
             error: "Unknown transaction update type",
           }));
-          console.warn("Unknown transaction update type:", data.type);
+          console.warn("Unknown transaction update type:", data);
       }
     },
     [handleInitialList, handleTransactionUpdated]
