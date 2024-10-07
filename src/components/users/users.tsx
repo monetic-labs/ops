@@ -146,10 +146,9 @@ export default function UserTab({ userId }: { userId: string }) {
         isOpen={isCreateModalOpen && canManageUsers}
         onClose={() => setIsCreateModalOpen(false)}
         onSave={(newUser) => {
-          console.log("Creating user:", newUser);
+          setUsers([...users, newUser]);
           setIsCreateModalOpen(false);
         }}
-        users={users}
       />
     </>
   );

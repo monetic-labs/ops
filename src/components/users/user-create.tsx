@@ -9,13 +9,13 @@ import { useState } from "react";
 
 interface CreateUserModalProps {
   isOpen: boolean;
-  users: MerchantUserGetOutput[];
   onClose: () => void;
-  onSave: (newUser: Pick<MerchantUserGetOutput, "firstName" | "lastName" | "email" | "role">) => void;
+  onSave: (newUser: MerchantUserGetOutput) => void;
 }
 
-export default function CreateUserModal({ isOpen, users, onClose, onSave }: CreateUserModalProps) {
-  const [newUser, setNewUser] = useState<Pick<MerchantUserGetOutput, "firstName" | "lastName" | "email" | "role">>({
+export default function CreateUserModal({ isOpen, onClose, onSave }: CreateUserModalProps) {
+  const [newUser, setNewUser] = useState<MerchantUserGetOutput>({
+    id: "",
     firstName: "",
     lastName: "",
     email: "",
@@ -57,7 +57,14 @@ export default function CreateUserModal({ isOpen, users, onClose, onSave }: Crea
         role: newUser.role,
       });
       if (user) {
-        users.push(user);
+        onSave(user);
+        setNewUser({
+          id: "",
+          firstName: "",
+          lastName: "",
+          email: "",
+          role: "MEMBER",
+        });
         onClose();
       } else {
         alert("Failed to create user");
