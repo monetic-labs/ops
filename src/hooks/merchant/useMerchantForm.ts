@@ -6,7 +6,7 @@ import { useFormPersistence } from "@/hooks/generics/useFormPersistence";
 import { useCreateBridgeMerchant } from "@/hooks/merchant/useCreateMerchant";
 
 import { merchantConfig } from "@/config/merchant";
-import { AddUserSchema, OwnerDetailsSchema } from "@/validations/onboard";
+import { UserDetailsSchema } from "@/validations/onboard";
 
 export const useMerchantForm = (initialEmail: string) => {
   const router = useRouter();
@@ -45,33 +45,31 @@ export const useMerchantForm = (initialEmail: string) => {
       companyType: "",
       companyDescription: "",
     },
-    representatives: [
-      {
-      firstName: "",
-      lastName: "",
-      email: "",
-      phoneNumber: "",
-      registeredAddress: {
-        postcode: "",
-        city: "",
-        state: "",
-        country: "US" as ISO3166Alpha2Country,
-        street1: "",
-      },
-    }],
-    ownerDetails: {
-      walletAddress: "",
-      birthday: "",
-      ssn: "",
-      countryOfIssue: "US" as ISO3166Alpha2Country,
-    },
-    addUser: [
-      {
+    accountUsers: {
+      representatives: [
+        {
+        firstName: "",
+        lastName: "",
         email: "",
         phoneNumber: "",
-
-      },
-    ] as AddUserSchema,
+        role: "",
+        registeredAddress: {
+          postcode: "",
+          city: "",
+          state: "",
+          country: "US" as ISO3166Alpha2Country,
+          street1: "",
+        },
+      }],
+    },
+    userDetails: [
+      {
+        walletAddress: "",
+        birthday: "",
+        ssn: "",
+        countryOfIssue: "US" as ISO3166Alpha2Country,
+      }
+    ],
   };
 
   const {
@@ -100,26 +98,21 @@ export const useMerchantForm = (initialEmail: string) => {
     async (step: number, data: any) => {
       console.log(`Step ${step} data:`, data);
 
+      let updatedFormData = { ...formData };
+
       if (step === 1) {
-        updateFormData({ companyAccount: data });
-        setStepCompletion((prev) => ({ ...prev, step1: true }));
+        updatedFormData.companyAccount = data;
         setActiveTab("company-details");
       } else if (step === 2) {
-        updateFormData({ companyDetails: data });
-        setStepCompletion((prev) => ({ ...prev, step2: true }));
+        updatedFormData.companyDetails = data;
         setActiveTab("account-owner");
       } else if (step === 3) {
-        updateFormData({ representatives: data });
-        setStepCompletion((prev) => ({ ...prev, step3: true }));
+        updatedFormData.accountUsers = data;
         setActiveTab("owner-details");
       } else if (step === 4) {
-        updateFormData({ ownerDetails: data });
-        setStepCompletion((prev) => ({ ...prev, step4: true }));
+        updatedFormData.userDetails = data;
                 
-        const combinedData = {
-          ...formData,
-          //ownerDetails: data,
-        }
+        const combinedData = updatedFormData;
 
         console.log("combinedData", combinedData);
 
@@ -132,11 +125,10 @@ export const useMerchantForm = (initialEmail: string) => {
           fee: merchantConfig.fee,
           representatives: [
           {
-            firstName: combinedData.representatives[0].firstName,
-            lastName: combinedData.representatives[0].lastName,
-            email: combinedData.representatives[0].email,
-            phoneNumber: combinedData.representatives[0].phoneNumber,
-            walletAddress: combinedData.companyDetails.walletAddress,
+            firstName: combinedData.accountUsers.representatives[0].firstName,
+            lastName: combinedData.accountUsers.representatives[0].lastName,
+            email: combinedData.accountUsers.representatives[0].email,
+            phoneNumber: combinedData.accountUsers.representatives[0].phoneNumber,
           },
           ],
           walletAddress: combinedData.companyDetails.walletAddress,
@@ -145,22 +137,20 @@ export const useMerchantForm = (initialEmail: string) => {
 
         const rainData = {
           initialUser: {
-            firstName: combinedData.representatives[0].firstName,
-            lastName: combinedData.representatives[0].lastName,
-            email: combinedData.representatives[0].email,
-            birthday: combinedData.ownerDetails.birthday,
-            ssn: combinedData.ownerDetails.ssn,
-            countryOfIssue: combinedData.ownerDetails.countryOfIssue,
-            registeredAddress: combinedData.representatives[0].registeredAddress,
-            walletAddress: combinedData.ownerDetails.walletAddress,
-            //isToSAgreed: false,
+            firstName: combinedData.accountUsers.representatives[0].firstName,
+            lastName: combinedData.accountUsers.representatives[0].lastName,
+            email: combinedData.accountUsers.representatives[0].email,
+            birthday: combinedData.userDetails[0].birthday,
+            ssn: combinedData.userDetails[0].ssn,
+            countryOfIssue: combinedData.userDetails[0].countryOfIssue,
+            registeredAddress: combinedData.accountUsers.representatives[0].registeredAddress,
+            walletAddress: combinedData.userDetails[0].walletAddress,
             
             role: merchantConfig.role,
             chainId: merchantConfig.chainId,
             contractAddress: merchantConfig.contractAddress,
             iovation: merchantConfig.iovation,
             ipAddress: merchantConfig.ipAddress,
-            // isToSAgreed => get from register account tab
           },
           entity: {
             name: combinedData.companyAccount.company.name,
@@ -174,27 +164,28 @@ export const useMerchantForm = (initialEmail: string) => {
           },
           representatives: {
             type: "representative",
-            firstName: combinedData.representatives[0].firstName,
-            lastName: combinedData.representatives[0].lastName,
-            email: combinedData.representatives[0].email,
-            address: combinedData.representatives[0].registeredAddress,
+            firstName: combinedData.accountUsers.representatives[0].firstName,
+            lastName: combinedData.accountUsers.representatives[0].lastName,
+            email: combinedData.accountUsers.representatives[0].email,
+            address: combinedData.accountUsers.representatives[0].registeredAddress,
+            
             
             // these need to come from an array of objects from the addUser tab and the invite user endpoint
-            birthday: combinedData.ownerDetails.birthday,
-            ssn: combinedData.ownerDetails.ssn,
-            countryOfIssue: combinedData.ownerDetails.countryOfIssue,
+            birthday: combinedData.userDetails[0].birthday,
+            ssn: combinedData.userDetails[0].ssn,
+            countryOfIssue: combinedData.userDetails[0].countryOfIssue,
           },
           ultimateBeneficialOwners: {
             type: "ultimateBeneficialOwner", 
-            firstName: combinedData.representatives[0].firstName,
-            lastName: combinedData.representatives[0].lastName,
-            email: combinedData.representatives[0].email,
-            address: combinedData.representatives[0].registeredAddress,
+            firstName: combinedData.accountUsers.representatives[0].firstName,
+            lastName: combinedData.accountUsers.representatives[0].lastName,
+            email: combinedData.accountUsers.representatives[0].email,
+            address: combinedData.accountUsers.representatives[0].registeredAddress,
             
             // these need to come from an array of objects from the addUser tab and the invite user endpoint
-            birthday: combinedData.ownerDetails.birthday,
-            ssn: combinedData.ownerDetails.ssn,
-            countryOfIssue: combinedData.ownerDetails.countryOfIssue,
+            birthday: combinedData.userDetails[0].birthday,
+            ssn: combinedData.userDetails[0].ssn,
+            countryOfIssue: combinedData.userDetails[0].countryOfIssue,
           },
         };
 
@@ -218,12 +209,12 @@ export const useMerchantForm = (initialEmail: string) => {
         }
       } else if (step === 5) {
         setStepCompletion((prev) => ({ ...prev, step5: true }));
-        setActiveTab("register-account");
-      } else if (step === 6) {
-        updateFormData({ addUser: data });
-        setStepCompletion((prev) => ({ ...prev, step6: true }));
+        updateFormData({ ...formData, accountUsers: data });
+      } 
 
-      }
+      updateFormData(updatedFormData);
+      setStepCompletion((prev) => ({ ...prev, [`step${step}`]: true }));
+
     },
     [createBridgeMerchant, formData, updateFormData]
   );

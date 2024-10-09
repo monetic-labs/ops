@@ -7,26 +7,27 @@ import { Button } from "@nextui-org/button";
 import { FormCard } from "@/components/generics/form-card";
 import { FormInput } from "@/components/generics/form-input";
 import { FormButton } from "@/components/generics/form-button";
-import { CompanyInfoSchema, companyAccountSchema } from "@/validations/onboard";
+import { CompanyAccountSchema, companyAccountSchema, urlRegex } from "@/validations/onboard";
 import { emailRegex } from "@/validations/auth";
 
 import { PostcodeInput } from "../generics/form-input-postcode";
 
 export const FormCompanyInfo: React.FC<{
-  onSubmit: (data: CompanyInfoSchema) => void;
-  initialData: CompanyInfoSchema;
-  updateFormData: (data: CompanyInfoSchema) => void;
+  onSubmit: (data: CompanyAccountSchema) => void;
+  initialData: CompanyAccountSchema;
+  updateFormData: (data: CompanyAccountSchema) => void;
 }> = ({ onSubmit, initialData, updateFormData }) => {
   const router = useRouter();
   const [showAddressInputs, setShowAddressInputs] = useState(false);
-
+  const [websiteInput, setWebsiteInput] = useState(initialData.company.website || "");
+  
   const {
     control,
     formState: { errors },
     handleSubmit,
     watch,
     setValue,
-  } = useForm<CompanyInfoSchema>({
+  } = useForm<CompanyAccountSchema>({
     resolver: zodResolver(companyAccountSchema),
     defaultValues: initialData,
   });
@@ -45,15 +46,14 @@ export const FormCompanyInfo: React.FC<{
 
   useEffect(() => {
     const subscription = watch((value) => {
-      console.log("value", value);
-      updateFormData(value as CompanyInfoSchema);
+      updateFormData(value as CompanyAccountSchema);
     });
 
     return () => subscription.unsubscribe();
   }, [watch, updateFormData]);
 
   const onFormSubmit = handleSubmit(
-    (data: CompanyInfoSchema) => {
+    (data: CompanyAccountSchema) => {
       console.log("data", data);
       onSubmit(data);
       updateFormData(data);
@@ -72,13 +72,25 @@ export const FormCompanyInfo: React.FC<{
     } else {
       setShowAddressInputs(false);
     }
-    console.log("Postcode lookup result:", result);
+  };
+
+  const handleWebsiteChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    let value = e.target.value;
+    setWebsiteInput(value);
+
+    // Add https:// if not present when setting the form value
+    if (value && !value.startsWith("http://") && !value.startsWith("https://")) {
+      value = `https://${value}`;
+    }
+
+    setValue("company.website", value, { shouldValidate: true });
   };
 
   return (
-    <FormCard className="w-full" title="Company Information">
+    <FormCard className="w-full" title="Company Account">
       <form className="space-y-4" onSubmit={onFormSubmit}>
         <FormInput
+          about="Use the registered name of the company, your dba can be updated later."
           control={control}
           errorMessage={errors.company?.name?.message}
           label="Company Name"
@@ -87,6 +99,7 @@ export const FormCompanyInfo: React.FC<{
           placeholder="Algersoft, LLC"
         />
         <FormInput
+          about="Use the email where you want to receive important account notifications."
           control={control}
           errorMessage={errors.company?.email?.message}
           label="Email"
@@ -95,13 +108,18 @@ export const FormCompanyInfo: React.FC<{
           placeholder="nope@algersoft.com"
         />
         <FormInput
+          about="You don't need to add the http:// or https:// before the url."
           control={control}
           errorMessage={errors.company?.website?.message}
           label="Website"
           name="company.website"
-          placeholder="https://www.algersoft.com"
+          pattern={urlRegex.source}
+          placeholder="algersoft.com"
+          value={websiteInput}
+          onChange={handleWebsiteChange}
         />
         <PostcodeInput
+          about="Address where the company is registered."
           control={control}
           errorMessage={errors.company?.registeredAddress?.postcode?.message}
           name="company.registeredAddress.postcode"

@@ -5,7 +5,19 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { FormCard } from "@/components/generics/form-card";
 import { FormInput } from "@/components/generics/form-input";
 import { FormButton } from "@/components/generics/form-button";
-import { CompanyDetailsSchema, companyDetailsSchema, walletAddressRegex } from "@/validations/onboard";
+import { CompanyDetailsSchema, companyDetailsSchema, companyEINRegex, walletAddressRegex } from "@/validations/onboard";
+import { AutocompleteInput } from "@/components/generics/autocomplete-input";
+
+const companyTypes = [
+  { label: "Sole Proprietorship", value: "sole_proprietorship" },
+  { label: "Limited Liability Company (LLC)", value: "llc" },
+  { label: "C Corporation", value: "c_corp" },
+  { label: "S Corporation", value: "s_corp" },
+  { label: "Partnership", value: "partnership" },
+  { label: "Limited Partnership (LP)", value: "lp" },
+  { label: "Limited Liability Partnership (LLP)", value: "llp" },
+  { label: "Nonprofit Corporation", value: "nonprofit" },
+];
 
 export const FormCompanyDetails: React.FC<{
   onSubmit: (data: CompanyDetailsSchema) => void;
@@ -37,34 +49,40 @@ export const FormCompanyDetails: React.FC<{
     <FormCard className="w-full" title="Company Details">
       <form className="space-y-4" onSubmit={onFormSubmit}>
         <FormInput
+          about="This is where you will receive your settled funds from your customers."
           control={control}
           errorMessage={errors.walletAddress?.message}
-          label="Wallet Address"
-          maxLength={42}
+          label="Settlement Address"
           name="walletAddress"
+          maxLength={42}
           pattern={walletAddressRegex.source}
           placeholder="0x1234567890123456789012345678901234567890"
         />
         <FormInput
+          about="Use the entity responsible for funds moving in and out of the settlement address."
           control={control}
           errorMessage={errors.companyEIN?.message}
           label="Company EIN"
           name="companyEIN"
+          maxLength={10}
+          pattern={companyEINRegex.source}
           placeholder="12-3456789"
         />
-        <FormInput
+        <AutocompleteInput
+          about="Select the type of company structure"
           control={control}
           errorMessage={errors.companyType?.message}
           label="Company Type"
           name="companyType"
           placeholder="Select Company Type"
-          type="autocomplete"
+          items={companyTypes}
         />
         <FormInput
           control={control}
           errorMessage={errors.companyDescription?.message}
           label="Company Description"
           name="companyDescription"
+          maxLength={100}
           placeholder="Describe your company"
         />
         <div className="flex justify-end space-x-4">

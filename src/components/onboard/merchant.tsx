@@ -7,12 +7,15 @@ import { FormCard } from "@/components/generics/form-card";
 import Notification from "@/components/generics/notification";
 import { useMerchantForm } from "@/hooks/merchant/useMerchantForm";
 
-import { FormCompanyOwner } from "./form-account-owner";
-import { FormCompanyInfo } from "./form-company-info";
+import { FormCompanyInfo } from "./form-company-account";
 import { AccountRegistration } from "./form-bridge-kyb";
 import { FormCompanyDetails } from "./form-company-details";
 import { FormOwnerDetails } from "./form-owner-details";
-import { FormCompanyUsers } from "./form-company-users";
+import { FormAccountUsers } from "./form-account-users";
+import { CompanyRepresentativeSchema, UserDetailsSchema } from "@/validations/onboard";
+import { ISO3166Alpha2Country } from "@backpack-fux/pylon-sdk";
+
+type ValidRole = "super-admin" | "admin" | "developer" | "bookkeeper" | "member";
 
 export const KYBMerchantForm: React.FC<{ onCancel: () => void; initialEmail: string }> = ({ initialEmail }) => {
   const {
@@ -31,6 +34,18 @@ export const KYBMerchantForm: React.FC<{ onCancel: () => void; initialEmail: str
   const handleStep3Success = () => {
     setNotification("Company Owner information submitted successfully!");
     setTimeout(() => setNotification(null), 2000); // Clear notification after 3 seconds
+  };
+
+  const ensureValidRole = (role: string): ValidRole => {
+    const validRoles: ValidRole[] = ["super-admin", "admin", "developer", "bookkeeper", "member"];
+    return validRoles.includes(role as ValidRole) ? (role as ValidRole) : "member";
+  };
+
+  const validatedAccountUsers: CompanyRepresentativeSchema = {
+    representatives: formData.accountUsers.representatives.map(user => ({
+      ...user,
+      role: ensureValidRole(user.role)
+    }))
   };
 
   return (
@@ -53,37 +68,35 @@ export const KYBMerchantForm: React.FC<{ onCancel: () => void; initialEmail: str
             onSubmit={(data) => onSubmitStep(2, data)}
           />
         </Tab>
-        <Tab key="account-owner" title="Account Owner">
-          <FormCompanyOwner
-            initialData={formData.representatives[0]}
-            updateFormData={(data) => updateFormData({ representatives: [data] })}
-            onSubmit={(data) => {
+        <Tab key="account-users" title="Account Users">
+        <FormAccountUsers
+            initialData={validatedAccountUsers}
+            updateFormData={(data: CompanyRepresentativeSchema) => updateFormData({ accountUsers: data })}
+            onSubmit={(data: CompanyRepresentativeSchema) => {
               onSubmitStep(3, data);
               handleStep3Success();
             }}
-            />
+          />
             {notification && <Notification message={notification} />}
         </Tab>
-        <Tab key="owner-details" title="Owner Details">
+        <Tab key="user-details" title="User Details">
           <FormOwnerDetails
-            initialData={formData.ownerDetails}
-            updateFormData={(data) => updateFormData({ ownerDetails: data })}
-            onSubmit={(data) => onSubmitStep(4, data)}
+            initialData={formData.userDetails}
+            updateFormData={(data: UserDetailsSchema) => updateFormData({ 
+              userDetails: data.map(user => ({
+                ...user,
+                countryOfIssue: user.countryOfIssue as ISO3166Alpha2Country
+              }))
+            })}
+            onSubmit={(data: UserDetailsSchema) => onSubmitStep(4, data)}
           />
-      </Tab>
+        </Tab>
         <Tab key="register-account" title="Register Account">
           <AccountRegistration
             kybLink={createMerchantData?.data.kycLink || null}
             tosLink={createMerchantData?.data.tosLink || null}
             onCancel={handleCancel}
             onKYCDone={handleKYCDone}
-          />
-        </Tab>
-        <Tab key="add-users" title="Add Users">
-          <FormCompanyUsers
-            initialData={formData.addUser || [{ email: "", phoneNumber: "" }]}
-            updateFormData={(data) => updateFormData({ addUser: data })}
-            onSubmit={(data) => onSubmitStep(6, data)}
           />
         </Tab>
       </Tabs>

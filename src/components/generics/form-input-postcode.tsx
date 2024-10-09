@@ -6,6 +6,7 @@ import { Control, FieldValues, Path } from "react-hook-form";
 import { usePostcodeLookup } from "@/hooks/generics/usePostcodeLookup";
 import { FormInput } from "@/components/generics/form-input";
 import { postcodeRegex } from "@/validations/onboard";
+import { Tooltip } from "@nextui-org/tooltip";
 
 interface PostcodeInputProps<T extends FieldValues> {
   name: Path<T>;
@@ -14,6 +15,7 @@ interface PostcodeInputProps<T extends FieldValues> {
   helperText?: string;
   onLookupComplete?: (result: any) => void;
   showAddressInputs?: boolean;
+  about?: string;
 }
 
 export const PostcodeInput = <T extends FieldValues>({
@@ -21,6 +23,7 @@ export const PostcodeInput = <T extends FieldValues>({
   control,
   onLookupComplete,
   showAddressInputs,
+  about,
   ...props
 }: PostcodeInputProps<T>) => {
   const { lookup, isLoading, error, result } = usePostcodeLookup();
@@ -37,7 +40,7 @@ export const PostcodeInput = <T extends FieldValues>({
     }
   };
 
-  return (
+  const postcodeInput = (
     <div className="flex flex-col">
       <div className="flex items-center space-x-4 p-1 bg-charyo-800/30 rounded-lg">
         <div className="w-1/4">
@@ -74,5 +77,13 @@ export const PostcodeInput = <T extends FieldValues>({
         {error && <p className="text-sm text-ualert-500">{error}</p>}
       </div>
     </div>
+  );
+
+  return about ? (
+    <Tooltip content={about}>
+      {postcodeInput}
+    </Tooltip>
+  ) : (
+    postcodeInput
   );
 };
