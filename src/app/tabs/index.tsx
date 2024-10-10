@@ -8,7 +8,7 @@ import { useRouter } from "next/navigation";
 
 import WidgetManagement from "@/components/back-office/widget-tab";
 import BackOfficeTabs from "@/components/back-office/back-office";
-import BillPayTab from "@/components/bill-pay/bill-pay";
+import BillPayTabs from "@/components/bill-pay/bill-pay";
 import CardServicesTabs from "@/components/card-issuance";
 import ComplianceTable from "@/components/compliance/compliance";
 import UserTab from "@/components/users/users";
@@ -46,7 +46,7 @@ export default function MerchantServicesTabs({ userId }: { userId: string }) {
       case "bill-pay":
         return (
           <>
-            <BillPayTab />
+            <BillPayTabs />
             <Divider className="my-4" />
           </>
         );

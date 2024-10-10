@@ -51,3 +51,19 @@ export const backOfficeConfig = [
     content: "This is where you manage your widgets",
   },
 ];
+
+export enum BillPayId {
+  TRANSFERS = "bill-pay-list",
+  CONTACTS = "bill-pay-contacts",
+}
+
+export const billPayConfig: { id: BillPayId; label: string }[] = [
+  {
+    id: BillPayId.TRANSFERS,
+    label: "Transfers",
+  },
+  {
+    id: BillPayId.CONTACTS,
+    label: "Contacts",
+  },
+];

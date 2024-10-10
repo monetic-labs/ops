@@ -1,10 +1,11 @@
 import { Button } from "@nextui-org/button";
 import { Divider } from "@nextui-org/divider";
 import { Input } from "@nextui-org/input";
+import { Autocomplete, AutocompleteItem } from "@nextui-org/autocomplete";
 import { Modal, ModalBody, ModalContent, ModalFooter, ModalHeader } from "@nextui-org/modal";
 import { Select, SelectItem } from "@nextui-org/select";
 import { useEffect, useMemo, useState } from "react";
-import ModalFooterWithSupport from "../generics/footer-modal-support";
+import ModalFooterWithSupport from "../../generics/footer-modal-support";
 
 interface CreateBillPayModalProps {
   isOpen: boolean;
@@ -40,7 +41,7 @@ export default function CreateBillPayModal({ isOpen, onClose, onSave }: CreateBi
     fee: "",
     total: "",
   });
-
+  const [isNewCustomer, setIsNewCustomer] = useState(false);
   const [showMemo, setShowMemo] = useState(false);
   const isMemoRequired = memoRequiredMethods.includes(newBillPay.vendorMethod);
 
@@ -73,6 +74,10 @@ export default function CreateBillPayModal({ isOpen, onClose, onSave }: CreateBi
     console.log("Support clicked");
   };
 
+  const handleToggleNewCustomer = () => {
+    console.log("Toggle new customer");
+  };
+
   const footerActions = [
     {
       label: "Create",
@@ -83,25 +88,33 @@ export default function CreateBillPayModal({ isOpen, onClose, onSave }: CreateBi
   return (
     <Modal isOpen={isOpen} size="2xl" onClose={onClose}>
       <ModalContent>
-        <ModalHeader>Create New Bill Pay</ModalHeader>
+        <ModalHeader>Create New Transfer</ModalHeader>
         <ModalBody>
-          <Input
+          <Autocomplete
             label="Vendor Name"
+            listboxProps={{
+              emptyContent: "No results found. Try creating a new contact instead.",
+              classNames: {
+                emptyContent: "text-ualert-500",
+              },
+            }}
             value={newBillPay.vendorName}
             onChange={(e) => setNewBillPay({ ...newBillPay, vendorName: e.target.value })}
-          />
-          <Select
-            label="Vendor Method"
-            selectedKeys={[newBillPay.vendorMethod]}
-            onChange={(e) => setNewBillPay({ ...newBillPay, vendorMethod: e.target.value })}
           >
-            {vendorMethods.map((method) => (
-              <SelectItem key={method} value={method}>
-                {method}
-              </SelectItem>
-            ))}
-          </Select>
-          <div className={`fade-in ${isMemoRequired ? 'show' : ''}`}>
+            <AutocompleteItem key="Acme-ltd-wire" textValue={`Acme LTD (Wire)`} >
+              <div className="flex justify-between items-center">
+                <span>Acme LTD</span>
+                <span className="text-xs text-gray-500">Wire</span>
+              </div>
+            </AutocompleteItem>
+            <AutocompleteItem key="Acme-ltd-ach" textValue={`Acme LTD (ACH)`}>
+              <div className="flex justify-between items-center">
+                <span>Acme LTD</span>
+                <span className="text-xs text-gray-500">ACH</span>
+              </div>
+            </AutocompleteItem>
+          </Autocomplete>
+          <div className={`fade-in ${isMemoRequired ? "show" : ""}`}>
             {showMemo && (
               <Input
                 label="Memo"
@@ -131,9 +144,9 @@ export default function CreateBillPayModal({ isOpen, onClose, onSave }: CreateBi
             value={newBillPay.amount}
             onChange={(e) => setNewBillPay({ ...newBillPay, amount: e.target.value })}
           />
-          
+
           <Divider className="my-4" />
-          
+
           <div className="space-y-4 font-mono">
             <div className="flex justify-between">
               <span>Amount:</span>
@@ -151,9 +164,11 @@ export default function CreateBillPayModal({ isOpen, onClose, onSave }: CreateBi
           </div>
         </ModalBody>
         <ModalFooterWithSupport
-            onSupportClick={handleSupportClick}
-            actions={footerActions}
-          />
+          onSupportClick={handleSupportClick}
+          isNewCustomer={isNewCustomer}
+          onNewCustomerChange={setIsNewCustomer}
+          actions={footerActions}
+        />
       </ModalContent>
     </Modal>
   );

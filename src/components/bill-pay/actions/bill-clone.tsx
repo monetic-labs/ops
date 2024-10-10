@@ -124,7 +124,7 @@ export default function BillPayCloneModal({ isOpen, onClose, billPay, onSave }: 
         <ModalFooter>
           <Button onPress={onClose}>Cancel</Button>
           <Button color="primary" onPress={handleSave}>
-            Clone
+            Create Transfer
           </Button>
         </ModalFooter>
       </ModalContent>
