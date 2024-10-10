@@ -10,12 +10,12 @@ import { useMerchantForm } from "@/hooks/merchant/useMerchantForm";
 import { FormCompanyInfo } from "./form-company-account";
 import { AccountRegistration } from "./form-bridge-kyb";
 import { FormCompanyDetails } from "./form-company-details";
-import { FormOwnerDetails } from "./form-owner-details";
+import { FormUserDetails } from "./form-user-details";
 import { FormAccountUsers } from "./form-account-users";
 import { CompanyRepresentativeSchema, UserDetailsSchema } from "@/validations/onboard";
 import { ISO3166Alpha2Country } from "@backpack-fux/pylon-sdk";
 
-type ValidRole = "super-admin" | "admin" | "developer" | "bookkeeper" | "member";
+type ValidRole = "owner" | "representative" | "beneficial-owner";
 
 export const KYBMerchantForm: React.FC<{ onCancel: () => void; initialEmail: string }> = ({ initialEmail }) => {
   const {
@@ -27,6 +27,7 @@ export const KYBMerchantForm: React.FC<{ onCancel: () => void; initialEmail: str
     createMerchantData,
     formData,
     updateFormData,
+    userCount,
   } = useMerchantForm(initialEmail);
 
   const [notification, setNotification] = useState<string | null>(null);
@@ -37,14 +38,17 @@ export const KYBMerchantForm: React.FC<{ onCancel: () => void; initialEmail: str
   };
 
   const ensureValidRole = (role: string): ValidRole => {
-    const validRoles: ValidRole[] = ["super-admin", "admin", "developer", "bookkeeper", "member"];
-    return validRoles.includes(role as ValidRole) ? (role as ValidRole) : "member";
+    const validRoles: ValidRole[] = ["owner", "representative", "beneficial-owner"];
+    return validRoles.includes(role as ValidRole) ? (role as ValidRole) : "owner";
   };
 
   const validatedAccountUsers: CompanyRepresentativeSchema = {
-    representatives: formData.accountUsers.representatives.map(user => ({
-      ...user,
-      role: ensureValidRole(user.role)
+    representatives: formData.accountUsers.representatives.map((rep) => ({
+      firstName: rep.firstName,
+      lastName: rep.lastName,
+      email: rep.email,
+      phoneNumber: rep.phoneNumber,
+      role: ensureValidRole(rep.role),
     }))
   };
 
@@ -80,15 +84,21 @@ export const KYBMerchantForm: React.FC<{ onCancel: () => void; initialEmail: str
             {notification && <Notification message={notification} />}
         </Tab>
         <Tab key="user-details" title="User Details">
-          <FormOwnerDetails
-            initialData={formData.userDetails}
-            updateFormData={(data: UserDetailsSchema) => updateFormData({ 
-              userDetails: data.map(user => ({
-                ...user,
-                countryOfIssue: user.countryOfIssue as ISO3166Alpha2Country
-              }))
-            })}
-            onSubmit={(data: UserDetailsSchema) => onSubmitStep(4, data)}
+        <FormUserDetails
+          initialData={formData.userDetails}
+          updateFormData={(data: UserDetailsSchema) => updateFormData({ 
+            userDetails: data.map(user => ({
+              ...user,
+              countryOfIssue: user.countryOfIssue as ISO3166Alpha2Country,
+              registeredAddress: {
+                ...user.registeredAddress,
+                country: user.registeredAddress.country as ISO3166Alpha2Country
+              }
+            }))
+          })}
+          onSubmit={(data: UserDetailsSchema) => onSubmitStep(4, data)}
+          userCount={userCount}
+          accountUsers={formData.accountUsers.representatives}
           />
         </Tab>
         <Tab key="register-account" title="Register Account">

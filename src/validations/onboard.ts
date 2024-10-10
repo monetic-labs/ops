@@ -12,7 +12,7 @@ export const countryISO3166Alpha3Regex = /^[A-Z]{3}$/;
 export const companyEINRegex = /^[0-9]{2}-[0-9]{7}$/;
 export const ssnRegex = /^[0-9]{3}-[0-9]{2}-[0-9]{4}$/;
 
-const userRoleSchema = z.enum(["super-admin", "admin", "developer", "bookkeeper", "member"]);
+const userRoleSchema = z.enum(["owner", "representative", "beneficial-owner"]);
 
 // YYYY-MM-DD month should be 01-12, day should be 01-31
 export const birthdayRegex = /^\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$/;
@@ -57,23 +57,20 @@ export const companyDetailsSchema = z.object({
 
 // Onboard step 3
 export const companyRepresentativeSchema = z.object({
-  representatives: z.array(
-    z.object({
-      firstName: z.string().min(1).max(255),
-      lastName: z.string().min(1).max(255),
-      email: emailSchema,
-      phoneNumber: z.string().regex(phoneRegex, "Invalid phone number format"),
-      role: userRoleSchema,
-      registeredAddress: companyRegisteredAddressSchema,
-    })
-  ),
+  representatives: z.array(z.object({
+    firstName: z.string().min(1, "First name is required"),
+    lastName: z.string().min(1, "Last name is required"),
+    email: z.string().email("Invalid email address"),
+    phoneNumber: z.string().regex(phoneRegex, "Invalid phone number"),
+    role: z.enum(["owner", "representative", "beneficial-owner"]),
+  })),
 });
 
 const userSchema = z.object({
   countryOfIssue: z.string().regex(countryISO3166Alpha2Regex, "Invalid country code"),
-  walletAddress: z.string().regex(walletAddressRegex, "Invalid wallet address"),
   birthday: z.string().regex(birthdayRegex, "Invalid birthday format (YYYY-MM-DD)"),
   ssn: z.string().regex(ssnRegex, "Invalid SSN format (123-45-6789)"),
+  registeredAddress: companyRegisteredAddressSchema,
 });
 
 export const userDetailsSchema = z.array(userSchema).min(1, "At least one owner is required");

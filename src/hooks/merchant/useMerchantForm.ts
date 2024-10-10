@@ -1,16 +1,15 @@
 import { useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
-import { ISO3166Alpha2Country, MerchantCreateInput, MerchantCreateOutput } from "@backpack-fux/pylon-sdk";
+import { ISO3166Alpha2Country, MerchantCreateOutput } from "@backpack-fux/pylon-sdk";
 
 import { useFormPersistence } from "@/hooks/generics/useFormPersistence";
 import { useCreateBridgeMerchant } from "@/hooks/merchant/useCreateMerchant";
 
 import { merchantConfig } from "@/config/merchant";
-import { UserDetailsSchema } from "@/validations/onboard";
 
 export const useMerchantForm = (initialEmail: string) => {
   const router = useRouter();
-
+  const [userCount, setUserCount] = useState(1);
   const [tosLink, setTosLink] = useState<string | null>(null);
   const [merchantResponse, setMerchantResponse] = useState<MerchantCreateOutput | null>(null);
 
@@ -48,11 +47,19 @@ export const useMerchantForm = (initialEmail: string) => {
     accountUsers: {
       representatives: [
         {
-        firstName: "",
-        lastName: "",
-        email: "",
-        phoneNumber: "",
-        role: "",
+          firstName: "",
+          lastName: "",
+          email: "",
+          phoneNumber: "",
+          role: "",
+        }
+    ],
+    },
+    userDetails: [
+      {
+        countryOfIssue: "US" as ISO3166Alpha2Country,
+        birthday: "",
+        ssn: "",
         registeredAddress: {
           postcode: "",
           city: "",
@@ -60,14 +67,6 @@ export const useMerchantForm = (initialEmail: string) => {
           country: "US" as ISO3166Alpha2Country,
           street1: "",
         },
-      }],
-    },
-    userDetails: [
-      {
-        walletAddress: "",
-        birthday: "",
-        ssn: "",
-        countryOfIssue: "US" as ISO3166Alpha2Country,
       }
     ],
   };
@@ -105,12 +104,18 @@ export const useMerchantForm = (initialEmail: string) => {
         setActiveTab("company-details");
       } else if (step === 2) {
         updatedFormData.companyDetails = data;
-        setActiveTab("account-owner");
+        setActiveTab("account-users");
       } else if (step === 3) {
         updatedFormData.accountUsers = data;
-        setActiveTab("owner-details");
+        setUserCount(data.representatives.length);
+        setActiveTab("user-details");
       } else if (step === 4) {
         updatedFormData.userDetails = data;
+
+        updatedFormData.accountUsers.representatives = updatedFormData.accountUsers.representatives.map((rep: any, index: number) => ({
+          ...rep,
+          ...data[index],
+        }));
                 
         const combinedData = updatedFormData;
 
@@ -143,8 +148,7 @@ export const useMerchantForm = (initialEmail: string) => {
             birthday: combinedData.userDetails[0].birthday,
             ssn: combinedData.userDetails[0].ssn,
             countryOfIssue: combinedData.userDetails[0].countryOfIssue,
-            registeredAddress: combinedData.accountUsers.representatives[0].registeredAddress,
-            walletAddress: combinedData.userDetails[0].walletAddress,
+            registeredAddress: combinedData.userDetails[0].registeredAddress,
             
             role: merchantConfig.role,
             chainId: merchantConfig.chainId,
@@ -167,7 +171,7 @@ export const useMerchantForm = (initialEmail: string) => {
             firstName: combinedData.accountUsers.representatives[0].firstName,
             lastName: combinedData.accountUsers.representatives[0].lastName,
             email: combinedData.accountUsers.representatives[0].email,
-            address: combinedData.accountUsers.representatives[0].registeredAddress,
+            address: combinedData.userDetails[0].registeredAddress,
             
             
             // these need to come from an array of objects from the addUser tab and the invite user endpoint
@@ -180,7 +184,7 @@ export const useMerchantForm = (initialEmail: string) => {
             firstName: combinedData.accountUsers.representatives[0].firstName,
             lastName: combinedData.accountUsers.representatives[0].lastName,
             email: combinedData.accountUsers.representatives[0].email,
-            address: combinedData.accountUsers.representatives[0].registeredAddress,
+            address: combinedData.userDetails[0].registeredAddress,
             
             // these need to come from an array of objects from the addUser tab and the invite user endpoint
             birthday: combinedData.userDetails[0].birthday,
@@ -226,8 +230,11 @@ export const useMerchantForm = (initialEmail: string) => {
     handleCancel,
     handleKYCDone,
     onSubmitStep,
+    userCount,
+    setUserCount,
     formData,
     updateFormData,
+    getUserCount: () => formData.accountUsers.representatives.length,
     createBridgeMerchant,
     isCreatingMerchant,
     createMerchantError,

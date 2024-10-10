@@ -15,11 +15,9 @@ import { ISO3166Alpha2Country } from "@backpack-fux/pylon-sdk";
 import { AutocompleteInput } from "../generics/autocomplete-input";
 
 const userRoles = [
-  { label: "Super Admin", value: "super-admin" },
-  { label: "Admin", value: "admin" },
-  { label: "Developer", value: "developer" },
-  { label: "Bookkeeper", value: "bookkeeper" },
-  { label: "Member", value: "member" },
+  { label: "Owner", value: "owner" },
+  { label: "Representative", value: "representative" },
+  { label: "Beneficial Owner", value: "beneficial-owner" },
 ];
 
 export const FormAccountUsers: React.FC<{
@@ -54,10 +52,15 @@ export const FormAccountUsers: React.FC<{
     name: "representatives",
   });
 
-  const handleFormSubmit = handleSubmit((data) => {
-    console.log("Representatives submitted:", data);
-    onSubmit(data);
-  });
+  const handleFormSubmit = handleSubmit(
+    (data) => {
+      console.log("Representatives submitted:", data);
+      onSubmit(data);
+    },
+    (errors) => {
+      console.error("Form validation errors:", errors);
+    }
+  );
 
   useEffect(() => {
     if (fields.length === 0) {
@@ -66,14 +69,7 @@ export const FormAccountUsers: React.FC<{
         lastName: "",
         email: "",
         phoneNumber: "",
-        role: "super-admin", // Set the first user as super-admin by default
-        registeredAddress: {
-          street1: "",
-          city: "",
-          postcode: "",
-          state: "",
-          country: "" as ISO3166Alpha2Country,
-        },
+        role: "owner", 
       });
     }
   }, [fields, append]);
@@ -84,14 +80,7 @@ export const FormAccountUsers: React.FC<{
       lastName: "",
       email: "",
       phoneNumber: "",
-      role: "member", // Set default role for new users
-      registeredAddress: {
-        street1: "",
-        city: "",
-        postcode: "",
-        state: "",
-        country: "" as ISO3166Alpha2Country,
-      },
+      role: "representative", // Set default role for new users
     });
   };
 
@@ -145,10 +134,11 @@ export const FormAccountUsers: React.FC<{
       />
       {index === 0 ? (
         <FormInput
+          isReadOnly
           control={control}
           label="Role"
           name={`representatives.${index}.role`}
-          value="Super Admin"
+          value="Owner"
           disabled
         />
       ) : (
@@ -160,6 +150,7 @@ export const FormAccountUsers: React.FC<{
           placeholder="Select user role"
           items={userRoles}
           about="Select the role for this user"
+          filterItems={(items) => items.filter((item) => item.value !== "owner")}
         />
       )}
       </div>
