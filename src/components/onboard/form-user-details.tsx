@@ -3,12 +3,11 @@ import { useFieldArray, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 
 import { FormInput } from "@/components/generics/form-input";
-import { birthdayRegex, countryISO3166Alpha2Regex, UserDetailsSchema, userDetailsSchema, ssnRegex, walletAddressRegex } from "@/validations/onboard";
+import { birthdayRegex,UserDetailsSchema, userDetailsSchema, ssnRegex } from "@/validations/onboard";
 import { FormCardTabs } from "../generics/form-card-tabs";
 import { AutocompleteInput } from "../generics/autocomplete-input";
 import { ISO3166Alpha2Country } from "@backpack-fux/pylon-sdk";
 import { PostcodeInput } from "../generics/form-input-postcode";
-import { useMerchantForm } from "@/hooks/merchant/useMerchantForm";
 
 const countries = [
   { label: "United States", value: "US" as ISO3166Alpha2Country },
@@ -17,18 +16,13 @@ const countries = [
   { label: "France", value: "FR" as ISO3166Alpha2Country },  
 ]
 
-type FormData = {
-  userDetails: UserDetailsSchema;
-};
-
 export const FormUserDetails: React.FC<{
   onSubmit: (data: UserDetailsSchema) => void;
   initialData: UserDetailsSchema;
   updateFormData: (data: UserDetailsSchema) => void;
   userCount: number;
-  accountUsers: { firstName: string; lastName: string; role: string }[];
+  accountUsers: { firstName: string; lastName: string; }[];
 }> = ({ onSubmit, initialData, updateFormData, userCount, accountUsers }) => {
-  const { getUserCount } = useMerchantForm("");
   const [showAddressInputs, setShowAddressInputs] = useState<boolean[]>([]);
 
   const {
@@ -36,9 +30,10 @@ export const FormUserDetails: React.FC<{
     formState: { errors },
     handleSubmit,
     setValue,
-  } = useForm<FormData>({
+    watch,
+  } = useForm<UserDetailsSchema>({
     resolver: zodResolver(userDetailsSchema),
-    defaultValues: { userDetails: initialData },
+    defaultValues: initialData,
   });
 
   const { fields, append, remove } = useFieldArray({
@@ -66,19 +61,29 @@ export const FormUserDetails: React.FC<{
         });
       }
     } else if (difference < 0) {
-      // Remove fields
       for (let i = 0; i < Math.abs(difference); i++) {
         remove(fields.length - 1);
       }
     }
   }, [userCount, fields, append, remove]);
 
-  const onFormSubmit = handleSubmit((data: FormData) => {
-    onSubmit(data.userDetails);
-    updateFormData(data.userDetails);
-    console.log("data.userDetails", data.userDetails);
-  });
+  useEffect(() => {
+    const subscription = watch((value) => {
+      updateFormData(value as UserDetailsSchema);
+    });
+    
+    return () => subscription.unsubscribe();
+  }, [watch, updateFormData]);
 
+  const onFormSubmit = handleSubmit(
+    (data) => {
+      console.log("userDetails submitted:", data);
+      onSubmit(data);
+    },
+    (errors) => {
+      console.error("Form validation errors:", errors);
+    }
+  );
 
   const addOwner = () => {
     append({
@@ -107,7 +112,7 @@ export const FormUserDetails: React.FC<{
   const renderTabTitle = (field: any, index: number) => {
     const user = accountUsers[index];
     if (user) {
-      return `${user.firstName} ${user.lastName} (${user.role})`;
+      return `${user.firstName} ${user.lastName}`;
     }
     return `User ${index + 1}`;
   };
@@ -191,7 +196,7 @@ export const FormUserDetails: React.FC<{
         fields={fields}
         renderTabContent={renderTabContent}
         renderTabTitle={renderTabTitle}
-        title="Owner Details"
+        title="User Details"
         onAdd={addOwner}
         onCancel={() => {/* Handle cancel */}}
         onRemove={removeOwner}

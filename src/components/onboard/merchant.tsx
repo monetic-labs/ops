@@ -24,6 +24,8 @@ export const KYBMerchantForm: React.FC<{ onCancel: () => void; initialEmail: str
     onSubmitStep,
     handleCancel,
     handleKYCDone,
+    isRainToSAccepted,
+    handleRainToSAccepted,
     createMerchantData,
     formData,
     updateFormData,
@@ -31,11 +33,6 @@ export const KYBMerchantForm: React.FC<{ onCancel: () => void; initialEmail: str
   } = useMerchantForm(initialEmail);
 
   const [notification, setNotification] = useState<string | null>(null);
-
-  const handleStep3Success = () => {
-    setNotification("Company Owner information submitted successfully!");
-    setTimeout(() => setNotification(null), 2000); // Clear notification after 3 seconds
-  };
 
   const ensureValidRole = (role: string): ValidRole => {
     const validRoles: ValidRole[] = ["owner", "representative", "beneficial-owner"];
@@ -78,16 +75,15 @@ export const KYBMerchantForm: React.FC<{ onCancel: () => void; initialEmail: str
             updateFormData={(data: CompanyRepresentativeSchema) => updateFormData({ accountUsers: data })}
             onSubmit={(data: CompanyRepresentativeSchema) => {
               onSubmitStep(3, data);
-              handleStep3Success();
             }}
           />
             {notification && <Notification message={notification} />}
         </Tab>
         <Tab key="user-details" title="User Details">
         <FormUserDetails
-          initialData={formData.userDetails}
+          initialData={{ userDetails: formData.userDetails }}
           updateFormData={(data: UserDetailsSchema) => updateFormData({ 
-            userDetails: data.map(user => ({
+            userDetails: data.userDetails.map(user => ({
               ...user,
               countryOfIssue: user.countryOfIssue as ISO3166Alpha2Country,
               registeredAddress: {
@@ -107,6 +103,8 @@ export const KYBMerchantForm: React.FC<{ onCancel: () => void; initialEmail: str
             tosLink={createMerchantData?.data.tosLink || null}
             onCancel={handleCancel}
             onKYCDone={handleKYCDone}
+            isRainToSAccepted={isRainToSAccepted}
+            handleRainToSAccepted={handleRainToSAccepted}
           />
         </Tab>
       </Tabs>

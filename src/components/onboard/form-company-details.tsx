@@ -1,11 +1,11 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 
 import { FormCard } from "@/components/generics/form-card";
 import { FormInput } from "@/components/generics/form-input";
 import { FormButton } from "@/components/generics/form-button";
-import { CompanyDetailsSchema, companyDetailsSchema, companyEINRegex, walletAddressRegex } from "@/validations/onboard";
+import { CompanyAccountSchema, CompanyDetailsSchema, companyDetailsSchema, companyEINRegex, walletAddressRegex } from "@/validations/onboard";
 import { AutocompleteInput } from "@/components/generics/autocomplete-input";
 
 const companyTypes = [
@@ -29,11 +29,18 @@ export const FormCompanyDetails: React.FC<{
     formState: { errors },
     handleSubmit,
     watch,
-    setValue,
   } = useForm<CompanyDetailsSchema>({
     resolver: zodResolver(companyDetailsSchema),
     defaultValues: initialData,
   });
+
+  useEffect(() => {
+    const subscription = watch((value) => {
+      updateFormData(value as CompanyDetailsSchema);
+    });
+
+    return () => subscription.unsubscribe();
+  }, [watch, updateFormData]);
 
   const onFormSubmit = handleSubmit(
     (data: CompanyDetailsSchema) => {

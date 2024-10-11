@@ -14,9 +14,18 @@ interface TermsAndKYBProps {
   kybLink: string | null;
   onCancel: () => void;
   onKYCDone: () => void;
+  isRainToSAccepted: boolean;
+  handleRainToSAccepted: () => void;
 }
 
-export const AccountRegistration: React.FC<TermsAndKYBProps> = ({ tosLink, kybLink, onCancel, onKYCDone }) => {
+export const AccountRegistration: React.FC<TermsAndKYBProps> = ({ 
+  tosLink, 
+  kybLink, 
+  onCancel, 
+  onKYCDone,
+  isRainToSAccepted,
+  handleRainToSAccepted
+}) => {
   const [bridgeToSAccepted, setBridgeToSAccepted] = useState(false);
   const [rainToSAccepted, setRainToSAccepted] = useState(false);
   const [companyDocsUploaded, setCompanyDocsUploaded] = useState(false);
@@ -53,6 +62,7 @@ export const AccountRegistration: React.FC<TermsAndKYBProps> = ({ tosLink, kybLi
       try {
         const result = await signRainTermsOfService(tosLink);
         console.log("Rain terms accepted");
+        handleRainToSAccepted();
       } catch (error) {
         console.error("Error accepting terms:", error);
       }

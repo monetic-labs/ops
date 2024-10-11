@@ -6,7 +6,9 @@ import { emailSchema } from "./auth";
 export const phoneRegex = /^[0-9]{9,15}$/;
 export const walletAddressRegex = /^0x[a-fA-F0-9]{40}$/;
 export const postcodeRegex = /^[0-9]{5}$/;
-export const urlRegex = /^(https?:\/\/)?(www\.)?[a-zA-Z0-9-]+\.[a-zA-Z]{2,}(\.[a-zA-Z]{2,})?(\/\S*)?$/;
+export const websiteRegex = /^(https?:\/\/)?(www\.)?[a-zA-Z0-9-]+\.[a-zA-Z]{2,}(\.[a-zA-Z]{2,})?(\/\S*)?$/;
+//export const urlRegexPattern = '^(https?:\\/\\/)?(www\\.)?[a-zA-Z0-9-]+\\.[a-zA-Z]{2,}(\\.[a-zA-Z]{2,})?(\\/\\S*)?$';
+//export const urlRegex = new RegExp(urlRegexPattern);
 export const countryISO3166Alpha2Regex = /^[A-Z]{2}$/;
 export const countryISO3166Alpha3Regex = /^[A-Z]{3}$/;
 export const companyEINRegex = /^[0-9]{2}-[0-9]{7}$/;
@@ -37,12 +39,25 @@ export const companyRegisteredAddressSchema = z.object({
   country: z.custom<ISO3166Alpha2Country>(),
 });
 
+export const rainRegisteredAddressSchema = z.object({
+  line1: z.string().max(50),
+  line2: z.string().max(50).optional(),
+  city: z.string().max(50),
+  region: z.string().length(2).regex(/^[a-zA-Z0-9]{2}$/, "Invalid state code"),
+  postalCode: z
+    .string()
+    .length(5)
+    .regex(/^[0-9]{5}$/, "Invalid postal code"),
+  countryCode: z.custom<ISO3166Alpha2Country>(),
+  country: z.string().max(50),
+});
+
 // Onboard step 1
 export const companyAccountSchema = z.object({
   company: z.object({
     name: z.string().min(1).max(255),
     email: emailSchema,
-    website: z.string().url(),
+    website: z.string().regex(websiteRegex, "Invalid URL"),
     registeredAddress: companyRegisteredAddressSchema,
   }),
 });
@@ -73,7 +88,9 @@ const userSchema = z.object({
   registeredAddress: companyRegisteredAddressSchema,
 });
 
-export const userDetailsSchema = z.array(userSchema).min(1, "At least one owner is required");
+export const userDetailsSchema = z.object({
+  userDetails: z.array(userSchema).min(1, "At least one owner is required")
+});
 
 // Response data from step 3
 export const bridgeComplianceSchema = z.object({
@@ -115,9 +132,53 @@ export const merchantBridgeCreateSchema = z.object({
 
 // Step 5: Merchant Rain Create Schema
 export const merchantRainCreateSchema = z.object({
-  company: companyAccountSchema.shape.company,
-  representatives: companyRepresentativeSchema.shape.representatives,
-  compliance: bridgeComplianceSchema.shape.compliance.optional(),
+  initialUser: z.object({
+    id: z.string(),
+    firstName: z.string(),
+    lastName: z.string(),
+    email: emailSchema,
+    birthDate: z.string().regex(birthdayRegex, "Invalid birthday format"),
+    nationalId: z.string().regex(ssnRegex, "Invalid SSN format"),
+    countryOfIssue: z.custom<ISO3166Alpha2Country>(),
+    address: rainRegisteredAddressSchema,
+    role: z.string(),
+    iovation: z.string(),
+    ipAddress: z.string(),
+    isTermsOfServiceAccepted: z.boolean(),
+  }),
+  address: rainRegisteredAddressSchema,
+  name: z.string(),
+  entity: z.object({
+    name: z.string(),
+    website: z.string().regex(websiteRegex, "Invalid URL"),
+    type: z.string(),
+    description: z.string(),
+    taxId: z.string(),
+  }),
+  representatives: z.array(z.object({
+    type: z.literal("representative"),
+    id: z.string(),
+    firstName: z.string(),
+    lastName: z.string(),
+    email: emailSchema,
+    birthDate: z.string().regex(birthdayRegex, "Invalid birthday format"),
+    nationalId: z.string().regex(ssnRegex, "Invalid SSN format"),
+    countryOfIssue: z.custom<ISO3166Alpha2Country>(),
+    address: rainRegisteredAddressSchema,
+  })),
+  ultimateBeneficialOwners: z.array(z.object({
+    type: z.literal("ultimateBeneficialOwner"),
+    id: z.string(),
+    firstName: z.string(),
+    lastName: z.string(),
+    email: emailSchema,
+    birthDate: z.string().regex(birthdayRegex, "Invalid birthday format"),
+    nationalId: z.string().regex(ssnRegex, "Invalid SSN format"),
+    countryOfIssue: z.custom<ISO3166Alpha2Country>(),
+    address: rainRegisteredAddressSchema,
+  })),
+  chainId: z.string(),
+  contractAddress: z.string(),
 });
 
 export const merchantDeleteSchema = z.object({

@@ -7,7 +7,7 @@ import { Button } from "@nextui-org/button";
 import { FormCard } from "@/components/generics/form-card";
 import { FormInput } from "@/components/generics/form-input";
 import { FormButton } from "@/components/generics/form-button";
-import { CompanyAccountSchema, companyAccountSchema, urlRegex } from "@/validations/onboard";
+import { CompanyAccountSchema, companyAccountSchema, websiteRegex } from "@/validations/onboard";
 import { emailRegex } from "@/validations/auth";
 
 import { PostcodeInput } from "../generics/form-input-postcode";
@@ -113,7 +113,6 @@ export const FormCompanyInfo: React.FC<{
           errorMessage={errors.company?.website?.message}
           label="Website"
           name="company.website"
-          pattern={urlRegex.source}
           placeholder="algersoft.com"
           value={websiteInput}
           onChange={handleWebsiteChange}

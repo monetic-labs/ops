@@ -11,7 +11,7 @@ import {
   CompanyRepresentativeSchema,
   phoneRegex,
 } from "@/validations/onboard";
-import { ISO3166Alpha2Country } from "@backpack-fux/pylon-sdk";
+
 import { AutocompleteInput } from "../generics/autocomplete-input";
 
 const userRoles = [

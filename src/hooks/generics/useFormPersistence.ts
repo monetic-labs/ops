@@ -17,8 +17,10 @@ export function useFormPersistence<T>(key: string, initialData: T) {
   }, [key, data]);
 
   const updateData = useCallback((newData: Partial<T>) => {
-    setData((prevData) => ({ ...prevData, ...newData }));
-    console.log("newData", newData);
+    setData((prevData) => {
+      const updatedData = { ...prevData, ...newData };
+      return updatedData;
+    });
   }, []);
 
   const resetData = useCallback(() => {
