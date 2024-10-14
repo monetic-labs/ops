@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Button } from "@nextui-org/button";
-import { Card, CardHeader, CardBody, CardFooter } from "@nextui-org/card";
+
 import { Link } from "@nextui-org/link";
 import { useRouter } from "next/navigation";
 

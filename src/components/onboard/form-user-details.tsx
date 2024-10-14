@@ -3,7 +3,7 @@ import { useFieldArray, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 
 import { FormInput } from "@/components/generics/form-input";
-import { birthdayRegex,UserDetailsSchema, userDetailsSchema, ssnRegex } from "@/validations/onboard";
+import { birthdayRegex,UserDetailsSchema, companyUserDetailsSchema, ssnRegex } from "@/validations/onboard";
 import { FormCardTabs } from "../generics/form-card-tabs";
 import { AutocompleteInput } from "../generics/autocomplete-input";
 import { ISO3166Alpha2Country } from "@backpack-fux/pylon-sdk";
@@ -32,7 +32,7 @@ export const FormUserDetails: React.FC<{
     setValue,
     watch,
   } = useForm<UserDetailsSchema>({
-    resolver: zodResolver(userDetailsSchema),
+    resolver: zodResolver(companyUserDetailsSchema),
     defaultValues: initialData,
   });
 

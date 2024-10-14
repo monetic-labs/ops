@@ -3,33 +3,6 @@ import { createIcon } from "opepen-standard";
 import { ChainAddress, OrderID } from "@/types";
 import { ISO3166Alpha2Country } from "@backpack-fux/pylon-sdk";
 
-export interface YourAddressType {
-  street1: string;
-  street2?: string;
-  city: string;
-  state: string;
-  postcode: string;
-  country: ISO3166Alpha2Country;
-}
-
-export interface RainAddress {
-  line1: string;
-  line2?: string;
-  city: string;
-  region: string;
-  postalCode: string;
-  countryCode: ISO3166Alpha2Country;
-}
-
-export const rainMapAddress = (address: YourAddressType): RainAddress => ({
-  line1: address.street1,
-  line2: address.street2,
-  city: address.city,
-  region: address.state,
-  postalCode: address.postcode,
-  countryCode: address.country,
-});
-
 export function generateUserInviteUrl(onboardId: string, email: string): string {
   return `/onboard/${onboardId}?email=${encodeURIComponent(email)}`;
 }

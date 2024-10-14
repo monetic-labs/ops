@@ -7,12 +7,12 @@ import { FormCardTabs } from "@/components/generics/form-card-tabs";
 import { FormInput } from "@/components/generics/form-input";
 import { emailRegex } from "@/validations/auth";
 import {
-  companyRepresentativeSchema,
-  CompanyRepresentativeSchema,
+  companyAccountUsersSchema,
   phoneRegex,
 } from "@/validations/onboard";
 
 import { AutocompleteInput } from "../generics/autocomplete-input";
+import { CompanyAccountUsersSchema } from "@/validations/app";
 
 const userRoles = [
   { label: "Owner", value: "owner" },
@@ -21,9 +21,9 @@ const userRoles = [
 ];
 
 export const FormAccountUsers: React.FC<{
-  onSubmit: (data: CompanyRepresentativeSchema) => void;
-  initialData: CompanyRepresentativeSchema;
-  updateFormData: (data: CompanyRepresentativeSchema) => void;
+  onSubmit: (data: CompanyAccountUsersSchema) => void;
+  initialData: CompanyAccountUsersSchema;
+  updateFormData: (data: CompanyAccountUsersSchema) => void;
 }> = ({ onSubmit, initialData, updateFormData }) => {
   const router = useRouter();
 
@@ -32,8 +32,8 @@ export const FormAccountUsers: React.FC<{
     handleSubmit,
     formState: { errors },
     watch,
-  } = useForm<CompanyRepresentativeSchema>({
-    resolver: zodResolver(companyRepresentativeSchema),
+  } = useForm<CompanyAccountUsersSchema>({
+    resolver: zodResolver(companyAccountUsersSchema),
     defaultValues: initialData,
   });
 
@@ -41,7 +41,7 @@ export const FormAccountUsers: React.FC<{
 
   useEffect(() => {
     const subscription = watch((value) => {
-      updateFormData(value as CompanyRepresentativeSchema);
+      updateFormData(value as CompanyAccountUsersSchema);
     });
 
     return () => subscription.unsubscribe();

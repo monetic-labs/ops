@@ -5,8 +5,9 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { FormCard } from "@/components/generics/form-card";
 import { FormInput } from "@/components/generics/form-input";
 import { FormButton } from "@/components/generics/form-button";
-import { CompanyAccountSchema, CompanyDetailsSchema, companyDetailsSchema, companyEINRegex, walletAddressRegex } from "@/validations/onboard";
+import { CompanyDetailsSchema, companyDetailsSchema } from "@/validations/app";
 import { AutocompleteInput } from "@/components/generics/autocomplete-input";
+import { companyEINRegex, walletAddressRegex } from "@/validations/onboard";
 
 const companyTypes = [
   { label: "Sole Proprietorship", value: "sole_proprietorship" },

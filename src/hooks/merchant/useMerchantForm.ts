@@ -1,14 +1,14 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { ISO3166Alpha2Country, MerchantCreateOutput } from "@backpack-fux/pylon-sdk";
 
 import { useFormPersistence } from "@/hooks/generics/useFormPersistence";
 import { useCreateBridgeMerchant } from "@/hooks/merchant/useCreateMerchant";
 
-import { merchantConfig } from "@/config/merchant";
 import { useRainCreateMerchant } from "@/hooks/merchant/useRainCreateMerchant";
-import { MerchantRainCreateSchema } from "@/validations/onboard";
-import { rainMapAddress } from "@/utils/helpers";
+
+import { mapToBridgeMerchantCreateDto } from "@/types/adapters/mapBridge";
+import { mapToRainMerchantCreateDto } from "@/types/adapters/mapRain";
 
 export const useMerchantForm = (initialEmail: string) => {
   const router = useRouter();
@@ -16,6 +16,18 @@ export const useMerchantForm = (initialEmail: string) => {
   const [tosLink, setTosLink] = useState<string | null>(null);
   const [merchantResponse, setMerchantResponse] = useState<MerchantCreateOutput | null>(null);
   const [isRainToSAccepted, setIsRainToSAccepted] = useState(false);
+  const [ipAddress, setIpAddress] = useState<string>('');
+
+  useEffect(() => {
+    // Fetch IP address
+    fetch('https://api.ipify.org?format=json')
+      .then((response) => response.json())
+      .then((data) => setIpAddress(data.ip))
+      .catch((error) => {
+        console.error('Error fetching IP address:', error);
+        setIpAddress('0.0.0.0'); // Fallback IP address
+      });
+  }, []);
 
   const handleCancel = () => {
     router.push("/auth");
@@ -35,7 +47,7 @@ export const useMerchantForm = (initialEmail: string) => {
     companyAccount: {
       company: {
         name: "",
-        email: "",
+        email: initialEmail,
         registeredAddress: {
           postcode: "",
           city: "",
@@ -101,6 +113,13 @@ export const useMerchantForm = (initialEmail: string) => {
     data: createMerchantData,
   } = useCreateBridgeMerchant();
 
+  const {
+    createRainMerchant,
+    isLoading: isCreatingRainMerchant,
+    error: createRainMerchantError,
+    data: createRainMerchantData,
+  } = useRainCreateMerchant();
+
   const onSubmitStep = useCallback(
     async (step: number, data: any) => {
       console.log(`Step ${step} data:`, data);
@@ -140,31 +159,16 @@ export const useMerchantForm = (initialEmail: string) => {
         setActiveTab("user-details");
       } else if (step === 4) {
         updatedFormData.userDetails = data.userDetails;
-
-        const combinedData = updatedFormData;
-
-        const bridgeData = {
-          company: {
-            name: combinedData.companyAccount.company.name,
-            email: combinedData.companyAccount.company.email,
-            registeredAddress: combinedData.companyAccount.company.registeredAddress,
-          },
-          fee: merchantConfig.fee,
-          representatives: [
-          {
-            firstName: combinedData.accountUsers.representatives[0].firstName,
-            lastName: combinedData.accountUsers.representatives[0].lastName,
-            email: combinedData.accountUsers.representatives[0].email,
-            phoneNumber: combinedData.accountUsers.representatives[0].phoneNumber,
-          },
-          ],
-          walletAddress: combinedData.companyDetails.walletAddress,
-        };
+          // Map to Bridge data
+        const bridgeData = mapToBridgeMerchantCreateDto(
+          updatedFormData.companyAccount,
+          updatedFormData.companyDetails,
+          updatedFormData.accountUsers
+        );
         console.log("bridgeData", bridgeData);
 
         try {
           const { success: bridgeSuccess, data: bridgeResponse, error: bridgeError } = await createBridgeMerchant(bridgeData);
-
           if (bridgeSuccess) {
             console.log("Bridge response:", bridgeResponse);
             setMerchantResponse(bridgeResponse);
@@ -182,61 +186,27 @@ export const useMerchantForm = (initialEmail: string) => {
                 
       } else if (step === 5) {
         
-        const combinedData = updatedFormData;
-
-        const rainData: MerchantRainCreateSchema = {
-          name: combinedData.companyAccount.company.name,
-          address: combinedData.companyAccount.company.registeredAddress,
-          initialUser: {
-            id: "", // You might need to generate or obtain this ID
-            email: combinedData.accountUsers.representatives[0].email,
-            firstName: combinedData.accountUsers.representatives[0].firstName,
-            lastName: combinedData.accountUsers.representatives[0].lastName,
-            birthDate: combinedData.userDetails[0].birthday,
-            nationalId: combinedData.userDetails[0].ssn,
-            countryOfIssue: combinedData.userDetails[0].countryOfIssue,
-            address: combinedData.userDetails[0].registeredAddress,
-            role: merchantConfig.role,
-            iovation: merchantConfig.iovation,
-            ipAddress: merchantConfig.ipAddress,
-            isTermsOfServiceAccepted: isRainToSAccepted,
-          },
-          entity: {
-            name: combinedData.companyAccount.company.name,
-            website: combinedData.companyAccount.company.website,
-            type: combinedData.companyDetails.companyType,
-            description: combinedData.companyDetails.companyDescription,
-            taxId: combinedData.companyDetails.companyEIN,
-          },
-          representatives: [{
-            type: "representative",
-            id: "", // You might need to generate or obtain this ID
-            email: combinedData.accountUsers.representatives[0].email,
-            firstName: combinedData.accountUsers.representatives[0].firstName,
-            lastName: combinedData.accountUsers.representatives[0].lastName,
-            birthDate: combinedData.userDetails[0].birthday,
-            nationalId: combinedData.userDetails[0].ssn,
-            countryOfIssue: combinedData.userDetails[0].countryOfIssue,
-            address: combinedData.userDetails[0].registeredAddress,
-          }],
-          ultimateBeneficialOwners: [{
-            type: "ultimateBeneficialOwner",
-            id: "", // You might need to generate or obtain this ID
-            email: combinedData.accountUsers.representatives[0].email,
-            firstName: combinedData.accountUsers.representatives[0].firstName,
-            lastName: combinedData.accountUsers.representatives[0].lastName,
-            birthDate: combinedData.userDetails[0].birthday,
-            nationalId: combinedData.userDetails[0].ssn,
-            countryOfIssue: combinedData.userDetails[0].countryOfIssue,
-            address: combinedData.userDetails[0].registeredAddress,
-          }],
-          chainId: merchantConfig.chainId,
-          contractAddress: merchantConfig.contractAddress,
+        // Collect additional data required by Rain service
+        const additionalData = {
+          isTermsOfServiceAccepted: isRainToSAccepted,
+          ipAddress: '127.0.0.1', // Replace with actual IP address
+          iovationBlackbox: '',    // Collect this value if applicable
+          chainId: '1',            // Set to appropriate chain ID
+          expectedSpend: '100000', // Set expected spend amount
+          country: updatedFormData.companyAccount.company.registeredAddress.country,
         };
+
+          // Map to Rain data
+        const rainData = mapToRainMerchantCreateDto(
+          updatedFormData.companyAccount,
+          updatedFormData.companyDetails,
+          updatedFormData.accountUsers,
+          { userDetails: updatedFormData.userDetails },
+          additionalData
+        );
         console.log("rainData", rainData);
 
         const { createRainMerchant, isLoading, error } = useRainCreateMerchant();
-
         try {
           const response = await createRainMerchant(rainData);
           console.log('Merchant created:', response);
@@ -252,7 +222,7 @@ export const useMerchantForm = (initialEmail: string) => {
       setStepCompletion((prev) => ({ ...prev, [`step${step}`]: true }));
 
     },
-    [createBridgeMerchant, formData, updateFormData]
+    [createBridgeMerchant, formData, updateFormData, createRainMerchant, isRainToSAccepted]
   );
 
   return {
