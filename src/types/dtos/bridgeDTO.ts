@@ -2,6 +2,14 @@
 
 import { ISO3166Alpha2Country } from "@backpack-fux/pylon-sdk";
 
+export enum BridgeUserRole {
+  SUPER_ADMIN = "super-admin",
+  ADMIN = "admin",
+  BOOKKEEPER = "bookkeeper",
+  DEVELOPER = "developer",
+  MEMBER = "member"
+}
+
 export interface BridgeCompanyDto {
     name: string;
     email: string;
@@ -13,7 +21,8 @@ export interface BridgeCompanyDto {
     lastName: string;
     email: string;
     phoneNumber: string;
-    role: string;
+    appRole: string;
+    bridgeUserRole?: BridgeUserRole;
     walletAddress?: string;
   }
   

@@ -1,7 +1,27 @@
 import { useState } from "react";
-import { MerchantCreateInput, MerchantCreateOutput } from "@backpack-fux/pylon-sdk";
+import { MerchantCreateInput, MerchantCreateOutput, PersonRole } from "@backpack-fux/pylon-sdk";
 
 import pylon from "@/libs/pylon-sdk";
+import { BridgeMerchantCreateDto, BridgeUserRole } from "@/types/dtos/bridgeDTO";
+
+function mapBridgeUserRoleToPersonRole(bridgeUserRole: BridgeUserRole | undefined): PersonRole | undefined {
+  if (bridgeUserRole === undefined) return undefined;
+
+  switch (bridgeUserRole) {
+    case BridgeUserRole.SUPER_ADMIN:
+      return "SUPER_ADMIN";
+    case BridgeUserRole.ADMIN:
+      return "ADMIN";
+    case BridgeUserRole.BOOKKEEPER:
+      return "BOOKKEEPER";
+    case BridgeUserRole.DEVELOPER:
+      return "DEVELOPER";
+    case BridgeUserRole.MEMBER:
+      return "MEMBER";
+    default:
+      return "MEMBER";
+  }
+}
 
 export function useCreateBridgeMerchant() {
   const [isLoading, setIsLoading] = useState(false);
@@ -9,13 +29,27 @@ export function useCreateBridgeMerchant() {
   const [data, setData] = useState<MerchantCreateOutput | null>(null);
 
   const createBridgeMerchant = async (
-    input: MerchantCreateInput
+    data: BridgeMerchantCreateDto
   ): Promise<{ success: boolean; data: MerchantCreateOutput | null; error: string | null }> => {
     setIsLoading(true);
     setError(null);
+    setData(null);
+    
     try {
-      console.log("useCreateMerchant:", input);
-      const response = await pylon.createMerchant(input);
+      // Map BridgeMerchantCreateDto to MerchantCreateInput
+      const createBridgeMerchant: MerchantCreateInput = {
+        ...data,
+        representatives: data.representatives.map(rep => {
+          const { appRole, bridgeUserRole, ...rest } = rep;
+          return {
+            ...rest,
+            role: mapBridgeUserRoleToPersonRole(bridgeUserRole)
+          };
+        })
+      };
+
+      console.log("useCreateMerchant:", createBridgeMerchant);
+      const response = await pylon.createMerchant(createBridgeMerchant);
 
       console.log("useCreateMerchant response:", response);
 

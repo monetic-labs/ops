@@ -4,11 +4,12 @@ import {
     CompanyAccountSchema,
     CompanyDetailsSchema,
     CompanyAccountUsersSchema,
-  } from '@/validations/app';
+  } from '@/types/validations/onboard';
   import {
     BridgeCompanyDto,
     BridgeRepresentativeDto,
     BridgeMerchantCreateDto,
+    BridgeUserRole,
   } from '@/types/dtos/bridgeDTO';
   
   export function mapToBridgeMerchantCreateDto(
@@ -16,6 +17,7 @@ import {
     detailsData: CompanyDetailsSchema,
     usersData: CompanyAccountUsersSchema
   ): BridgeMerchantCreateDto {
+    
     const companyDto: BridgeCompanyDto = {
       name: accountData.company.name,
       email: accountData.company.email,
@@ -34,7 +36,8 @@ import {
       lastName: rep.lastName,
       email: rep.email,
       phoneNumber: rep.phoneNumber,
-      role: rep.role,
+      appRole: rep.role,
+      bridgeUserRole: rep.bridgeUserRole,
       walletAddress: rep.walletAddress,
     }));
   

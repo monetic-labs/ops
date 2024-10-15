@@ -3,11 +3,12 @@ import { useFieldArray, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 
 import { FormInput } from "@/components/generics/form-input";
-import { birthdayRegex,UserDetailsSchema, companyUserDetailsSchema, ssnRegex } from "@/validations/onboard";
+import { birthdayRegex,CompanyUserDetailsSchema, companyUserDetailsSchema, ssnRegex } from "@/types/validations/onboard";
 import { FormCardTabs } from "../generics/form-card-tabs";
 import { AutocompleteInput } from "../generics/autocomplete-input";
 import { ISO3166Alpha2Country } from "@backpack-fux/pylon-sdk";
 import { PostcodeInput } from "../generics/form-input-postcode";
+import { TabData } from "@/hooks/generics/useDynamicTabs";
 
 const countries = [
   { label: "United States", value: "US" as ISO3166Alpha2Country },
@@ -17,13 +18,16 @@ const countries = [
 ]
 
 export const FormUserDetails: React.FC<{
-  onSubmit: (data: UserDetailsSchema) => void;
-  initialData: UserDetailsSchema;
-  updateFormData: (data: UserDetailsSchema) => void;
+  onSubmit: (data: CompanyUserDetailsSchema) => void;
+  initialData: CompanyUserDetailsSchema;
+  updateFormData: (data: CompanyUserDetailsSchema) => void;
   userCount: number;
   accountUsers: { firstName: string; lastName: string; }[];
-}> = ({ onSubmit, initialData, updateFormData, userCount, accountUsers }) => {
-  const [showAddressInputs, setShowAddressInputs] = useState<boolean[]>([]);
+  tabs: TabData[];
+  activeTab: string;
+  setActiveTab: (key: string) => void;
+}> = ({ onSubmit, initialData, updateFormData, userCount, accountUsers, tabs, activeTab, setActiveTab }) => {
+  const [showAddressInputs, setShowAddressInputs] = useState<boolean[]>(new Array(accountUsers.length).fill(false));
 
   const {
     control,
@@ -31,45 +35,45 @@ export const FormUserDetails: React.FC<{
     handleSubmit,
     setValue,
     watch,
-  } = useForm<UserDetailsSchema>({
+  } = useForm<CompanyUserDetailsSchema>({
     resolver: zodResolver(companyUserDetailsSchema),
     defaultValues: initialData,
   });
 
-  const { fields, append, remove } = useFieldArray({
-    control,
-    name: "userDetails",
-  });
+  // const { fields, append, remove } = useFieldArray({
+  //   control,
+  //   name: "userDetails",
+  // });
 
-  useEffect(() => {
-    // Adjust the number of fields to match userCount
-    const difference = userCount - fields.length;
-    if (difference > 0) {
-      // Add fields
-      for (let i = 0; i < difference; i++) {
-        append({
-          countryOfIssue: "US" as ISO3166Alpha2Country,
-          birthday: "",
-          ssn: "",
-          registeredAddress: {
-            postcode: "",
-            city: "",
-            state: "",
-            country: "US" as ISO3166Alpha2Country,
-            street1: "",
-          },
-        });
-      }
-    } else if (difference < 0) {
-      for (let i = 0; i < Math.abs(difference); i++) {
-        remove(fields.length - 1);
-      }
-    }
-  }, [userCount, fields, append, remove]);
+  // useEffect(() => {
+  //   // Adjust the number of fields to match userCount
+  //   const difference = userCount - fields.length;
+  //   if (difference > 0) {
+  //     // Add fields
+  //     for (let i = 0; i < difference; i++) {
+  //       append({
+  //         countryOfIssue: "US" as ISO3166Alpha2Country,
+  //         birthday: "",
+  //         ssn: "",
+  //         registeredAddress: {
+  //           postcode: "",
+  //           city: "",
+  //           state: "",
+  //           country: "US" as ISO3166Alpha2Country,
+  //           street1: "",
+  //         },
+  //       });
+  //     }
+  //   } else if (difference < 0) {
+  //     for (let i = 0; i < Math.abs(difference); i++) {
+  //       remove(fields.length - 1);
+  //     }
+  //   }
+  // }, [userCount, fields, append, remove]);
 
   useEffect(() => {
     const subscription = watch((value) => {
-      updateFormData(value as UserDetailsSchema);
+      updateFormData(value as CompanyUserDetailsSchema);
     });
     
     return () => subscription.unsubscribe();
@@ -85,37 +89,37 @@ export const FormUserDetails: React.FC<{
     }
   );
 
-  const addOwner = () => {
-    append({
-      countryOfIssue: "US" as ISO3166Alpha2Country,
-      birthday: "",
-      ssn: "",
-      registeredAddress: {
-        postcode: "",
-        street1: "",
-        street2: "",
-        city: "",
-        state: "",
-        country: "US" as ISO3166Alpha2Country,
-      },
-    });
-    setShowAddressInputs([...showAddressInputs, false]);
-  };
+  // const addOwner = () => {
+  //   append({
+  //     countryOfIssue: "US" as ISO3166Alpha2Country,
+  //     birthday: "",
+  //     ssn: "",
+  //     registeredAddress: {
+  //       postcode: "",
+  //       street1: "",
+  //       street2: "",
+  //       city: "",
+  //       state: "",
+  //       country: "US" as ISO3166Alpha2Country,
+  //     },
+  //   });
+  //   setShowAddressInputs([...showAddressInputs, false]);
+  // };
 
-  const removeOwner = (index: number) => {
-    if (fields.length > 1) {
-      remove(index);
-      setShowAddressInputs(showAddressInputs.filter((_, i) => i !== index));
-    }
-  };
+  // const removeOwner = (index: number) => {
+  //   if (fields.length > 1) {
+  //     remove(index);
+  //     setShowAddressInputs(showAddressInputs.filter((_, i) => i !== index));
+  //   }
+  // };
 
-  const renderTabTitle = (field: any, index: number) => {
-    const user = accountUsers[index];
-    if (user) {
-      return `${user.firstName} ${user.lastName}`;
-    }
-    return `User ${index + 1}`;
-  };
+  // const renderTabTitle = (field: any, index: number) => {
+  //   const user = accountUsers[index];
+  //   if (user) {
+  //     return `${user.firstName} ${user.lastName}`;
+  //   }
+  //   return `User ${index + 1}`;
+  // };
 
   const onPostcodeLookup = (result: any, index: number) => {
     if (result) {
@@ -193,13 +197,11 @@ export const FormUserDetails: React.FC<{
   return (
     <form onSubmit={onFormSubmit}>
       <FormCardTabs
-        fields={fields}
+        fields={tabs.filter(tab => tab.key.startsWith('user-details-'))}
         renderTabContent={renderTabContent}
-        renderTabTitle={renderTabTitle}
+        renderTabTitle={(tab) => tab.title}
         title="User Details"
-        onAdd={addOwner}
         onCancel={() => {/* Handle cancel */}}
-        onRemove={removeOwner}
         onSubmit={onFormSubmit}
       />
     </form>

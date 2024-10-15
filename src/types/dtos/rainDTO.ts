@@ -9,6 +9,7 @@ export type RainAddressDto = {
     region: string;
     postalCode: string;
     countryCode: ISO3166Alpha2Country;
+    country: string;
 }
 
 export type RainPersonDto = {

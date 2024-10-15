@@ -5,14 +5,15 @@ import { zodResolver } from "@hookform/resolvers/zod";
 
 import { FormCardTabs } from "@/components/generics/form-card-tabs";
 import { FormInput } from "@/components/generics/form-input";
-import { emailRegex } from "@/validations/auth";
+import { emailRegex } from "@/types/validations/auth";
 import {
   companyAccountUsersSchema,
   phoneRegex,
-} from "@/validations/onboard";
+} from "@/types/validations/onboard";
 
 import { AutocompleteInput } from "../generics/autocomplete-input";
-import { CompanyAccountUsersSchema } from "@/validations/app";
+import { CompanyAccountUsersSchema } from "@/types/validations/onboard";
+import { BridgeUserRole } from "@/types/dtos/bridgeDTO";
 
 const userRoles = [
   { label: "Owner", value: "owner" },
@@ -70,6 +71,7 @@ export const FormAccountUsers: React.FC<{
         email: "",
         phoneNumber: "",
         role: "owner", 
+        bridgeUserRole: BridgeUserRole.SUPER_ADMIN,
       });
     }
   }, [fields, append]);
@@ -81,6 +83,7 @@ export const FormAccountUsers: React.FC<{
       email: "",
       phoneNumber: "",
       role: "representative", // Set default role for new users
+      bridgeUserRole: BridgeUserRole.SUPER_ADMIN,
     });
   };
 

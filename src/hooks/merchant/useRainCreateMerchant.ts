@@ -1,31 +1,35 @@
 import { useState } from 'react';
 import pylon from "@/libs/pylon-sdk";
 import { MerchantRainCompanyCreateOutput, MerchantRainCompanyCreateInput } from '@backpack-fux/pylon-sdk';
-import { RainMerchantData } from '@/types/merchant';
+import { RainMerchantCreateDto } from '@/types/dtos/rainDTO';
+
 
 export const useRainCreateMerchant = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [data, setData] = useState<MerchantRainCompanyCreateOutput | null>(null);
 
-  const createRainMerchant = async (data: RainMerchantData): Promise<MerchantRainCompanyCreateOutput | null> => {
+  const createRainMerchant = async (
+    data: RainMerchantCreateDto
+  ): Promise<MerchantRainCompanyCreateOutput | null> => {
     setIsLoading(true);
     setError(null);
     setData(null);
 
     try {
-      console.log("useCreateMerchant:", data);
+      console.log("useRainCreateMerchant:", data);
       
-      const sdkInput: MerchantRainCompanyCreateInput = {
+      const createRainMerchant: MerchantRainCompanyCreateInput = {
         name: data.name,
         initialUser: data.initialUser,
+        address: data.address,
         entity: data.entity,
         representatives: data.representatives,
         ultimateBeneficialOwners: data.ultimateBeneficialOwners,
         chainId: data.chainId,
         contractAddress: data.contractAddress,
       };
-      const response = await pylon.applyCardCompany(sdkInput);
+      const response = await pylon.applyCardCompany(createRainMerchant);
 
       console.log("useRainCreateMerchant response:", response);
 

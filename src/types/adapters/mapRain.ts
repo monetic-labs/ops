@@ -5,7 +5,7 @@ import {
     CompanyDetailsSchema,
     CompanyAccountUsersSchema,
     CompanyUserDetailsSchema,
-  } from '@/validations/app';
+  } from '@/types/validations/onboard';
   import {
     RainPersonDto,
     RainMerchantCreateDto,
@@ -42,6 +42,7 @@ import {
       region: company.registeredAddress.state || '',
       postalCode: company.registeredAddress.postcode,
       countryCode: company.registeredAddress.country,
+      country: additionalData.country,
     };
   
     // Map entity data to RainEntityDto
@@ -77,6 +78,7 @@ import {
           region: userDetail.registeredAddress.state || '',
           postalCode: userDetail.registeredAddress.postcode,
           countryCode: userDetail.registeredAddress.country,
+          country: additionalData.country,
         },
         role: rep.role,
       };

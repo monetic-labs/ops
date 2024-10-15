@@ -12,13 +12,15 @@ import { AccountRegistration } from "./form-bridge-kyb";
 import { FormCompanyDetails } from "./form-company-details";
 import { FormUserDetails } from "./form-user-details";
 import { FormAccountUsers } from "./form-account-users";
-import { CompanyRepresentativeSchema, UserDetailsSchema } from "@/validations/onboard";
+import { CompanyAccountUsersSchema, CompanyUserDetailsSchema } from "@/types/validations/onboard";
 import { ISO3166Alpha2Country } from "@backpack-fux/pylon-sdk";
+import { BridgeUserRole } from "@/types/dtos/bridgeDTO";
 
 type ValidRole = "owner" | "representative" | "beneficial-owner";
 
 export const KYBMerchantForm: React.FC<{ onCancel: () => void; initialEmail: string }> = ({ initialEmail }) => {
   const {
+    tabs,
     activeTab,
     setActiveTab,
     onSubmitStep,
@@ -39,74 +41,94 @@ export const KYBMerchantForm: React.FC<{ onCancel: () => void; initialEmail: str
     return validRoles.includes(role as ValidRole) ? (role as ValidRole) : "owner";
   };
 
-  const validatedAccountUsers: CompanyRepresentativeSchema = {
-    representatives: formData.accountUsers.representatives.map((rep) => ({
-      firstName: rep.firstName,
-      lastName: rep.lastName,
-      email: rep.email,
-      phoneNumber: rep.phoneNumber,
-      role: ensureValidRole(rep.role),
-    }))
+  const assignBridgeUserRole = (role: ValidRole, index: number): BridgeUserRole => {
+    if (role === "owner" || index === 0) {
+      return BridgeUserRole.SUPER_ADMIN;
+    }
+    return BridgeUserRole.MEMBER;
   };
+
+  const validatedAccountUsers: CompanyAccountUsersSchema = {
+    representatives: formData.accountUsers.representatives.map((rep, index) => {
+      const validatedRole = ensureValidRole(rep.role);
+      return {
+        firstName: rep.firstName,
+        lastName: rep.lastName,
+        email: rep.email,
+        phoneNumber: rep.phoneNumber,
+        role: validatedRole,
+        bridgeUserRole: assignBridgeUserRole(validatedRole, index),
+      };
+    })
+  };
+
+  const mainTabs = tabs.filter(tab => !tab.key.startsWith('user-details-'));
+  const userDetailTabs = tabs.filter(tab => tab.key.startsWith('user-details-'));
 
   return (
     <FormCard className="overflow-y-auto max-h-screen" title="Know Your Business">  
       <Tabs selectedKey={activeTab} onSelectionChange={(key) => setActiveTab(key as string)}>
-        <Tab key="company-account" title="Company Account">
-          <FormCompanyInfo
-            initialData={formData.companyAccount}
-            updateFormData={(data) => updateFormData({ companyAccount: data })}
-            onSubmit={(data) => {
-              console.log("data", data);
-              onSubmitStep(1, data);
-            }}
-          />
-        </Tab>
-        <Tab key="company-details" title="Company Details">
-          <FormCompanyDetails
-            initialData={formData.companyDetails}
-            updateFormData={(data) => updateFormData({ companyDetails: data })}
-            onSubmit={(data) => onSubmitStep(2, data)}
-          />
-        </Tab>
-        <Tab key="account-users" title="Account Users">
-        <FormAccountUsers
-            initialData={validatedAccountUsers}
-            updateFormData={(data: CompanyRepresentativeSchema) => updateFormData({ accountUsers: data })}
-            onSubmit={(data: CompanyRepresentativeSchema) => {
+      {mainTabs.map((tab) => (
+        <Tab key={tab.key} title={tab.title}>
+          {tab.key === "company-account" && (
+            <FormCompanyInfo
+              initialData={formData.companyAccount}
+              updateFormData={(data) => updateFormData({ companyAccount: data })}
+              onSubmit={(data) => {
+                console.log("data", data);
+                onSubmitStep(1, data);
+              }}
+            />
+          )}
+          {tab.key === "company-details" && (
+            <FormCompanyDetails
+              initialData={formData.companyDetails}
+              updateFormData={(data) => updateFormData({ companyDetails: data })}
+              onSubmit={(data) => onSubmitStep(2, data)}
+            />
+          )}
+          {tab.key === "account-users" && (
+            <FormAccountUsers
+              initialData={validatedAccountUsers}
+              updateFormData={(data: CompanyAccountUsersSchema) => updateFormData({ accountUsers: data })}
+              onSubmit={(data: CompanyAccountUsersSchema) => {
               onSubmitStep(3, data);
-            }}
-          />
-            {notification && <Notification message={notification} />}
+              }}
+            />
+          )}
+          {tab.key === "user-details" && (
+            <FormUserDetails
+              initialData={{ userDetails: formData.userDetails }}
+              updateFormData={(data: CompanyUserDetailsSchema) => updateFormData({ 
+                userDetails: data.userDetails.map(user => ({
+                  ...user,
+                  countryOfIssue: user.countryOfIssue as ISO3166Alpha2Country,
+                  registeredAddress: {
+                    ...user.registeredAddress,
+                    country: user.registeredAddress.country as ISO3166Alpha2Country
+                  }
+                }))
+              })}
+              onSubmit={(data: CompanyUserDetailsSchema) => onSubmitStep(4, data)}
+              userCount={userCount}
+              accountUsers={formData.accountUsers.representatives}
+              tabs={userDetailTabs}
+              activeTab={activeTab}
+              setActiveTab={setActiveTab}
+            />
+          )}
+          {tab.key === "register-account" && (
+            <AccountRegistration
+              kybLink={createMerchantData?.data.kycLink || null}
+              tosLink={createMerchantData?.data.tosLink || null}
+              onCancel={handleCancel}
+              onKYCDone={handleKYCDone}
+              isRainToSAccepted={isRainToSAccepted}
+              handleRainToSAccepted={handleRainToSAccepted}
+            />
+          )}
         </Tab>
-        <Tab key="user-details" title="User Details">
-        <FormUserDetails
-          initialData={{ userDetails: formData.userDetails }}
-          updateFormData={(data: UserDetailsSchema) => updateFormData({ 
-            userDetails: data.userDetails.map(user => ({
-              ...user,
-              countryOfIssue: user.countryOfIssue as ISO3166Alpha2Country,
-              registeredAddress: {
-                ...user.registeredAddress,
-                country: user.registeredAddress.country as ISO3166Alpha2Country
-              }
-            }))
-          })}
-          onSubmit={(data: UserDetailsSchema) => onSubmitStep(4, data)}
-          userCount={userCount}
-          accountUsers={formData.accountUsers.representatives}
-          />
-        </Tab>
-        <Tab key="register-account" title="Register Account">
-          <AccountRegistration
-            kybLink={createMerchantData?.data.kycLink || null}
-            tosLink={createMerchantData?.data.tosLink || null}
-            onCancel={handleCancel}
-            onKYCDone={handleKYCDone}
-            isRainToSAccepted={isRainToSAccepted}
-            handleRainToSAccepted={handleRainToSAccepted}
-          />
-        </Tab>
+      ))}
       </Tabs>
     </FormCard>
   );

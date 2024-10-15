@@ -9,6 +9,7 @@ import { useRainCreateMerchant } from "@/hooks/merchant/useRainCreateMerchant";
 
 import { mapToBridgeMerchantCreateDto } from "@/types/adapters/mapBridge";
 import { mapToRainMerchantCreateDto } from "@/types/adapters/mapRain";
+import { TabData, useDynamicTabs } from "../generics/useDynamicTabs";
 
 export const useMerchantForm = (initialEmail: string) => {
   const router = useRouter();
@@ -17,6 +18,24 @@ export const useMerchantForm = (initialEmail: string) => {
   const [merchantResponse, setMerchantResponse] = useState<MerchantCreateOutput | null>(null);
   const [isRainToSAccepted, setIsRainToSAccepted] = useState(false);
   const [ipAddress, setIpAddress] = useState<string>('');
+  
+  const initialTabs: TabData[] = [
+    { key: "company-account", title: "Company Account", isCompleted: false },
+    { key: "company-details", title: "Company Details", isCompleted: false },
+    { key: "account-users", title: "Account Users", isCompleted: false },
+    { key: "user-details", title: "User Details", isCompleted: false },
+    { key: "register-account", title: "Register Account", isCompleted: false },
+  ];
+
+  const {
+    tabs,
+    activeTab,
+    setActiveTab,
+    updateTabCompletion,
+    updateTabTitle,
+    addTab,
+    removeTabs,
+  } = useDynamicTabs(initialTabs);
 
   useEffect(() => {
     // Fetch IP address
@@ -40,8 +59,6 @@ export const useMerchantForm = (initialEmail: string) => {
   const handleRainToSAccepted = useCallback(() => {
     setIsRainToSAccepted(true);
   }, []);
-
-  const [activeTab, setActiveTab] = useState("company-info");
 
   const initialData = {
     companyAccount: {
@@ -126,106 +143,130 @@ export const useMerchantForm = (initialEmail: string) => {
 
       let updatedFormData = { ...formData };
 
-      if (step === 1) {
-        updatedFormData.companyAccount = data;
-        setActiveTab("company-details");
-      } else if (step === 2) {
-        updatedFormData.companyDetails = data;
-        setActiveTab("account-users");
-      } else if (step === 3) {
-        updatedFormData.accountUsers = data;
-        const newUserCount = data.representatives.length;
-        setUserCount(newUserCount);
-
-        // Adjust userDetails array to match the new user count
-        while (updatedFormData.userDetails.length < newUserCount) {
-          updatedFormData.userDetails.push({
-            countryOfIssue: "US" as ISO3166Alpha2Country,
-            birthday: "",
-            ssn: "",
-            registeredAddress: {
-              postcode: "",
-              city: "",
-              state: "",
-              country: "US" as ISO3166Alpha2Country,
-              street1: "",
-            },
-          });
-        }
-        while (updatedFormData.userDetails.length > newUserCount) {
-          updatedFormData.userDetails.pop();
-        }
-
-        setActiveTab("user-details");
-      } else if (step === 4) {
-        updatedFormData.userDetails = data.userDetails;
-          // Map to Bridge data
-        const bridgeData = mapToBridgeMerchantCreateDto(
-          updatedFormData.companyAccount,
-          updatedFormData.companyDetails,
-          updatedFormData.accountUsers
-        );
-        console.log("bridgeData", bridgeData);
-
-        try {
-          const { success: bridgeSuccess, data: bridgeResponse, error: bridgeError } = await createBridgeMerchant(bridgeData);
-          if (bridgeSuccess) {
-            console.log("Bridge response:", bridgeResponse);
-            setMerchantResponse(bridgeResponse);
-            setTosLink(bridgeResponse?.data.tosLink || "");
-            setActiveTab("register-account");
-          } else {
-            console.error("Error creating merchant:", bridgeError);
-          }
-        } catch (error) {
-          console.error("Error creating merchant:", error);
-        }
-
-        console.log("Updated user details:", updatedFormData.userDetails);
-        setActiveTab("register-account");
-                
-      } else if (step === 5) {
-        
-        // Collect additional data required by Rain service
-        const additionalData = {
-          isTermsOfServiceAccepted: isRainToSAccepted,
-          ipAddress: '127.0.0.1', // Replace with actual IP address
-          iovationBlackbox: '',    // Collect this value if applicable
-          chainId: '1',            // Set to appropriate chain ID
-          expectedSpend: '100000', // Set expected spend amount
-          country: updatedFormData.companyAccount.company.registeredAddress.country,
-        };
-
-          // Map to Rain data
-        const rainData = mapToRainMerchantCreateDto(
-          updatedFormData.companyAccount,
-          updatedFormData.companyDetails,
-          updatedFormData.accountUsers,
-          { userDetails: updatedFormData.userDetails },
-          additionalData
-        );
-        console.log("rainData", rainData);
-
-        const { createRainMerchant, isLoading, error } = useRainCreateMerchant();
-        try {
-          const response = await createRainMerchant(rainData);
-          console.log('Merchant created:', response);
-        } catch (err) {
-          console.error('Failed to create merchant:', err);
-        }
-
-        setStepCompletion((prev) => ({ ...prev, step5: true }));
-        updateFormData({ ...formData, accountUsers: data });
-      } 
+      switch (step) {
+        case 1:
+          updatedFormData.companyAccount = data;
+          setActiveTab("company-details");
+          updateTabCompletion("company-account", true);
+          break;
+        case 2:
+          updatedFormData.companyDetails = data;
+          setActiveTab("account-users");
+          updateTabCompletion("company-details", true);
+          break;
+        case 3:
+          updatedFormData = handleStep3Data(updatedFormData, data);
+          setActiveTab("user-details");
+          updateTabCompletion("account-users", true);
+          break;
+        case 4:
+          updatedFormData = await handleStep4Data(updatedFormData, data);
+          setActiveTab("register-account");
+          updateTabCompletion("user-details", true);
+          break;
+        case 5:
+          await handleStep5Data(updatedFormData);
+          updateTabCompletion("register-account", true);
+          break;
+      }
 
       updateFormData(updatedFormData);
-      setStepCompletion((prev) => ({ ...prev, [`step${step}`]: true }));
-
     },
-    [createBridgeMerchant, formData, updateFormData, createRainMerchant, isRainToSAccepted]
+    [createBridgeMerchant, formData, updateFormData, createRainMerchant, isRainToSAccepted, setActiveTab, updateTabCompletion]
   );
 
+  const adjustUserDetailsTabs = useCallback((representatives: any[]) => {
+    const userDetailsTabs = tabs.filter(tab => tab.key.startsWith('user-details-'));
+    const currentUserCount = userDetailsTabs.length;
+    const newUserCount = representatives.length;
+
+    if (newUserCount > currentUserCount) {
+      // Add new tabs
+      for (let i = currentUserCount; i < newUserCount; i++) {
+        const rep = representatives[i];
+        addTab({
+          key: `user-details-${i}`,
+          title: `${rep.firstName} ${rep.lastName}`,
+          isCompleted: false
+        });
+      }
+    } else if (newUserCount < currentUserCount) {
+      // Remove excess tabs
+      const tabsToRemove = userDetailsTabs.slice(newUserCount).map(tab => tab.key);
+      removeTabs(tabsToRemove);
+    }
+
+    // Update titles for existing tabs
+    representatives.forEach((rep, index) => {
+      updateTabTitle(`user-details-${index}`, `${rep.firstName} ${rep.lastName}`);
+    });
+  }, [tabs, addTab, removeTabs, updateTabTitle]);
+
+  const handleStep3Data = (updatedFormData: any, data: any) => {
+    updatedFormData.accountUsers = data;
+    const newUserCount = data.representatives.length;
+    setUserCount(newUserCount);
+    
+    adjustUserDetailsTabs(data.representatives);
+  
+    return updatedFormData;
+  };
+  
+  const handleStep4Data = async (updatedFormData: any, data: any) => {
+    updatedFormData.userDetails = data.userDetails;
+    
+    const bridgeData = mapToBridgeMerchantCreateDto(
+      updatedFormData.companyAccount,
+      updatedFormData.companyDetails,
+      updatedFormData.accountUsers
+    );
+    console.log("bridgeData", bridgeData);
+  
+    try {
+      const { success: bridgeSuccess, data: bridgeResponse, error: bridgeError } = await createBridgeMerchant(bridgeData);
+      if (bridgeSuccess) {
+        console.log("Bridge response:", bridgeResponse);
+        setMerchantResponse(bridgeResponse);
+        setTosLink(bridgeResponse?.data.tosLink || "");
+      } else {
+        console.error("Error creating merchant:", bridgeError);
+      }
+    } catch (error) {
+      console.error("Error creating merchant:", error);
+    }
+  
+    return updatedFormData;
+  };
+  
+  const handleStep5Data = async (updatedFormData: any) => {
+    const additionalData = {
+      isTermsOfServiceAccepted: isRainToSAccepted,
+      ipAddress: ipAddress,
+      iovationBlackbox: '',    // Collect this value if applicable
+      chainId: '1',            // Set to appropriate chain ID
+      expectedSpend: '100000', // Set expected spend amount
+      country: updatedFormData.companyAccount.company.registeredAddress.country,
+    };
+  
+    const rainData = mapToRainMerchantCreateDto(
+      updatedFormData.companyAccount,
+      updatedFormData.companyDetails,
+      updatedFormData.accountUsers,
+      { userDetails: updatedFormData.userDetails },
+      additionalData
+    );
+    console.log("rainData", rainData);
+  
+    try {
+      const response = await createRainMerchant(rainData);
+      console.log('Merchant created:', response);
+    } catch (err) {
+      console.error('Failed to create merchant:', err);
+    }
+  };
+
   return {
+    tabs,
     activeTab,
     setActiveTab,
     stepCompletion,

@@ -5,7 +5,7 @@ import { Control, FieldValues, Path } from "react-hook-form";
 
 import { usePostcodeLookup } from "@/hooks/generics/usePostcodeLookup";
 import { FormInput } from "@/components/generics/form-input";
-import { postcodeRegex } from "@/validations/onboard";
+import { postcodeRegex } from "@/types/validations/onboard";
 import { Tooltip } from "@nextui-org/tooltip";
 
 interface PostcodeInputProps<T extends FieldValues> {

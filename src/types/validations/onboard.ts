@@ -1,9 +1,25 @@
 import { z } from "zod";
 import { ISO3166Alpha2Country } from "@backpack-fux/pylon-sdk";
 import { emailSchema } from "./auth";
-import { birthdayRegex, phoneRegex, ssnRegex, walletAddressRegex, websiteRegex } from "./onboard";
+import { BridgeUserRole } from "../dtos/bridgeDTO";
 
+export const phoneRegex = /^[0-9]{9,15}$/;
+export const walletAddressRegex = /^0x[a-fA-F0-9]{40}$/;
+export const postcodeRegex = /^[0-9]{5}$/;
+export const websiteRegex = /^(https?:\/\/)?(www\.)?[a-zA-Z0-9-]+\.[a-zA-Z]{2,}(\.[a-zA-Z]{2,})?(\/\S*)?$/;
+//export const urlRegexPattern = '^(https?:\\/\\/)?(www\\.)?[a-zA-Z0-9-]+\\.[a-zA-Z]{2,}(\\.[a-zA-Z]{2,})?(\\/\\S*)?$';
+//export const urlRegex = new RegExp(urlRegexPattern);
+export const countryISO3166Alpha2Regex = /^[A-Z]{2}$/;
+export const countryISO3166Alpha3Regex = /^[A-Z]{3}$/;
+export const companyEINRegex = /^[0-9]{2}-[0-9]{7}$/;
+export const ssnRegex = /^[0-9]{3}-[0-9]{2}-[0-9]{4}$/;
 
+// YYYY-MM-DD month should be 01-12, day should be 01-31
+export const birthdayRegex = /^\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$/;
+
+export const walletAddressSchema = z.object({
+  walletAddress: z.string().regex(walletAddressRegex, "Invalid wallet address").length(42),
+});
 
 export const accountAddressSchema = z.object({
     street1: z.string().max(50),
@@ -46,6 +62,7 @@ export const companyAccountSchema = z.object({
       email: z.string().email("Invalid email address"),
       phoneNumber: z.string().regex(phoneRegex, "Invalid phone number"),
       role: z.enum(["owner", "representative", "beneficial-owner"]),
+      bridgeUserRole: z.nativeEnum(BridgeUserRole).optional(),
       walletAddress: z.string().regex(walletAddressRegex, "Invalid wallet address").optional(),
     })),
   });
@@ -90,3 +107,4 @@ export const companyAccountSchema = z.object({
   export type BridgeComplianceSchema = z.infer<typeof bridgeComplianceSchema>;
   export type RainComplianceSchema = z.infer<typeof rainComplianceSchema>;
   export type AccountAddressSchema = z.infer<typeof accountAddressSchema>;
+  export type WalletAddressSchema = z.infer<typeof walletAddressSchema>;

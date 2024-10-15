@@ -1,4 +1,9 @@
-import { countryCodes } from "@/types";
+
+const countryCodes = {
+  "United States": {
+    areaCode: "+1",
+  },
+};
 
 export function formatAmount(value: string): string {
   const numericValue = value.replace(/[^0-9.]/g, "");

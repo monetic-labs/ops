@@ -7,8 +7,8 @@ import { Button } from "@nextui-org/button";
 import { FormCard } from "@/components/generics/form-card";
 import { FormInput } from "@/components/generics/form-input";
 import { FormButton } from "@/components/generics/form-button";
-import { CompanyAccountSchema, companyAccountSchema } from "@/validations/app";
-import { emailRegex } from "@/validations/auth";
+import { CompanyAccountSchema, companyAccountSchema } from "@/types/validations/onboard";
+import { emailRegex } from "@/types/validations/auth";
 
 import { PostcodeInput } from "../generics/form-input-postcode";
 
