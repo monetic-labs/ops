@@ -40,37 +40,6 @@ export const FormUserDetails: React.FC<{
     defaultValues: initialData,
   });
 
-  // const { fields, append, remove } = useFieldArray({
-  //   control,
-  //   name: "userDetails",
-  // });
-
-  // useEffect(() => {
-  //   // Adjust the number of fields to match userCount
-  //   const difference = userCount - fields.length;
-  //   if (difference > 0) {
-  //     // Add fields
-  //     for (let i = 0; i < difference; i++) {
-  //       append({
-  //         countryOfIssue: "US" as ISO3166Alpha2Country,
-  //         birthday: "",
-  //         ssn: "",
-  //         registeredAddress: {
-  //           postcode: "",
-  //           city: "",
-  //           state: "",
-  //           country: "US" as ISO3166Alpha2Country,
-  //           street1: "",
-  //         },
-  //       });
-  //     }
-  //   } else if (difference < 0) {
-  //     for (let i = 0; i < Math.abs(difference); i++) {
-  //       remove(fields.length - 1);
-  //     }
-  //   }
-  // }, [userCount, fields, append, remove]);
-
   useEffect(() => {
     const subscription = watch((value) => {
       updateFormData(value as CompanyUserDetailsSchema);
@@ -88,38 +57,6 @@ export const FormUserDetails: React.FC<{
       console.error("Form validation errors:", errors);
     }
   );
-
-  // const addOwner = () => {
-  //   append({
-  //     countryOfIssue: "US" as ISO3166Alpha2Country,
-  //     birthday: "",
-  //     ssn: "",
-  //     registeredAddress: {
-  //       postcode: "",
-  //       street1: "",
-  //       street2: "",
-  //       city: "",
-  //       state: "",
-  //       country: "US" as ISO3166Alpha2Country,
-  //     },
-  //   });
-  //   setShowAddressInputs([...showAddressInputs, false]);
-  // };
-
-  // const removeOwner = (index: number) => {
-  //   if (fields.length > 1) {
-  //     remove(index);
-  //     setShowAddressInputs(showAddressInputs.filter((_, i) => i !== index));
-  //   }
-  // };
-
-  // const renderTabTitle = (field: any, index: number) => {
-  //   const user = accountUsers[index];
-  //   if (user) {
-  //     return `${user.firstName} ${user.lastName}`;
-  //   }
-  //   return `User ${index + 1}`;
-  // };
 
   const onPostcodeLookup = (result: any, index: number) => {
     if (result) {

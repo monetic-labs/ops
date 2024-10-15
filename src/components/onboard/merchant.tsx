@@ -32,6 +32,9 @@ export const KYBMerchantForm: React.FC<{ onCancel: () => void; initialEmail: str
     formData,
     updateFormData,
     userCount,
+    isCreatingRainMerchant,
+    createRainMerchantData,
+    createRainMerchantError
   } = useMerchantForm(initialEmail);
 
   const [notification, setNotification] = useState<string | null>(null);
@@ -130,6 +133,9 @@ export const KYBMerchantForm: React.FC<{ onCancel: () => void; initialEmail: str
         </Tab>
       ))}
       </Tabs>
+      {isCreatingRainMerchant && <p>Creating Rain merchant...</p>}
+      {createRainMerchantError && <p>Error: {createRainMerchantError}</p>}
+      {createRainMerchantData && <p>Rain merchant created successfully!</p>}
     </FormCard>
   );
 };

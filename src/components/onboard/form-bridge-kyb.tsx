@@ -142,10 +142,10 @@ export const AccountRegistration: React.FC<TermsAndKYBProps> = ({
       </p>
       <Button
         className="w-full bg-ualert-500 text-notpurple-100"
-        isDisabled={rainToSAccepted || !tosLink}
+        isDisabled={isRainToSAccepted || !tosLink}
         onClick={handleRainAcceptToS}
       >
-        {rainToSAccepted ? "Terms Accepted" : "Accept Terms"}
+        {isRainToSAccepted ? "Terms Accepted" : "Accept Terms"}
       </Button>
     </AccordionItem>,
 

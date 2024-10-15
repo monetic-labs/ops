@@ -142,6 +142,7 @@ export const useMerchantForm = (initialEmail: string) => {
       console.log(`Step ${step} data:`, data);
 
       let updatedFormData = { ...formData };
+      let stepResult;
 
       switch (step) {
         case 1:
@@ -165,9 +166,18 @@ export const useMerchantForm = (initialEmail: string) => {
           updateTabCompletion("user-details", true);
           break;
         case 5:
-          await handleStep5Data(updatedFormData);
-          updateTabCompletion("register-account", true);
+          stepResult = await handleStep5Data(updatedFormData);
+          if (stepResult.success) {
+            updateTabCompletion("register-account", true);
+            console.log('Rain merchant created successfully:', stepResult.data);
+            // Handle success (e.g., show success message, navigate to next page)
+          } else {
+            throw new Error(stepResult.error?.message || 'Unknown error');
+          }
           break;
+        default:
+          console.error("Invalid step number");
+          return;
       }
 
       updateFormData(updatedFormData);
@@ -260,8 +270,26 @@ export const useMerchantForm = (initialEmail: string) => {
     try {
       const response = await createRainMerchant(rainData);
       console.log('Merchant created:', response);
+      // Handle successful creation (e.g., show success message, update UI)
+      return { success: true, data: response };
     } catch (err) {
       console.error('Failed to create merchant:', err);
+      
+      let errorMessage = 'An unexpected error occurred while creating the merchant.';
+      let errorCode = 'UNKNOWN_ERROR';
+
+      if (err instanceof Error) {
+        errorMessage = err.message;
+        // You can add more specific error handling here based on error types or messages
+        if (err.message.includes('network')) {
+          errorCode = 'NETWORK_ERROR';
+        } else if (err.message.includes('validation')) {
+          errorCode = 'VALIDATION_ERROR';
+        }
+        // Add more specific error checks as needed
+      }
+
+      return { success: false, error: { message: errorMessage, code: errorCode } };
     }
   };
 
@@ -285,5 +313,8 @@ export const useMerchantForm = (initialEmail: string) => {
     createMerchantError,
     createMerchantData,
     tosLink,
+    isCreatingRainMerchant,
+    createRainMerchantError,
+    createRainMerchantData
   };
 };
