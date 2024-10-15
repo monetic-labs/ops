@@ -130,6 +130,8 @@ export const useMerchantForm = (initialEmail: string) => {
     data: createMerchantData,
   } = useCreateBridgeMerchant();
 
+  const [rainError, setRainError] = useState<string | null>(null);
+
   const {
     createRainMerchant,
     isLoading: isCreatingRainMerchant,
@@ -172,7 +174,8 @@ export const useMerchantForm = (initialEmail: string) => {
             console.log('Rain merchant created successfully:', stepResult.data);
             // Handle success (e.g., show success message, navigate to next page)
           } else {
-            throw new Error(stepResult.error?.message || 'Unknown error');
+            console.error('Failed to create Rain merchant:', stepResult.error);
+            setRainError(stepResult.error?.message || 'Unknown error');
           }
           break;
         default:
@@ -182,7 +185,7 @@ export const useMerchantForm = (initialEmail: string) => {
 
       updateFormData(updatedFormData);
     },
-    [createBridgeMerchant, formData, updateFormData, createRainMerchant, isRainToSAccepted, setActiveTab, updateTabCompletion]
+    [createBridgeMerchant, formData, updateFormData, createRainMerchant, isRainToSAccepted, setActiveTab, updateTabCompletion, setRainError]
   );
 
   const adjustUserDetailsTabs = useCallback((representatives: any[]) => {
@@ -289,6 +292,7 @@ export const useMerchantForm = (initialEmail: string) => {
         // Add more specific error checks as needed
       }
 
+      setRainError(errorMessage);
       return { success: false, error: { message: errorMessage, code: errorCode } };
     }
   };
@@ -313,6 +317,7 @@ export const useMerchantForm = (initialEmail: string) => {
     createMerchantError,
     createMerchantData,
     tosLink,
+    rainError,
     isCreatingRainMerchant,
     createRainMerchantError,
     createRainMerchantData

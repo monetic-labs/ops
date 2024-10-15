@@ -32,6 +32,7 @@ export const KYBMerchantForm: React.FC<{ onCancel: () => void; initialEmail: str
     formData,
     updateFormData,
     userCount,
+    rainError,
     isCreatingRainMerchant,
     createRainMerchantData,
     createRainMerchantError
@@ -133,9 +134,10 @@ export const KYBMerchantForm: React.FC<{ onCancel: () => void; initialEmail: str
         </Tab>
       ))}
       </Tabs>
+      {rainError && <p className="text-ualert-500">Rain Error: {rainError}</p>}
       {isCreatingRainMerchant && <p>Creating Rain merchant...</p>}
-      {createRainMerchantError && <p>Error: {createRainMerchantError}</p>}
-      {createRainMerchantData && <p>Rain merchant created successfully!</p>}
+      {createRainMerchantError && <p className="text-ualert-500">Error: {createRainMerchantError}</p>}
+      {createRainMerchantData && <p className="text-green-500">Rain merchant created successfully!</p>}
     </FormCard>
   );
 };
