@@ -29,7 +29,7 @@ export type RainInitialUserDto = RainPersonDto & {
     walletAddress?: string;
     ipAddress: string;
     iovationBlackbox: string;
-    country: string;
+    //country: string;
 }
 
 export type RainEntityDto = {

@@ -9,6 +9,7 @@ import { useIpAddress } from './useIpAddress';
 
 import { mapToBridgeMerchantCreateDto } from "@/types/adapters/mapBridge";
 import { mapToRainMerchantCreateDto } from "@/types/adapters/mapRain";
+import { CompanyAccountSchema, CompanyAccountUsersSchema, CompanyDetailsSchema, CompanyUserDetailsSchema } from "@/types/validations/onboard";
 
 export const useOnboardForm = (initialEmail: string) => {
   const router = useRouter();
@@ -31,23 +32,30 @@ export const useOnboardForm = (initialEmail: string) => {
     router.push("/auth");
   };
 
-  const handleRainToSAccepted = useCallback(() => {
+  const handleRainToSAccepted = useCallback(async () => {
     setIsRainToSAccepted(true);
-  }, []);
+    const result = await handleStep5();
+    if (result.success) {
+      console.log('Rain merchant created successfully:', result.data);
+    } else {
+      console.error('Failed to create Rain merchant:', result.error);
+      setRainError(result.error?.message || 'Unknown error');
+    }
+  }, [formData, createRainMerchant, ipAddress]);
 
-  const handleStep1 = (data: any) => {
+  const handleStep1 = (data: CompanyAccountSchema) => {
     updateFormData({ ...formData, companyAccount: data });
     setActiveTab("company-details");
     updateTabCompletion("company-account", true);
   };
 
-  const handleStep2 = (data: any) => {
+  const handleStep2 = (data: CompanyDetailsSchema) => {
     updateFormData({ ...formData, companyDetails: data });
     setActiveTab("account-users");
     updateTabCompletion("company-details", true);
   };
 
-  const handleStep3 = (data: any) => {
+  const handleStep3 = (data: CompanyAccountUsersSchema) => {
     const updatedFormData = { ...formData, accountUsers: data };
     const newUserCount = data.representatives.length;
     setUserCount(newUserCount);
@@ -57,7 +65,7 @@ export const useOnboardForm = (initialEmail: string) => {
     updateTabCompletion("account-users", true);
   };
 
-  const handleStep4 = async (data: any) => {
+  const handleStep4 = async (data: CompanyUserDetailsSchema) => {
     const updatedFormData = { ...formData, userDetails: data.userDetails };
     const bridgeData = mapToBridgeMerchantCreateDto(
       updatedFormData.companyAccount,
@@ -87,7 +95,7 @@ export const useOnboardForm = (initialEmail: string) => {
       iovationBlackbox: '',
       chainId: '1',
       expectedSpend: '100000',
-      country: formData.companyAccount.company.registeredAddress.country,
+      //country: formData.companyAccount.company.registeredAddress.country,
     };
     const rainData = mapToRainMerchantCreateDto(
       formData.companyAccount,

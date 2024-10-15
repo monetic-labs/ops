@@ -26,7 +26,7 @@ import {
       iovationBlackbox: string;
       chainId: string;
       expectedSpend: string;
-      country: string;
+      //country: string;
     }
   ): RainMerchantCreateDto {
     const { company } = accountData;
@@ -42,7 +42,7 @@ import {
       region: company.registeredAddress.state || '',
       postalCode: company.registeredAddress.postcode,
       countryCode: company.registeredAddress.country,
-      country: additionalData.country,
+      country: company.registeredAddress.country,
     };
   
     // Map entity data to RainEntityDto
@@ -79,7 +79,7 @@ import {
           region: userDetail.registeredAddress.state || '',
           postalCode: userDetail.registeredAddress.postcode,
           countryCode: userDetail.registeredAddress.country,
-          country: additionalData.country,
+          country: userDetail.registeredAddress.country,
         },
         role: rep.role as "owner" | "representative" | "beneficial-owner",
         //role: rep.role,
@@ -94,7 +94,7 @@ import {
       walletAddress: walletAddress,
       ipAddress: additionalData.ipAddress,
       iovationBlackbox: additionalData.iovationBlackbox,
-      country: additionalData.country,
+      //country: additionalData.country,
     };
 
     const ultimateBeneficialOwners: RainPersonDto[] = rainRepresentatives

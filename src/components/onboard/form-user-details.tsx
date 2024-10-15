@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useFieldArray, useForm } from "react-hook-form";
+import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 
 import { FormInput } from "@/components/generics/form-input";
@@ -26,7 +26,7 @@ export const FormUserDetails: React.FC<{
   tabs: TabData[];
   activeTab: string;
   setActiveTab: (key: string) => void;
-}> = ({ onSubmit, initialData, updateFormData, userCount, accountUsers, tabs, activeTab, setActiveTab }) => {
+}> = ({ onSubmit, initialData, updateFormData, accountUsers, tabs }) => {
   const [showAddressInputs, setShowAddressInputs] = useState<boolean[]>(new Array(accountUsers.length).fill(false));
 
   const {

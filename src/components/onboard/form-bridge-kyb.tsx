@@ -15,7 +15,7 @@ interface TermsAndKYBProps {
   onCancel: () => void;
   onKYCDone: () => void;
   isRainToSAccepted: boolean;
-  handleRainToSAccepted: () => void;
+  handleRainToSAccepted: () => Promise<void>;
 }
 
 export const AccountRegistration: React.FC<TermsAndKYBProps> = ({ 
@@ -58,14 +58,12 @@ export const AccountRegistration: React.FC<TermsAndKYBProps> = ({
   };
 
   const handleRainAcceptToS = async () => {
-    if (tosLink) {
-      try {
-        const result = await signRainTermsOfService(tosLink);
-        console.log("Rain terms accepted");
-        handleRainToSAccepted();
-      } catch (error) {
-        console.error("Error accepting terms:", error);
-      }
+    try {
+      await handleRainToSAccepted();
+      // You might want to show a success message or update UI here
+    } catch (error) {
+      console.error('Error accepting Rain ToS:', error);
+      // Handle error (e.g., show error message to user)
     }
   };
 
