@@ -14,14 +14,14 @@ interface ActionButton {
 interface ModalFooterWithSupportProps {
   actions: ActionButton[];
   onSupportClick: () => void;
-  isNewCustomer?: boolean;
-  onNewCustomerChange?: (value: boolean) => void;
+  isNewSender?: boolean;
+  onNewSenderChange?: (value: boolean) => void;
 }
 
 export default function ModalFooterWithSupport({
   onSupportClick,
-  onNewCustomerChange,
-  isNewCustomer,
+  onNewSenderChange,
+  isNewSender,
   actions,
 }: ModalFooterWithSupportProps) {
   return (
@@ -35,14 +35,15 @@ export default function ModalFooterWithSupport({
           Support
         </Button>
         <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto order-1 sm:order-none">
-          {onNewCustomerChange && isNewCustomer !== undefined && (
-            <div className="flex flex-row items-center gap-2">
-              <span className="items-center">New Contact</span>
+          {onNewSenderChange && isNewSender !== undefined && (
+            <div className="flex flex-row items-center gap-2 justify-between px-2">
+              <span className="items-center font-mono">New Sender?</span>
               <Switch
                 defaultSelected
+                color="secondary"
                 aria-label="New Customer"
-                isSelected={isNewCustomer}
-                onValueChange={onNewCustomerChange}
+                isSelected={isNewSender}
+                onValueChange={onNewSenderChange}
               />
             </div>
           )}

@@ -49,6 +49,7 @@
     "@svgr/webpack": "^8.1.0",
     "chart.js": "^4.4.4",
     "clsx": "2.1.1",
+    "convert-iso-codes": "^1.0.10",
     "framer-motion": "~11.9.0",
     "intl-messageformat": "^10.5.14",
     "jwt-decode": "^4.0.0",
