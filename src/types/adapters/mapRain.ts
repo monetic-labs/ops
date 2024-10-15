@@ -57,7 +57,8 @@ import {
 
     // We use role to map which user object but the service doesn't want it, we use this to manage that
     type RainPersonWithRole = RainPersonDto & {
-        role: string;
+        role: "owner" | "representative" | "beneficial-owner";
+        //role: string;
     }
   
     // Map representatives to RainPersonDto[]
@@ -80,7 +81,8 @@ import {
           countryCode: userDetail.registeredAddress.country,
           country: additionalData.country,
         },
-        role: rep.role,
+        role: rep.role as "owner" | "representative" | "beneficial-owner",
+        //role: rep.role,
       };
     });
   

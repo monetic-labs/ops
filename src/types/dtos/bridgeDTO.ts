@@ -21,7 +21,8 @@ export interface BridgeCompanyDto {
     lastName: string;
     email: string;
     phoneNumber: string;
-    appRole: string;
+    //appRole: string;
+    appRole: "owner" | "representative" | "beneficial-owner";
     bridgeUserRole?: BridgeUserRole;
     walletAddress?: string;
   }

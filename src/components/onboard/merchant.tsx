@@ -5,7 +5,8 @@ import { Tabs, Tab } from "@nextui-org/tabs";
 
 import { FormCard } from "@/components/generics/form-card";
 import Notification from "@/components/generics/notification";
-import { useMerchantForm } from "@/hooks/merchant/useMerchantForm";
+//import { useMerchantForm } from "@/hooks/merchant/useMerchantForm";
+import { useOnboardForm } from "@/hooks/onboard/useOnboardForm";
 
 import { FormCompanyInfo } from "./form-company-account";
 import { AccountRegistration } from "./form-bridge-kyb";
@@ -36,7 +37,7 @@ export const KYBMerchantForm: React.FC<{ onCancel: () => void; initialEmail: str
     isCreatingRainMerchant,
     createRainMerchantData,
     createRainMerchantError
-  } = useMerchantForm(initialEmail);
+  } = useOnboardForm(initialEmail);
 
   const [notification, setNotification] = useState<string | null>(null);
 
