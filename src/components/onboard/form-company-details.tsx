@@ -1,6 +1,7 @@
 import React, { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { CardCompanyType } from "@backpack-fux/pylon-sdk";
 
 import { FormCard } from "@/components/generics/form-card";
 import { FormInput } from "@/components/generics/form-input";
@@ -9,7 +10,7 @@ import { CompanyDetailsSchema, companyDetailsSchema } from "@/types/validations/
 import { AutocompleteInput } from "@/components/generics/autocomplete-input";
 import { companyEINRegex, walletAddressRegex } from "@/types/validations/onboard";
 
-const companyTypes = [
+const companyTypes: { label: string; value: CardCompanyType }[] = [
   { label: "Sole Proprietorship", value: "sole_proprietorship" },
   { label: "Limited Liability Company (LLC)", value: "llc" },
   { label: "C Corporation", value: "c_corp" },
