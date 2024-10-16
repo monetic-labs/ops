@@ -65,7 +65,7 @@ export function RefundSuccessModal({
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.3, duration: 0.5 }}
-                  className="text-2xl font-bold text-foreground mb-2"
+                  className="text-center text-2xl font-bold text-foreground mb-2"
                 >
                   {title}
                 </motion.h2>

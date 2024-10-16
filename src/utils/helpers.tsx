@@ -1,7 +1,5 @@
 import { createIcon } from "opepen-standard";
-
 import { ChainAddress, OrderID } from "@/types";
-import { ISO3166Alpha2Country } from "@backpack-fux/pylon-sdk";
 
 export function generateUserInviteUrl(onboardId: string, email: string): string {
   return `/onboard/${onboardId}?email=${encodeURIComponent(email)}`;
@@ -108,4 +106,8 @@ export const getTimeAgo = (timestamp: string): string => {
   const diffInDays = Math.floor(diffInHours / 24);
 
   return `${diffInDays} day${diffInDays !== 1 ? "s" : ""} ago`;
+};
+
+export const getFullName = (firstName: string, lastName: string) => {
+  return `${firstName} ${lastName}`;
 };

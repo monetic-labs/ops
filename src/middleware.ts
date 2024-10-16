@@ -1,7 +1,5 @@
 import type { NextRequest } from "next/server";
-
 import { NextResponse } from "next/server";
-
 import { MERCHANT_COOKIE_NAME } from "./utils/constants";
 
 export function middleware(request: NextRequest) {

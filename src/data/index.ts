@@ -1,4 +1,4 @@
-import { TransactionListItem } from "@backpack-fux/pylon-sdk";
+import { MerchantUserGetOutput, PersonRole, TransactionListItem } from "@backpack-fux/pylon-sdk";
 
 export interface Column<T> {
   name: string;
@@ -66,9 +66,10 @@ export interface Payment {
 }
 export interface User {
   id: string;
-  name: string;
+  fullName: string;
   role: string;
   email: string;
+  phone: string;
   status: string;
   actions: string;
 }
@@ -106,12 +107,12 @@ export const paymentsColumns: readonly Column<TransactionListItem>[] = [
   { name: "Created", uid: "createdAt" },
 ] as const;
 
-export const usersColumns: readonly Column<User>[] = [
-  { name: "NAME", uid: "name" },
+export const usersColumns: readonly Column<MerchantUserGetOutput>[] = [
+  { name: "NAME", uid: "firstName" },
   { name: "ROLE", uid: "role" },
   { name: "EMAIL", uid: "email" },
-  { name: "STATUS", uid: "status" },
-  { name: "ACTIONS", uid: "actions" },
+  { name: "PHONE NUMBER", uid: "phone" },
+  { name: "WALLET ADDRESS", uid: "walletAddress" },
 ] as const;
 
 export const billPayData: BillPay[] = [
@@ -268,41 +269,6 @@ export const issuedCardData: IssuedCards[] = [
   },
 ];
 
-export const userData: User[] = [
-  {
-    id: "1",
-    name: "Rick Sanchez",
-    role: "Admin",
-    email: "rick.sanchez@example.com",
-    status: "Active",
-    actions: "Actions",
-  },
-  {
-    id: "2",
-    name: "Morty Smith",
-    role: "Bookkeeper",
-    email: "morty.smith@example.com",
-    status: "Active",
-    actions: "modal",
-  },
-  {
-    id: "3",
-    name: "Summer Smith",
-    role: "Developer",
-    email: "summer.smith@example.com",
-    status: "Inactive",
-    actions: "modal",
-  },
-  {
-    id: "4",
-    name: "Beth Smith",
-    role: "Member",
-    email: "beth.smith@example.com",
-    status: "Suspended",
-    actions: "modal",
-  },
-];
-
 export const statusColorMap: Record<string, "success" | "danger"> = {
   Active: "success",
   Inactive: "danger",
@@ -323,8 +289,12 @@ export const paymentsStatusColorMap: Record<string, "success" | "warning" | "dan
   REFUND_FAILED: "danger",
 };
 
-export const usersStatusColorMap: Record<string, "success" | "danger" | "warning"> = {
-  Active: "success",
-  Inactive: "danger",
-  Suspended: "warning",
+export const usersStatusColorMap: Record<PersonRole, "success" | "danger" | "warning" | "primary" | "secondary"> = {
+  MEMBER: "primary",
+  DEVELOPER: "secondary",
+  BOOKKEEPER: "warning",
+  ADMIN: "success",
+  SUPER_ADMIN: "danger",
 };
+
+export const userRoles: PersonRole[] = ["MEMBER", "DEVELOPER", "BOOKKEEPER", "ADMIN", "SUPER_ADMIN"];

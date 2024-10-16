@@ -7,16 +7,18 @@ export const tabsConfig = [
   {
     id: "back-office",
     label: "Back Office",
-    content: "However you create value, you need a way to accept receive payments for it. You manage that stream of value here.",
+    content:
+      "However you create value, you need a way to accept receive payments for it. You manage that stream of value here.",
   },
   {
     id: "card-issuance",
     label: "Card Issuance",
-    content: "Now that your value streams and bills are managed, we need a way for you to use your money. You can issue cards for your needs from here.",
+    content:
+      "Now that your value streams and bills are managed, we need a way for you to use your money. You can issue cards for your needs from here.",
   },
   {
     id: "users",
-    label: "Users",
+    label: "User",
     content: "Create roles for the various different ways you need others to assist in your operations.",
   },
 ];
@@ -47,5 +49,21 @@ export const backOfficeConfig = [
     id: "widget-mgmt",
     label: "Widget Management",
     content: "This is where you manage your widgets",
+  },
+];
+
+export enum BillPayId {
+  TRANSFERS = "bill-pay-list",
+  CONTACTS = "bill-pay-contacts",
+}
+
+export const billPayConfig: { id: BillPayId; label: string }[] = [
+  {
+    id: BillPayId.TRANSFERS,
+    label: "Transfers",
+  },
+  {
+    id: BillPayId.CONTACTS,
+    label: "Contacts",
   },
 ];

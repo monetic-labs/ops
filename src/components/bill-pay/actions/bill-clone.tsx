@@ -33,11 +33,13 @@ export default function BillPayCloneModal({ isOpen, onClose, billPay, onSave }: 
         <ModalBody>
           <Input
             label="Vendor"
+            isDisabled
             value={clonedBillPay.vendor}
             onChange={(e) => setClonedBillPay({ ...clonedBillPay, vendor: e.target.value })}
           />
           <Select
             label="Payment Method"
+            isDisabled
             selectedKeys={[clonedBillPay.paymentMethod]}
             onChange={(e) =>
               setClonedBillPay({
@@ -65,11 +67,13 @@ export default function BillPayCloneModal({ isOpen, onClose, billPay, onSave }: 
           />
           <Input
             label="Currency"
+            isDisabled
             value={clonedBillPay.currency}
             onChange={(e) => setClonedBillPay({ ...clonedBillPay, currency: e.target.value })}
           />
           <Input
             label="Receiving Bank Name"
+            isDisabled
             value={clonedBillPay.receivingBank.name}
             onChange={(e) =>
               setClonedBillPay({
@@ -83,6 +87,7 @@ export default function BillPayCloneModal({ isOpen, onClose, billPay, onSave }: 
           />
           <Input
             label="Routing Number"
+            isDisabled
             value={clonedBillPay.receivingBank.routingNumber}
             onChange={(e) =>
               setClonedBillPay({
@@ -96,6 +101,7 @@ export default function BillPayCloneModal({ isOpen, onClose, billPay, onSave }: 
           />
           <Input
             label="Account Number"
+            isDisabled
             value={clonedBillPay.receivingBank.accountNumber}
             onChange={(e) =>
               setClonedBillPay({
@@ -124,7 +130,7 @@ export default function BillPayCloneModal({ isOpen, onClose, billPay, onSave }: 
         <ModalFooter>
           <Button onPress={onClose}>Cancel</Button>
           <Button color="primary" onPress={handleSave}>
-            Clone
+            Create Transfer
           </Button>
         </ModalFooter>
       </ModalContent>

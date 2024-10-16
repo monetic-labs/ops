@@ -1,4 +1,5 @@
 "use client";
+
 import { title } from "@/components/primitives";
 import { useGetComplianceStatus } from "@/hooks/merchant/useGetComplianceStatus";
 import { Button } from "@nextui-org/button";
@@ -13,14 +14,30 @@ export default function UnapprovedKYB() {
         {complianceStatus && (
           <div>
             <p className="mb-4">
-              Your KYB status is {complianceStatus.kycStatus}. You can check your full KYB status below and add any
-              missing information.
+              Your BRIDGE KYB status is {complianceStatus.kycStatus}. You can check your full KYB status below and add
+              any missing information.
             </p>
             <Button
               className="w-full bg-ualert-500 text-notpurple-100"
               onClick={() => window.open(complianceStatus.kycLink, "_blank")}
             >
-              Check KYB status
+              Check BRIDGE KYB status
+            </Button>
+            <p className="mb-4">
+              Your RAIN KYB status is {complianceStatus.applicationStatus}. You can check your full KYB status below and
+              add any missing information.
+            </p>
+            <Button
+              className="w-full bg-ualert-500 text-notpurple-100"
+              onClick={() => window.open(complianceStatus.applicationExternalVerificationLink.url, "_blank")}
+            >
+              Rain External Verification Link
+            </Button>
+            <Button
+              className="w-full bg-ualert-500 text-notpurple-100"
+              onClick={() => window.open(complianceStatus.applicationCompletionLink.url, "_blank")}
+            >
+              Rain Completion Link
             </Button>
           </div>
         )}
