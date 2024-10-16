@@ -30,7 +30,7 @@ type NewBillPay = {
 };
 
 enum VendorMethod {
-  ACH = "ACH",
+  ACH_PUSH = "ACH",
   ACH_SAME_DAY = "ACH (Same Day)",
   WIRE = "Wire",
 }
@@ -53,13 +53,13 @@ enum States {
 }
 
 // TODO: get this data from backend
-const vendorMethods: VendorMethod[] = [VendorMethod.ACH, VendorMethod.ACH_SAME_DAY, VendorMethod.WIRE];
+const vendorMethods: VendorMethod[] = [VendorMethod.ACH_PUSH, VendorMethod.ACH_SAME_DAY, VendorMethod.WIRE];
 const vendorCurrencies: Currency[] = [Currency.USD];
 const vendorCountries: Countries[] = [Countries.USA, Countries.CAN, Countries.CYM, Countries.VGB];
 const vendorStates: States[] = [States.NY, States.CA, States.TX];
 
 const methodFees: Record<VendorMethod, number> = {
-  [VendorMethod.ACH]: 0.5,
+  [VendorMethod.ACH_PUSH]: 0.5,
   [VendorMethod.ACH_SAME_DAY]: 1,
   [VendorMethod.WIRE]: 20,
 };
@@ -68,7 +68,7 @@ const testBillPay: Partial<NewBillPay>[] = [
   {
     vendorName: "MyBackpackMy LLC",
     vendorBankName: "Bank of America",
-    vendorMethod: VendorMethod.ACH,
+    vendorMethod: VendorMethod.ACH_PUSH,
     currency: Currency.USD,
     routingNumber: "123000848",
     accountNumber: "4321",
@@ -151,7 +151,7 @@ function ExistingTransferFields({
         <Input isDisabled label="Routing Number" value={`${newBillPay.routingNumber}`} />
       </div>
       {newBillPay.vendorMethod &&
-        [VendorMethod.WIRE, VendorMethod.ACH_SAME_DAY, VendorMethod.ACH].includes(newBillPay.vendorMethod) && (
+        [VendorMethod.WIRE, VendorMethod.ACH_SAME_DAY, VendorMethod.ACH_PUSH].includes(newBillPay.vendorMethod) && (
           <Input
             isDisabled={newBillPay.vendorMethod === VendorMethod.WIRE}
             label={`${newBillPay.vendorMethod === VendorMethod.WIRE ? "Wire Message" : "ACH Reference"}`}
@@ -216,7 +216,7 @@ function NewTransferFields({
           isRequired
           isClearable={false}
           label="Method"
-          defaultInputValue={VendorMethod.ACH}
+          defaultInputValue={VendorMethod.ACH_PUSH}
           value={newBillPay.vendorMethod}
           onSelectionChange={(value) => {
             console.log("Selected Method:", value);

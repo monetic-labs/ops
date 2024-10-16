@@ -22,7 +22,12 @@ export default function MerchantServicesTabs({ userId }: { userId: string }) {
   const router = useRouter();
 
   useEffect(() => {
-    if (complianceStatus && complianceStatus.kycStatus !== "approved") {
+    if (
+      complianceStatus &&
+      complianceStatus.tosStatus !== "approved" &&
+      complianceStatus.kycStatus !== "approved" &&
+      complianceStatus.applicationStatus !== "approved"
+    ) {
       router.push("/unapproved-kyb");
     }
   }, [complianceStatus]);
