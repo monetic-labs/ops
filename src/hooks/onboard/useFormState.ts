@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useFormPersistence } from "@/hooks/generics/useFormPersistence";
-import { ISO3166Alpha2Country } from "@backpack-fux/pylon-sdk";
+import { CardCompanyType, ISO3166Alpha2Country } from "@backpack-fux/pylon-sdk";
 
 export const useFormState = (initialEmail: string) => {
   const initialData = {
@@ -21,7 +21,7 @@ export const useFormState = (initialEmail: string) => {
     companyDetails: {
       walletAddress: "",
       companyEIN: "",
-      companyType: "",
+      companyType: "llc" as CardCompanyType,
       companyDescription: "",
     },
     accountUsers: {

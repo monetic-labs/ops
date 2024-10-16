@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { ISO3166Alpha2Country } from "@backpack-fux/pylon-sdk";
+import { ISO3166Alpha2Country, CardCompanyType } from "@backpack-fux/pylon-sdk";
 import { emailSchema } from "./auth";
 import { BridgeUserRole } from "../dtos/bridgeDTO";
 
@@ -48,7 +48,7 @@ export const companyAccountSchema = z.object({
   export const companyDetailsSchema = z.object({
     walletAddress: z.string().regex(walletAddressRegex, "Invalid wallet address"),
     companyEIN: z.string().min(9, "EIN must be at least 9 characters"),
-    companyType: z.string().min(3,"Company type is required"),
+    companyType: z.enum(['sole_proprietorship', 'llc', 'c_corp', 's_corp', 'partnership', 'lp', 'llp', 'nonprofit']),
     companyDescription: z.string().min(1,"Company description is required"),
   });
   

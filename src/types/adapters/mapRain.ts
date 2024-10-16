@@ -13,7 +13,6 @@ import {
     RainEntityDto,
     RainAddressDto,
   } from '@/types/dtos/rainDTO';
-  import { v4 as uuidv4 } from 'uuid'; // For generating UUIDs
   
   export function mapToRainMerchantCreateDto(
     accountData: CompanyAccountSchema,
@@ -65,7 +64,6 @@ import {
     const rainRepresentatives: RainPersonWithRole[] = representatives.map((rep, index) => {
       const userDetail = userDetails[index]; // Assuming the order matches
       return {
-        id: uuidv4(), // Generate a unique ID
         firstName: rep.firstName,
         lastName: rep.lastName,
         birthDate: userDetail.birthday,
@@ -92,8 +90,6 @@ import {
       isTermsOfServiceAccepted: additionalData.isTermsOfServiceAccepted,
       role: representatives[0].role,
       walletAddress: walletAddress,
-      ipAddress: additionalData.ipAddress,
-      iovationBlackbox: additionalData.iovationBlackbox,
       //country: additionalData.country,
     };
 
@@ -108,8 +104,6 @@ import {
       address: companyAddress,
       entity,
       name: company.name,
-      chainId: additionalData.chainId,
-      contractAddress: walletAddress,
       representatives: representativesWithoutRole,
       ultimateBeneficialOwners,
     };
