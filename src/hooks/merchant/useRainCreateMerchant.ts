@@ -17,10 +17,10 @@ export const useRainCreateMerchant = () => {
       console.log("useRainCreateMerchant:", data);
 
       const createRainMerchant: MerchantRainCompanyCreateInput = {
-        name: data.name,
         initialUser: data.initialUser,
-        address: data.address,
+        name: data.name,
         entity: data.entity,
+        address: data.address,
         representatives: data.representatives,
         ultimateBeneficialOwners: data.ultimateBeneficialOwners,
       };
