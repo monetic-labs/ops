@@ -16,7 +16,7 @@ function OnboardContent() {
     router.push("/");
   };
 
-  return <KYBMerchantForm initialEmail={email} onCancel={onCancel} />;
+  return <KYBMerchantForm initialEmail={email} />;
 }
 
 export default function OnboardPage() {
