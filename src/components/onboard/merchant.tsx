@@ -250,6 +250,12 @@ export const KYBMerchantForm = ({ initialEmail }: { initialEmail: string }) => {
     </div>
   );
 
+  const CheckCircleIcon = () => (
+    <div className="flex items-center justify-center w-10 h-10">
+      <CheckCircle className="w-10 h-10 text-green-500" />
+    </div>
+  );
+
   return (
     <Accordion
       variant="shadow"
@@ -260,7 +266,9 @@ export const KYBMerchantForm = ({ initialEmail }: { initialEmail: string }) => {
       {steps.map((step) => (
         <AccordionItem
           key={step.number}
-          startContent={<CircleWithNumber number={step.number} />}
+          startContent={
+            currentStep > Number(step.number) ? <CheckCircleIcon /> : <CircleWithNumber number={step.number} />
+          }
           aria-label={step.title}
           title={step.title}
           classNames={{
