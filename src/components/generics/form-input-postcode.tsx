@@ -68,7 +68,7 @@ export const PostcodeInput = <T extends FieldValues>({
           </div>
           <div className="w-1/3">
             <p className="text-sm text-notpurple-100 mb-1">Country</p>
-            <p className="text-sm text-notpurple-300">{result ? "US" : "-"}</p>
+            <p className="text-sm text-notpurple-300">{result?.country || "-"}</p>
           </div>
         </div>
       </div>
@@ -79,11 +79,5 @@ export const PostcodeInput = <T extends FieldValues>({
     </div>
   );
 
-  return about ? (
-    <Tooltip content={about}>
-      {postcodeInput}
-    </Tooltip>
-  ) : (
-    postcodeInput
-  );
+  return about ? <Tooltip content={about}>{postcodeInput}</Tooltip> : postcodeInput;
 };

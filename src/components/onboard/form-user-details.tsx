@@ -3,26 +3,31 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 
 import { FormInput } from "@/components/generics/form-input";
-import { birthdayRegex,CompanyUserDetailsSchema, companyUserDetailsSchema, ssnRegex } from "@/types/validations/onboard";
+import {
+  birthdayRegex,
+  CompanyUserDetailsSchema,
+  companyUserDetailsSchema,
+  ssnRegex,
+} from "@/types/validations/onboard";
 import { FormCardTabs } from "../generics/form-card-tabs";
 import { AutocompleteInput } from "../generics/autocomplete-input";
 import { ISO3166Alpha2Country } from "@backpack-fux/pylon-sdk";
 import { PostcodeInput } from "../generics/form-input-postcode";
 import { TabData } from "@/hooks/generics/useDynamicTabs";
 
-const countries = [
-  { label: "United States", value: "US" as ISO3166Alpha2Country },
-  { label: "United Kingdom", value: "GB" as ISO3166Alpha2Country },
-  { label: "Germany", value: "DE" as ISO3166Alpha2Country },
-  { label: "France", value: "FR" as ISO3166Alpha2Country },  
-]
+const countries: { label: string; value: ISO3166Alpha2Country }[] = [
+  { label: "United States", value: "US" },
+  { label: "United Kingdom", value: "GB" },
+  { label: "Germany", value: "DE" },
+  { label: "France", value: "FR" },
+];
 
 export const FormUserDetails: React.FC<{
   onSubmit: (data: CompanyUserDetailsSchema) => void;
   initialData: CompanyUserDetailsSchema;
   updateFormData: (data: CompanyUserDetailsSchema) => void;
   userCount: number;
-  accountUsers: { firstName: string; lastName: string; }[];
+  accountUsers: { firstName: string; lastName: string }[];
   tabs: TabData[];
   activeTab: string;
   setActiveTab: (key: string) => void;
@@ -44,7 +49,7 @@ export const FormUserDetails: React.FC<{
     const subscription = watch((value) => {
       updateFormData(value as CompanyUserDetailsSchema);
     });
-    
+
     return () => subscription.unsubscribe();
   }, [watch, updateFormData]);
 
@@ -81,7 +86,7 @@ export const FormUserDetails: React.FC<{
         label="Country of Issue"
         name={`userDetails.${index}.countryOfIssue`}
         placeholder="Select a country"
-        items={countries.map(country => ({ label: country.label, value: country.value as ISO3166Alpha2Country }))}
+        items={countries.map((country) => ({ label: country.label, value: country.value }))}
         about="Select the country that issued your identification"
       />
       <FormInput
@@ -102,7 +107,7 @@ export const FormUserDetails: React.FC<{
         pattern={ssnRegex.source}
         placeholder="123-45-6789"
       />
-       <PostcodeInput
+      <PostcodeInput
         about="Address where the owner resides."
         control={control}
         errorMessage={errors.userDetails?.[index]?.registeredAddress?.postcode?.message}
@@ -134,11 +139,13 @@ export const FormUserDetails: React.FC<{
   return (
     <form onSubmit={onFormSubmit}>
       <FormCardTabs
-        fields={tabs.filter(tab => tab.key.startsWith('user-details-'))}
+        fields={tabs.filter((tab) => tab.key.startsWith("user-details-"))}
         renderTabContent={renderTabContent}
         renderTabTitle={(tab) => tab.title}
         title="User Details"
-        onCancel={() => {/* Handle cancel */}}
+        onCancel={() => {
+          /* Handle cancel */
+        }}
         onSubmit={onFormSubmit}
       />
     </form>
