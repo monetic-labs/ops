@@ -10,6 +10,7 @@ import { useIpAddress } from './useIpAddress';
 import { mapToBridgeMerchantCreateDto } from "@/types/adapters/mapBridge";
 import { mapToRainMerchantCreateDto } from "@/types/adapters/mapRain";
 import { CompanyAccountSchema, CompanyAccountUsersSchema, CompanyDetailsSchema, CompanyUserDetailsSchema } from "@/types/validations/onboard";
+import { merchantConfig } from "@/config/merchant";
 
 export const useOnboardForm = (initialEmail: string) => {
   const router = useRouter();
@@ -93,11 +94,8 @@ export const useOnboardForm = (initialEmail: string) => {
   const handleStep5 = async () => {
     const additionalData = {
       isTermsOfServiceAccepted: isRainToSAccepted,
-      ipAddress: ipAddress,
-      iovationBlackbox: '',
-      chainId: '1',
       expectedSpend: '100000',
-      //country: formData.companyAccount.company.registeredAddress.country,
+      id: merchantConfig.id,
     };
     const rainData = mapToRainMerchantCreateDto(
       formData.companyAccount,

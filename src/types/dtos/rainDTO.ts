@@ -28,6 +28,7 @@ export type RainInitialUserDto = RainPersonDto & {
   isTermsOfServiceAccepted: boolean;
   role?: string;
   walletAddress?: string;
+  iovationBlackbox?: string;
 };
 
 export type RainEntityDto = {

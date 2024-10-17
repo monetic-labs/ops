@@ -9,7 +9,7 @@ import Notification from "@/components/generics/notification";
 import { useOnboardForm } from "@/hooks/onboard/useOnboardForm";
 
 import { FormCompanyInfo } from "./form-company-account";
-import { AccountRegistration } from "./form-bridge-kyb";
+import { AccountRegistration } from "./form-register-account";
 import { FormCompanyDetails } from "./form-company-details";
 import { FormUserDetails } from "./form-user-details";
 import { FormAccountUsers } from "./form-account-users";
@@ -115,12 +115,13 @@ export const KYBMerchantForm: React.FC<{ onCancel: () => void; initialEmail: str
           )}
           {tab.key === "register-account" && (
             <AccountRegistration
-              kybLink={createMerchantData?.data.kycLink || null}
-              tosLink={createMerchantData?.data.tosLink || null}
+              kybBridgeLink={createMerchantData?.data.kycLink || null}
+              tosBridgeLink={createMerchantData?.data.tosLink || null}
               onCancel={handleCancel}
               onKYCDone={handleKYCDone}
               isRainToSAccepted={isRainToSAccepted}
               handleRainToSAccepted={handleRainToSAccepted}
+              email={formData.accountUsers.representatives[0].email}
             />
           )}
         </Tab>

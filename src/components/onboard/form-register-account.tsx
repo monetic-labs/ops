@@ -1,31 +1,35 @@
 import React, { useState } from "react";
+import { Accordion, AccordionItem } from "@nextui-org/accordion";
 import { Button } from "@nextui-org/button";
-
 import { Link } from "@nextui-org/link";
-import { useRouter } from "next/navigation";
 
 import { FormCard } from "@/components/generics/form-card";
-import { signBridgeTermsOfService } from "@/utils/merchant/signBridgeTOS";
-import { Accordion, AccordionItem } from "@nextui-org/accordion";
-import { signRainTermsOfService } from "@/utils/merchant/signRainToS";
 
-interface TermsAndKYBProps {
-  tosLink: string | null;
-  kybLink: string | null;
+import { signBridgeTermsOfService } from "@/utils/merchant/signBridgeTOS";
+import { signRainTermsOfService } from "@/utils/merchant/signRainToS";
+import { OTPVerificationModal } from "../generics/otp-modal";
+import { VerifyOTP } from "@backpack-fux/pylon-sdk";
+
+interface AccountRegistrationProps {
+  tosBridgeLink: string | null;
+  kybBridgeLink: string | null;
   onCancel: () => void;
   onKYCDone: () => void;
   isRainToSAccepted: boolean;
   handleRainToSAccepted: () => Promise<void>;
+  email: string;
 }
 
-export const AccountRegistration: React.FC<TermsAndKYBProps> = ({ 
-  tosLink, 
-  kybLink, 
+export const AccountRegistration: React.FC<AccountRegistrationProps> = ({ 
+  tosBridgeLink: tosLink, 
+  kybBridgeLink: kybLink, 
   onCancel, 
   onKYCDone,
   isRainToSAccepted,
-  handleRainToSAccepted
+  handleRainToSAccepted,
+  email
 }) => {
+  const [isOTPModalOpen, setIsOTPModalOpen] = useState(false);
   const [bridgeToSAccepted, setBridgeToSAccepted] = useState(false);
   const [rainToSAccepted, setRainToSAccepted] = useState(false);
   const [companyDocsUploaded, setCompanyDocsUploaded] = useState(false);
@@ -41,20 +45,27 @@ export const AccountRegistration: React.FC<TermsAndKYBProps> = ({
     proofOfResidence: null,
   });
 
-  const router = useRouter();
-
   const handleBridgeAcceptToS = async () => {
     if (tosLink) {
       try {
         const result = await signBridgeTermsOfService(tosLink);
         if (result.signed_agreement_id) {
           setBridgeToSAccepted(true);
+          setIsOTPModalOpen(true);
           console.log("Terms accepted");
         }
       } catch (error) {
         console.error("Error accepting terms:", error);
       }
     }
+  };
+
+  // Function to handle OTP verification success
+  const handleOTPVerified = () => {
+    setIsOTPModalOpen(false);
+    console.log("OTP verification success");
+    //onKYCDone();
+    return null;
   };
 
   const handleRainAcceptToS = async () => {
@@ -226,6 +237,7 @@ export const AccountRegistration: React.FC<TermsAndKYBProps> = ({
   }
 
   return (
+    <>
     <FormCard title="Register Account">
       <Accordion
         showDivider={false}
@@ -244,5 +256,14 @@ export const AccountRegistration: React.FC<TermsAndKYBProps> = ({
         </Button>
       </div>
     </FormCard>
+    {isOTPModalOpen && (
+      <OTPVerificationModal
+        isOpen={isOTPModalOpen}
+        onClose={() => setIsOTPModalOpen(false)}
+        onVerified={handleOTPVerified}
+        email={email}
+        />
+      )}
+    </>
   );
 };

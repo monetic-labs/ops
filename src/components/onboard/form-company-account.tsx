@@ -68,6 +68,7 @@ export const FormCompanyInfo: React.FC<{
       setValue("company.registeredAddress.postcode", result.postcode, { shouldValidate: true });
       setValue("company.registeredAddress.city", result.city, { shouldValidate: true });
       setValue("company.registeredAddress.state", result.state, { shouldValidate: true });
+      setValue("company.registeredAddress.country", result.country, { shouldValidate: true });
       setShowAddressInputs(true);
     } else {
       setShowAddressInputs(false);
@@ -124,6 +125,7 @@ export const FormCompanyInfo: React.FC<{
           name="company.registeredAddress.postcode"
           showAddressInputs={showAddressInputs}
           onLookupComplete={onPostcodeLookup}
+          watchPostcode={watchPostcode}
         />
         <div className={`fade-in ${showAddressInputs ? "show" : ""}`}>
           <FormInput

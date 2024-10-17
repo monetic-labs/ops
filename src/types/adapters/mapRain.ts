@@ -22,6 +22,7 @@ import {
     additionalData: {
       isTermsOfServiceAccepted: boolean;
       expectedSpend: string;
+      id: string;
     }
   ): RainMerchantCreateDto {
     const { company } = accountData;
@@ -60,6 +61,7 @@ import {
     const rainRepresentatives: RainPersonWithRole[] = representatives.map((rep, index) => {
       const userDetail = userDetails[index]; // Assuming the order matches
       return {
+        id: additionalData.id,
         firstName: rep.firstName,
         lastName: rep.lastName,
         birthDate: userDetail.birthday,
@@ -82,16 +84,34 @@ import {
     // Map the initial user (first representative)
     const initialUser: RainInitialUserDto = {
       ...rainRepresentatives[0], // Use the first representative's data
+      //id: additionalData.id,
       isTermsOfServiceAccepted: additionalData.isTermsOfServiceAccepted,
       role: representatives[0].role,
       walletAddress: walletAddress,
     };
 
-    const ultimateBeneficialOwners: RainPersonDto[] = rainRepresentatives
-    .filter((rep) => rep.role === 'beneficial-owner')
-    .map(({ role, ...rest }) => rest); // Exclude 'role' from the final DTOs
-  
-    const representativesWithoutRole: RainPersonDto[] = rainRepresentatives.map(({ role, ...rest }) => rest);
+    // Ensure we have at least one representative and one ultimate beneficial owner
+    let representativesWithoutRole: RainPersonDto[] = rainRepresentatives
+    .filter((rep) => rep.role === 'representative' || rep.role === 'owner')
+    .map(({ role, ...rest }) => rest);
+
+    let ultimateBeneficialOwners: RainPersonDto[] = rainRepresentatives
+      .filter((rep) => rep.role === 'beneficial-owner' || rep.role === 'owner')
+      .map(({ role, ...rest }) => rest);
+
+    console.log("representativesWithoutRole", representativesWithoutRole);
+    console.log("ultimateBeneficialOwners", ultimateBeneficialOwners);
+
+    // If there are no representatives, use the initial user as a representative
+    if (representativesWithoutRole.length === 0) {
+      representativesWithoutRole = [initialUser];
+    }
+
+    // If there are no ultimate beneficial owners, use the initial user as an UBO
+    if (ultimateBeneficialOwners.length === 0) {
+      ultimateBeneficialOwners = [initialUser];
+    }
+
     // Construct the final RainMerchantCreateDto object
     const rainMerchantCreateDto: RainMerchantCreateDto = {
       initialUser,

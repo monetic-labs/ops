@@ -69,6 +69,7 @@ export const FormUserDetails: React.FC<{
       setValue(`userDetails.${index}.registeredAddress.postcode`, result.postcode, { shouldValidate: true });
       setValue(`userDetails.${index}.registeredAddress.city`, result.city, { shouldValidate: true });
       setValue(`userDetails.${index}.registeredAddress.state`, result.state, { shouldValidate: true });
+      setValue(`userDetails.${index}.registeredAddress.country`, result.country, { shouldValidate: true });
       const newShowAddressInputs = [...showAddressInputs];
       newShowAddressInputs[index] = true;
       setShowAddressInputs(newShowAddressInputs);
@@ -115,6 +116,7 @@ export const FormUserDetails: React.FC<{
         name={`userDetails.${index}.registeredAddress.postcode`}
         showAddressInputs={showAddressInputs[index]}
         onLookupComplete={(result) => onPostcodeLookup(result, index)}
+        watchPostcode={watch(`userDetails.${index}.registeredAddress.postcode`)}
       />
       {showAddressInputs[index] && (
         <>
