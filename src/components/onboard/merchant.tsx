@@ -164,14 +164,14 @@ export const KYBMerchantForm = ({ initialEmail }: { initialEmail: string }) => {
           <div className="space-y-4 p-4 border rounded-md">
             <h2 className="text-lg font-bold">Bill Pay Agreement</h2>
             <p>
-              The Rain Corporate Card ("Rain Card") is a business card issued to the Account holder under the Rain
-              Platform Agreement and the Rain Corporate Card Agreement. The Rain Corporate Card is issued by Third
-              National ("Issuer").
-              <a href="#" className="text-blue-500">
+              The Rain Corporate Card (&quot;Rain Card&quot;) is a business card issued to the Account holder under the
+              Rain Platform Agreement and the Rain Corporate Card Agreement. The Rain Corporate Card is issued by Third
+              National (&quot;Issuer&quot;).
+              <a href="https://www.raincards.xyz/" className="text-blue-500">
                 Terms of Service
               </a>
               and
-              <a href="#" className="text-blue-500">
+              <a href="https://www.raincards.xyz/" className="text-blue-500">
                 Privacy Policy
               </a>
               .
@@ -180,14 +180,14 @@ export const KYBMerchantForm = ({ initialEmail }: { initialEmail: string }) => {
           <div className="space-y-4 p-4 border rounded-md">
             <h3 className="text-md font-semibold">Card Program Agreement</h3>
             <p>
-              The Rain Corporate Card ("Rain Card") is a business card issued to the Account holder under the Rain
-              Platform Agreement and the Rain Corporate Card Agreement. The Rain Corporate Card is issued by Third
-              National ("Issuer").
-              <a href="#" className="text-blue-500">
+              The Rain Corporate Card (&quot;Rain Card&quot;) is a business card issued to the Account holder under the
+              Rain Platform Agreement and the Rain Corporate Card Agreement. The Rain Corporate Card is issued by Third
+              National (&quot;Issuer&quot;).
+              <a href="https://www.raincards.xyz/" className="text-blue-500">
                 Terms of Service
               </a>
               and
-              <a href="#" className="text-blue-500">
+              <a href="https://www.raincards.xyz/" className="text-blue-500">
                 Privacy Policy
               </a>
               .
