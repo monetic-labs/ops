@@ -48,7 +48,7 @@ export const KYBMerchantForm = ({ initialEmail }: { initialEmail: string }) => {
           <Input label="Company EIN" placeholder="Enter company EIN" fullWidth />
           <Input label="Company Type" placeholder="Enter company type" fullWidth />
           <Input label="Company Description" placeholder="Enter company description" fullWidth />
-          <div className="flex justify-between space-x-4">
+          <div className="flex justify-end space-x-4">
             <Button onClick={() => setCurrentStep(currentStep - 1)}>Previous</Button>
             <Button onClick={() => setCurrentStep(currentStep + 1)}>Next</Button>
           </div>
@@ -61,11 +61,9 @@ export const KYBMerchantForm = ({ initialEmail }: { initialEmail: string }) => {
       content: (
         <div className="space-y-4">
           <AccountUsers users={users} setUsers={setUsers} />
-          <div className="flex justify-between space-x-4">
+          <div className="flex justify-end space-x-4">
             <Button onClick={() => setCurrentStep(currentStep - 1)}>Previous</Button>
-            <div className="flex justify-end space-x-4">
-              <Button onClick={() => setCurrentStep(currentStep + 1)}>Next</Button>
-            </div>
+            <Button onClick={() => setCurrentStep(currentStep + 1)}>Next</Button>
           </div>
         </div>
       ),
@@ -212,9 +210,6 @@ export const KYBMerchantForm = ({ initialEmail }: { initialEmail: string }) => {
               </a>
               .
             </p>
-            <Button className="bg-pink-500 text-white" onClick={() => setCurrentStep(currentStep + 1)}>
-              Accept Terms
-            </Button>
           </div>
           <div className="space-y-4 p-4 border rounded-md">
             <h3 className="text-md font-semibold">Card Program Agreement</h3>
@@ -231,12 +226,11 @@ export const KYBMerchantForm = ({ initialEmail }: { initialEmail: string }) => {
               </a>
               .
             </p>
-            <Button className="bg-ualert-500 text-white" onClick={() => setCurrentStep(currentStep + 1)}>
-              Accept Terms
-            </Button>
           </div>
           <div className="flex justify-end space-x-4">
-            <Button onClick={() => setCurrentStep(currentStep - 1)}>Previous</Button>
+            <Button className="bg-ualert-500 text-white" onClick={() => console.log("Login")}>
+              Accept All Terms
+            </Button>
           </div>
         </div>
       ),
