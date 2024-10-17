@@ -158,40 +158,6 @@ export const KYBMerchantForm = ({ initialEmail }: { initialEmail: string }) => {
     },
     {
       number: "5",
-      title: "Review",
-      content: (
-        <div className="space-y-4">
-          <h1 className="text-lg font-bold">Company Information</h1>
-          <Divider />
-          <h1 className="text-lg font-bold">Users Information</h1>
-          {users.map((user) => (
-            <div key={user.id} className="p-4 border rounded-md">
-              <h2 className="text-lg font-bold">
-                {user.firstName} {user.lastName}
-              </h2>
-              <p>Email: {user.email}</p>
-              <p>Phone: {user.phoneNumber}</p>
-              <p>Role: {user.role}</p>
-              <p>Country of Issue: {user.countryOfIssue || "N/A"}</p>
-              <p>Birth Date: {user.birthDate || "N/A"}</p>
-              <p>Social Security Number: {user.socialSecurityNumber || "N/A"}</p>
-              <p>
-                Address:{" "}
-                {`${user.streetAddress1 || ""} ${user.streetAddress2 || ""}, ${user.city || ""}, ${user.state || ""}, ${
-                  user.postcode || ""
-                }`}
-              </p>
-            </div>
-          ))}
-          <div className="flex justify-end space-x-4">
-            <Button onClick={() => setCurrentStep(currentStep - 1)}>Previous</Button>
-            <Button onClick={() => setCurrentStep(currentStep + 1)}>Next</Button>
-          </div>
-        </div>
-      ),
-    },
-    {
-      number: "6",
       title: "Terms and Conditions",
       content: (
         <div className="space-y-4">
@@ -228,9 +194,58 @@ export const KYBMerchantForm = ({ initialEmail }: { initialEmail: string }) => {
             </p>
           </div>
           <div className="flex justify-end space-x-4">
-            <Button className="bg-ualert-500 text-white" onClick={() => console.log("Login")}>
-              Accept All Terms
+            <div className="flex justify-end space-x-4">
+              <Button onClick={() => setCurrentStep(currentStep - 1)}>Previous</Button>
+              <Button onClick={() => setCurrentStep(currentStep + 1)}>Next</Button>
+            </div>
+          </div>
+        </div>
+      ),
+    },
+    {
+      number: "6",
+      title: "Document Upload",
+      content: (
+        <div className="space-y-4">
+          <div className="flex justify-end space-x-4">
+            <Button onClick={() => setCurrentStep(currentStep - 1)}>Previous</Button>
+            <Button className="bg-ualert-500 text-white" onClick={() => setCurrentStep(currentStep + 1)}>
+              Next
             </Button>
+          </div>
+        </div>
+      ),
+    },
+    {
+      number: "7",
+      title: "Review",
+      content: (
+        <div className="space-y-4">
+          <h1 className="text-lg font-bold">Company Information</h1>
+          <Divider />
+          <h1 className="text-lg font-bold">Users Information</h1>
+          {users.map((user) => (
+            <div key={user.id} className="p-4 border rounded-md">
+              <h2 className="text-lg font-bold">
+                {user.firstName} {user.lastName}
+              </h2>
+              <p>Email: {user.email}</p>
+              <p>Phone: {user.phoneNumber}</p>
+              <p>Role: {user.role}</p>
+              <p>Country of Issue: {user.countryOfIssue || "N/A"}</p>
+              <p>Birth Date: {user.birthDate || "N/A"}</p>
+              <p>Social Security Number: {user.socialSecurityNumber || "N/A"}</p>
+              <p>
+                Address:{" "}
+                {`${user.streetAddress1 || ""} ${user.streetAddress2 || ""}, ${user.city || ""}, ${user.state || ""}, ${
+                  user.postcode || ""
+                }`}
+              </p>
+            </div>
+          ))}
+          <div className="flex justify-end space-x-4">
+            <Button onClick={() => setCurrentStep(currentStep - 1)}>Previous</Button>
+            <Button onClick={() => setCurrentStep(currentStep + 1)}>Next</Button>
           </div>
         </div>
       ),
