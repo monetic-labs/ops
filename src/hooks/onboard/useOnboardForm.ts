@@ -13,7 +13,7 @@ import { CompanyAccountSchema, CompanyAccountUsersSchema, CompanyDetailsSchema, 
 
 export const useOnboardForm = (initialEmail: string) => {
   const router = useRouter();
-  const { formData, updateFormData, stepCompletion, setStepCompletion } = useFormState(initialEmail);
+  const { formData, updateFormData, stepCompletion, setStepCompletion, synchronizeUserDetails } = useFormState(initialEmail);
   const { tabs, activeTab, setActiveTab, updateTabCompletion, updateTabTitle, addTab, removeTabs } = useTabManagement();
   const { createBridgeMerchant, createRainMerchant, isCreatingMerchant, createMerchantError, createMerchantData, isCreatingRainMerchant, createRainMerchantError, createRainMerchantData } = useMerchantCreateAPIs();
   const { ipAddress } = useIpAddress();
@@ -58,6 +58,8 @@ export const useOnboardForm = (initialEmail: string) => {
   const handleStep3 = (data: CompanyAccountUsersSchema) => {
     const updatedFormData = { ...formData, accountUsers: data };
     const newUserCount = data.representatives.length;
+
+    synchronizeUserDetails(newUserCount);
     setUserCount(newUserCount);
     adjustUserDetailsTabs(data.representatives);
     updateFormData(updatedFormData);
@@ -180,6 +182,7 @@ export const useOnboardForm = (initialEmail: string) => {
     activeTab,
     setActiveTab,
     stepCompletion,
+    synchronizeUserDetails,
     handleCancel,
     handleKYCDone,
     isRainToSAccepted,

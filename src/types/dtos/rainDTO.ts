@@ -10,7 +10,7 @@ export type RainAddressDto = {
   region: string;
   postalCode: string;
   countryCode: ISO3166Alpha2Country;
-  country: string;
+  country: ISO3166Alpha2Country;
 };
 
 export type RainPersonDto = {
@@ -28,7 +28,6 @@ export type RainInitialUserDto = RainPersonDto & {
   isTermsOfServiceAccepted: boolean;
   role?: string;
   walletAddress?: string;
-  //country: string;
 };
 
 export type RainEntityDto = {

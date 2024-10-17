@@ -7,6 +7,7 @@ import { usePostcodeLookup } from "@/hooks/generics/usePostcodeLookup";
 import { FormInput } from "@/components/generics/form-input";
 import { postcodeRegex } from "@/types/validations/onboard";
 import { Tooltip } from "@nextui-org/tooltip";
+import { merchantConfig } from "@/config/merchant";
 
 interface PostcodeInputProps<T extends FieldValues> {
   name: Path<T>;

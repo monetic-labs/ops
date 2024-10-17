@@ -48,6 +48,7 @@ export const FormUserDetails: React.FC<{
   useEffect(() => {
     const subscription = watch((value) => {
       updateFormData(value as CompanyUserDetailsSchema);
+      console.log("userDetails updated:", value);
     });
 
     return () => subscription.unsubscribe();
@@ -78,7 +79,7 @@ export const FormUserDetails: React.FC<{
     }
   };
 
-  const renderTabContent = (field: any, index: number) => (
+  const renderTabContent = (tab: TabData, index: number) => (
     <div className="space-y-4">
       <AutocompleteInput
         control={control}

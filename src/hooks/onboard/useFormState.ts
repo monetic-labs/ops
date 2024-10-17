@@ -41,10 +41,10 @@ export const useFormState = (initialEmail: string) => {
         ssn: "",
         registeredAddress: {
           postcode: "",
+          street1: "",
           city: "",
           state: "",
           country: "US" as ISO3166Alpha2Country,
-          street1: "",
         },
       }],
     };
@@ -64,11 +64,43 @@ export const useFormState = (initialEmail: string) => {
     step6: false,
   });
 
+  const synchronizeUserDetails = (representativesCount: number) => {
+    console.log("Synchronizing user details");
+    const currentDetailsCount = formData.userDetails.length;
+    if (representativesCount > currentDetailsCount) {
+      // Add default userDetails
+      const additionalDetails = Array(representativesCount - currentDetailsCount).fill({
+        countryOfIssue: "US" as ISO3166Alpha2Country,
+        birthday: "",
+        ssn: "",
+        registeredAddress: {
+          postcode: "",
+          street1: "",
+          city: "",
+          state: "",
+          country: "US" as ISO3166Alpha2Country,
+        },
+      });
+      updateFormData({
+        ...formData,
+        userDetails: [...formData.userDetails, ...additionalDetails],
+      });
+    } else if (representativesCount < currentDetailsCount) {
+      console.log("Removing excess userDetails");
+      // Remove excess userDetails
+      updateFormData({
+        ...formData,
+        userDetails: formData.userDetails.slice(0, representativesCount),
+      });
+    }
+  };
+
   return {
     formData,
     updateFormData,
     resetFormData,
     stepCompletion,
     setStepCompletion,
+    synchronizeUserDetails,
   };
 };

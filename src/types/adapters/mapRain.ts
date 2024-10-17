@@ -21,11 +21,7 @@ import {
     userDetailsData: CompanyUserDetailsSchema,
     additionalData: {
       isTermsOfServiceAccepted: boolean;
-      ipAddress: string;
-      iovationBlackbox: string;
-      chainId: string;
       expectedSpend: string;
-      //country: string;
     }
   ): RainMerchantCreateDto {
     const { company } = accountData;
@@ -80,7 +76,6 @@ import {
           country: userDetail.registeredAddress.country,
         },
         role: rep.role as "owner" | "representative" | "beneficial-owner",
-        //role: rep.role,
       };
     });
   
@@ -90,7 +85,6 @@ import {
       isTermsOfServiceAccepted: additionalData.isTermsOfServiceAccepted,
       role: representatives[0].role,
       walletAddress: walletAddress,
-      //country: additionalData.country,
     };
 
     const ultimateBeneficialOwners: RainPersonDto[] = rainRepresentatives

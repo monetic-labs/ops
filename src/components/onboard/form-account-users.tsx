@@ -14,6 +14,8 @@ import {
 import { AutocompleteInput } from "../generics/autocomplete-input";
 import { CompanyAccountUsersSchema } from "@/types/validations/onboard";
 import { BridgeUserRole } from "@/types/dtos/bridgeDTO";
+import { TabData } from "@/hooks/generics/useDynamicTabs";
+import { useDynamicTabs } from "@/hooks/generics/useDynamicTabs";
 
 const userRoles = [
   { label: "Owner", value: "owner" },
@@ -38,6 +40,34 @@ export const FormAccountUsers: React.FC<{
     defaultValues: initialData,
   });
 
+  const { fields, append, remove } = useFieldArray({
+    control,
+    name: "representatives",
+  });
+
+  const renderTabTitle = (field: any, index: number) => {
+    const firstName = field.firstName || "";
+    const lastName = field.lastName || "";
+
+    return firstName || lastName ? `${firstName} ${lastName}`.trim() : `User ${index + 1}`;
+  };
+
+  const initialTabs: TabData[] = fields.map((field, index) => ({
+    key: `user-${index}`,
+    title: renderTabTitle(field, index),
+    isCompleted: false,
+  }));
+
+  const {
+    tabs,
+    activeTab,
+    setActiveTab,
+    updateTabCompletion,
+    updateTabTitle,
+    addTab,
+    removeTabs,
+  } = useDynamicTabs(initialTabs);
+  
   const onCancel = () => router.push("/auth");
 
   useEffect(() => {
@@ -48,10 +78,6 @@ export const FormAccountUsers: React.FC<{
     return () => subscription.unsubscribe();
   }, [watch, updateFormData]);
 
-  const { fields, append, remove } = useFieldArray({
-    control,
-    name: "representatives",
-  });
 
   const handleFormSubmit = handleSubmit(
     (data) => {
@@ -65,16 +91,9 @@ export const FormAccountUsers: React.FC<{
 
   useEffect(() => {
     if (fields.length === 0) {
-      append({
-        firstName: "",
-        lastName: "",
-        email: "",
-        phoneNumber: "",
-        role: "owner", 
-        bridgeUserRole: BridgeUserRole.SUPER_ADMIN,
-      });
+      addUser();
     }
-  }, [fields, append]);
+  }, [fields]);
 
   const addUser = () => {
     append({
@@ -82,25 +101,30 @@ export const FormAccountUsers: React.FC<{
       lastName: "",
       email: "",
       phoneNumber: "",
-      role: "representative", // Set default role for new users
+      role: "representative",
       bridgeUserRole: BridgeUserRole.SUPER_ADMIN,
+    });
+    addTab({
+      key: `user-${fields.length}`,
+      title: `User ${fields.length + 1}`,
+      isCompleted: false,
     });
   };
 
   const removeUser = (index: number) => {
     if (fields.length > 1) {
       remove(index);
+      removeTabs([`user-${index}`]);
     }
   };
 
-  const renderTabTitle = (field: any, index: number) => {
-    const firstName = field.firstName || "";
-    const lastName = field.lastName || "";
+  useEffect(() => {
+    fields.forEach((field, index) => {
+      updateTabTitle(`user-${index}`, renderTabTitle(field, index));
+    });
+  }, [fields, updateTabTitle]);
 
-    return firstName || lastName ? `${firstName} ${lastName}`.trim() : `User ${index + 1}`;
-  };
-
-  const renderTabContent = (field: any, index: number) => (
+  const renderTabContent = (tab: TabData, index: number) => (
     <div className="space-y-4">
       <FormInput
         control={control}
@@ -162,13 +186,13 @@ export const FormAccountUsers: React.FC<{
   return (
     <form onSubmit={handleFormSubmit}>
       <FormCardTabs
-        fields={fields}
+        fields={tabs}
         renderTabContent={renderTabContent}
-        renderTabTitle={renderTabTitle}
+        renderTabTitle={(tab) => tab.title}
         title="Account Users"
         onAdd={addUser}
         onCancel={onCancel}
-        onRemove={removeUser}
+        onRemove={(index) => removeUser(index)}
         onSubmit={handleFormSubmit}
       />
     </form>

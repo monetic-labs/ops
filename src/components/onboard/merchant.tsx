@@ -104,16 +104,7 @@ export const KYBMerchantForm: React.FC<{ onCancel: () => void; initialEmail: str
           {tab.key === "user-details" && (
             <FormUserDetails
               initialData={{ userDetails: formData.userDetails }}
-              updateFormData={(data: CompanyUserDetailsSchema) => updateFormData({ 
-                userDetails: data.userDetails.map(user => ({
-                  ...user,
-                  countryOfIssue: user.countryOfIssue as ISO3166Alpha2Country,
-                  registeredAddress: {
-                    ...user.registeredAddress,
-                    country: user.registeredAddress.country as ISO3166Alpha2Country
-                  }
-                }))
-              })}
+              updateFormData={(data: CompanyUserDetailsSchema) => updateFormData({ userDetails: data.userDetails })}
               onSubmit={(data: CompanyUserDetailsSchema) => onSubmitStep(4, data)}
               userCount={userCount}
               accountUsers={formData.accountUsers.representatives}
