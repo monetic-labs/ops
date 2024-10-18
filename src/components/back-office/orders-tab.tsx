@@ -2,9 +2,9 @@ import React, { useEffect, useState } from "react";
 import { Input } from "@nextui-org/input";
 import { Button } from "@nextui-org/button";
 import { Snippet } from "@nextui-org/snippet";
-import { DeleteIcon } from "@nextui-org/shared-icons";
-import { GetOrderLinksOutput, usePylon } from "@backpack-fux/pylon-sdk";
-import { Card, CardHeader, CardBody, CardFooter } from "@nextui-org/card";
+
+import { GetOrderLinksOutput } from "@backpack-fux/pylon-sdk";
+import { Card, CardHeader, CardBody } from "@nextui-org/card";
 import Countdown from "@/components/generics/countdown";
 import pylon from "@/libs/pylon-sdk";
 import { Accordion, AccordionItem } from "@nextui-org/accordion";

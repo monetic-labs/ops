@@ -16,14 +16,24 @@ export const useOnboardForm = (initialEmail: string) => {
   const router = useRouter();
   const { formData, updateFormData, stepCompletion, setStepCompletion, synchronizeUserDetails } = useFormState(initialEmail);
   const { tabs, activeTab, setActiveTab, updateTabCompletion, updateTabTitle, addTab, removeTabs } = useTabManagement();
-  const { createBridgeMerchant, createRainMerchant, isCreatingMerchant, createMerchantError, createMerchantData, isCreatingRainMerchant, createRainMerchantError, createRainMerchantData } = useMerchantCreateAPIs();
-  const { ipAddress } = useIpAddress();
-
   const [userCount, setUserCount] = useState(1);
+  
   const [tosLink, setTosLink] = useState<string | null>(null);
+  const { 
+    createBridgeMerchant, 
+    createRainMerchant, 
+    isCreatingMerchant, 
+    createMerchantError, 
+    createMerchantData, 
+    isCreatingRainMerchant, 
+    createRainMerchantError, 
+    createRainMerchantData 
+  } = useMerchantCreateAPIs();
   const [merchantResponse, setMerchantResponse] = useState<MerchantCreateOutput | null>(null);
   const [isRainToSAccepted, setIsRainToSAccepted] = useState(false);
+  const [rainToSError, setRainToSError] = useState<string | null>(null);
   const [rainError, setRainError] = useState<string | null>(null);
+  const { ipAddress } = useIpAddress();
 
   const handleCancel = () => {
     router.push("/auth");
@@ -32,17 +42,6 @@ export const useOnboardForm = (initialEmail: string) => {
   const handleKYCDone = () => {
     router.push("/auth");
   };
-
-  const handleRainToSAccepted = useCallback(async () => {
-    setIsRainToSAccepted(true);
-    const result = await handleStep5();
-    if (result.success) {
-      console.log('Rain merchant created successfully:', result.data);
-    } else {
-      console.error('Failed to create Rain merchant:', result.error);
-      setRainError(result.error?.message || 'Unknown error');
-    }
-  }, [formData, createRainMerchant, ipAddress]);
 
   const handleStep1 = (data: CompanyAccountSchema) => {
     updateFormData({ ...formData, companyAccount: data });
@@ -93,7 +92,7 @@ export const useOnboardForm = (initialEmail: string) => {
 
   const handleStep5 = async () => {
     const additionalData = {
-      isTermsOfServiceAccepted: isRainToSAccepted,
+      isTermsOfServiceAccepted: true,
       expectedSpend: '100000',
       id: merchantConfig.id,
     };
@@ -114,6 +113,22 @@ export const useOnboardForm = (initialEmail: string) => {
       return { success: false, error: { message: errorMessage, code: 'UNKNOWN_ERROR' } };
     }
   };
+
+  const handleRainToSAccepted = useCallback(async () => {
+    setIsRainToSAccepted(true);
+    try {
+      const result = await handleStep5();
+      console.log('Rain merchant creation result:', result);
+      if (!result.success) {
+        setRainToSError(result.error?.message || 'Unknown error');
+        setIsRainToSAccepted(false);
+      }
+    } catch (error) {
+      console.error('Error in handleRainToSAccepted:', error);
+      setRainToSError('An unexpected error occurred');
+      setIsRainToSAccepted(false);
+    }
+  }, [handleStep5]);
 
   const onSubmitStep = useCallback(
     async (step: number, data: any) => {
@@ -197,6 +212,7 @@ export const useOnboardForm = (initialEmail: string) => {
     createMerchantData,
     tosLink,
     rainError,
+    rainToSError,
     isCreatingRainMerchant,
     createRainMerchantError,
     createRainMerchantData

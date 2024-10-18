@@ -25,8 +25,8 @@ export const useRainCreateMerchant = () => {
         name: data.name,
         entity: data.entity,
         address: data.address,
-        // representatives: data.representatives.map(t => ({...t, id : merchantConfig.id})),
-        // ultimateBeneficialOwners: data.ultimateBeneficialOwners.map(t => ({...t, id : merchantConfig.id})),
+        representatives: data.representatives,
+        ultimateBeneficialOwners: data.ultimateBeneficialOwners,
       };
       
       console.log("useRainCreateMerchant:", JSON.stringify(createRainMerchant, null, 2));
@@ -35,6 +35,7 @@ export const useRainCreateMerchant = () => {
       console.log("useRainCreateMerchant response:", response);
 
       setIsLoading(false);
+      setData(response);
       return response;
     } catch (err) {
       setIsLoading(false);

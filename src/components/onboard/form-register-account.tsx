@@ -17,6 +17,7 @@ interface AccountRegistrationProps {
   onKYCDone: () => void;
   isRainToSAccepted: boolean;
   handleRainToSAccepted: () => Promise<void>;
+  rainToSError: string | null;
   email: string;
 }
 
@@ -27,6 +28,7 @@ export const AccountRegistration: React.FC<AccountRegistrationProps> = ({
   onKYCDone,
   isRainToSAccepted,
   handleRainToSAccepted,
+  rainToSError,
   email
 }) => {
   const [isOTPModalOpen, setIsOTPModalOpen] = useState(false);
@@ -69,13 +71,7 @@ export const AccountRegistration: React.FC<AccountRegistrationProps> = ({
   };
 
   const handleRainAcceptToS = async () => {
-    try {
-      await handleRainToSAccepted();
-      // You might want to show a success message or update UI here
-    } catch (error) {
-      console.error('Error accepting Rain ToS:', error);
-      // Handle error (e.g., show error message to user)
-    }
+    await handleRainToSAccepted();
   };
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>, type: string, isCompany: boolean) => {
@@ -151,11 +147,14 @@ export const AccountRegistration: React.FC<AccountRegistrationProps> = ({
       </p>
       <Button
         className="w-full bg-ualert-500 text-notpurple-100"
-        isDisabled={isRainToSAccepted || !tosLink}
+        isDisabled={isRainToSAccepted}
         onClick={handleRainAcceptToS}
       >
         {isRainToSAccepted ? "Terms Accepted" : "Accept Terms"}
       </Button>
+      {rainToSError && (
+        <p className="text-ualert-500 mt-2">{rainToSError}</p>
+      )}
     </AccordionItem>,
 
     <AccordionItem key="3" aria-label="Company Docs" title="Company Documents">

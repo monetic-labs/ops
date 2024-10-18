@@ -15,6 +15,17 @@ export const websiteRegex = /^(https?:\/\/)?(www\.)?[a-zA-Z0-9-]+\.[a-zA-Z]{2,}(
 export const companyEINRegex = /^[0-9]{2}-[0-9]{7}$/;
 export const ssnRegex = /^[0-9]{3}-[0-9]{2}-[0-9]{4}$/;
 
+const ssnSchema = z.string().refine(
+  (value) => {
+    // Accept SSN with or without hyphens
+    const ssnRegex = /^(?:\d{3}-?\d{2}-?\d{4})$/;
+    return ssnRegex.test(value);
+  },
+  {
+    message: "Invalid SSN format. Please use XXX-XX-XXXX or XXXXXXXXX format.",
+  }
+);
+
 export const walletAddressSchema = z.object({
   walletAddress: z.string().regex(walletAddressRegex, "Invalid wallet address").length(42),
 });
@@ -69,7 +80,7 @@ export const companyAccountSchema = z.object({
   const userDetailsSchema = z.object({
     countryOfIssue: z.custom<ISO3166Alpha2Country>(),
     birthday: z.string().regex(birthdayRegex, "Invalid birthday format (YYYY-MM-DD)"),
-    ssn: z.string().regex(ssnRegex, "Invalid SSN format (123-45-6789)"),
+    ssn: ssnSchema,
     registeredAddress: accountAddressSchema,
   });
   
