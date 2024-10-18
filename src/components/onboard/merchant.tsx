@@ -29,6 +29,7 @@ export const KYBMerchantForm: React.FC<{ onCancel: () => void; initialEmail: str
     handleKYCDone,
     isRainToSAccepted,
     handleRainToSAccepted,
+    rainToSError,
     createMerchantData,
     formData,
     updateFormData,
@@ -120,6 +121,7 @@ export const KYBMerchantForm: React.FC<{ onCancel: () => void; initialEmail: str
               onCancel={handleCancel}
               onKYCDone={handleKYCDone}
               isRainToSAccepted={isRainToSAccepted}
+              rainToSError={rainToSError}
               handleRainToSAccepted={handleRainToSAccepted}
               email={formData.accountUsers.representatives[0].email}
             />
