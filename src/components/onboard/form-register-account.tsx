@@ -91,7 +91,7 @@ export const AccountRegistration: React.FC<AccountRegistrationProps> = ({
     setUserDocsUploaded(true);
   };
 
-  const handleStartKYB = () => {
+  const handleBridgeKYB = () => {
     if (kybLink) {
       onKYCDone();
       window.open(kybLink, "_blank");
@@ -228,7 +228,7 @@ export const AccountRegistration: React.FC<AccountRegistrationProps> = ({
     accordionItems.push(
       <AccordionItem key="5" aria-label="KYB Verification" title="KYB Verification">
         <p className="mb-4">Please complete your KYB verification by clicking the button below:</p>
-        <Button className="w-full bg-ualert-500 text-notpurple-100" onClick={handleStartKYB}>
+        <Button className="w-full bg-ualert-500 text-notpurple-100" onClick={handleBridgeKYB}>
           Start KYB Verification
         </Button>
       </AccordionItem>
