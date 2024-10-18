@@ -11,6 +11,7 @@ import { CompanyAccountSchema, companyAccountSchema } from "@/types/validations/
 import { emailRegex } from "@/types/validations/auth";
 
 import { PostcodeInput } from "../generics/form-input-postcode";
+import { handleEmailChange, handlePostcodeLookup, handleWebsiteChange, PostcodeLookupResult } from "../generics/form-input-handlers";
 
 export const FormCompanyInfo: React.FC<{
   onSubmit: (data: CompanyAccountSchema) => void;
@@ -18,8 +19,9 @@ export const FormCompanyInfo: React.FC<{
   updateFormData: (data: CompanyAccountSchema) => void;
 }> = ({ onSubmit, initialData, updateFormData }) => {
   const router = useRouter();
-  const [showAddressInputs, setShowAddressInputs] = useState(false);
+  const [emailInput, setEmailInput] = useState(initialData.company.email || "");
   const [websiteInput, setWebsiteInput] = useState(initialData.company.website || "");
+  const [showAddressInputs, setShowAddressInputs] = useState(false);
   
   const {
     control,
@@ -63,28 +65,8 @@ export const FormCompanyInfo: React.FC<{
     }
   );
 
-  const onPostcodeLookup = (result: any) => {
-    if (result) {
-      setValue("company.registeredAddress.postcode", result.postcode, { shouldValidate: true });
-      setValue("company.registeredAddress.city", result.city, { shouldValidate: true });
-      setValue("company.registeredAddress.state", result.state, { shouldValidate: true });
-      setValue("company.registeredAddress.country", result.country, { shouldValidate: true });
-      setShowAddressInputs(true);
-    } else {
-      setShowAddressInputs(false);
-    }
-  };
-
-  const handleWebsiteChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    let value = e.target.value;
-    setWebsiteInput(value);
-
-    // Add https:// if not present when setting the form value
-    if (value && !value.startsWith("http://") && !value.startsWith("https://")) {
-      value = `https://${value}`;
-    }
-
-    setValue("company.website", value, { shouldValidate: true });
+  const onPostcodeLookup = (result: PostcodeLookupResult | null) => {
+    handlePostcodeLookup(result, setValue, setShowAddressInputs, "company.registeredAddress");
   };
 
   return (
@@ -105,8 +87,17 @@ export const FormCompanyInfo: React.FC<{
           errorMessage={errors.company?.email?.message}
           label="Email"
           name="company.email"
-          pattern={emailRegex.source}
           placeholder="nope@algersoft.com"
+          value={emailInput}
+          onChange={(e) => handleEmailChange(
+            e, 
+            setValue, 
+            (value) => {
+              setEmailInput(value as string);
+            },
+            "company.email"
+          )}
+          pattern={emailRegex.source}
         />
         <FormInput
           about="You don't need to add the http:// or https:// before the url."
@@ -116,7 +107,14 @@ export const FormCompanyInfo: React.FC<{
           name="company.website"
           placeholder="algersoft.com"
           value={websiteInput}
-          onChange={handleWebsiteChange}
+          onChange={(e) => handleWebsiteChange(
+            e, 
+            setValue, 
+            (value) => {
+              setWebsiteInput(value as string);
+            },
+            "company.website"
+          )}
         />
         <PostcodeInput
           about="Address where the company is registered."

@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect } from "react";
-import { Control, FieldValues, Path } from "react-hook-form";
+import { Control, FieldValues, Path, useController } from "react-hook-form";
 
 import { usePostcodeLookup } from "@/hooks/generics/usePostcodeLookup";
 import { FormInput } from "@/components/generics/form-input";
@@ -13,33 +13,38 @@ interface PostcodeInputProps<T extends FieldValues> {
   control: Control<T>;
   errorMessage?: string;
   helperText?: string;
-  onLookupComplete?: (result: any) => void;
   showAddressInputs?: boolean;
   about?: string;
   watchPostcode?: string;
+  onLookupComplete?: (result: any) => void;
 }
 
 export const PostcodeInput = <T extends FieldValues>({
+  about,
   name,
   control,
-  onLookupComplete,
   showAddressInputs,
-  about,
+  errorMessage,
+  onLookupComplete,
   watchPostcode,
   ...props
 }: PostcodeInputProps<T>) => {
   
   const { lookup, isLoading, error, result } = usePostcodeLookup();
+  const { field } = useController({ name, control });
 
   const handlePostcodeChange = async (value: string) => {
-    if (value.length === 5) {
-      const lookupResult = await lookup(value); // Capture the result directly
+    const numericValue = value.replace(/\D/g, '');
+    field.onChange(numericValue);
+
+    if (numericValue.length === 5) {
+      const lookupResult = await lookup(numericValue);
 
       if (lookupResult && onLookupComplete) {
-        onLookupComplete(lookupResult); // Pass the result to the parent
+        onLookupComplete(lookupResult);
       }
     } else if (onLookupComplete) {
-      onLookupComplete(null); // Pass null to indicate no lookup result
+      onLookupComplete(null);
     }
   };
 
@@ -59,6 +64,8 @@ export const PostcodeInput = <T extends FieldValues>({
             label="Postcode"
             maxLength={5}
             minLength={5}
+            type="text"
+            inputMode="numeric"
             name={name}
             pattern={postcodeRegex.source}
             placeholder="12345"

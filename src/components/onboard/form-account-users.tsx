@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useFieldArray, useForm } from "react-hook-form";
 import { useRouter } from "next/navigation";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -16,6 +16,7 @@ import { CompanyAccountUsersSchema } from "@/types/validations/onboard";
 import { BridgeUserRole } from "@/types/dtos/bridgeDTO";
 import { TabData } from "@/hooks/generics/useDynamicTabs";
 import { useDynamicTabs } from "@/hooks/generics/useDynamicTabs";
+import { handleEmailChange, handlePhoneNumberChange } from "../generics/form-input-handlers";
 
 const userRoles = [
   { label: "Owner", value: "owner" },
@@ -28,6 +29,12 @@ export const FormAccountUsers: React.FC<{
   initialData: CompanyAccountUsersSchema;
   updateFormData: (data: CompanyAccountUsersSchema) => void;
 }> = ({ onSubmit, initialData, updateFormData }) => {
+  const [emailInputs, setEmailInputs] = useState(
+    initialData.representatives.map(rep => rep.email || "")
+  );
+  const [phoneNumberInputs, setPhoneNumberInputs] = useState(
+    initialData.representatives.map(rep => rep.phoneNumber || "")
+  );
   const router = useRouter();
 
   const {
@@ -35,6 +42,7 @@ export const FormAccountUsers: React.FC<{
     handleSubmit,
     formState: { errors },
     watch,
+    setValue,
   } = useForm<CompanyAccountUsersSchema>({
     resolver: zodResolver(companyAccountUsersSchema),
     defaultValues: initialData,
@@ -60,9 +68,6 @@ export const FormAccountUsers: React.FC<{
 
   const {
     tabs,
-    activeTab,
-    setActiveTab,
-    updateTabCompletion,
     updateTabTitle,
     addTab,
     removeTabs,
@@ -78,22 +83,17 @@ export const FormAccountUsers: React.FC<{
     return () => subscription.unsubscribe();
   }, [watch, updateFormData]);
 
-
-  const handleFormSubmit = handleSubmit(
-    (data) => {
-      console.log("Representatives submitted:", data);
-      onSubmit(data);
-    },
-    (errors) => {
-      console.error("Form validation errors:", errors);
-    }
-  );
-
   useEffect(() => {
     if (fields.length === 0) {
       addUser();
     }
   }, [fields]);
+
+  useEffect(() => {
+    fields.forEach((field, index) => {
+      updateTabTitle(`user-${index}`, renderTabTitle(field, index));
+    });
+  }, [fields, updateTabTitle]);
 
   const addUser = () => {
     append({
@@ -118,11 +118,15 @@ export const FormAccountUsers: React.FC<{
     }
   };
 
-  useEffect(() => {
-    fields.forEach((field, index) => {
-      updateTabTitle(`user-${index}`, renderTabTitle(field, index));
-    });
-  }, [fields, updateTabTitle]);
+  const handleFormSubmit = handleSubmit(
+    (data) => {
+      console.log("Representatives submitted:", data);
+      onSubmit(data);
+    },
+    (errors) => {
+      console.error("Form validation errors:", errors);
+    }
+  );
 
   const renderTabContent = (tab: TabData, index: number) => (
     <div className="space-y-4">
@@ -150,14 +154,37 @@ export const FormAccountUsers: React.FC<{
         name={`representatives.${index}.email`}
         pattern={emailRegex.source}
         placeholder="nope@algersoft.com"
+        value={emailInputs[index]}
+        onChange={(e) => handleEmailChange(
+          e, 
+          setValue, 
+          (value) => {
+            const newEmailInputs = [...emailInputs];
+            newEmailInputs[index] = value as string;
+            setEmailInputs(newEmailInputs);
+          },
+          `representatives.${index}.email` as const
+        )}
       />
       <FormInput
         control={control}
         errorMessage={errors.representatives?.[index]?.phoneNumber?.message}
         label="Phone Number"
         name={`representatives.${index}.phoneNumber`}
+        maxLength={10}
         pattern={phoneRegex.source}
         placeholder="0701234567"
+        value={phoneNumberInputs[index]}
+        onChange={(e) => handlePhoneNumberChange(
+          e,
+          setValue,
+          (value) => {
+            const newPhoneNumberInputs = [...phoneNumberInputs];
+            newPhoneNumberInputs[index] = value as string;
+            setPhoneNumberInputs(newPhoneNumberInputs);
+          },
+          `representatives.${index}.phoneNumber` as const
+        )}
       />
       {index === 0 ? (
         <FormInput

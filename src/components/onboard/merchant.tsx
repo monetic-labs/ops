@@ -14,7 +14,7 @@ import { FormCompanyDetails } from "./form-company-details";
 import { FormUserDetails } from "./form-user-details";
 import { FormAccountUsers } from "./form-account-users";
 import { CompanyAccountUsersSchema, CompanyUserDetailsSchema } from "@/types/validations/onboard";
-import { ISO3166Alpha2Country } from "@backpack-fux/pylon-sdk";
+
 import { BridgeUserRole } from "@/types/dtos/bridgeDTO";
 
 type ValidRole = "owner" | "representative" | "beneficial-owner";

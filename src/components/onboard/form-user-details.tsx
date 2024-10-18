@@ -14,6 +14,7 @@ import { AutocompleteInput } from "../generics/autocomplete-input";
 import { ISO3166Alpha2Country } from "@backpack-fux/pylon-sdk";
 import { PostcodeInput } from "../generics/form-input-postcode";
 import { TabData } from "@/hooks/generics/useDynamicTabs";
+import { handleBirthdayChange, handlePostcodeLookup, handleSSNChange, PostcodeLookupResult } from "../generics/form-input-handlers";
 
 const countries: { label: string; value: ISO3166Alpha2Country }[] = [
   { label: "United States", value: "US" },
@@ -33,6 +34,8 @@ export const FormUserDetails: React.FC<{
   setActiveTab: (key: string) => void;
 }> = ({ onSubmit, initialData, updateFormData, accountUsers, tabs }) => {
   const [showAddressInputs, setShowAddressInputs] = useState<boolean[]>(new Array(accountUsers.length).fill(false));
+  const [birthdayInputs, setBirthdayInputs] = useState<string[]>(new Array(accountUsers.length).fill(''));
+  const [ssnInputs, setSSNInputs] = useState<string[]>(new Array(accountUsers.length).fill(''));
 
   const {
     control,
@@ -64,20 +67,17 @@ export const FormUserDetails: React.FC<{
     }
   );
 
-  const onPostcodeLookup = (result: any, index: number) => {
-    if (result) {
-      setValue(`userDetails.${index}.registeredAddress.postcode`, result.postcode, { shouldValidate: true });
-      setValue(`userDetails.${index}.registeredAddress.city`, result.city, { shouldValidate: true });
-      setValue(`userDetails.${index}.registeredAddress.state`, result.state, { shouldValidate: true });
-      setValue(`userDetails.${index}.registeredAddress.country`, result.country, { shouldValidate: true });
-      const newShowAddressInputs = [...showAddressInputs];
-      newShowAddressInputs[index] = true;
-      setShowAddressInputs(newShowAddressInputs);
-    } else {
-      const newShowAddressInputs = [...showAddressInputs];
-      newShowAddressInputs[index] = false;
-      setShowAddressInputs(newShowAddressInputs);
-    }
+  const onPostcodeLookup = (result: PostcodeLookupResult | null, index: number) => {
+    handlePostcodeLookup(
+      result,
+      setValue,
+      (value) => {
+        const newShowAddressInputs = [...showAddressInputs];
+        newShowAddressInputs[index] = value as boolean;
+        setShowAddressInputs(newShowAddressInputs);
+      },
+      `userDetails.${index}.registeredAddress` as const
+    );
   };
 
   const renderTabContent = (tab: TabData, index: number) => (
@@ -99,6 +99,17 @@ export const FormUserDetails: React.FC<{
         maxLength={10}
         pattern={birthdayRegex.source}
         placeholder="YYYY-MM-DD"
+        value={birthdayInputs[index]}
+        onChange={(e) => handleBirthdayChange(
+          e,
+          setValue,
+          (value) => {
+            const newBirthdayInputs = [...birthdayInputs];
+            newBirthdayInputs[index] = value as string;
+            setBirthdayInputs(newBirthdayInputs);
+          },
+          `userDetails.${index}.birthday` as const
+        )}
       />
       <FormInput
         control={control}
@@ -108,6 +119,17 @@ export const FormUserDetails: React.FC<{
         maxLength={11}
         pattern={ssnRegex.source}
         placeholder="123-45-6789"
+        value={ssnInputs[index]}
+        onChange={(e) => handleSSNChange(
+          e,
+          setValue,
+          (value) => {
+            const newSSNInputs = [...ssnInputs];
+            newSSNInputs[index] = value as string;
+            setSSNInputs(newSSNInputs);
+          },
+          `userDetails.${index}.ssn` as const
+        )}
       />
       <PostcodeInput
         about="Address where the owner resides."
@@ -146,9 +168,7 @@ export const FormUserDetails: React.FC<{
         renderTabContent={renderTabContent}
         renderTabTitle={(tab) => tab.title}
         title="User Details"
-        onCancel={() => {
-          /* Handle cancel */
-        }}
+        onCancel={() => {}}
         onSubmit={onFormSubmit}
       />
     </form>

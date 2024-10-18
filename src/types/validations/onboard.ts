@@ -36,8 +36,7 @@ export const accountAddressSchema = z.object({
     city: z.string().max(50),
     postcode: z
       .string()
-      .length(5)
-      .regex(/^[0-9]{5}$/, "Invalid postal code"),
+      .regex(postcodeRegex, "Invalid postal code"),
     state: z
       .string()
       .length(2)

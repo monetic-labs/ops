@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { CardCompanyType } from "@backpack-fux/pylon-sdk";
@@ -9,6 +9,8 @@ import { FormButton } from "@/components/generics/form-button";
 import { CompanyDetailsSchema, companyDetailsSchema } from "@/types/validations/onboard";
 import { AutocompleteInput } from "@/components/generics/autocomplete-input";
 import { companyEINRegex, walletAddressRegex } from "@/types/validations/onboard";
+import { handleCompanyEINChange } from "../generics/form-input-handlers";
+import { handleWalletAddressChange } from "../generics/form-input-handlers";
 
 const companyTypes: { label: string; value: CardCompanyType }[] = [
   { label: "Sole Proprietorship", value: "sole_proprietorship" },
@@ -26,11 +28,14 @@ export const FormCompanyDetails: React.FC<{
   initialData: CompanyDetailsSchema;
   updateFormData: (data: CompanyDetailsSchema) => void;
 }> = ({ onSubmit, initialData, updateFormData }) => {
+  const [walletAddressInput, setWalletAddressInput] = useState(initialData.walletAddress || "");
+  const [companyEINInput, setCompanyEINInput] = useState(initialData.companyEIN || "");
   const {
     control,
     formState: { errors },
     handleSubmit,
     watch,
+    setValue,
   } = useForm<CompanyDetailsSchema>({
     resolver: zodResolver(companyDetailsSchema),
     defaultValues: initialData,
@@ -66,6 +71,8 @@ export const FormCompanyDetails: React.FC<{
           maxLength={42}
           pattern={walletAddressRegex.source}
           placeholder="0x1234567890123456789012345678901234567890"
+          value={walletAddressInput}
+          onChange={(e) => handleWalletAddressChange(e, setValue, setWalletAddressInput, "walletAddress")}
         />
         <FormInput
           about="Use the entity responsible for funds moving in and out of the settlement address."
@@ -76,6 +83,8 @@ export const FormCompanyDetails: React.FC<{
           maxLength={10}
           pattern={companyEINRegex.source}
           placeholder="12-3456789"
+          value={companyEINInput}
+          onChange={(e) => handleCompanyEINChange(e, setValue, setCompanyEINInput, "companyEIN")}
         />
         <AutocompleteInput
           about="Select the type of company structure"
