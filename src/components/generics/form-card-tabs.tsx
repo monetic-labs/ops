@@ -8,8 +8,9 @@ import { FormCard } from "./form-card";
 interface FormCardTabsProps<T> {
   title: string;
   fields: T[];
-  onAdd: () => void;
-  onRemove: (index: number) => void;
+  children?: React.ReactNode;
+  onAdd?: () => void;
+  onRemove?: (index: number) => void;
   renderTabContent: (field: T, index: number) => React.ReactNode;
   renderTabTitle: (field: T, index: number) => string;
   onCancel: () => void;
@@ -19,6 +20,7 @@ interface FormCardTabsProps<T> {
 export const FormCardTabs = <T,>({
   title,
   fields,
+  children,
   onAdd,
   onRemove,
   renderTabContent,
@@ -46,6 +48,7 @@ export const FormCardTabs = <T,>({
           </Tab>
         ))}
       </Tabs>
+      {children}
       <div className="flex justify-between mt-4">
         <div className="space-x-2">
           <Tooltip content="Add another user">
@@ -55,7 +58,7 @@ export const FormCardTabs = <T,>({
           </Tooltip>
           {fields.length > 1 && (
             <Tooltip content="Remove selected user">
-              <Button className="text-notpurple-500" variant="light" onClick={() => onRemove(selectedTab)}>
+              <Button className="text-notpurple-500" variant="light" onClick={() => onRemove?.(selectedTab)}>
                 Remove
               </Button>
             </Tooltip>

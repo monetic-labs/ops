@@ -7,27 +7,30 @@ import { Button } from "@nextui-org/button";
 import { FormCard } from "@/components/generics/form-card";
 import { FormInput } from "@/components/generics/form-input";
 import { FormButton } from "@/components/generics/form-button";
-import { CompanyInfoSchema, companyInfoSchema, walletAddressRegex } from "@/validations/onboard";
-import { emailRegex } from "@/validations/auth";
+import { CompanyAccountSchema, companyAccountSchema } from "@/types/validations/onboard";
+import { emailRegex } from "@/types/validations/auth";
 
 import { PostcodeInput } from "../generics/form-input-postcode";
+import { handleEmailChange, handlePostcodeLookup, handleWebsiteChange, PostcodeLookupResult } from "../generics/form-input-handlers";
 
 export const FormCompanyInfo: React.FC<{
-  onSubmit: (data: CompanyInfoSchema) => void;
-  initialData: CompanyInfoSchema;
-  updateFormData: (data: CompanyInfoSchema) => void;
+  onSubmit: (data: CompanyAccountSchema) => void;
+  initialData: CompanyAccountSchema;
+  updateFormData: (data: CompanyAccountSchema) => void;
 }> = ({ onSubmit, initialData, updateFormData }) => {
   const router = useRouter();
+  const [emailInput, setEmailInput] = useState(initialData.company.email || "");
+  const [websiteInput, setWebsiteInput] = useState(initialData.company.website || "");
   const [showAddressInputs, setShowAddressInputs] = useState(false);
-
+  
   const {
     control,
     formState: { errors },
     handleSubmit,
     watch,
     setValue,
-  } = useForm<CompanyInfoSchema>({
-    resolver: zodResolver(companyInfoSchema),
+  } = useForm<CompanyAccountSchema>({
+    resolver: zodResolver(companyAccountSchema),
     defaultValues: initialData,
   });
 
@@ -45,14 +48,15 @@ export const FormCompanyInfo: React.FC<{
 
   useEffect(() => {
     const subscription = watch((value) => {
-      updateFormData(value as CompanyInfoSchema);
+      updateFormData(value as CompanyAccountSchema);
     });
 
     return () => subscription.unsubscribe();
   }, [watch, updateFormData]);
 
   const onFormSubmit = handleSubmit(
-    (data: CompanyInfoSchema) => {
+    (data: CompanyAccountSchema) => {
+      console.log("data", data);
       onSubmit(data);
       updateFormData(data);
     },
@@ -61,22 +65,15 @@ export const FormCompanyInfo: React.FC<{
     }
   );
 
-  const onPostcodeLookup = (result: any) => {
-    if (result) {
-      setValue("company.registeredAddress.postcode", result.postcode, { shouldValidate: true });
-      setValue("company.registeredAddress.city", result.city, { shouldValidate: true });
-      setValue("company.registeredAddress.state", result.state, { shouldValidate: true });
-      setShowAddressInputs(true);
-    } else {
-      setShowAddressInputs(false);
-    }
-    console.log("Postcode lookup result:", result);
+  const onPostcodeLookup = (result: PostcodeLookupResult | null) => {
+    handlePostcodeLookup(result, setValue, setShowAddressInputs, "company.registeredAddress");
   };
 
   return (
-    <FormCard className="w-full" title="Company Information">
+    <FormCard className="w-full" title="Company Account">
       <form className="space-y-4" onSubmit={onFormSubmit}>
         <FormInput
+          about="Use the registered name of the company, your dba can be updated later."
           control={control}
           errorMessage={errors.company?.name?.message}
           label="Company Name"
@@ -85,29 +82,54 @@ export const FormCompanyInfo: React.FC<{
           placeholder="Algersoft, LLC"
         />
         <FormInput
+          about="Use the email where you want to receive important account notifications."
           control={control}
           errorMessage={errors.company?.email?.message}
           label="Email"
+          type="email"
           name="company.email"
-          pattern={emailRegex.source}
           placeholder="nope@algersoft.com"
+          value={emailInput}
+          onChange={(e) => handleEmailChange(
+            e, 
+            setValue, 
+            (value) => {
+              setEmailInput(value as string);
+            },
+            "company.email"
+          )}
+          pattern={emailRegex.source}
         />
         <FormInput
+          startContent={
+            <div className="pointer-events-none flex items-center">
+              <span className="text-default-400 text-small">https://</span>
+            </div>
+          }
           control={control}
-          errorMessage={errors.walletAddress?.message}
-          label="Wallet Address"
-          maxLength={42}
-          name="walletAddress"
-          pattern={walletAddressRegex.source}
-          placeholder="0x1234567890123456789012345678901234567890"
+          errorMessage={errors.company?.website?.message}
+          label="Website"
+          type="url"
+          name="company.website"
+          placeholder="algersoft.com"
+          value={websiteInput}
+          onChange={(e) => handleWebsiteChange(
+            e, 
+            setValue, 
+            (value) => {
+              setWebsiteInput(value as string);
+            },
+            "company.website"
+          )}
         />
-        {/* Go to postcode input component for more prop controls */}
         <PostcodeInput
+          about="Address where the company is registered."
           control={control}
           errorMessage={errors.company?.registeredAddress?.postcode?.message}
           name="company.registeredAddress.postcode"
           showAddressInputs={showAddressInputs}
           onLookupComplete={onPostcodeLookup}
+          watchPostcode={watchPostcode}
         />
         <div className={`fade-in ${showAddressInputs ? "show" : ""}`}>
           <FormInput

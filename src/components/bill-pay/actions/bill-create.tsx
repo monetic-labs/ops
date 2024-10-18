@@ -30,7 +30,6 @@ type NewBillPay = {
 };
 
 enum VendorMethod {
-  ACH_PUSH = "ACH",
   ACH_SAME_DAY = "ACH (Same Day)",
   WIRE = "Wire",
 }
@@ -53,14 +52,13 @@ enum States {
 }
 
 // TODO: get this data from backend
-const vendorMethods: VendorMethod[] = [VendorMethod.ACH_PUSH, VendorMethod.ACH_SAME_DAY, VendorMethod.WIRE];
+const vendorMethods: VendorMethod[] = [VendorMethod.ACH_SAME_DAY, VendorMethod.WIRE];
 const vendorCurrencies: Currency[] = [Currency.USD];
 const vendorCountries: Countries[] = [Countries.USA, Countries.CAN, Countries.CYM, Countries.VGB];
 const vendorStates: States[] = [States.NY, States.CA, States.TX];
 
 const methodFees: Record<VendorMethod, number> = {
-  [VendorMethod.ACH_PUSH]: 0.5,
-  [VendorMethod.ACH_SAME_DAY]: 1,
+  [VendorMethod.ACH_SAME_DAY]: 0,
   [VendorMethod.WIRE]: 20,
 };
 
@@ -68,7 +66,7 @@ const testBillPay: Partial<NewBillPay>[] = [
   {
     vendorName: "MyBackpackMy LLC",
     vendorBankName: "Bank of America",
-    vendorMethod: VendorMethod.ACH_PUSH,
+    vendorMethod: VendorMethod.ACH_SAME_DAY,
     currency: Currency.USD,
     routingNumber: "123000848",
     accountNumber: "4321",
@@ -150,15 +148,14 @@ function ExistingTransferFields({
         />
         <Input isDisabled label="Routing Number" value={`${newBillPay.routingNumber}`} />
       </div>
-      {newBillPay.vendorMethod &&
-        [VendorMethod.WIRE, VendorMethod.ACH_SAME_DAY, VendorMethod.ACH_PUSH].includes(newBillPay.vendorMethod) && (
-          <Input
-            isDisabled={newBillPay.vendorMethod === VendorMethod.WIRE}
-            label={`${newBillPay.vendorMethod === VendorMethod.WIRE ? "Wire Message" : "ACH Reference"}`}
-            value={newBillPay.memo}
-            onChange={(e) => setNewBillPay({ ...newBillPay, memo: e.target.value })}
-          />
-        )}
+      {newBillPay.vendorMethod && [VendorMethod.WIRE, VendorMethod.ACH_SAME_DAY].includes(newBillPay.vendorMethod) && (
+        <Input
+          isDisabled={newBillPay.vendorMethod === VendorMethod.WIRE}
+          label={`${newBillPay.vendorMethod === VendorMethod.WIRE ? "Wire Message" : "ACH Reference"}`}
+          value={newBillPay.memo}
+          onChange={(e) => setNewBillPay({ ...newBillPay, memo: e.target.value })}
+        />
+      )}
       <Input
         label="Amount"
         type="number"
@@ -216,7 +213,7 @@ function NewTransferFields({
           isRequired
           isClearable={false}
           label="Method"
-          defaultInputValue={VendorMethod.ACH_PUSH}
+          defaultInputValue={VendorMethod.ACH_SAME_DAY}
           value={newBillPay.vendorMethod}
           onSelectionChange={(value) => {
             console.log("Selected Method:", value);
@@ -411,14 +408,18 @@ export default function CreateBillPayModal({ isOpen, onClose, onSave }: CreateBi
               <span>Fee:</span>
               <div className="flex items-center gap-2">
                 <Tooltip
-                  content="We pass on the fees from the receiving bank. We do not add any additional fees."
+                  content={
+                    newBillPay.vendorMethod === VendorMethod.WIRE
+                      ? "We pass on the fees from the receiving bank. We do not add any additional fees."
+                      : "We cover these fees for you."
+                  }
                   onTouchStart={(e) => {
                     console.log("Touch started");
                   }}
                 >
                   <Info className="text-gray-500 cursor-pointer" size={14} />
                 </Tooltip>
-                <span>${fee.toFixed(2)}</span>
+                <span>{fee.toFixed(2) === "0.00" ? "Free" : `$${fee.toFixed(2)}`}</span>
               </div>
             </div>
             <div className="flex justify-between text-lg font-bold">

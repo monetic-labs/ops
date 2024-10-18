@@ -6,7 +6,6 @@ import { FormButton } from "../generics/form-button";
 import GenerateApiKeysModal from "./actions/widgets/api-keys";
 import pylon from "@/libs/pylon-sdk";
 import { Network, Currency } from "@backpack-fux/pylon-sdk";
-import { walletAddressSchema } from "@/validations/onboard";
 import { RefundSuccessModal } from "./actions/order-success";
 
 const networks = ["POLYGON", "SOLANA", "BASE", "OPTIMISM", "ARBITRUM"];

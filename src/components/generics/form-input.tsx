@@ -28,7 +28,7 @@ export const FormInput = <T extends FieldValues>({
               {...props}
               errorMessage={errorMessage}
               helperText={helperText}
-            onChange={(e) => {
+              onChange={(e) => {
               field.onChange(e);
                 props.onChange && props.onChange(e);
               }}

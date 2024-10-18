@@ -1,7 +1,11 @@
 import { createIcon } from "opepen-standard";
-
 import { ChainAddress, OrderID } from "@/types";
-import { MerchantUserGetOutput } from "@backpack-fux/pylon-sdk";
+import { ISO3166Alpha2Country } from "@backpack-fux/pylon-sdk";
+import { PostcodeLookupResult } from "@/hooks/generics/usePostcodeLookup";
+
+export function generateUserInviteUrl(onboardId: string, email: string): string {
+  return `/onboard/${onboardId}?email=${encodeURIComponent(email)}`;
+}
 
 export function formatBalance(balance: number, currency: string): string {
   return `${mapCurrencyToSymbol[currency]} ${balance.toFixed(2)} ${currency.toUpperCase()}`;
@@ -42,18 +46,18 @@ export function getOpepenAvatar(address: string, size: number): string {
 export const lookupPostcode = async (postcode: string) => {
   try {
     const response = await fetch(`/api/lookup-postcode?postcode=${postcode}`);
-    console.log("response", response);
 
     if (!response.ok) {
       throw new Error("Postcode not found");
     }
-    const result = await response.json();
+    const result: PostcodeLookupResult = await response.json();
 
     // Ensure the state and country are in the correct format
     return {
-      ...result,
       city: result.city,
       state: result.state,
+      postcode: result.postcode,
+      country: result.country,
     };
   } catch (error) {
     console.error("Error looking up postcode:", error);
