@@ -20,7 +20,7 @@ export const FormCompanyInfo: React.FC<{
   const router = useRouter();
   const [showAddressInputs, setShowAddressInputs] = useState(false);
   const [websiteInput, setWebsiteInput] = useState(initialData.company.website || "");
-  
+
   const {
     control,
     formState: { errors },
@@ -104,18 +104,24 @@ export const FormCompanyInfo: React.FC<{
           control={control}
           errorMessage={errors.company?.email?.message}
           label="Email"
+          type="email"
           name="company.email"
           pattern={emailRegex.source}
           placeholder="nope@algersoft.com"
         />
         <FormInput
-          about="You don't need to add the http:// or https:// before the url."
+          startContent={
+            <div className="pointer-events-none flex items-center">
+              <span className="text-default-400 text-small">https://</span>
+            </div>
+          }
           control={control}
           errorMessage={errors.company?.website?.message}
           label="Website"
+          type="url"
           name="company.website"
           placeholder="algersoft.com"
-          value={websiteInput}
+          value={websiteInput.replace("https://", "")}
           onChange={handleWebsiteChange}
         />
         <PostcodeInput
