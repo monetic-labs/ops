@@ -1,34 +1,40 @@
+// REFAC THIS LATER
+
 import { Button } from "@nextui-org/button";
 import { Chip } from "@nextui-org/chip";
 import { Input } from "@nextui-org/input";
-import { Modal, ModalBody, ModalContent, ModalFooter, ModalHeader } from "@nextui-org/modal";
+import { Modal, ModalBody, ModalContent, ModalHeader } from "@nextui-org/modal";
 import { Progress } from "@nextui-org/progress";
 import { Snippet } from "@nextui-org/snippet";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import ModalFooterWithSupport from "../generics/footer-modal-support";
+import { MerchantCardGetOutput } from "@backpack-fux/pylon-sdk";
+import pylon from "@/libs/pylon-sdk";
 
 interface CardDetailsModalProps {
   isOpen: boolean;
   onClose: () => void;
-  card: {
-    cardName: string;
-    holder: string;
-    type: string;
-    status: string;
-    limit: {
-      amount: string;
-      cycle: string;
-    };
-    cardNumber: string;
-    expDate: string;
-    cvv: string;
-    billingAddress: string;
-    email: string;
-  } | null;
+  card: MerchantCardGetOutput["cards"][number] & { avatar?: string };
 }
 
 export default function CardDetailsModal({ isOpen, onClose, card }: CardDetailsModalProps) {
   const [isEditing, setIsEditing] = useState(false);
+  const [cvv, setCvv] = useState<string | null>();
+  const [pan, setPan] = useState<string | null>();
+
+  useEffect(() => {
+    if (card && !card.cardShippingDetails) {
+      pylon
+        .decryptVirtualCard(card.id)
+        .catch(console.log)
+        .then((details) => {
+          if (details) {
+            setCvv(details.decryptedCvc);
+            setPan(details.decryptedPan);
+          }
+        });
+    }
+  }, [card, setCvv, setPan]);
 
   const handleEdit = () => {
     setIsEditing(true);
@@ -89,49 +95,67 @@ export default function CardDetailsModal({ isOpen, onClose, card }: CardDetailsM
       <ModalContent>
         <ModalHeader className="flex flex-col gap-1">Card Details</ModalHeader>
         <ModalBody>
-          <Input isReadOnly={!isEditing} label="Card Name" value={card.cardName} />
+          <Input isReadOnly={!isEditing} label="Card Name" value={card.displayName} />
           <div className="mt-4">
             <div className="flex items-center gap-2 mb-2">
-              <Chip color={card.status === "Active" ? "success" : "danger"} variant="flat">
+              <Chip color={card.status === "ACTIVE" ? "success" : "danger"} variant="flat">
                 {card.status}
               </Chip>
               <Chip color="primary" variant="flat">
-                {card.type}
+                {card.cardShippingDetails ? "PHYSICAL" : "VIRTUAL"}
               </Chip>
             </div>
-            <p className="text-small text-default-500 mb-2">
+            {/* <p className="text-small text-default-500 mb-2">
               Limit: ${card.limit.amount} per {card.limit.cycle}
-            </p>
-            <Progress className="mt-2" maxValue={10000} value={parseInt(card.limit.amount)} />
+            </p> */}
+            {/* <Progress className="mt-2" maxValue={10000} value={parseInt(card.limit.amount)} /> */}
           </div>
           <div className="flex flex-col md:flex-row gap-4">
-            <div className="flex-grow space-y-2">
-              <p className="text-small text-default-500">Card Number</p>
-              <Snippet codeString={card.cardNumber} color="default" symbol="" variant="flat">
-                {card.cardNumber.replace(/(\d{4})/g, "$1 ").trim()}
-              </Snippet>
-            </div>
+            {pan ? (
+              <div className="flex-grow space-y-2">
+                <p className="text-small text-default-500">Card Number</p>
+                <Snippet codeString={pan} color="default" symbol="" variant="flat">
+                  {card.lastFour}
+                </Snippet>
+              </div>
+            ) : null}
             <div className="w-full md:w-1/4 space-y-2">
               <p className="text-small text-default-500">Expiration Date</p>
-              <Snippet codeString={card.expDate} color="default" symbol="" variant="flat">
-                {card.expDate}
+              <Snippet
+                codeString={card.expirationMonth + "/" + card.expirationYear}
+                color="default"
+                symbol=""
+                variant="flat"
+              >
+                {card.expirationMonth + "/" + card.expirationYear}
               </Snippet>
             </div>
-            <div className="w-full md:w-1/6 space-y-2">
-              <p className="text-small text-default-500">CVV</p>
-              <Snippet codeString={card.cvv} color="default" symbol="" variant="flat">
-                {card.cvv}
-              </Snippet>
-            </div>
+            {cvv ? (
+              <div className="w-full md:w-1/6 space-y-2">
+                <p className="text-small text-default-500">CVV</p>
+                <Snippet codeString={cvv} color="default" symbol="" variant="flat">
+                  {cvv}
+                </Snippet>
+              </div>
+            ) : null}
           </div>
-          <Input isReadOnly={!isEditing} label="Holder" value={card.holder} />
-          <Input isReadOnly={!isEditing} label="Billing Address" value={card.billingAddress} />
-          <Input isReadOnly={!isEditing} label="Email" value={card.email} />
+          <Input
+            isReadOnly={!isEditing}
+            label="Holder"
+            value={card.cardOwner.firstName + " " + card.cardOwner.lastName}
+          />
+          {card.cardShippingDetails ? (
+            <Input
+              isReadOnly={!isEditing}
+              label="Billing Address"
+              // @ts-ignore
+              value={`${card.cardShippingDetails.street1}, ${card.cardShippingDetails.city}, ${card.cardShippingDetails.state},${card.cardShippingDetails.country}`}
+            />
+          ) : null}
+
+          <Input isReadOnly={!isEditing} label="Email" value={card.cardOwner.email} />
         </ModalBody>
-        <ModalFooterWithSupport
-          onSupportClick={handleSupportClick}
-          actions={footerActions}
-        />
+        <ModalFooterWithSupport onSupportClick={handleSupportClick} actions={footerActions} />
       </ModalContent>
     </Modal>
   );
