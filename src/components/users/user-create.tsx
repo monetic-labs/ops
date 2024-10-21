@@ -1,4 +1,3 @@
-import { userRoles } from "@/data";
 import pylon from "@/libs/pylon-sdk";
 import { MerchantUserGetOutput, PersonRole } from "@backpack-fux/pylon-sdk";
 import { Button } from "@nextui-org/button";
@@ -20,7 +19,7 @@ export default function CreateUserModal({ isOpen, availableRoles, onClose, onSav
     firstName: "",
     lastName: "",
     email: "",
-    role: "MEMBER",
+    role: PersonRole.MEMBER,
   });
 
   const [errors, setErrors] = useState({
@@ -64,7 +63,7 @@ export default function CreateUserModal({ isOpen, availableRoles, onClose, onSav
           firstName: "",
           lastName: "",
           email: "",
-          role: "MEMBER",
+          role: PersonRole.MEMBER,
         });
         onClose();
       } else {

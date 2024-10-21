@@ -6,17 +6,14 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { FormCardTabs } from "@/components/generics/form-card-tabs";
 import { FormInput } from "@/components/generics/form-input";
 import { emailRegex } from "@/types/validations/auth";
-import {
-  companyAccountUsersSchema,
-  phoneRegex,
-} from "@/types/validations/onboard";
+import { companyAccountUsersSchema, phoneRegex } from "@/types/validations/onboard";
 
 import { AutocompleteInput } from "../generics/autocomplete-input";
 import { CompanyAccountUsersSchema } from "@/types/validations/onboard";
-import { BridgeUserRole } from "@/types/dtos/bridgeDTO";
 import { TabData } from "@/hooks/generics/useDynamicTabs";
 import { useDynamicTabs } from "@/hooks/generics/useDynamicTabs";
 import { handleEmailChange, handlePhoneNumberChange } from "../generics/form-input-handlers";
+import { PersonRole } from "@backpack-fux/pylon-sdk";
 
 const userRoles = [
   { label: "Owner", value: "owner" },
@@ -29,11 +26,9 @@ export const FormAccountUsers: React.FC<{
   initialData: CompanyAccountUsersSchema;
   updateFormData: (data: CompanyAccountUsersSchema) => void;
 }> = ({ onSubmit, initialData, updateFormData }) => {
-  const [emailInputs, setEmailInputs] = useState(
-    initialData.representatives.map(rep => rep.email || "")
-  );
+  const [emailInputs, setEmailInputs] = useState(initialData.representatives.map((rep) => rep.email || ""));
   const [phoneNumberInputs, setPhoneNumberInputs] = useState(
-    initialData.representatives.map(rep => rep.phoneNumber || "")
+    initialData.representatives.map((rep) => rep.phoneNumber || "")
   );
   const router = useRouter();
 
@@ -66,13 +61,8 @@ export const FormAccountUsers: React.FC<{
     isCompleted: false,
   }));
 
-  const {
-    tabs,
-    updateTabTitle,
-    addTab,
-    removeTabs,
-  } = useDynamicTabs(initialTabs);
-  
+  const { tabs, updateTabTitle, addTab, removeTabs } = useDynamicTabs(initialTabs);
+
   const onCancel = () => router.push("/auth");
 
   useEffect(() => {
@@ -102,7 +92,7 @@ export const FormAccountUsers: React.FC<{
       email: "",
       phoneNumber: "",
       role: "representative",
-      bridgeUserRole: BridgeUserRole.SUPER_ADMIN,
+      bridgeUserRole: PersonRole.SUPER_ADMIN,
     });
     addTab({
       key: `user-${fields.length}`,
@@ -155,16 +145,18 @@ export const FormAccountUsers: React.FC<{
         pattern={emailRegex.source}
         placeholder="nope@algersoft.com"
         value={emailInputs[index]}
-        onChange={(e) => handleEmailChange(
-          e, 
-          setValue, 
-          (value) => {
-            const newEmailInputs = [...emailInputs];
-            newEmailInputs[index] = value as string;
-            setEmailInputs(newEmailInputs);
-          },
-          `representatives.${index}.email` as const
-        )}
+        onChange={(e) =>
+          handleEmailChange(
+            e,
+            setValue,
+            (value) => {
+              const newEmailInputs = [...emailInputs];
+              newEmailInputs[index] = value as string;
+              setEmailInputs(newEmailInputs);
+            },
+            `representatives.${index}.email` as const
+          )
+        }
       />
       <FormInput
         control={control}
@@ -175,16 +167,18 @@ export const FormAccountUsers: React.FC<{
         pattern={phoneRegex.source}
         placeholder="0701234567"
         value={phoneNumberInputs[index]}
-        onChange={(e) => handlePhoneNumberChange(
-          e,
-          setValue,
-          (value) => {
-            const newPhoneNumberInputs = [...phoneNumberInputs];
-            newPhoneNumberInputs[index] = value as string;
-            setPhoneNumberInputs(newPhoneNumberInputs);
-          },
-          `representatives.${index}.phoneNumber` as const
-        )}
+        onChange={(e) =>
+          handlePhoneNumberChange(
+            e,
+            setValue,
+            (value) => {
+              const newPhoneNumberInputs = [...phoneNumberInputs];
+              newPhoneNumberInputs[index] = value as string;
+              setPhoneNumberInputs(newPhoneNumberInputs);
+            },
+            `representatives.${index}.phoneNumber` as const
+          )
+        }
       />
       {index === 0 ? (
         <FormInput
@@ -207,7 +201,7 @@ export const FormAccountUsers: React.FC<{
           filterItems={(items) => items.filter((item) => item.value !== "owner")}
         />
       )}
-      </div>
+    </div>
   );
 
   return (

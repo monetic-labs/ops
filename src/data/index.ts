@@ -296,5 +296,3 @@ export const usersStatusColorMap: Record<PersonRole, "success" | "danger" | "war
   ADMIN: "success",
   SUPER_ADMIN: "danger",
 };
-
-export const userRoles: PersonRole[] = ["MEMBER", "DEVELOPER", "BOOKKEEPER", "ADMIN", "SUPER_ADMIN"];
