@@ -7,6 +7,8 @@ import {
   PersonRole,
   StableCurrency,
   TransactionListItem,
+  CardLimitFrequency,
+  CardShippingMethod,
 } from "@backpack-fux/pylon-sdk";
 import { z } from "zod";
 
@@ -15,21 +17,18 @@ export interface CreateCardModalProps {
   onClose: () => void;
 }
 
-export const limitCycles = ["DAY", "WEEK", "MONTH", "YEAR", "ALL_TIME", "PER_AUTHORIZATION"] as const;
-
-export const limitCyclesObject: { label: string; value: string }[] = [
-  { label: "Day", value: "DAY" },
-  { label: "Week", value: "WEEK" },
-  { label: "Month", value: "MONTH" },
-  { label: "Year", value: "YEAR" },
-  { label: "All Time", value: "ALL_TIME" },
-  { label: "Per Authorization", value: "PER_AUTHORIZATION" },
+export const limitCyclesObject: { label: string; value: CardLimitFrequency }[] = [
+  { label: "Day", value: CardLimitFrequency.DAY },
+  { label: "Week", value: CardLimitFrequency.WEEK },
+  { label: "Month", value: CardLimitFrequency.MONTH },
+  { label: "Year", value: CardLimitFrequency.YEAR },
+  { label: "All Time", value: CardLimitFrequency.ALL_TIME },
+  { label: "Per Authorization", value: CardLimitFrequency.PER_AUTHORIZATION },
 ];
 
 export const ISO3166Alpha2Country = z.string().length(2);
 
 export const cardDeliveryCountries: { label: string; value: string }[] = [{ label: "United States", value: "US" }];
-export const CardShippingMethod = z.enum(["STANDARD", "EXPRESS", "INTERNATIONAL"]);
 
 export const shippingMethodOptions = [
   { label: "Standard", value: "STANDARD" },
@@ -52,7 +51,7 @@ export const CreateCardSchema = z.object({
     .min(1, "Please enter card limit number")
     .transform((val) => Number(val))
     .refine((val) => !isNaN(val) && val > 0, "Please enter a valid number for card limit"),
-  limitFrequency: z.enum(limitCycles),
+  limitFrequency: z.nativeEnum(CardLimitFrequency),
 });
 
 const validCountries = ["US"];
@@ -117,8 +116,8 @@ export const getRegionsForCountry = (country: string) => {
 
 export const CardShippingDetailsSchema = z
   .object({
-    line1: z.string().min(1),
-    line2: z.string().optional(),
+    street1: z.string().min(1),
+    street2: z.string().optional(),
     city: z.string().min(1),
     region: z.string().min(1),
     postalCode: z.string().min(1),
@@ -127,7 +126,7 @@ export const CardShippingDetailsSchema = z
     }),
     phoneNumber: z.string().min(1),
     phoneCountryCode: z.string().min(1),
-    shippingMethod: CardShippingMethod.optional(),
+    shippingMethod: z.nativeEnum(CardShippingMethod).optional(),
   })
   .superRefine((data, ctx) => {
     const validRegions = getRegionsForCountry(data.country);

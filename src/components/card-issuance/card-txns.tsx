@@ -19,7 +19,7 @@ export default function TransactionDetailsModal({ isOpen, onClose, transaction }
           <>
             <ModalHeader className="flex flex-col items-center">
               <h2 className="text-2xl font-bold">Transaction Receipt</h2>
-              <p className="text-sm text-gray-500">Merchant ID: {transaction.merchant.rainCompanyId}</p>
+              <p className="text-sm text-gray-500">Transaction ID: {transaction.id}</p>
             </ModalHeader>
             <Divider />
             <ModalBody>
@@ -74,8 +74,8 @@ export default function TransactionDetailsModal({ isOpen, onClose, transaction }
                       transaction.status === "COMPLETED"
                         ? "text-ugh-400"
                         : transaction.status === "PENDING"
-                          ? "text-yellow-500"
-                          : "text-red-500"
+                        ? "text-yellow-500"
+                        : "text-red-500"
                     }`}
                   >
                     {transaction.status}

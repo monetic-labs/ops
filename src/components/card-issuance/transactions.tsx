@@ -34,7 +34,7 @@ export default function TransactionListTable() {
               radius: "lg",
               src: transaction.avatar,
             }}
-            description={transaction.merchant.rainCompanyId}
+            description={transaction.id}
             name={transaction.merchantName}
           >
             {transaction.id}
@@ -83,7 +83,7 @@ export default function TransactionListTable() {
       return {
         items: transactions.map((t) => ({
           ...t,
-          avatar: getOpepenAvatar(t.merchant.rainCompanyId, 20),
+          avatar: getOpepenAvatar(t.merchantName, 20),
           spender: t.merchantCard.cardOwner.firstName + " " + t.merchantCard.cardOwner.lastName,
         })),
         cursor: meta.endCursor,

@@ -17,6 +17,7 @@ import {
   getRegionsForCountry,
 } from "@/data";
 import { Button } from "@nextui-org/button";
+import { CardStatus, ISO3166Alpha2Country } from "@backpack-fux/pylon-sdk";
 
 export default function CreateCardModal({ isOpen, onClose }: CreateCardModalProps) {
   const [error, setError] = useState<string | null>();
@@ -42,8 +43,8 @@ export default function CreateCardModal({ isOpen, onClose }: CreateCardModalProp
   } = useForm({
     resolver: zodResolver(CardShippingDetailsSchema),
     defaultValues: {
-      line1: "",
-      line2: "",
+      street1: "",
+      street2: "",
       city: "",
       region: "",
       postalCode: "",
@@ -62,10 +63,10 @@ export default function CreateCardModal({ isOpen, onClose }: CreateCardModalProp
         displayName: data.displayName,
         limit: { amount: data.limitAmount, frequency: data.limitFrequency },
         owner: { firstName: data.ownerFirstName, lastName: data.ownerLastName, email: data.ownerEmail },
-        status: "ACTIVE",
+        status: CardStatus.ACTIVE,
         shipping: {
           ...secondData,
-          countryCode: secondData.country as any,
+          countryCode: secondData.country as ISO3166Alpha2Country,
         },
       });
       reset();
@@ -91,7 +92,7 @@ export default function CreateCardModal({ isOpen, onClose }: CreateCardModalProp
             displayName: data.displayName,
             limit: { amount: data.limitAmount, frequency: data.limitFrequency },
             owner: { firstName: data.ownerFirstName, lastName: data.ownerLastName, email: data.ownerEmail },
-            status: "ACTIVE",
+            status: CardStatus.ACTIVE,
           });
           resetFirstForm();
           onClose();
@@ -192,17 +193,17 @@ export default function CreateCardModal({ isOpen, onClose }: CreateCardModalProp
             <FormInput
               about="Enter address line 1"
               control={control}
-              errorMessage={errors.line1?.message}
+              errorMessage={errors.street1?.message}
               label="Address Line 1"
-              name="line1"
+              name="street1"
               placeholder="Enter address line 1"
             />
             <FormInput
               about="Enter address line 2 (optional)"
               control={control}
-              errorMessage={errors.line2?.message}
+              errorMessage={errors.street2?.message}
               label="Address Line 2"
-              name="line2"
+              name="street2"
               placeholder="Enter address line 2 (optional)"
             />
             <FormInput
