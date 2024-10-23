@@ -4,7 +4,7 @@ import Contacts from "./contacts-tab";
 import Transfers from "./transfers-tab";
 import { billPayConfig, BillPayId } from "@/config/tabs";
 import { Button } from "@nextui-org/button";
-import CreateBillPayModal from "./actions/bill-create";
+import CreateBillPayModal from "./bill-actions/create";
 
 export default function BillPayTabs() {
   const [selectedService, setSelectedService] = useState<string>(billPayConfig[0].id);

@@ -4,7 +4,7 @@ import { Table, TableBody, TableCell, TableColumn, TableHeader, TableRow } from 
 import { User } from "@nextui-org/user";
 import React, { useCallback, useEffect, useState } from "react";
 
-import { Column, userRoles, usersColumns, usersStatusColorMap } from "@/data";
+import { Column, usersColumns, usersStatusColorMap } from "@/data";
 import CreateUserModal from "./user-create";
 import UserEditModal from "./user-edit";
 import { getFullName, getOpepenAvatar } from "@/utils/helpers";
@@ -20,12 +20,14 @@ export default function UserTab({ userId }: { userId: string }) {
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
-  const canManageUsers = userRole === "ADMIN" || userRole === "SUPER_ADMIN";
-  const isEditable = userRole === "SUPER_ADMIN" || (userRole === "ADMIN" && selectedUser?.role !== "SUPER_ADMIN");
-  const availableRoles = userRoles.filter((role) => {
-    if (userRole === "SUPER_ADMIN") return true;
-    if (userRole === "ADMIN") return role !== "SUPER_ADMIN";
-    return role === "MEMBER";
+  const canManageUsers = userRole === PersonRole.ADMIN || userRole === PersonRole.SUPER_ADMIN;
+  const isEditable =
+    userRole === PersonRole.SUPER_ADMIN ||
+    (userRole === PersonRole.ADMIN && selectedUser?.role !== PersonRole.SUPER_ADMIN);
+  const availableRoles = Object.values(PersonRole).filter((role) => {
+    if (userRole === PersonRole.SUPER_ADMIN) return true;
+    if (userRole === PersonRole.ADMIN) return role !== PersonRole.SUPER_ADMIN;
+    return role === PersonRole.MEMBER;
   });
 
   useEffect(() => {

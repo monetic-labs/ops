@@ -4,8 +4,8 @@ import { ISO3166Alpha2Country } from "@backpack-fux/pylon-sdk";
 import { CardCompanyType } from "@backpack-fux/pylon-sdk";
 
 export type RainAddressDto = {
-  line1: string;
-  line2?: string;
+  street1: string;
+  street2?: string;
   city: string;
   region: string;
   postalCode: string;

@@ -1,4 +1,13 @@
-import { MerchantUserGetOutput, PersonRole, TransactionListItem } from "@backpack-fux/pylon-sdk";
+import {
+  DisbursementState,
+  FiatCurrency,
+  MerchantDisbursementCreateOutput,
+  MerchantDisbursementEventGetOutput,
+  MerchantUserGetOutput,
+  PersonRole,
+  StableCurrency,
+  TransactionListItem,
+} from "@backpack-fux/pylon-sdk";
 import { z } from "zod";
 
 export interface CreateCardModalProps {
@@ -131,30 +140,14 @@ export const CardShippingDetailsSchema = z
     }
   });
 
+type StatusColor = "success" | "warning" | "danger" | "primary" | "secondary" | "default" | undefined;
+
 export interface Column<T> {
   name: string;
   uid: keyof T;
 }
 
-export interface BillPay {
-  id: string;
-  vendor: string;
-  internalNote: string;
-  memo: string;
-  status: string;
-  amount: string;
-  fees: string;
-  paymentMethod: "ACH" | "Wire" | "SWIFT" | "SEPA" | "Stable";
-  currency: string;
-  transactionCost: number;
-  settlementTime: string;
-  receivingBank: {
-    name: string;
-    routingNumber: string;
-    accountNumber: string;
-    memo: string;
-  };
-}
+export type BillPay = Omit<MerchantDisbursementEventGetOutput, "contact"> & MerchantDisbursementCreateOutput;
 
 export interface CardTransactions {
   id: string;
@@ -206,11 +199,17 @@ export interface User {
 }
 
 export const billPayColumns: readonly Column<BillPay>[] = [
-  { name: "VENDOR", uid: "vendor" },
-  { name: "STATUS", uid: "status" },
-  { name: "AMOUNT", uid: "amount" },
-  { name: "MEMO", uid: "memo" },
-  { name: "INTERNAL NOTE", uid: "internalNote" },
+  { name: "VENDOR", uid: "accountOwnerName" },
+  { name: "STATUS", uid: "state" },
+  { name: "AMOUNT RECEIVED", uid: "amountOut" && "currencyOut" },
+  { name: "PAYMENT REFERENCE", uid: "paymentMessage" },
+  { name: "TIME OF TRANSFER", uid: "createdAt" },
+] as const;
+
+export const contactColumns: readonly Column<MerchantDisbursementCreateOutput>[] = [
+  { name: "NAME", uid: "accountOwnerName" },
+  { name: "METHODS", uid: "disbursements" },
+  { name: "STATUS", uid: "isActive" },
 ] as const;
 
 export const cardTransactionColumns: readonly Column<CardTransactions>[] = [
@@ -245,66 +244,6 @@ export const usersColumns: readonly Column<MerchantUserGetOutput>[] = [
   { name: "PHONE NUMBER", uid: "phone" },
   { name: "WALLET ADDRESS", uid: "walletAddress" },
 ] as const;
-
-export const billPayData: BillPay[] = [
-  {
-    id: "1",
-    vendor: "Acme, LTD",
-    internalNote: "supplies",
-    memo: "",
-    status: "Active",
-    amount: "$10,000.00",
-    fees: "$200.00",
-    paymentMethod: "ACH",
-    currency: "USD",
-    transactionCost: 25,
-    settlementTime: "2-3 business days",
-    receivingBank: {
-      name: "Bank of America",
-      routingNumber: "026009593",
-      accountNumber: "1234567890",
-      memo: "Invoice #12345",
-    },
-  },
-  {
-    id: "2",
-    vendor: "Design Contractor",
-    internalNote: "marketing",
-    memo: "",
-    status: "Active",
-    amount: "$10,000.00",
-    fees: "$200.00",
-    paymentMethod: "Wire",
-    currency: "USD",
-    transactionCost: 35,
-    settlementTime: "1-2 business days",
-    receivingBank: {
-      name: "Chase Bank",
-      routingNumber: "021000021",
-      accountNumber: "0987654321",
-      memo: "Project #98765",
-    },
-  },
-  {
-    id: "3",
-    vendor: "UPS Shipping Account",
-    internalNote: "fullfilment operations",
-    memo: "Physical",
-    status: "Inactive",
-    amount: "$5000.00",
-    fees: "$100.00",
-    paymentMethod: "SWIFT",
-    currency: "EUR",
-    transactionCost: 50,
-    settlementTime: "3-5 business days",
-    receivingBank: {
-      name: "Deutsche Bank",
-      routingNumber: "DEUTDEFF",
-      accountNumber: "DE89370400440532013000",
-      memo: "Shipping Invoice #54321",
-    },
-  },
-];
 
 export const cardTransactionData: CardTransactions[] = [
   {
@@ -400,12 +339,22 @@ export const issuedCardData: IssuedCards[] = [
   },
 ];
 
-export const statusColorMap: Record<string, "success" | "danger"> = {
-  Active: "success",
-  Inactive: "danger",
+export const statusColorMap: Record<DisbursementState, StatusColor> = {
+  PENDING: "default",
+  AWAITING_FUNDS: "secondary",
+  COMPLETED: "primary",
+  FAILED: "danger",
+  IN_REVIEW: "warning",
+  FUNDS_RECEIVED: "success",
+  PAYMENT_SUBMITTED: "success",
+  PAYMENT_PROCESSED: "success",
+  CANCELED: "danger",
+  ERROR: "danger",
+  RETURNED: "danger",
+  REFUNDED: "success",
 };
 
-export const paymentsStatusColorMap: Record<string, "success" | "warning" | "danger" | "primary" | "secondary"> = {
+export const paymentsStatusColorMap: Record<string, StatusColor> = {
   SENT_FOR_AUTHORIZATION: "primary",
   AUTHORIZED: "secondary",
   SENT_FOR_SETTLEMENT: "warning",
@@ -420,12 +369,10 @@ export const paymentsStatusColorMap: Record<string, "success" | "warning" | "dan
   REFUND_FAILED: "danger",
 };
 
-export const usersStatusColorMap: Record<PersonRole, "success" | "danger" | "warning" | "primary" | "secondary"> = {
+export const usersStatusColorMap: Record<PersonRole, StatusColor> = {
   MEMBER: "primary",
   DEVELOPER: "secondary",
   BOOKKEEPER: "warning",
   ADMIN: "success",
   SUPER_ADMIN: "danger",
 };
-
-export const userRoles: PersonRole[] = ["MEMBER", "DEVELOPER", "BOOKKEEPER", "ADMIN", "SUPER_ADMIN"];

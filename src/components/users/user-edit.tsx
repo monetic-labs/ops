@@ -5,7 +5,7 @@ import { Modal, ModalBody, ModalContent, ModalFooter, ModalHeader } from "@nextu
 import { Select, SelectItem } from "@nextui-org/select";
 import { Switch } from "@nextui-org/switch";
 import { useState } from "react";
-import { userRoles } from "@/data";
+
 interface UserEditModalProps {
   isOpen: boolean;
   user: MerchantUserGetOutput;

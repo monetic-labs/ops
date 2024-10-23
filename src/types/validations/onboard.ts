@@ -1,7 +1,6 @@
 import { z } from "zod";
-import { ISO3166Alpha2Country, CardCompanyType } from "@backpack-fux/pylon-sdk";
+import { ISO3166Alpha2Country, CardCompanyType, PersonRole } from "@backpack-fux/pylon-sdk";
 import { emailSchema } from "./auth";
-import { BridgeUserRole } from "../dtos/bridgeDTO";
 
 export const countryISO3166Alpha2Regex = /^[A-Z]{2}$/;
 export const countryISO3166Alpha3Regex = /^[A-Z]{3}$/;
@@ -31,88 +30,88 @@ export const walletAddressSchema = z.object({
 });
 
 export const accountAddressSchema = z.object({
-    street1: z.string().max(50),
-    street2: z.string().max(50).optional(),
-    city: z.string().max(50),
-    postcode: z
-      .string()
-      .regex(postcodeRegex, "Invalid postal code"),
-    state: z
-      .string()
-      .length(2)
-      .regex(/^[a-zA-Z0-9]{2}$/, "Invalid state code"),
-    country: z.custom<ISO3166Alpha2Country>(),
-  });
+  street1: z.string().max(50),
+  street2: z.string().max(50).optional(),
+  city: z.string().max(50),
+  postcode: z.string().regex(postcodeRegex, "Invalid postal code"),
+  state: z
+    .string()
+    .length(2)
+    .regex(/^[a-zA-Z0-9]{2}$/, "Invalid state code"),
+  country: z.custom<ISO3166Alpha2Country>(),
+});
 
-  // Onboard step 1
+// Onboard step 1
 export const companyAccountSchema = z.object({
-    company: z.object({
-      name: z.string().min(1).max(255),
-      email: emailSchema,
-      website: z.string().regex(websiteRegex, "Invalid URL"),
-      registeredAddress: accountAddressSchema,
-    }),
-  });
-  
-  // Onboard step 2
-  export const companyDetailsSchema = z.object({
-    walletAddress: z.string().regex(walletAddressRegex, "Invalid wallet address"),
-    companyEIN: z.string().min(9, "EIN must be at least 9 characters"),
-    companyType: z.enum(['sole_proprietorship', 'llc', 'c_corp', 's_corp', 'partnership', 'lp', 'llp', 'nonprofit']),
-    companyDescription: z.string().min(1,"Company description is required"),
-  });
-  
-  // Onboard step 3
-  export const companyAccountUsersSchema = z.object({
-    representatives: z.array(z.object({
+  company: z.object({
+    name: z.string().min(1).max(255),
+    email: emailSchema,
+    website: z.string().regex(websiteRegex, "Invalid URL"),
+    registeredAddress: accountAddressSchema,
+  }),
+});
+
+// Onboard step 2
+export const companyDetailsSchema = z.object({
+  walletAddress: z.string().regex(walletAddressRegex, "Invalid wallet address"),
+  companyEIN: z.string().min(9, "EIN must be at least 9 characters"),
+  companyType: z.nativeEnum(CardCompanyType),
+  companyDescription: z.string().min(1, "Company description is required"),
+});
+
+// Onboard step 3
+export const companyAccountUsersSchema = z.object({
+  representatives: z.array(
+    z.object({
       firstName: z.string().min(1, "First name is required"),
       lastName: z.string().min(1, "Last name is required"),
       email: z.string().email("Invalid email address"),
       phoneNumber: z.string().regex(phoneRegex, "Invalid phone number"),
       role: z.enum(["owner", "representative", "beneficial-owner"]),
-      bridgeUserRole: z.nativeEnum(BridgeUserRole).optional(),
+      bridgeUserRole: z.nativeEnum(PersonRole).optional(),
       walletAddress: z.string().regex(walletAddressRegex, "Invalid wallet address").optional(),
-    })),
-  });
-  
-  // Onboard step 4
-  const userDetailsSchema = z.object({
-    countryOfIssue: z.custom<ISO3166Alpha2Country>(),
-    birthday: z.string().regex(birthdayRegex, "Invalid birthday format (YYYY-MM-DD)"),
-    ssn: ssnSchema,
-    registeredAddress: accountAddressSchema,
-  });
-  
-  export const companyUserDetailsSchema = z.object({
-    userDetails: z.array(userDetailsSchema).min(1, "At least one owner is required")
-  });
-  
-  // Response data from step 4 presented in step 5
-  export const bridgeComplianceSchema = z.object({
-    compliance: z
-      .object({
-        bridgeCustomerId: z.string().uuid(),
-        bridgeComplianceId: z.string().uuid(),
-      })
-      .optional(),
-  });
-  
-  // Onboard step 5
-  export const rainComplianceSchema = z.object({
-    compliance: z
-      .object({
-        rainCustomerId: z.string().uuid(),
-        rainToSAccepted: z.boolean(),
-        rainComplianceId: z.string().uuid(),
-      })
-      .optional(),
-  });
+    })
+  ),
+});
 
-  export type CompanyAccountSchema = z.infer<typeof companyAccountSchema>;
-  export type CompanyDetailsSchema = z.infer<typeof companyDetailsSchema>;
-  export type CompanyAccountUsersSchema = z.infer<typeof companyAccountUsersSchema>;
-  export type CompanyUserDetailsSchema = z.infer<typeof companyUserDetailsSchema>;
-  export type BridgeComplianceSchema = z.infer<typeof bridgeComplianceSchema>;
-  export type RainComplianceSchema = z.infer<typeof rainComplianceSchema>;
-  export type AccountAddressSchema = z.infer<typeof accountAddressSchema>;
-  export type WalletAddressSchema = z.infer<typeof walletAddressSchema>;
+// Onboard step 4
+const userDetailsSchema = z.object({
+  countryOfIssue: z.custom<ISO3166Alpha2Country>(),
+  birthday: z.string().regex(birthdayRegex, "Invalid birthday format (YYYY-MM-DD)"),
+  ssn: ssnSchema,
+  registeredAddress: accountAddressSchema,
+});
+
+export const companyUserDetailsSchema = z.object({
+  userDetails: z.array(userDetailsSchema).min(1, "At least one owner is required"),
+});
+
+// Response data from step 4 presented in step 5
+export const bridgeComplianceSchema = z.object({
+  compliance: z
+    .object({
+      bridgeCustomerId: z.string().uuid(),
+      bridgeComplianceId: z.string().uuid(),
+    })
+    .optional(),
+});
+
+// Onboard step 5
+export const rainComplianceSchema = z.object({
+  compliance: z
+    .object({
+      rainCustomerId: z.string().uuid(),
+      rainToSAccepted: z.boolean(),
+      rainComplianceId: z.string().uuid(),
+    })
+    .optional(),
+});
+
+export type CompanyAccountSchema = z.infer<typeof companyAccountSchema>;
+export type CompanyDetailsSchema = z.infer<typeof companyDetailsSchema>;
+export type CompanyAccountUsersSchema = z.infer<typeof companyAccountUsersSchema>;
+export type CompanyUserDetailsSchema = z.infer<typeof companyUserDetailsSchema>;
+export type BridgeComplianceSchema = z.infer<typeof bridgeComplianceSchema>;
+export type RainComplianceSchema = z.infer<typeof rainComplianceSchema>;
+export type AccountAddressSchema = z.infer<typeof accountAddressSchema>;
+export type WalletAddressSchema = z.infer<typeof walletAddressSchema>;

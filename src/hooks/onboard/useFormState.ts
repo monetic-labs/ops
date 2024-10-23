@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState } from "react";
 import { useFormPersistence } from "@/hooks/generics/useFormPersistence";
 import { CardCompanyType, ISO3166Alpha2Country } from "@backpack-fux/pylon-sdk";
 
@@ -9,11 +9,11 @@ export const useFormState = (initialEmail: string) => {
         name: "",
         email: initialEmail,
         registeredAddress: {
-            postcode: "",
-            city: "",
-            state: "",
-            country: "US" as ISO3166Alpha2Country,
-            street1: "",
+          postcode: "",
+          city: "",
+          state: "",
+          country: ISO3166Alpha2Country.US,
+          street1: "",
         },
         website: "",
       },
@@ -21,7 +21,7 @@ export const useFormState = (initialEmail: string) => {
     companyDetails: {
       walletAddress: "",
       companyEIN: "",
-      companyType: "llc" as CardCompanyType,
+      companyType: CardCompanyType.LLC,
       companyDescription: "",
     },
     accountUsers: {
@@ -32,11 +32,12 @@ export const useFormState = (initialEmail: string) => {
           email: "",
           phoneNumber: "",
           role: "representative" as "owner" | "representative" | "beneficial-owner",
-        }],
+        },
+      ],
     },
     userDetails: [
       {
-        countryOfIssue: "US" as ISO3166Alpha2Country,
+        countryOfIssue: ISO3166Alpha2Country.US,
         birthday: "",
         ssn: "",
         registeredAddress: {
@@ -44,10 +45,11 @@ export const useFormState = (initialEmail: string) => {
           street1: "",
           city: "",
           state: "",
-          country: "US" as ISO3166Alpha2Country,
+          country: ISO3166Alpha2Country.US,
         },
-      }],
-    };
+      },
+    ],
+  };
 
   const {
     data: formData,
@@ -70,7 +72,7 @@ export const useFormState = (initialEmail: string) => {
     if (representativesCount > currentDetailsCount) {
       // Add default userDetails
       const additionalDetails = Array(representativesCount - currentDetailsCount).fill({
-        countryOfIssue: "US" as ISO3166Alpha2Country,
+        countryOfIssue: ISO3166Alpha2Country.US,
         birthday: "",
         ssn: "",
         registeredAddress: {
@@ -78,7 +80,7 @@ export const useFormState = (initialEmail: string) => {
           street1: "",
           city: "",
           state: "",
-          country: "US" as ISO3166Alpha2Country,
+          country: ISO3166Alpha2Country.US,
         },
       });
       updateFormData({

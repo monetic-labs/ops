@@ -4,21 +4,26 @@ import { Button } from "@nextui-org/button";
 import { Divider } from "@nextui-org/divider";
 import { Modal, ModalBody, ModalContent, ModalFooter, ModalHeader } from "@nextui-org/modal";
 
-import { BillPay } from "@/data";
 import { useState } from "react";
-import BillPayCloneModal from "./bill-clone";
+import BillPayCloneModal from "./clone";
 import IDSnippet from "../../generics/snippet-id";
 import ModalFooterWithSupport from "../../generics/footer-modal-support";
+import { DisbursementState, MerchantDisbursementEventGetOutput } from "@backpack-fux/pylon-sdk";
+import { Input } from "@nextui-org/input";
+import { Eye, EyeOff } from "lucide-react";
 
 interface BillPayDetailsModalProps {
   isOpen: boolean;
   onClose: () => void;
-  billPay: BillPay;
+  billPay: MerchantDisbursementEventGetOutput;
 }
 
 export default function BillPayDetailsModal({ isOpen, onClose, billPay }: BillPayDetailsModalProps) {
   const [isSaveModalOpen, setIsSaveModalOpen] = useState(false);
   const [isCloneModalOpen, setIsCloneModalOpen] = useState(false);
+  const [isVisible, setIsVisible] = useState(false);
+
+  const toggleVisibility = () => setIsVisible(!isVisible);
 
   const handleSupportClick = () => {
     // Handle support action
@@ -47,55 +52,95 @@ export default function BillPayDetailsModal({ isOpen, onClose, billPay }: BillPa
                 <div className="space-y-4 font-mono">
                   <div className="flex justify-between">
                     <span>Vendor Name:</span>
-                    <span>{billPay.vendor}</span>
+                    <span>{billPay.contact.accountOwnerName}</span>
                   </div>
                   <div className="flex justify-between">
                     <span>Payment Method:</span>
                     <span>{billPay.paymentMethod}</span>
                   </div>
                   <div className="flex justify-between">
+                    <span>Bank Name:</span>
+                    <span>{billPay.contact.bankName}</span>
+                  </div>
+                  <div className="flex justify-between">
                     <span>Routing Number:</span>
-                    <span>{billPay.receivingBank.routingNumber}</span>
+                    <span>{billPay.contact.routingNumber}</span>
                   </div>
                   <div className="flex justify-between">
                     <span>Account Number:</span>
-                    <span>**** {billPay.receivingBank.accountNumber.slice(-4)}</span>
+                    <div className="w-48">
+                      <Input
+                        value={
+                          isVisible
+                            ? billPay.contact.accountNumber
+                            : `${"•".repeat(
+                                billPay.contact.accountNumber.length - 4
+                              )}${billPay.contact.accountNumber.slice(-4)}`
+                        }
+                        isReadOnly
+                        endContent={
+                          <button
+                            className="focus:outline-none"
+                            type="button"
+                            onClick={toggleVisibility}
+                            aria-label="toggle account number visibility"
+                          >
+                            {isVisible ? (
+                              <Eye className="text-2xl text-default-400 pointer-events-none" />
+                            ) : (
+                              <EyeOff className="text-2xl text-default-400 pointer-events-none" />
+                            )}
+                          </button>
+                        }
+                        type="text"
+                        className="max-w-xs"
+                      />
+                    </div>
+                    {/* <span>**** {billPay.contact.accountNumber.slice(-4)}</span> */}
                   </div>
                   <Divider />
                   <div className="flex justify-between">
-                    <span>Memo:</span>
-                    <span>{billPay.memo}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span>Internal Note:</span>
-                    <span>{billPay.internalNote}</span>
+                    <span>Payment Reference:</span>
+                    <span>{billPay.paymentMessage}</span>
                   </div>
                   <Divider />
                   <div className="flex justify-between">
-                    <span>Amount:</span>
-                    <span>{billPay.amount}</span>
+                    <span>Amount Paid:</span>
+                    <span>
+                      ${Number(billPay.amountIn).toFixed(2)} {billPay.currencyIn}
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Amount Received:</span>
+                    <span>
+                      ${Number(billPay.amountOut).toFixed(2)} {billPay.currencyOut}
+                    </span>
                   </div>
                   <div className="flex justify-between">
                     <span>Fee:</span>
-                    <span>{billPay.fees}</span>
+                    <span>
+                      ${Number(billPay.fee).toFixed(2)} {billPay.currencyOut}
+                    </span>
                   </div>
                   <div className="flex justify-between text-lg font-bold">
                     <span>Total:</span>
-                    <span>{billPay.amount}</span>
+                    <span>
+                      ${(Number(billPay.amountOut) + Number(billPay.fee)).toFixed(2)} {billPay.currencyOut}
+                    </span>
                   </div>
                   <Divider />
                   <div className="flex justify-between">
                     <span>Status:</span>
                     <span
                       className={`font-bold ${
-                        billPay.status === "Completed"
+                        billPay.state === DisbursementState.COMPLETED
                           ? "text-ualert-100"
-                          : billPay.status === "Pending"
+                          : billPay.state === DisbursementState.PENDING
                           ? "text-ualert-300"
                           : "text-ualert-500"
                       }`}
                     >
-                      {billPay.status}
+                      {billPay.state}
                     </span>
                   </div>
                 </div>

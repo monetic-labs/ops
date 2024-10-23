@@ -5,7 +5,7 @@ import { Button } from "@nextui-org/button";
 import { FormButton } from "../generics/form-button";
 import GenerateApiKeysModal from "./actions/widgets/api-keys";
 import pylon from "@/libs/pylon-sdk";
-import { Network, Currency } from "@backpack-fux/pylon-sdk";
+import { Network, StableCurrency } from "@backpack-fux/pylon-sdk";
 import { RefundSuccessModal } from "./actions/order-success";
 
 const networks = ["POLYGON", "SOLANA", "BASE", "OPTIMISM", "ARBITRUM"];
@@ -14,15 +14,15 @@ const currencies = ["USDC", "USDT", "DAI"];
 export default function WidgetManagement() {
   const [settlementAddress, setSettlementAddress] = useState<string>("");
   const [selectedNetwork, setSelectedNetwork] = useState<Network | null>(null);
-  const [selectedCurrency, setSelectedCurrency] = useState<Currency | null>(null);
+  const [selectedCurrency, setSelectedCurrency] = useState<StableCurrency | null>(null);
   const [initialState, setInitialState] = useState<{
     settlementAddress: string;
     selectedNetwork: Network;
-    selectedCurrency: Currency;
+    selectedCurrency: StableCurrency;
   }>({
     settlementAddress: "",
-    selectedNetwork: "BASE",
-    selectedCurrency: "USDC",
+    selectedNetwork: Network.BASE,
+    selectedCurrency: StableCurrency.USDC,
   });
 
   const [isApiKeysModalOpen, setIsApiKeysModalOpen] = useState(false);
@@ -45,7 +45,7 @@ export default function WidgetManagement() {
       setInitialState({
         settlementAddress: accountDetails.walletAddress,
         selectedNetwork: accountDetails.network as Network,
-        selectedCurrency: accountDetails.currency as Currency,
+        selectedCurrency: accountDetails.currency as StableCurrency,
       });
     };
 
@@ -58,7 +58,7 @@ export default function WidgetManagement() {
     const isSaved = await pylon.updateSettlementAccount({
       walletAddress: settlementAddress,
       network: selectedNetwork as Network,
-      currency: selectedCurrency as Currency,
+      currency: selectedCurrency as StableCurrency,
     });
 
     setModalProps({
@@ -74,7 +74,7 @@ export default function WidgetManagement() {
     setInitialState({
       settlementAddress,
       selectedNetwork: selectedNetwork as Network,
-      selectedCurrency: selectedCurrency as Currency,
+      selectedCurrency: selectedCurrency as StableCurrency,
     });
   };
 
@@ -110,7 +110,7 @@ export default function WidgetManagement() {
         label="Settlement Currency"
         placeholder="Select a currency"
         selectedKeys={selectedCurrency ? [selectedCurrency] : []}
-        onSelectionChange={(keys) => setSelectedCurrency(Array.from(keys)[0] as Currency)}
+        onSelectionChange={(keys) => setSelectedCurrency(Array.from(keys)[0] as StableCurrency)}
       >
         {currencies.map((currency) => (
           <SelectItem key={currency} value={currency}>

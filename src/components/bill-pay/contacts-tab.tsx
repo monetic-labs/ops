@@ -1,30 +1,89 @@
-import React from "react";
+import React, { useCallback, useEffect, useState } from "react";
+import { Chip } from "@nextui-org/chip";
+import { User } from "@nextui-org/user";
 import { Table, TableBody, TableCell, TableColumn, TableHeader, TableRow } from "@nextui-org/table";
-
-const contacts = [
-  { name: "Jane Fisher", role: "Senior Developer", status: "Active" },
-  { name: "Tony Reichert", role: "CEO", status: "Active" },
-  { name: "Zoey Lang", role: "Technical Lead", status: "Paused" },
-  { name: "William Howard", role: "Community Manager", status: "Vacation" },
-];
+import { contactColumns } from "@/data";
+import { getOpepenAvatar } from "@/utils/helpers";
+import { useGetContacts } from "@/hooks/bill-pay/useGetContacts";
+import { MerchantDisbursementCreateOutput } from "@backpack-fux/pylon-sdk";
 
 export default function Contacts() {
-  // Sort contacts alphabetically by name
-  const sortedContacts = contacts.sort((a, b) => a.name.localeCompare(b.name));
+  const { contacts, pagination, isLoading, error, fetchContacts } = useGetContacts();
+  const [avatars, setAvatars] = useState<Record<string, string>>({});
+
+  useEffect(() => {
+    fetchContacts({});
+  }, []);
+
+  useEffect(() => {
+    const newAvatars: Record<string, string> = {};
+    contacts.forEach((contact) => {
+      newAvatars[contact.id] = getOpepenAvatar(contact.accountOwnerName, 32);
+    });
+    setAvatars(newAvatars);
+  }, [contacts]);
+
+  const renderCell = useCallback(
+    (contact: MerchantDisbursementCreateOutput, columnKey: keyof MerchantDisbursementCreateOutput) => {
+      const cellValue = contact[columnKey];
+
+      switch (columnKey) {
+        case "accountOwnerName":
+          return (
+            <User
+              avatarProps={{
+                radius: "lg",
+                src: avatars[contact.id],
+              }}
+              description={contact.nickname}
+              name={contact.accountOwnerName}
+            >
+              {contact.accountOwnerName}
+            </User>
+          );
+        case "disbursements":
+          return (
+            <div>
+              {contact.disbursements.map((disbursement) => (
+                <Chip key={disbursement.id} className="capitalize" size="sm" variant="flat">
+                  {disbursement.method}
+                </Chip>
+              ))}
+            </div>
+          );
+        case "isActive":
+          return (
+            <Chip className="capitalize" color={contact.isActive ? "success" : "danger"} size="sm" variant="flat">
+              {contact.isActive ? "Active" : "Inactive"}
+            </Chip>
+          );
+        default:
+          return typeof cellValue === "object" ? JSON.stringify(cellValue) : cellValue;
+      }
+    },
+    [avatars]
+  );
 
   return (
-    <Table selectionMode="single" aria-label="Contacts Table">
+    <Table>
       <TableHeader>
-        <TableColumn>Name</TableColumn>
-        <TableColumn>Role</TableColumn>
-        <TableColumn>Status</TableColumn>
+        {contactColumns.map((column) => (
+          <TableColumn key={column.uid}>{column.name}</TableColumn>
+        ))}
       </TableHeader>
-      <TableBody>
-        {sortedContacts.map((contact) => (
-          <TableRow key={contact.name}>
-            <TableCell>{contact.name}</TableCell>
-            <TableCell>{contact.role}</TableCell>
-            <TableCell>{contact.status}</TableCell>
+      <TableBody
+        isLoading={isLoading}
+        emptyContent={"No contacts found"}
+        onError={() => <div>Error fetching contacts</div>}
+      >
+        {contacts.map((contact) => (
+          <TableRow
+            key={contact.id}
+            className="cursor-pointer transition-all hover:bg-gray-100 dark:hover:bg-charyo-500"
+          >
+            {contactColumns.map((column) => (
+              <TableCell key={column.uid}>{renderCell(contact, column.uid)}</TableCell>
+            ))}
           </TableRow>
         ))}
       </TableBody>

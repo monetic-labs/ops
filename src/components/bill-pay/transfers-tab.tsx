@@ -2,65 +2,71 @@ import React, { useCallback, useEffect, useState } from "react";
 import { Chip } from "@nextui-org/chip";
 import { User } from "@nextui-org/user";
 import { Table, TableBody, TableCell, TableColumn, TableHeader, TableRow } from "@nextui-org/table";
-import BillPayDetailsModal from "@/components/bill-pay/actions/bill-details";
-import { BillPay, billPayColumns, billPayData, statusColorMap } from "@/data";
-import { getOpepenAvatar } from "@/utils/helpers";
+import BillPayDetailsModal from "@/components/bill-pay/bill-actions/details";
+import { BillPay, billPayColumns, statusColorMap } from "@/data";
+import { getOpepenAvatar, getTimeAgo } from "@/utils/helpers";
+import { useGetTransfers } from "@/hooks/bill-pay/useGetTransfers";
+import { MerchantDisbursementEventGetOutput } from "@backpack-fux/pylon-sdk";
 
 export default function Transfers() {
+  const { transfers, pagination, isLoading, error, fetchTransfers } = useGetTransfers({});
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
-  const [selectedBillPay, setSelectedBillPay] = useState<BillPay | null>(null);
+  const [selectedTransfer, setSelectedTransfer] = useState<MerchantDisbursementEventGetOutput | null>(null);
   const [avatars, setAvatars] = useState<Record<string, string>>({});
 
   useEffect(() => {
-    const newAvatars: Record<string, string> = {};
-    billPayData.forEach((billPay) => {
-      newAvatars[billPay.vendor] = getOpepenAvatar(billPay.vendor, 32);
-    });
-    setAvatars(newAvatars);
+    fetchTransfers();
   }, []);
 
-  const handleRowSelect = useCallback((billPay: BillPay) => {
-    setSelectedBillPay(billPay);
+  useEffect(() => {
+    const newAvatars: Record<string, string> = {};
+    transfers.forEach((transfer) => {
+      newAvatars[transfer.id] = getOpepenAvatar(transfer.contact.accountOwnerName, 32);
+    });
+    setAvatars(newAvatars);
+  }, [transfers]);
+
+  const handleRowSelect = useCallback((transfer: MerchantDisbursementEventGetOutput) => {
+    setSelectedTransfer(transfer);
     setIsDetailsModalOpen(true);
   }, []);
 
   const renderCell = useCallback(
-    (billPay: BillPay, columnKey: React.Key) => {
-      const cellValue = billPay[columnKey as keyof BillPay];
+    (transfer: MerchantDisbursementEventGetOutput, columnKey: keyof BillPay) => {
+      const cellValue = transfer[columnKey as keyof MerchantDisbursementEventGetOutput];
 
       switch (columnKey) {
-        case "vendor":
+        case "accountOwnerName":
           return (
             <User
               avatarProps={{
                 radius: "lg",
-                src: avatars[billPay.vendor],
+                src: avatars[transfer.id],
               }}
-              description={billPay.internalNote}
-              name={billPay.vendor}
+              description={transfer.contact.nickname}
+              name={transfer.contact.accountOwnerName}
             >
-              {billPay.vendor}
+              {transfer.contact.accountOwnerName}
             </User>
           );
-        case "status":
+        case "amountOut" && "currencyOut":
+          return `$${transfer.amountOut} ${transfer.currencyOut}`;
+        case "state":
           return (
-            <Chip
-              className="capitalize"
-              color={statusColorMap[billPay.status as keyof typeof statusColorMap]}
-              size="sm"
-              variant="flat"
-            >
-              {billPay.status}
+            <Chip className="capitalize" color={statusColorMap[transfer.state]} size="sm" variant="flat">
+              {transfer.state}
             </Chip>
           );
-        case "receivingBank":
+        case "bankName":
           return (
             <div>
-              <div>Name: {billPay.receivingBank.name}</div>
-              <div>Routing: {billPay.receivingBank.routingNumber}</div>
-              <div>Account: {billPay.receivingBank.accountNumber}</div>
+              <div>Name: {transfer.contact.bankName}</div>
+              <div>Routing: {transfer.contact.routingNumber}</div>
+              <div>Account: {transfer.contact.accountNumber}</div>
             </div>
           );
+        case "createdAt":
+          return getTimeAgo(transfer.createdAt);
         default:
           return typeof cellValue === "object" ? JSON.stringify(cellValue) : cellValue;
       }
@@ -76,23 +82,27 @@ export default function Transfers() {
             <TableColumn key={column.uid}>{column.name}</TableColumn>
           ))}
         </TableHeader>
-        <TableBody>
-          {billPayData.map((billPay) => (
+        <TableBody
+          isLoading={isLoading}
+          emptyContent={"No transfers found"}
+          onError={() => <div>Error fetching transfers</div>}
+        >
+          {transfers.map((transfer) => (
             <TableRow
-              key={billPay.id}
-              onClick={() => handleRowSelect(billPay)}
+              key={transfer.id}
+              onClick={() => handleRowSelect(transfer)}
               className="cursor-pointer transition-all hover:bg-gray-100 dark:hover:bg-charyo-500"
             >
               {billPayColumns.map((column) => (
-                <TableCell key={column.uid}>{renderCell(billPay, column.uid)}</TableCell>
+                <TableCell key={column.uid}>{renderCell(transfer, column.uid)}</TableCell>
               ))}
             </TableRow>
           ))}
         </TableBody>
       </Table>
-      {selectedBillPay && (
+      {selectedTransfer && (
         <BillPayDetailsModal
-          billPay={selectedBillPay}
+          billPay={selectedTransfer}
           isOpen={isDetailsModalOpen}
           onClose={() => setIsDetailsModalOpen(false)}
         />

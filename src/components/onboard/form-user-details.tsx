@@ -14,13 +14,18 @@ import { AutocompleteInput } from "../generics/autocomplete-input";
 import { ISO3166Alpha2Country } from "@backpack-fux/pylon-sdk";
 import { PostcodeInput } from "../generics/form-input-postcode";
 import { TabData } from "@/hooks/generics/useDynamicTabs";
-import { handleBirthdayChange, handlePostcodeLookup, handleSSNChange, PostcodeLookupResult } from "../generics/form-input-handlers";
+import {
+  handleBirthdayChange,
+  handlePostcodeLookup,
+  handleSSNChange,
+  PostcodeLookupResult,
+} from "../generics/form-input-handlers";
 
 const countries: { label: string; value: ISO3166Alpha2Country }[] = [
-  { label: "United States", value: "US" },
-  { label: "United Kingdom", value: "GB" },
-  { label: "Germany", value: "DE" },
-  { label: "France", value: "FR" },
+  { label: "United States", value: ISO3166Alpha2Country.US },
+  { label: "United Kingdom", value: ISO3166Alpha2Country.GB },
+  { label: "Germany", value: ISO3166Alpha2Country.DE },
+  { label: "France", value: ISO3166Alpha2Country.FR },
 ];
 
 export const FormUserDetails: React.FC<{
@@ -34,8 +39,8 @@ export const FormUserDetails: React.FC<{
   setActiveTab: (key: string) => void;
 }> = ({ onSubmit, initialData, updateFormData, accountUsers, tabs }) => {
   const [showAddressInputs, setShowAddressInputs] = useState<boolean[]>(new Array(accountUsers.length).fill(false));
-  const [birthdayInputs, setBirthdayInputs] = useState<string[]>(new Array(accountUsers.length).fill(''));
-  const [ssnInputs, setSSNInputs] = useState<string[]>(new Array(accountUsers.length).fill(''));
+  const [birthdayInputs, setBirthdayInputs] = useState<string[]>(new Array(accountUsers.length).fill(""));
+  const [ssnInputs, setSSNInputs] = useState<string[]>(new Array(accountUsers.length).fill(""));
 
   const {
     control,
@@ -100,16 +105,18 @@ export const FormUserDetails: React.FC<{
         pattern={birthdayRegex.source}
         placeholder="YYYY-MM-DD"
         value={birthdayInputs[index]}
-        onChange={(e) => handleBirthdayChange(
-          e,
-          setValue,
-          (value) => {
-            const newBirthdayInputs = [...birthdayInputs];
-            newBirthdayInputs[index] = value as string;
-            setBirthdayInputs(newBirthdayInputs);
-          },
-          `userDetails.${index}.birthday` as const
-        )}
+        onChange={(e) =>
+          handleBirthdayChange(
+            e,
+            setValue,
+            (value) => {
+              const newBirthdayInputs = [...birthdayInputs];
+              newBirthdayInputs[index] = value as string;
+              setBirthdayInputs(newBirthdayInputs);
+            },
+            `userDetails.${index}.birthday` as const
+          )
+        }
       />
       <FormInput
         control={control}
@@ -120,16 +127,18 @@ export const FormUserDetails: React.FC<{
         pattern={ssnRegex.source}
         placeholder="123-45-6789"
         value={ssnInputs[index]}
-        onChange={(e) => handleSSNChange(
-          e,
-          setValue,
-          (value) => {
-            const newSSNInputs = [...ssnInputs];
-            newSSNInputs[index] = value as string;
-            setSSNInputs(newSSNInputs);
-          },
-          `userDetails.${index}.ssn` as const
-        )}
+        onChange={(e) =>
+          handleSSNChange(
+            e,
+            setValue,
+            (value) => {
+              const newSSNInputs = [...ssnInputs];
+              newSSNInputs[index] = value as string;
+              setSSNInputs(newSSNInputs);
+            },
+            `userDetails.${index}.ssn` as const
+          )
+        }
       />
       <PostcodeInput
         about="Address where the owner resides."

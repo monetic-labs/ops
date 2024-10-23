@@ -3,7 +3,7 @@ import { Input } from "@nextui-org/input";
 import { Button } from "@nextui-org/button";
 import { Snippet } from "@nextui-org/snippet";
 
-import { GetOrderLinksOutput } from "@backpack-fux/pylon-sdk";
+import { GetOrderLinksOutput, ISO4217Currency } from "@backpack-fux/pylon-sdk";
 import { Card, CardHeader, CardBody } from "@nextui-org/card";
 import Countdown from "@/components/generics/countdown";
 import pylon from "@/libs/pylon-sdk";
@@ -97,7 +97,7 @@ export default function CreateOrders() {
         },
         order: {
           subtotal: parseFloat(order.amount),
-          currency: "USD",
+          currency: ISO4217Currency.USD,
         },
       });
 
@@ -113,7 +113,7 @@ export default function CreateOrders() {
         },
         order: {
           subtotal: parseFloat(order.amount),
-          currency: "USD",
+          currency: ISO4217Currency.USD,
         },
         expiresAt: response.expiresAt,
       };

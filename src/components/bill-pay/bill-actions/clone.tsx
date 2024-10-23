@@ -4,19 +4,17 @@ import { Modal, ModalBody, ModalContent, ModalFooter, ModalHeader } from "@nextu
 import { Select, SelectItem } from "@nextui-org/select";
 import { useState } from "react";
 
-import { BillPay } from "@/data";
+import { DisbursementMethod, MerchantDisbursementEventGetOutput, StableCurrency } from "@backpack-fux/pylon-sdk";
 
 interface BillPayCloneModalProps {
   isOpen: boolean;
   onClose: () => void;
-  billPay: BillPay;
-  onSave: (clonedBillPay: BillPay) => void;
+  billPay: MerchantDisbursementEventGetOutput;
+  onSave: (clonedBillPay: MerchantDisbursementEventGetOutput) => void;
 }
 
-const paymentMethods = ["ACH", "Wire", "SWIFT", "SEPA", "Stable"];
-
 export default function BillPayCloneModal({ isOpen, onClose, billPay, onSave }: BillPayCloneModalProps) {
-  const [clonedBillPay, setClonedBillPay] = useState<BillPay>({
+  const [clonedBillPay, setClonedBillPay] = useState<MerchantDisbursementEventGetOutput>({
     ...billPay,
     id: `clone-${Date.now()}`, // Generate a new id for the cloned bill pay
   });
@@ -34,21 +32,27 @@ export default function BillPayCloneModal({ isOpen, onClose, billPay, onSave }: 
           <Input
             label="Vendor"
             isDisabled
-            value={clonedBillPay.vendor}
-            onChange={(e) => setClonedBillPay({ ...clonedBillPay, vendor: e.target.value })}
+            value={clonedBillPay.contact.accountOwnerName}
+            onChange={(e) =>
+              setClonedBillPay({
+                ...clonedBillPay,
+                contact: { ...clonedBillPay.contact, accountOwnerName: e.target.value },
+              })
+            }
           />
           <Select
             label="Payment Method"
             isDisabled
-            selectedKeys={[clonedBillPay.paymentMethod]}
+            selectedKeys={clonedBillPay.paymentMethod}
+            selectionMode="single"
             onChange={(e) =>
               setClonedBillPay({
                 ...clonedBillPay,
-                paymentMethod: e.target.value as BillPay["paymentMethod"],
+                paymentMethod: e.target.value as DisbursementMethod,
               })
             }
           >
-            {paymentMethods.map((method) => (
+            {Object.values(DisbursementMethod).map((method) => (
               <SelectItem key={method} value={method}>
                 {method}
               </SelectItem>
@@ -57,30 +61,35 @@ export default function BillPayCloneModal({ isOpen, onClose, billPay, onSave }: 
           <Input
             label="Amount"
             type="number"
-            value={clonedBillPay.amount.toString()}
+            value={clonedBillPay.amountIn.toString()}
             onChange={(e) =>
               setClonedBillPay({
                 ...clonedBillPay,
-                amount: e.target.value,
+                amountIn: e.target.value,
               })
             }
           />
           <Input
             label="Currency"
             isDisabled
-            value={clonedBillPay.currency}
-            onChange={(e) => setClonedBillPay({ ...clonedBillPay, currency: e.target.value })}
+            value={clonedBillPay.currencyIn}
+            onChange={(e) =>
+              setClonedBillPay({
+                ...clonedBillPay,
+                currencyIn: e.target.value as StableCurrency,
+              })
+            }
           />
           <Input
             label="Receiving Bank Name"
             isDisabled
-            value={clonedBillPay.receivingBank.name}
+            value={clonedBillPay.contact.bankName}
             onChange={(e) =>
               setClonedBillPay({
                 ...clonedBillPay,
-                receivingBank: {
-                  ...clonedBillPay.receivingBank,
-                  name: e.target.value,
+                contact: {
+                  ...clonedBillPay.contact,
+                  bankName: e.target.value,
                 },
               })
             }
@@ -88,12 +97,12 @@ export default function BillPayCloneModal({ isOpen, onClose, billPay, onSave }: 
           <Input
             label="Routing Number"
             isDisabled
-            value={clonedBillPay.receivingBank.routingNumber}
+            value={clonedBillPay.contact.routingNumber}
             onChange={(e) =>
               setClonedBillPay({
                 ...clonedBillPay,
-                receivingBank: {
-                  ...clonedBillPay.receivingBank,
+                contact: {
+                  ...clonedBillPay.contact,
                   routingNumber: e.target.value,
                 },
               })
@@ -102,12 +111,12 @@ export default function BillPayCloneModal({ isOpen, onClose, billPay, onSave }: 
           <Input
             label="Account Number"
             isDisabled
-            value={clonedBillPay.receivingBank.accountNumber}
+            value={clonedBillPay.contact.accountNumber}
             onChange={(e) =>
               setClonedBillPay({
                 ...clonedBillPay,
-                receivingBank: {
-                  ...clonedBillPay.receivingBank,
+                contact: {
+                  ...clonedBillPay.contact,
                   accountNumber: e.target.value,
                 },
               })
@@ -115,14 +124,11 @@ export default function BillPayCloneModal({ isOpen, onClose, billPay, onSave }: 
           />
           <Input
             label="Memo"
-            value={clonedBillPay.receivingBank.memo}
+            value={clonedBillPay.paymentMessage}
             onChange={(e) =>
               setClonedBillPay({
                 ...clonedBillPay,
-                receivingBank: {
-                  ...clonedBillPay.receivingBank,
-                  memo: e.target.value,
-                },
+                paymentMessage: e.target.value,
               })
             }
           />

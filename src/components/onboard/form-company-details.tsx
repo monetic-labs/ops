@@ -13,14 +13,14 @@ import { handleCompanyEINChange } from "../generics/form-input-handlers";
 import { handleWalletAddressChange } from "../generics/form-input-handlers";
 
 const companyTypes: { label: string; value: CardCompanyType }[] = [
-  { label: "Sole Proprietorship", value: "sole_proprietorship" },
-  { label: "Limited Liability Company (LLC)", value: "llc" },
-  { label: "C Corporation", value: "c_corp" },
-  { label: "S Corporation", value: "s_corp" },
-  { label: "Partnership", value: "partnership" },
-  { label: "Limited Partnership (LP)", value: "lp" },
-  { label: "Limited Liability Partnership (LLP)", value: "llp" },
-  { label: "Nonprofit Corporation", value: "nonprofit" },
+  { label: "Sole Proprietorship", value: CardCompanyType.SOLE_PROPRIETORSHIP },
+  { label: "Limited Liability Company (LLC)", value: CardCompanyType.LLC },
+  { label: "C Corporation", value: CardCompanyType.C_CORP },
+  { label: "S Corporation", value: CardCompanyType.S_CORP },
+  { label: "Partnership", value: CardCompanyType.PARTNERSHIP },
+  { label: "Limited Partnership (LP)", value: CardCompanyType.LP },
+  { label: "Limited Liability Partnership (LLP)", value: CardCompanyType.LLP },
+  { label: "Nonprofit Corporation", value: CardCompanyType.NONPROFIT },
 ];
 
 export const FormCompanyDetails: React.FC<{

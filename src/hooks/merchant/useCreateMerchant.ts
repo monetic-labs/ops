@@ -2,25 +2,11 @@ import { useState } from "react";
 import { MerchantCreateInput, MerchantCreateOutput, PersonRole } from "@backpack-fux/pylon-sdk";
 
 import pylon from "@/libs/pylon-sdk";
-import { BridgeMerchantCreateDto, BridgeUserRole } from "@/types/dtos/bridgeDTO";
+import { BridgeMerchantCreateDto } from "@/types/dtos/bridgeDTO";
 
-function mapBridgeUserRoleToPersonRole(bridgeUserRole: BridgeUserRole | undefined): PersonRole | undefined {
+function mapBridgeUserRoleToPersonRole(bridgeUserRole: PersonRole | undefined): PersonRole | undefined {
   if (bridgeUserRole === undefined) return undefined;
-
-  switch (bridgeUserRole) {
-    case BridgeUserRole.SUPER_ADMIN:
-      return "SUPER_ADMIN";
-    case BridgeUserRole.ADMIN:
-      return "ADMIN";
-    case BridgeUserRole.BOOKKEEPER:
-      return "BOOKKEEPER";
-    case BridgeUserRole.DEVELOPER:
-      return "DEVELOPER";
-    case BridgeUserRole.MEMBER:
-      return "MEMBER";
-    default:
-      return "MEMBER";
-  }
+  return bridgeUserRole;
 }
 
 export function useCreateBridgeMerchant() {
@@ -34,18 +20,18 @@ export function useCreateBridgeMerchant() {
     setIsLoading(true);
     setError(null);
     setData(null);
-    
+
     try {
       // Map BridgeMerchantCreateDto to MerchantCreateInput
       const createBridgeMerchant: MerchantCreateInput = {
         ...data,
-        representatives: data.representatives.map(rep => {
+        representatives: data.representatives.map((rep) => {
           const { appRole, bridgeUserRole, ...rest } = rep;
           return {
             ...rest,
-            role: mapBridgeUserRoleToPersonRole(bridgeUserRole)
+            role: mapBridgeUserRoleToPersonRole(bridgeUserRole),
           };
-        })
+        }),
       };
 
       console.log("useCreateMerchant:", createBridgeMerchant);
