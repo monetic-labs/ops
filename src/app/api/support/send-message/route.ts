@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { sendTelegramMessage } from '@/libs/telegram';
 
-const SUPPORT_CHAT_ID = process.env.SUPPORT_CHAT_ID;
+const SUPPORT_CHAT_ID = process.env.NEXT_PUBLIC_TELEGRAM_SUPPORT_CHAT_ID;
 
 export async function POST(request: Request) {
   const { text } = await request.json();
