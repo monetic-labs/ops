@@ -1,5 +1,5 @@
 import { FieldValues, Path, PathValue, UseFormSetValue } from "react-hook-form";
-import { birthdayRegex, CompanyAccountSchema, CompanyDetailsSchema, companyEINRegex, phoneRegex, ssnRegex, walletAddressRegex } from "@/types/validations/onboard";
+import { birthdayRegex, companyEINRegex, phoneRegex, ssnRegex, walletAddressRegex, websiteRegex } from "@/types/validations/onboard";
 
 export interface PostcodeLookupResult {
     postcode: string;
@@ -125,20 +125,27 @@ export const handleSSNChange = <T extends FieldValues>(
 };
 
 export const handleWebsiteChange = <T extends FieldValues>(
-    e: React.ChangeEvent<HTMLInputElement>,
-    setValue: UseFormSetValue<T>,
-    setWebsiteInput: React.Dispatch<React.SetStateAction<string>>,
-    fieldName: Path<T>
-  ) => {
-    let value = e.target.value;
-    setWebsiteInput(value);
-  
-    // Add https:// if not present when setting the form value
-    if (value && !value.startsWith("http://") && !value.startsWith("https://")) {
-      value = `https://${value}`;
-    }
-  
+  e: React.ChangeEvent<HTMLInputElement>,
+  setValue: UseFormSetValue<T>,
+  setWebsiteInput: React.Dispatch<React.SetStateAction<string>>,
+  fieldName: Path<T>
+) => {
+  let value = e.target.value.trim();
+
+  // Check if the value already starts with http:// or https://
+  if (!value.startsWith('http://') && !value.startsWith('https://')) {
+    value = `https://${value}`;
+  }
+
+  setWebsiteInput(value);
+  console.log('Input value:', value);
+  console.log('Full URL for validation:', value);
+  console.log('Regex test result:', websiteRegex.test(value));
+
+  //setValue(fieldName, fullUrl as PathValue<T, Path<T>>, { shouldValidate: true });
+  if (websiteRegex.test(value) || value === '') {
     setValue(fieldName, value as PathValue<T, Path<T>>, { shouldValidate: true });
+  }
 };
 
 export const handleWalletAddressChange = <T extends FieldValues>(

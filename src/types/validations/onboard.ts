@@ -10,7 +10,7 @@ export const birthdayRegex = /^\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$/;
 export const phoneRegex = /^[0-9]{9,15}$/;
 export const walletAddressRegex = /^0x[a-fA-F0-9]{40}$/;
 export const postcodeRegex = /^[0-9]{5}$/;
-export const websiteRegex = /^(https?:\/\/)?(www\.)?[a-zA-Z0-9-]+\.[a-zA-Z]{2,}(\.[a-zA-Z]{2,})?(\/\S*)?$/;
+export const websiteRegex = /^https:\/\/(www\.)?[a-zA-Z0-9-]+\.[a-zA-Z]{2,}(\.[a-zA-Z]{2,})?(\/\S*)?$/;
 export const companyEINRegex = /^[0-9]{2}-[0-9]{7}$/;
 export const ssnRegex = /^[0-9]{3}-[0-9]{2}-[0-9]{4}$/;
 
