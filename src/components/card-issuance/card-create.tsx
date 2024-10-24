@@ -259,6 +259,7 @@ export default function CreateCardModal({ isOpen, onClose }: CreateCardModalProp
               label="Phone Country Code"
               name="phoneCountryCode"
               placeholder="Enter phone country code (e.g., 1)"
+              maxLength={3}
             />
             <AutocompleteInput
               control={control}

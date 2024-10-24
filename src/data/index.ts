@@ -125,7 +125,7 @@ export const CardShippingDetailsSchema = z
       message: `Please select a country`,
     }),
     phoneNumber: z.string().min(1),
-    phoneCountryCode: z.string().min(1),
+    phoneCountryCode: z.string().min(1).max(3),
     shippingMethod: z.nativeEnum(CardShippingMethod).optional(),
   })
   .superRefine((data, ctx) => {
