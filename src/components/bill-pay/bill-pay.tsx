@@ -9,7 +9,6 @@ import { modal } from "@/context/reown";
 import { useAppKitAccount, useDisconnect } from "@reown/appkit/react";
 import { Spinner } from "@nextui-org/spinner";
 import { Modal } from "@nextui-org/modal";
-import { QRCodeSVG } from "qrcode.react";
 import { custom, encodeFunctionData, erc20Abi } from "viem";
 import { baseSepolia } from "viem/chains";
 import "viem/window";
@@ -18,8 +17,6 @@ export default function BillPayTabs() {
   const [selectedService, setSelectedService] = useState<string>(billPayConfig[0].id);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isLoadingModalOpen, setIsLoadingModalOpen] = useState(false);
-  const [qrCodeUri, setQrCodeUri] = useState<string | null>(null);
-  const [isQrModalOpen, setIsQrModalOpen] = useState(false);
   const { isConnected } = useAppKitAccount();
   const { disconnect } = useDisconnect();
 
@@ -150,11 +147,6 @@ export default function BillPayTabs() {
             <span className="text-white">Connecting to your wallet...</span>
           </div>
         </div>
-      )}
-      {qrCodeUri && (
-        <Modal isOpen={isQrModalOpen} onClose={() => setIsQrModalOpen(false)}>
-          <QRCodeSVG value={qrCodeUri} />
-        </Modal>
       )}
     </div>
   );
