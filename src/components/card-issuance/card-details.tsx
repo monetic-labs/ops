@@ -1,5 +1,3 @@
-// REFAC THIS LATER
-
 import { Button } from "@nextui-org/button";
 import { Chip } from "@nextui-org/chip";
 import { Input } from "@nextui-org/input";
@@ -7,20 +5,42 @@ import { Modal, ModalBody, ModalContent, ModalHeader } from "@nextui-org/modal";
 import { Progress } from "@nextui-org/progress";
 import { Snippet } from "@nextui-org/snippet";
 import { useEffect, useState } from "react";
-import ModalFooterWithSupport from "../generics/footer-modal-support";
-import { MerchantCardGetOutput } from "@backpack-fux/pylon-sdk";
+import {
+  CardLimitFrequency,
+  CardStatus,
+  Merchant,
+  MerchantCardGetOutput,
+  UpdateMerchantCardDataInput,
+} from "@backpack-fux/pylon-sdk";
 import pylon from "@/libs/pylon-sdk";
+import { formatAmountUSD } from "@/utils/helpers";
+import { z } from "zod";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { limitCyclesObject, limitStatesObject, UpateCardSchema } from "@/data";
+import { FormInput } from "../generics/form-input";
+import { AutocompleteInput } from "../generics/autocomplete-input";
+
+type HybridCard = MerchantCardGetOutput["cards"][number] & {
+  avatar?: string;
+  type: string;
+  limit: number;
+  limitFrequency: CardLimitFrequency;
+  holder: string;
+};
 
 interface CardDetailsModalProps {
   isOpen: boolean;
   onClose: () => void;
-  card: MerchantCardGetOutput["cards"][number] & { avatar?: string };
+  card: HybridCard;
 }
 
-export default function CardDetailsModal({ isOpen, onClose, card }: CardDetailsModalProps) {
+export default function CardDetailsModal({ isOpen, onClose, card: propsCard }: CardDetailsModalProps) {
+  const [card, setCard] = useState(propsCard);
   const [isEditing, setIsEditing] = useState(false);
   const [cvv, setCvv] = useState<string | null>();
   const [pan, setPan] = useState<string | null>();
+  const [updateError, setUpdateError] = useState<string | null>();
 
   useEffect(() => {
     if (card && !card.cardShippingDetails) {
@@ -36,127 +56,200 @@ export default function CardDetailsModal({ isOpen, onClose, card }: CardDetailsM
     }
   }, [card, setCvv, setPan]);
 
-  const handleEdit = () => {
-    setIsEditing(true);
+  const handleEdit = async (data: z.infer<typeof UpateCardSchema>) => {
+    setUpdateError(null);
+    const finalPayload = {} as UpdateMerchantCardDataInput;
+
+    if (data.status !== card.status) {
+      finalPayload.status = data.status as CardStatus;
+    }
+    if (data.limitAmount !== card.limit || data.limitFrequency !== card.limitFrequency) {
+      finalPayload.limit = {
+        amount: data.limitAmount,
+
+        frequency: data.limitFrequency as CardLimitFrequency,
+      };
+    }
+    if (Object.keys(finalPayload).length < 1) {
+      return;
+    }
+
+    try {
+      setLoading(true);
+      await new Merchant(process.env.NEXT_PUBLIC_PYLON_BASE_URL!).updateRainCard({
+        cardId: card.id,
+        status: finalPayload.status,
+        limit: finalPayload.limit,
+      });
+
+      setCard(
+        (c) =>
+          ({
+            ...c,
+            limit: data.limitAmount || card.limit,
+            limitFrequency: data.limitFrequency || card.limitFrequency,
+            status: (data.status as CardStatus) || card.status,
+          }) as any
+      );
+      setLoading(false);
+    } catch (error: any) {
+      setUpdateError(error.message);
+      setLoading(false);
+    }
   };
 
-  const handleSave = () => {
-    setIsEditing(false);
-    // Implement save logic here
-  };
-
-  const handleLock = () => {
-    // Implement lock logic
-  };
-
-  const handleReplace = () => {
-    // Implement replace logic
-  };
-
-  const handleRemove = () => {
-    // Implement remove logic
-  };
-
-  const handleCancel = () => {
-    // Implement cancel logic
-  };
-
-  const handleSupportClick = () => {
-    console.log("Support clicked");
-  };
-
-  if (!card) return null;
-
-  const footerActions = [
-    {
-      label: "Lock",
-      onClick: handleLock,
-      className: "bg-transparent text-notpurple-500 hover:bg-ualert-500",
+  const [loading, setLoading] = useState(false);
+  const {
+    control: control,
+    formState: { errors },
+    handleSubmit: handleSubmit,
+  } = useForm<z.infer<typeof UpateCardSchema>>({
+    resolver: zodResolver(UpateCardSchema),
+    defaultValues: {
+      status: card.status,
+      limitAmount: card.limit.toString() as any,
+      limitFrequency: card.limitFrequency,
     },
-    {
-      label: "Replace",
-      onClick: handleReplace,
-      className: "bg-transparent text-notpurple-500 hover:bg-ualert-500",
-    },
-    {
-      label: "Remove",
-      onClick: handleRemove,
-      className: "bg-transparent text-notpurple-500 hover:bg-ualert-500",
-    },
-    {
-      label: isEditing ? "Save" : "Edit",
-      onClick: isEditing ? handleSave : handleEdit,
-      className: "text-notpurple-500 hover:bg-ualert-500/60",
-    },
-  ];
+  });
 
   return (
     <Modal isOpen={isOpen} size="2xl" onClose={onClose}>
-      <ModalContent>
-        <ModalHeader className="flex flex-col gap-1">Card Details</ModalHeader>
-        <ModalBody>
-          <Input isReadOnly={!isEditing} label="Card Name" value={card.displayName} />
-          <div className="mt-4">
-            <div className="flex items-center gap-2 mb-2">
-              <Chip color={card.status === "ACTIVE" ? "success" : "danger"} variant="flat">
-                {card.status}
-              </Chip>
-              <Chip color="primary" variant="flat">
-                {card.cardShippingDetails ? "PHYSICAL" : "VIRTUAL"}
-              </Chip>
-            </div>
-            {/* <p className="text-small text-default-500 mb-2">
-              Limit: ${card.limit.amount} per {card.limit.cycle}
-            </p> */}
-            {/* <Progress className="mt-2" maxValue={10000} value={parseInt(card.limit.amount)} /> */}
+      {isEditing ? (
+        <ModalContent>
+          <ModalHeader className="flex items-center">
+            <p>Edit card - {card.displayName}</p>
+          </ModalHeader>
+          <ModalBody>
+            <FormInput
+              about="Limit Amount"
+              control={control}
+              errorMessage={errors.limitAmount?.message}
+              label="Limit amount"
+              name="limitAmount"
+              placeholder="Limit amount"
+              type="number"
+              min={1}
+            />
+
+            <AutocompleteInput
+              control={control}
+              about="Select card limit cycle"
+              errorMessage={errors.limitFrequency?.message}
+              label="Limit Cycle"
+              name="limitFrequency"
+              placeholder="Select card limit cycle"
+              items={limitCyclesObject}
+            />
+
+            <AutocompleteInput
+              control={control}
+              about="Select card status"
+              errorMessage={errors.status?.message}
+              label="Status"
+              name="status"
+              placeholder="Select card status"
+              items={limitStatesObject}
+            />
+          </ModalBody>
+          {updateError ? <p className="text-danger-300 px-6">{updateError}</p> : null}
+          <div className="flex items-center px-6 mb-6 mt-4 justify-end">
+            <Button
+              className={`text-notpurple-500 w-full sm:w-auto mr-4 `}
+              onClick={() => {
+                setIsEditing(false);
+              }}
+            >
+              Cancel
+            </Button>
+            <Button
+              className={`bg-ualert-500 text-notpurple-500 w-full sm:w-auto `}
+              onClick={handleSubmit(handleEdit)}
+              disabled={loading}
+              isLoading={loading}
+            >
+              Save
+            </Button>
           </div>
-          <div className="flex flex-col md:flex-row gap-4">
-            {pan ? (
-              <div className="flex-grow space-y-2">
-                <p className="text-small text-default-500">Card Number</p>
-                <Snippet codeString={pan} color="default" symbol="" variant="flat">
-                  {card.lastFour}
+        </ModalContent>
+      ) : (
+        <ModalContent>
+          <ModalHeader className="flex items-center">
+            <p>Card Details</p>
+          </ModalHeader>
+          <ModalBody>
+            <Input isReadOnly={!isEditing} label="Card Name" value={card.displayName} />
+            <div className="mt-4">
+              <div className="flex items-center gap-2 mb-2">
+                <Chip color={card.status === "ACTIVE" ? "success" : "danger"} variant="flat">
+                  {card.status}
+                </Chip>
+                <Chip color="primary" variant="flat">
+                  {card.cardShippingDetails ? "PHYSICAL" : "VIRTUAL"}
+                </Chip>
+              </div>
+              <p className="text-small text-default-500 mb-2">
+                Limit: ${formatAmountUSD(card.limit)} per {card.limitFrequency}
+              </p>
+              {/* <Progress className="mt-2" maxValue={10000} value={parseInt(card.limit.amount)} /> */}
+            </div>
+            <div className="flex flex-col md:flex-row gap-4">
+              {pan ? (
+                <div className="flex-grow space-y-2">
+                  <p className="text-small text-default-500">Card Number</p>
+                  <Snippet codeString={pan} color="default" symbol="" variant="flat">
+                    {card.lastFour}
+                  </Snippet>
+                </div>
+              ) : null}
+              <div className="w-full md:w-1/4 space-y-2">
+                <p className="text-small text-default-500">Expiration Date</p>
+                <Snippet
+                  codeString={card.expirationMonth + "/" + card.expirationYear}
+                  color="default"
+                  symbol=""
+                  variant="flat"
+                >
+                  {card.expirationMonth + "/" + card.expirationYear}
                 </Snippet>
               </div>
-            ) : null}
-            <div className="w-full md:w-1/4 space-y-2">
-              <p className="text-small text-default-500">Expiration Date</p>
-              <Snippet
-                codeString={card.expirationMonth + "/" + card.expirationYear}
-                color="default"
-                symbol=""
-                variant="flat"
-              >
-                {card.expirationMonth + "/" + card.expirationYear}
-              </Snippet>
+              {cvv ? (
+                <div className="w-full md:w-1/6 space-y-2">
+                  <p className="text-small text-default-500">CVV</p>
+                  <Snippet codeString={cvv} color="default" symbol="" variant="flat">
+                    {cvv}
+                  </Snippet>
+                </div>
+              ) : null}
             </div>
-            {cvv ? (
-              <div className="w-full md:w-1/6 space-y-2">
-                <p className="text-small text-default-500">CVV</p>
-                <Snippet codeString={cvv} color="default" symbol="" variant="flat">
-                  {cvv}
-                </Snippet>
-              </div>
-            ) : null}
-          </div>
-          <Input
-            isReadOnly={!isEditing}
-            label="Holder"
-            value={card.cardOwner.firstName + " " + card.cardOwner.lastName}
-          />
-          {card.cardShippingDetails ? (
             <Input
               isReadOnly={!isEditing}
-              label="Billing Address"
-              // @ts-ignore
-              value={`${card.cardShippingDetails.street1}, ${card.cardShippingDetails.city}, ${card.cardShippingDetails.state},${card.cardShippingDetails.country}`}
+              label="Holder"
+              value={card.cardOwner.firstName + " " + card.cardOwner.lastName}
             />
-          ) : null}
+            {card.cardShippingDetails ? (
+              <Input
+                isReadOnly={!isEditing}
+                label="Billing Address"
+                // @ts-ignore
+                value={`${card.cardShippingDetails.street1}, ${card.cardShippingDetails.city}, ${card.cardShippingDetails.state},${card.cardShippingDetails.country}`}
+              />
+            ) : null}
 
-          <Input isReadOnly={!isEditing} label="Email" value={card.cardOwner.email} />
-        </ModalBody>
-        <ModalFooterWithSupport onSupportClick={handleSupportClick} actions={footerActions} />
-      </ModalContent>
+            <Input isReadOnly={!isEditing} label="Email" value={card.cardOwner.email} />
+          </ModalBody>
+          <div className="flex items-center px-6 mb-6 mt-4 justify-end">
+            <Button
+              className={`text-notpurple-500 w-full sm:w-auto mr-4 `}
+              onClick={() => {
+                setIsEditing(true);
+              }}
+            >
+              Edit
+            </Button>
+            <Button className={`bg-ualert-500 text-notpurple-500 w-full sm:w-auto `}>Close</Button>
+          </div>
+        </ModalContent>
+      )}
     </Modal>
   );
 }

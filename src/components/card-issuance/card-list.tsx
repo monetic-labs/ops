@@ -1,15 +1,19 @@
-// REFAC THIS LATER
 import { Chip } from "@nextui-org/chip";
 import { User } from "@nextui-org/user";
-import React, { useCallback, useEffect, useState } from "react";
-import CardLimitModal from "@/components/card-issuance/card-limit";
+import React, { useCallback, useState } from "react";
 import CardDetailsModal from "@/components/card-issuance/card-details";
-import { getOpepenAvatar } from "@/utils/helpers";
+import { formatNumber, getOpepenAvatar } from "@/utils/helpers";
 import InfiniteTable from "../generics/table-infinite";
 import { MerchantCardGetOutput } from "@backpack-fux/pylon-sdk";
 import pylon from "@/libs/pylon-sdk";
 
-type HybridCard = MerchantCardGetOutput["cards"][number] & { avatar?: string; type: string; holder: string };
+type HybridCard = MerchantCardGetOutput["cards"][number] & {
+  avatar?: string;
+  type: string;
+  holder: string;
+  limit: number;
+  limitFrequency: string;
+};
 
 const cards: HybridCard[] = [];
 
@@ -25,10 +29,6 @@ export default function CardListTable() {
 
   const handleCloseModal = () => {
     setSelectedCard(null);
-  };
-
-  const handleSaveLimit = (amount: string, cycle: string) => {
-    handleCloseModal();
   };
 
   const renderCell = useCallback((card: HybridCard, columnKey: keyof HybridCard) => {
@@ -56,8 +56,8 @@ export default function CardListTable() {
       case "holder": {
         return <p>{card.holder}</p>;
       }
-      // case "limit":
-      //   return `$${card.limit.amount} per ${card.limit.cycle}`;
+      case "limit":
+        return `$${formatNumber(card.limit)} per ${card.limitFrequency.toLowerCase()}`;
       default:
         return <></>;
     }
@@ -74,6 +74,8 @@ export default function CardListTable() {
           avatar: getOpepenAvatar(t.id, 20),
           type: t.cardShippingDetails ? "Physical" : "Virtual",
           holder: t?.cardOwner?.firstName + " " + t?.cardOwner?.lastName,
+          limit: t.limit,
+          limitFrequency: t.limitFrequency,
         })),
         cursor: meta.endCursor,
       };
@@ -94,23 +96,15 @@ export default function CardListTable() {
           { name: "CARD NAME", uid: "displayName" },
           { name: "HOLDER", uid: "holder" },
           { name: "TYPE", uid: "type" },
+          { name: "LIMIT", uid: "limit" },
           { name: "STATUS", uid: "status" },
-          // { name: "LIMIT", uid: "limit" },
-          //{ name: "ACTIONS", uid: "actions" },
         ]}
         initialData={cards}
         renderCell={renderCell}
-        loadMore={loadMore}
+        loadMore={loadMore as any}
         onRowSelect={handleRowSelect}
       />
-      {/* <CardLimitModal
-        cardName={selectedCard?.displayName || ""}
-        // currentLimit={selectedCard?.limit ? `${selectedCard.limit.amount} per ${selectedCard.limit.cycle}` : ""}
-        currentLimit=""
-        isOpen={openModal === "limit"}
-        onClose={handleCloseModal}
-        onSave={handleSaveLimit}
-      /> */}
+
       {selectedCard && (
         <CardDetailsModal card={selectedCard} isOpen={Boolean(selectedCard)} onClose={() => setSelectedCard(null)} />
       )}

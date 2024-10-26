@@ -113,3 +113,13 @@ export const getTimeAgo = (timestamp: string): string => {
 export const getFullName = (firstName: string, lastName: string) => {
   return `${firstName} ${lastName}`;
 };
+
+export function formatNumber(value: number) {
+  return new Intl.NumberFormat("en-US", {
+    currency: "USD",
+  }).format(value);
+}
+
+export function formatAmountUSD(value: number) {
+  return new Intl.NumberFormat("en-US", { currency: "USD" }).format(value);
+}
