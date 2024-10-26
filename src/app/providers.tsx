@@ -22,9 +22,9 @@ export function Providers({ children, themeProps }: ProvidersProps) {
   return (
     <PylonProvider pylon={pylonInstance}>
       <NextUIProvider navigate={router.push}>
-          <NextThemesProvider {...themeProps}>
-            <PageWithScrollBackground>{children}</PageWithScrollBackground>
-          </NextThemesProvider>
+        <NextThemesProvider {...themeProps}>
+          <PageWithScrollBackground>{children}</PageWithScrollBackground>
+        </NextThemesProvider>
       </NextUIProvider>
     </PylonProvider>
   );

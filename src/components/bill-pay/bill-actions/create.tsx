@@ -7,6 +7,7 @@ import { DisbursementMethod } from "@backpack-fux/pylon-sdk";
 import NewTransferFields from "./fields/new-transfer";
 import ModalFooterWithSupport from "../../generics/footer-modal-support";
 import ExistingTransferFields from "./fields/existing-transfer";
+import { useDisconnect } from "@reown/appkit/react";
 
 type CreateBillPayModalProps = {
   isOpen: boolean;
@@ -70,6 +71,7 @@ export default function CreateBillPayModal({ isOpen, onClose, onSave }: CreateBi
   const [newBillPay, setNewBillPay] = useState<NewBillPay>(DEFAULT_BILL_PAY);
   const [isNewSender, setIsNewSender] = useState(false);
   const [showMemo, setShowMemo] = useState(false);
+  const { disconnect } = useDisconnect();
 
   const fee = useMemo(() => {
     if (!newBillPay.vendorMethod) return 0;
@@ -81,9 +83,9 @@ export default function CreateBillPayModal({ isOpen, onClose, onSave }: CreateBi
     return amount + amount * fee;
   }, [newBillPay.amount, fee]);
 
-  const handleSave = () => {
+  const handleSave = async () => {
     onSave({ ...newBillPay, fee: fee.toFixed(2), total: total.toFixed(2) });
-    onClose();
+    await disconnect();
   };
 
   const handleSupportClick = () => {
