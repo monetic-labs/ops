@@ -56,7 +56,7 @@ export const FormCompanyInfo: React.FC<{
 
   const onFormSubmit = handleSubmit(
     (data: CompanyAccountSchema) => {
-      console.log("data", data);
+      console.log("FormCompanyInfo data", data);
       onSubmit(data);
       updateFormData(data);
     },
@@ -103,7 +103,7 @@ export const FormCompanyInfo: React.FC<{
         <FormInput
           startContent={
             <div className="pointer-events-none flex items-center">
-              <span className="text-default-400 text-small">https://</span>
+              {/* <span className="text-default-400 text-small">https://</span> */}
             </div>
           }
           control={control}
