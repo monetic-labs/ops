@@ -138,15 +138,17 @@ export default function BillPayTabs() {
         }}
       />
       {isLoadingModalOpen && (
-        <div
+        <button
+          type="button"
           className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50"
           onClick={(e) => e.stopPropagation()}
+          aria-label="Loading modal overlay"
         >
           <div className="flex flex-col items-center gap-4">
             <Spinner size="lg" color="white" />
             <span className="text-white">Connecting to your wallet...</span>
           </div>
-        </div>
+        </button>
       )}
     </div>
   );
