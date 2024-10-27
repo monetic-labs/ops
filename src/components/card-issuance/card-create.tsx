@@ -180,7 +180,7 @@ export default function CreateCardModal({ isOpen, onClose }: CreateCardModalProp
 
         <AutocompleteInput
           control={controlFirstForm}
-          about="Select the type of company structure"
+          about="Select card limit cycle"
           errorMessage={firstFormErrors.limitFrequency?.message}
           label="Limit Cycle"
           name="limitFrequency"

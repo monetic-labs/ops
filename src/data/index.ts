@@ -9,6 +9,7 @@ import {
   TransactionListItem,
   CardLimitFrequency,
   CardShippingMethod,
+  CardStatus,
 } from "@backpack-fux/pylon-sdk";
 import { z } from "zod";
 
@@ -26,6 +27,13 @@ export const limitCyclesObject: { label: string; value: CardLimitFrequency }[] =
   { label: "Per Authorization", value: CardLimitFrequency.PER_AUTHORIZATION },
 ];
 
+export const limitStatesObject: { label: string; value: CardStatus }[] = [
+  { label: "Not Activated", value: CardStatus.NOT_ACTIVATED },
+  { label: "Canceled", value: CardStatus.CANCELLED },
+  { label: "Active", value: CardStatus.ACTIVE },
+  { label: "Locked", value: CardStatus.LOCKED },
+];
+
 export const ISO3166Alpha2Country = z.string().length(2);
 
 export const cardDeliveryCountries: { label: string; value: string }[] = [{ label: "United States", value: "US" }];
@@ -40,6 +48,32 @@ export const cardTypes = [
   { value: "physical", label: "Physical" },
   { value: "virtual", label: "Virtual" },
 ];
+
+const VALID_STATUSES = [CardStatus.ACTIVE, CardStatus.CANCELLED, CardStatus.LOCKED, CardStatus.NOT_ACTIVATED];
+const VALID_FREQUENCIES = [
+  CardLimitFrequency.DAY,
+  CardLimitFrequency.WEEK,
+  CardLimitFrequency.MONTH,
+  CardLimitFrequency.YEAR,
+  CardLimitFrequency.ALL_TIME,
+  CardLimitFrequency.PER_AUTHORIZATION,
+];
+
+export const UpateCardSchema = z.object({
+  status: z.string().refine(
+    (value) => VALID_STATUSES.includes(value as (typeof VALID_STATUSES)[number]),
+    (value) => ({ message: `Please select valid status` })
+  ),
+  limitAmount: z
+    .string()
+    .min(1, "Please enter card limit number")
+    .transform((val) => Number(val))
+    .refine((val) => !isNaN(val) && val > 0, "Please enter a valid number for card limit"),
+  limitFrequency: z.string().refine(
+    (value) => VALID_FREQUENCIES.includes(value as (typeof VALID_FREQUENCIES)[number]),
+    (value) => ({ message: `Please select valid limit frequency` })
+  ),
+});
 
 export const CreateCardSchema = z.object({
   displayName: z.string().min(1, "Enter valid card name"),
@@ -200,7 +234,7 @@ export interface User {
 export const billPayColumns: readonly Column<BillPay>[] = [
   { name: "VENDOR", uid: "accountOwnerName" },
   { name: "STATUS", uid: "state" },
-  { name: "AMOUNT RECEIVED", uid: "amountOut" && "currencyOut" },
+  { name: "AMOUNT RECEIVED", uid: "currencyOut" },
   { name: "PAYMENT REFERENCE", uid: "paymentMessage" },
   { name: "TIME OF TRANSFER", uid: "createdAt" },
 ] as const;
