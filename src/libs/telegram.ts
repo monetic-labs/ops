@@ -9,7 +9,7 @@ export async function sendTelegramMessage(chatId: string, text: string) {
     },
     body: JSON.stringify({
       chat_id: chatId,
-      text,
+      text: text,
     }),
   });
 
@@ -59,4 +59,19 @@ export async function sendTelegramPhoto(chatId: string, photo: string, caption?:
         console.error('Error in sendTelegramPhoto:', error);
         throw error;
       }
+}
+
+export async function getTelegramUpdates(offset?: number) {
+  const params = new URLSearchParams({
+    ...(offset && { offset: offset.toString() }),
+    timeout: '30',
+  });
+
+  const response = await fetch(`${TELEGRAM_API_URL}/getUpdates?${params}`);
+  
+  if (!response.ok) {
+    throw new Error('Failed to get Telegram updates');
   }
+
+  return response.json();
+}

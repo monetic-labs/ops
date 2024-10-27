@@ -1,117 +1,93 @@
 'use client';
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useRef, useEffect } from 'react';
+import { useChatStorage } from '@/hooks/generics/useChatStorage';
 
-interface Message {
-  id: number;
-  text: string;
-  isUser: boolean;
-  status: 'sending' | 'sent' | 'error';
+interface SupportChatProps {
+  mode: 'bot' | 'support';
 }
 
-const SupportChat: React.FC = () => {
-  const [messages, setMessages] = useState<Message[]>([]);
-  const [newMessage, setNewMessage] = useState('');
-  const [isTyping, setIsTyping] = useState(false);
+const SupportChat: React.FC<SupportChatProps> = ({ mode }) => {
+  const [newMessage, setNewMessage] = React.useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  
+  // Use the chat storage hook with a unique ID for the chat
+  const chatId = `${mode}-chat`; // Separate storage for bot and support chats
+  const { messages, saveMessage } = useChatStorage(chatId, mode);
 
+  // Auto-scroll to bottom when messages change
   useEffect(() => {
-    // Load initial messages from local storage
-    const storedMessages = localStorage.getItem('chatMessages');
-    if (storedMessages) {
-      setMessages(JSON.parse(storedMessages));
-    }
-
-    // Set up polling for new messages
-    const pollInterval = setInterval(fetchNewMessages, 5000);
-
-    return () => clearInterval(pollInterval);
-  }, []);
-
-  useEffect(() => {
-    // Save messages to local storage whenever they change
-    localStorage.setItem('chatMessages', JSON.stringify(messages));
+    const scrollToBottom = () => {
+      messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    };
     
-    // Scroll to bottom of messages
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    // Add a small delay to ensure DOM has updated
+    const timeoutId = setTimeout(scrollToBottom, 100);
+    return () => clearTimeout(timeoutId);
   }, [messages]);
 
-  const fetchNewMessages = async () => {
-    try {
-      const response = await fetch('/api/support/get-messages');
-      if (!response.ok) throw new Error('Failed to fetch messages');
-      const newMessages = await response.json();
-      setMessages(prevMessages => [...prevMessages, ...newMessages]);
-    } catch (error) {
-      console.error('Error fetching messages:', error);
-    }
+  const handleSendMessage = async () => {
+    if (newMessage.trim() === '') return;
+    
+    const messageText = newMessage;
+    setNewMessage(''); // Clear input immediately
+    
+    await saveMessage(messageText);
   };
 
-  const sendMessage = async () => {
-    if (newMessage.trim() === '') return;
-
-    const userMessage: Message = {
-      id: Date.now(),
-      text: newMessage,
-      isUser: true,
-      status: 'sending',
-    };
-
-    setMessages(prevMessages => [...prevMessages, userMessage]);
-    setNewMessage('');
-
-    try {
-      const response = await fetch('/api/support/send-message', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ text: newMessage }),
-      });
-
-      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-
-      const data = await response.json();
-      setMessages(prevMessages =>
-        prevMessages.map(msg =>
-          msg.id === userMessage.id ? { ...msg, status: 'sent' } : msg
-        )
-      );
-    } catch (error) {
-      console.error('Error sending message:', error);
-      setMessages(prevMessages =>
-        prevMessages.map(msg =>
-          msg.id === userMessage.id ? { ...msg, status: 'error' } : msg
-        )
-      );
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      handleSendMessage();
     }
   };
 
   return (
-    <div className="support-chat">
-      <div className="messages">
+    <div className="flex flex-col h-full">
+      <div className="flex-1 overflow-y-auto p-4 space-y-4">
         {messages.map((message) => (
-          <div key={message.id} className={`message ${message.isUser ? 'user' : 'support'}`}>
-            {message.text}
-            {message.isUser && (
-              <span className="status">
-                {message.status === 'sending' && '⏳'}
-                {message.status === 'sent' && '✓'}
-                {message.status === 'error' && '❌'}
-              </span>
-            )}
+          <div 
+            key={message.id} 
+            className={`flex ${message.type === 'user' ? 'justify-end' : 'justify-start'}`}
+          >
+            <div 
+              className={`max-w-[80%] rounded-lg p-3 ${
+                message.type === 'user' 
+                  ? 'bg-ualert-500 text-notpurple-500' 
+                  : 'bg-charyo-500/50 text-notpurple-500'
+              }`}
+            >
+              <p className="whitespace-pre-wrap break-words">{message.text}</p>
+              {message.type === 'user' && (
+                <span className="text-xs ml-2 opacity-75">
+                  {message.status === 'sending' && '⏳'}
+                  {message.status === 'sent' && '✓'}
+                  {message.status === 'error' && '❌'}
+                </span>
+              )}
+            </div>
           </div>
         ))}
         <div ref={messagesEndRef} />
       </div>
-      {isTyping && <div className="typing-indicator">Support is typing...</div>}
-      <div className="input-area">
-        <input
-          type="text"
-          value={newMessage}
-          onChange={(e) => setNewMessage(e.target.value)}
-          onKeyPress={(e) => e.key === 'Enter' && sendMessage()}
-          placeholder="Type your message..."
-        />
-        <button onClick={sendMessage}>Send</button>
+
+      <div className="border-t border-charyo-600 p-4">
+        <div className="flex gap-2">
+          <input
+            type="text"
+            value={newMessage}
+            onChange={(e) => setNewMessage(e.target.value)}
+            onKeyDown={handleKeyDown}
+            placeholder={`Type your message to ${mode === 'bot' ? 'AI Assistant' : 'Support'}...`}
+            className="flex-1 p-2 bg-charyo-500/20 rounded-lg focus:outline-none focus:ring-2 focus:ring-ualert-500 text-notpurple-500 placeholder-charyo-300"
+          />
+          <button 
+            onClick={handleSendMessage}
+            className="px-4 py-2 bg-ualert-500 text-notpurple-500 rounded-lg hover:bg-ualert-600 focus:outline-none focus:ring-2 focus:ring-ualert-500 transition-colors"
+          >
+            Send
+          </button>
+        </div>
       </div>
     </div>
   );

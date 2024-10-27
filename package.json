@@ -24,7 +24,7 @@
     "@nextui-org/code": "2.0.32",
     "@nextui-org/divider": "^2.0.32",
     "@nextui-org/input": "2.2.4",
-    "@nextui-org/kbd": "2.0.33",
+    "@nextui-org/kbd": "^2.0.34",
     "@nextui-org/link": "2.0.34",
     "@nextui-org/listbox": "2.1.25",
     "@nextui-org/modal": "^2.0.41",
@@ -52,6 +52,7 @@
     "clsx": "2.1.1",
     "convert-iso-codes": "^1.0.10",
     "framer-motion": "~11.9.0",
+    "heroicons": "^2.1.5",
     "html2canvas": "^1.4.1",
     "intl-messageformat": "^10.7.0",
     "jwt-decode": "^4.0.0",
@@ -65,6 +66,7 @@
     "react-dom": "18.3.1",
     "react-hook-form": "^7.53.1",
     "uuid": "^10.0.0",
+    "ws": "^8.18.0",
     "zod": "^3.23.8"
   },
   "devDependencies": {
@@ -76,6 +78,7 @@
     "@types/react": "18.3.3",
     "@types/react-dom": "18.3.0",
     "@types/uuid": "^10.0.0",
+    "@types/ws": "^8.5.12",
     "@typescript-eslint/eslint-plugin": "7.2.0",
     "@typescript-eslint/parser": "7.2.0",
     "autoprefixer": "10.4.19",
