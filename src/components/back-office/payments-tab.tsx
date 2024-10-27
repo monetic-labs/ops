@@ -6,7 +6,7 @@ import pylon from "@/libs/pylon-sdk";
 import { useOrderManagement } from "@/hooks/orders/useOrderManagement";
 import { centsToDollars, getTimeAgo, mapCurrencyToSymbol } from "@/utils/helpers";
 
-import { DetailsResponse } from "./actions/order-details";
+import { PaymentDetails } from "./actions/order-details";
 import { CancelConfirmationModal } from "./actions/order-cancel";
 import { RefundModal } from "./actions/order-refund";
 import { RefundSuccessModal } from "./actions/order-success";
@@ -155,7 +155,7 @@ export default function PaymentsTab() {
         </TableBody>
       </Table>
       {selectedPayment && (
-        <DetailsResponse
+        <PaymentDetails
           isOpen={!!selectedPayment}
           response={{
             transactionId: selectedPayment.id,

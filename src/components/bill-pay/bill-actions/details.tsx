@@ -39,7 +39,7 @@ export default function BillPayDetailsModal({ isOpen, onClose, billPay }: BillPa
 
   return (
     <>
-      <Modal isOpen={isOpen} size="lg" onClose={onClose}>
+      <Modal isOpen={isOpen} size="lg" onClose={onClose} scrollBehavior="inside">
         <ModalContent>
           {(onClose) => (
             <>
@@ -49,33 +49,23 @@ export default function BillPayDetailsModal({ isOpen, onClose, billPay }: BillPa
               </ModalHeader>
               <Divider />
               <ModalBody>
-                <div className="space-y-4 font-mono">
-                  <div className="flex justify-between">
+                <div className="space-y-4 font-mono text-sm">
+                  <div className="grid grid-cols-2 gap-2">
                     <span>Vendor Name:</span>
-                    <span>{billPay.contact.accountOwnerName}</span>
-                  </div>
-                  <div className="flex justify-between">
+                    <span className="text-right">{billPay.contact.accountOwnerName}</span>
                     <span>Payment Method:</span>
-                    <span>{billPay.paymentMethod}</span>
-                  </div>
-                  <div className="flex justify-between">
+                    <span className="text-right">{billPay.paymentMethod}</span>
                     <span>Bank Name:</span>
-                    <span>{billPay.contact.bankName}</span>
-                  </div>
-                  <div className="flex justify-between">
+                    <span className="text-right">{billPay.contact.bankName}</span>
                     <span>Routing Number:</span>
-                    <span>{billPay.contact.routingNumber}</span>
-                  </div>
-                  <div className="flex justify-between">
+                    <span className="text-right">{billPay.contact.routingNumber}</span>
                     <span>Account Number:</span>
-                    <div className="w-48">
+                    <div className="text-right">
                       <Input
                         value={
                           isVisible
                             ? billPay.contact.accountNumber
-                            : `${"•".repeat(
-                                billPay.contact.accountNumber.length - 4
-                              )}${billPay.contact.accountNumber.slice(-4)}`
+                            : `${"•".repeat(billPay.contact.accountNumber.length - 4)}${billPay.contact.accountNumber.slice(-4)}`
                         }
                         isReadOnly
                         endContent={
@@ -96,43 +86,36 @@ export default function BillPayDetailsModal({ isOpen, onClose, billPay }: BillPa
                         className="max-w-xs"
                       />
                     </div>
-                    {/* <span>**** {billPay.contact.accountNumber.slice(-4)}</span> */}
                   </div>
                   <Divider />
-                  <div className="flex justify-between">
+                  <div className="grid grid-cols-2 gap-2">
                     <span>Payment Reference:</span>
-                    <span>{billPay.paymentMessage}</span>
+                    <span className="text-right">{billPay.paymentMessage}</span>
                   </div>
                   <Divider />
-                  <div className="flex justify-between">
+                  <div className="grid grid-cols-2 gap-2">
                     <span>Amount Paid:</span>
-                    <span>
+                    <span className="text-right">
                       ${Number(billPay.amountIn).toFixed(2)} {billPay.currencyIn}
                     </span>
-                  </div>
-                  <div className="flex justify-between">
                     <span>Amount Received:</span>
-                    <span>
+                    <span className="text-right">
                       ${Number(billPay.amountOut).toFixed(2)} {billPay.currencyOut}
                     </span>
-                  </div>
-                  <div className="flex justify-between">
                     <span>Fee:</span>
-                    <span>
+                    <span className="text-right">
                       ${Number(billPay.fee).toFixed(2)} {billPay.currencyOut}
                     </span>
-                  </div>
-                  <div className="flex justify-between text-lg font-bold">
-                    <span>Total:</span>
-                    <span>
+                    <span className="font-bold">Total:</span>
+                    <span className="text-right font-bold">
                       ${(Number(billPay.amountOut) + Number(billPay.fee)).toFixed(2)} {billPay.currencyOut}
                     </span>
                   </div>
                   <Divider />
-                  <div className="flex justify-between">
+                  <div className="grid grid-cols-2 gap-2">
                     <span>Status:</span>
                     <span
-                      className={`font-bold ${
+                      className={`text-right font-bold ${
                         billPay.state === DisbursementState.COMPLETED
                           ? "text-ualert-100"
                           : billPay.state === DisbursementState.PENDING

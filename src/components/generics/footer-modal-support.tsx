@@ -39,8 +39,8 @@ export default function ModalFooterWithSupport({
       const canvas = await html2canvas(document.body, {
         logging: false,
         useCORS: true,
-        allowTaint: true, // Add this line
-        foreignObjectRendering: true, // Add this line
+        allowTaint: true,
+        foreignObjectRendering: true,
         windowWidth: document.documentElement.clientWidth,
         windowHeight: document.documentElement.clientHeight,
         onclone: (document) => {
@@ -53,16 +53,7 @@ export default function ModalFooterWithSupport({
       });
       
       // Reduce the image quality and size
-      const screenshot = canvas.toDataURL('image/jpeg', 0.5); // Change to JPEG and set quality to 50%
-
-      // Optionally, you can also resize the canvas if needed
-      // const resizedCanvas = document.createElement('canvas');
-      // const ctx = resizedCanvas.getContext('2d');
-      // const scaleFactor = 0.5; // Reduce size by 50%
-      // resizedCanvas.width = canvas.width * scaleFactor;
-      // resizedCanvas.height = canvas.height * scaleFactor;
-      // ctx?.drawImage(canvas, 0, 0, resizedCanvas.width, resizedCanvas.height);
-      // const resizedScreenshot = resizedCanvas.toDataURL('image/jpeg', 0.5);
+      const screenshot = canvas.toDataURL('image/jpeg', 0.5);
 
       const response = await fetch('/api/support/start-chat', {
         method: 'POST',
@@ -86,7 +77,7 @@ export default function ModalFooterWithSupport({
 
   return (
     <>
-      <ModalFooter className="flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-2">
+      <ModalFooter className="flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-2 max-h-[50vh] overflow-y-auto">
         <Button
           variant="light"
           className="text-notpurple-500 w-2/3 sm:w-auto mx-auto sm:mx-0 order-2 sm:order-none"
