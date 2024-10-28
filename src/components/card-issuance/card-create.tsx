@@ -21,7 +21,7 @@ import { CardStatus, ISO3166Alpha2Country } from "@backpack-fux/pylon-sdk";
 
 export default function CreateCardModal({ isOpen, onClose }: CreateCardModalProps) {
   const [error, setError] = useState<string | null>();
-  const [cardType, setCardType] = useState("");
+  const [cardType, setCardType] = useState("virtual");
   const [loading, setLoading] = useState(false);
   const {
     control: controlFirstForm,
@@ -67,6 +67,10 @@ export default function CreateCardModal({ isOpen, onClose }: CreateCardModalProp
         shipping: {
           ...secondData,
           countryCode: secondData.country as ISO3166Alpha2Country,
+          // @ts-ignore
+          line1: secondData.street1,
+          // @ts-ignore
+          line2: secondData.street2,
         },
       });
       reset();
