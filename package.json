@@ -13,6 +13,7 @@
     "map:postcode": "node scripts/preprocess-postcodes.js"
   },
   "dependencies": {
+    "@ai-sdk/openai": "^0.0.70",
     "@backpack-fux/pylon-sdk": "0.2.956",
     "@hookform/resolvers": "^3.9.0",
     "@nextui-org/accordion": "^2.0.40",
@@ -48,6 +49,7 @@
     "@react-aria/visually-hidden": "3.8.12",
     "@react-stately/data": "^3.11.7",
     "@svgr/webpack": "^8.1.0",
+    "ai": "^3.4.23",
     "chart.js": "^4.4.5",
     "clsx": "2.1.1",
     "convert-iso-codes": "^1.0.10",
@@ -59,6 +61,8 @@
     "lucide-react": "^0.441.0",
     "next": "14.2.4",
     "next-themes": "^0.2.1",
+    "openai": "^4.68.4",
+    "openai-edge": "^1.2.2",
     "opepen-standard": "^1.0.1",
     "persona": "^5.1.2",
     "react": "18.3.1",

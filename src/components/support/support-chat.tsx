@@ -1,7 +1,9 @@
 'use client';
 
 import React, { useRef, useEffect } from 'react';
-import { useChatStorage } from '@/hooks/generics/useChatStorage';
+import { useChatStorage } from '@/hooks/chat/useChatStorage';
+import { useRagChat } from '@/hooks/chat/useRagChat';
+import RAGMessage from './chat-interface/message-rag';
 
 interface SupportChatProps {
   mode: 'bot' | 'support';
@@ -13,7 +15,9 @@ const SupportChat: React.FC<SupportChatProps> = ({ mode }) => {
   
   // Use the chat storage hook with a unique ID for the chat
   const chatId = `${mode}-chat`; // Separate storage for bot and support chats
-  const { messages, saveMessage } = useChatStorage(chatId, mode);
+  const { messages: supportMessages, saveMessage } = useChatStorage(chatId, mode);
+  const { messages: botMessages, sendMessage: sendBotMessage } = useRagChat();
+  const messages = mode === 'bot' ? botMessages : supportMessages;
 
   // Auto-scroll to bottom when messages change
   useEffect(() => {
@@ -57,7 +61,11 @@ const SupportChat: React.FC<SupportChatProps> = ({ mode }) => {
                   : 'bg-charyo-500/50 text-notpurple-500'
               }`}
             >
-              <p className="whitespace-pre-wrap break-words">{message.text}</p>
+              {message.type === 'bot' && mode === 'bot' ? (
+                <RAGMessage message={message} />
+              ) : (
+                <p className="whitespace-pre-wrap break-words">{message.text}</p>
+              )}
               {message.type === 'user' && (
                 <span className="text-xs ml-2 opacity-75">
                   {message.status === 'sending' && '⏳'}
