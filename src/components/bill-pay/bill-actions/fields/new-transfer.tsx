@@ -1,20 +1,21 @@
 import { useEffect, useState } from "react";
 import { useInfiniteScroll } from "@nextui-org/use-infinite-scroll";
 import { DisbursementMethod } from "@backpack-fux/pylon-sdk";
-import { Countries, DEFAULT_BILL_PAY, NewBillPay, States, vendorCurrencies, vendorMethods } from "../create";
+import { Countries, NewBillPay, States, vendorCurrencies } from "../create";
+import { DEFAULT_BILL_PAY } from "@/components/bill-pay/bill-pay";
 import { Autocomplete, AutocompleteItem } from "@nextui-org/autocomplete";
 import { Input } from "@nextui-org/input";
 import { Avatar } from "@nextui-org/avatar";
 import { Alpha3 } from "convert-iso-codes";
 
+const vendorMethods = [DisbursementMethod.ACH_SAME_DAY, DisbursementMethod.WIRE];
+
 export default function NewTransferFields({
   newBillPay,
   setNewBillPay,
-  showMemo,
 }: {
   newBillPay: NewBillPay;
   setNewBillPay: (newBillPay: NewBillPay) => void;
-  showMemo: boolean;
 }) {
   return (
     <>

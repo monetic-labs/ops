@@ -123,3 +123,6 @@ export function formatNumber(value: number) {
 export function formatAmountUSD(value: number) {
   return new Intl.NumberFormat("en-US", { currency: "USD" }).format(value);
 }
+
+export const isLocal = process.env.NEXT_PUBLIC_NODE_ENV === "development";
+export const isProduction = process.env.NEXT_PUBLIC_NODE_ENV === "production";

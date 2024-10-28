@@ -1,12 +1,12 @@
 import { useEffect, useState } from "react";
 import { useInfiniteScroll } from "@nextui-org/use-infinite-scroll";
 import { DisbursementMethod } from "@backpack-fux/pylon-sdk";
-import { DEFAULT_BILL_PAY, NewBillPay, vendorCurrencies, vendorMethods } from "../create";
+import { NewBillPay, vendorCurrencies } from "../create";
 import { useGetContacts } from "@/hooks/bill-pay/useGetContacts";
-import { useExistingDisbursement } from "@/hooks/bill-pay/useExistingDisbursement";
 import { Autocomplete, AutocompleteItem } from "@nextui-org/autocomplete";
 import { Input } from "@nextui-org/input";
 import { Eye, EyeOff } from "lucide-react";
+import { DEFAULT_BILL_PAY } from "../../bill-pay";
 
 export default function ExistingTransferFields({
   newBillPay,
@@ -23,12 +23,6 @@ export default function ExistingTransferFields({
   const [isOpen, setIsOpen] = useState(false);
   const [isVisible, setIsVisible] = useState(false);
   const { contacts, pagination, isLoading: isLoadingContacts, fetchContacts } = useGetContacts();
-  const {
-    disbursement,
-    isLoading: isLoadingDisbursement,
-    error,
-    createExistingDisbursement,
-  } = useExistingDisbursement();
 
   const [, scrollerRef] = useInfiniteScroll({
     hasMore: pagination?.hasNextPage || false,
@@ -56,9 +50,24 @@ export default function ExistingTransferFields({
     }
   };
 
+  const handleMethodChange = (value: DisbursementMethod) => {
+    const selectedDisbursement = selectedContact?.disbursements.find((disbursement) => disbursement.method === value);
+    setNewBillPay({
+      ...newBillPay,
+      vendorMethod: value,
+      memo: selectedDisbursement?.paymentMessage || undefined,
+      disbursementId: selectedDisbursement?.id || undefined,
+    });
+  };
+
   const toggleVisibility = () => {
     setIsVisible((prevState) => !prevState);
   };
+
+  const selectedContact = contacts.find((contact) => contact.accountOwnerName === newBillPay.vendorName);
+  const availableMethods = selectedContact
+    ? selectedContact.disbursements.map((disbursement) => disbursement.method)
+    : [];
 
   return (
     <>
@@ -108,6 +117,7 @@ export default function ExistingTransferFields({
       </Autocomplete>
       <Input isDisabled label="Bank Name" value={newBillPay.vendorBankName} />
       <div className="flex space-x-4">
+        {/** TODO: check user balance is sufficient */}
         <Input
           isReadOnly
           isDisabled={!newBillPay.accountNumber}
@@ -144,9 +154,9 @@ export default function ExistingTransferFields({
         isDisabled={!newBillPay.vendorName}
         label="Method"
         value={newBillPay.vendorMethod}
-        onSelectionChange={(value) => setNewBillPay({ ...newBillPay, vendorMethod: value as DisbursementMethod })}
+        onSelectionChange={(value) => handleMethodChange(value as DisbursementMethod)}
       >
-        {vendorMethods.map((method) => (
+        {availableMethods.map((method) => (
           <AutocompleteItem key={method} textValue={method}>
             {method}
           </AutocompleteItem>
@@ -157,6 +167,7 @@ export default function ExistingTransferFields({
           <Input
             isDisabled={newBillPay.vendorMethod === DisbursementMethod.WIRE}
             label={`${newBillPay.vendorMethod === DisbursementMethod.WIRE ? "Wire Message" : "ACH Reference"}`}
+            description={`${newBillPay.vendorMethod === DisbursementMethod.WIRE ? "This cannot be changed." : ""}`}
             value={newBillPay.memo}
             onChange={(e) => setNewBillPay({ ...newBillPay, memo: e.target.value })}
           />
