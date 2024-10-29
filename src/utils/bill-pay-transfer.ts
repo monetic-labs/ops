@@ -1,8 +1,15 @@
 import { modal } from "@/context/reown";
-import { encodeFunctionData, Address, parseUnits } from "viem";
+import { encodeFunctionData, Address, parseUnits, Hex } from "viem";
 import type UniversalProvider from "@walletconnect/universal-provider";
 import { BASE_USDC } from "./constants";
 import { getChain } from "@/config/web3";
+import { TransferStatus } from "@/components/generics/transfer-status";
+
+type BuildTransferArgs = {
+  liquidationAddress: Address;
+  amount: string;
+  setTransferStatus: (status: TransferStatus) => void;
+};
 
 const getProvider = async () => {
   const wcProvider = await modal.universalAdapter?.getWalletConnectProvider();
@@ -32,7 +39,7 @@ const isBalanceSufficient = async ({
   // TODO: returns true if user has sufficient balance for intended transfer
 };
 
-const buildTransfer = async ({ liquidationAddress, amount }: { liquidationAddress: Address; amount: string }) => {
+const buildTransfer = async ({ liquidationAddress, amount, setTransferStatus }: BuildTransferArgs): Promise<Hex> => {
   const wcProvider = await getProvider();
   const walletAddress = await getAccounts(wcProvider);
 
@@ -48,18 +55,16 @@ const buildTransfer = async ({ liquidationAddress, amount }: { liquidationAddres
     data: transferData,
   };
 
-  console.log("Transaction parameters:", transactionParameters);
-
   // TODO: run contract simulation
 
-  const transactionResult = await wcProvider.request(
+  setTransferStatus(TransferStatus.WAITING);
+  return await wcProvider.request(
     {
       method: "eth_sendTransaction",
       params: [transactionParameters],
     },
     `eip155:${getChain().id}`
   );
-  console.log("Transaction result:", transactionResult);
 };
 
 export { buildTransfer };

@@ -1,12 +1,12 @@
 import React from "react";
 import { Spinner } from "@nextui-org/spinner";
+import { CheckIcon } from "lucide-react";
 
 export enum TransferStatus {
   IDLE = "idle",
   PREPARING = "preparing",
   WAITING = "waiting",
   SENT = "sent",
-  COMPLETED = "completed",
 }
 
 const getTransferStatusDescription = (status: TransferStatus) => {
@@ -14,23 +14,28 @@ const getTransferStatusDescription = (status: TransferStatus) => {
     case TransferStatus.PREPARING:
       return "Preparing your transfer...";
     case TransferStatus.WAITING:
-      return "Please check your wallet and approve the transaction.";
+      return "Please check your wallet and approve the transaction. This may take a few seconds to appear.";
     case TransferStatus.SENT:
       return "Your funds have been sent!";
-    case TransferStatus.COMPLETED:
-      return "Transfer completed successfully!";
     default:
       return "";
   }
 };
 
+const getTransferStatusIcon = (status: TransferStatus) => {
+  switch (status) {
+    case TransferStatus.SENT:
+      return <CheckIcon size={32} className="text-white" />;
+    default:
+      return <Spinner size="lg" color="secondary" />;
+  }
+};
+
 export default function TransferStatusView({ status }: { status: TransferStatus }) {
   return (
-    <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
-      <div className="flex flex-col items-center gap-4">
-        <Spinner size="lg" color="secondary" />
-        <span className="text-white">{getTransferStatusDescription(status)}</span>
-      </div>
+    <div className="flex flex-col items-center justify-center gap-4 text-center px-4">
+      {getTransferStatusIcon(status)}
+      <span className="text-white text-lg sm:text-xl">{getTransferStatusDescription(status)}</span>
     </div>
   );
 }

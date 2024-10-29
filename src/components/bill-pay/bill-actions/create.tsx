@@ -91,6 +91,8 @@ export default function CreateBillPayModal({
 
   const handleSave = async () => {
     if (!isWalletConnected) return;
+    setTransferStatus(TransferStatus.PREPARING);
+    let timeout: number = 0;
     try {
       // Create existing disbursement
       if (newBillPay.disbursementId && newBillPay.vendorMethod) {
@@ -106,27 +108,29 @@ export default function CreateBillPayModal({
 
         if (!response) throw new Error("Failed to create disbursement");
 
-        await buildTransfer({ liquidationAddress: response.address as Address, amount: newBillPay.amount });
-        // TODO: tell user funds have been sent
-        setTransferStatus(TransferStatus.WAITING);
+        const txHash = await buildTransfer({
+          liquidationAddress: response.address as Address,
+          amount: newBillPay.amount,
+          setTransferStatus,
+        });
+
+        console.log("Transaction hash:", txHash);
+        setTransferStatus(TransferStatus.SENT);
+        timeout = 5000;
+        return;
       } else if (!newBillPay.disbursementId && newBillPay.vendorMethod) {
         // TODO: Create new disbursement
       }
     } catch (error) {
       console.error("Error creating disbursement:", error);
       setTransferStatus(TransferStatus.IDLE);
-      // TODO: Handle error case
+      // TODO: Handle error case (like when user rejects request) – we may want to revert PUT request
     } finally {
-      onClose();
+      setTimeout(() => {
+        onClose();
+        setTransferStatus(TransferStatus.IDLE);
+      }, timeout);
     }
-  };
-
-  const handleTransactionApproved = () => {
-    setTransferStatus(TransferStatus.SENT);
-    setTimeout(() => {
-      onClose();
-      setTransferStatus(TransferStatus.IDLE);
-    }, 3000);
   };
 
   const handleSupportClick = () => {
@@ -138,7 +142,6 @@ export default function CreateBillPayModal({
     {
       label: "Create",
       onClick: handleSave,
-      onTransactionApproved: handleTransactionApproved,
     },
   ];
 
@@ -188,7 +191,12 @@ export default function CreateBillPayModal({
 
   return (
     <Modal isOpen={isOpen} size="2xl" onClose={onClose}>
-      <ModalContent>
+      <ModalContent className="relative">
+        {transferStatus !== TransferStatus.IDLE && (
+          <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-70 z-50">
+            <TransferStatusView status={transferStatus} />
+          </div>
+        )}
         <ModalHeader>Create New Transfer</ModalHeader>
         <ModalBody className="overflow-y-auto max-h-[50vh] relative">{renderTransferFields()}</ModalBody>
         {!isWalletConnected && <div className="absolute inset-0 bg-gray-500 bg-opacity-50 z-10"></div>}
@@ -213,7 +221,6 @@ export default function CreateBillPayModal({
             </Button>
           </div>
         )}
-        {transferStatus !== TransferStatus.IDLE && <TransferStatusView status={transferStatus} />}
       </ModalContent>
     </Modal>
   );
