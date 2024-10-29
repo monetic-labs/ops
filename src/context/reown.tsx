@@ -1,7 +1,7 @@
 import { AppKitNetwork, base, baseSepolia } from "@reown/appkit/networks";
 import { createAppKit, Metadata } from "@reown/appkit";
 import SignClient from "@walletconnect/sign-client";
-import { isLocal } from "@/utils/helpers";
+import { isLocal, isProduction, isStaging } from "@/utils/helpers";
 import { getChain } from "@/config/web3";
 
 const projectId = process.env.NEXT_PUBLIC_REOWN_PROJECT_ID;
@@ -9,17 +9,24 @@ if (!projectId) {
   throw new Error("Reown Project ID is not set");
 }
 
+const getUrl = () => {
+  if (isLocal) return "http://localhost:3000";
+  if (isProduction) return "https://services.backpack.network";
+  if (isStaging) return "https://staging.services.backpack.network";
+  else return "https://services.backpack.network";
+};
+
 const metadata: Metadata = {
   name: "Backpack Network",
   description: "Connect to Backpack to enable bill pay services",
-  url: isLocal ? "http://localhost:3000" : "https://backpack.network",
+  url: getUrl(),
   icons: ["https://cryptologos.cc/logos/uniswap-uni-logo.png?v=035"], // TODO: change URL
 };
 
 const mapChainToAppKitNetwork = (): [AppKitNetwork, ...AppKitNetwork[]] => {
   switch (getChain().id) {
     case 84532:
-      return [baseSepolia]
+      return [baseSepolia];
     case 8453:
       return [base];
     default:

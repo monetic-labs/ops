@@ -5,6 +5,7 @@ import { PostcodeLookupResult } from "@/hooks/generics/usePostcodeLookup";
 
 export const isLocal = process.env.NEXT_PUBLIC_NODE_ENV === "development";
 export const isProduction = process.env.NEXT_PUBLIC_NODE_ENV === "production";
+export const isStaging = process.env.NEXT_PUBLIC_NODE_ENV === "staging";
 
 export function generateUserInviteUrl(onboardId: string, email: string): string {
   return `/onboard/${onboardId}?email=${encodeURIComponent(email)}`;
