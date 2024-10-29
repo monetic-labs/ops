@@ -1,47 +1,72 @@
 import { useEffect, useState } from "react";
 import { useInfiniteScroll } from "@nextui-org/use-infinite-scroll";
-import { DisbursementMethod } from "@backpack-fux/pylon-sdk";
-import { DEFAULT_BILL_PAY, NewBillPay, vendorCurrencies, vendorMethods } from "../create";
+import { DisbursementMethod, FiatCurrency } from "@backpack-fux/pylon-sdk";
+import { NewBillPay } from "../create";
 import { useGetContacts } from "@/hooks/bill-pay/useGetContacts";
-import { useExistingDisbursement } from "@/hooks/bill-pay/useExistingDisbursement";
 import { Autocomplete, AutocompleteItem } from "@nextui-org/autocomplete";
 import { Input } from "@nextui-org/input";
 import { Eye, EyeOff } from "lucide-react";
+import { DEFAULT_BILL_PAY } from "../../bill-pay";
+import { FieldLabels, getFieldValidation } from "./validation";
+
+function getValidationProps(label: FieldLabels, value: string, currency: string, balance?: string) {
+  const validation = getFieldValidation({ label, currency, value, balance });
+  return {
+    min: validation.min,
+    max: validation.max,
+    step: validation.step,
+    isInvalid: validation.isInvalid,
+    errorMessage: validation.errorMessage,
+    description: validation.description,
+  };
+}
+
+function getValidationResults(newBillPay: NewBillPay, settlementBalance?: string) {
+  return {
+    accountHolder: getValidationProps(FieldLabels.ACCOUNT_HOLDER, newBillPay.vendorName, newBillPay.currency),
+    bankName: getValidationProps(FieldLabels.BANK_NAME, newBillPay.vendorBankName, newBillPay.currency),
+    accountNumber: getValidationProps(FieldLabels.ACCOUNT_NUMBER, newBillPay.accountNumber, newBillPay.currency),
+    paymentMethod: getValidationProps(FieldLabels.PAYMENT_METHOD, newBillPay.vendorMethod || "", newBillPay.currency),
+    amount: getValidationProps(FieldLabels.AMOUNT, newBillPay.amount, newBillPay.currency, settlementBalance),
+  };
+}
+
+function isFormValid(validationResults: Record<string, { isInvalid: boolean }>): boolean {
+  return Object.values(validationResults).every((result) => !result.isInvalid);
+}
 
 export default function ExistingTransferFields({
   newBillPay,
   setNewBillPay,
   isNewSender,
   setIsNewSender,
+  settlementBalance,
 }: {
   newBillPay: NewBillPay;
   setNewBillPay: (newBillPay: NewBillPay) => void;
   isNewSender: boolean;
   setIsNewSender: (isNewSender: boolean) => void;
+  settlementBalance?: string;
 }) {
   const [search, setSearch] = useState("");
   const [isOpen, setIsOpen] = useState(false);
   const [isVisible, setIsVisible] = useState(false);
   const { contacts, pagination, isLoading: isLoadingContacts, fetchContacts } = useGetContacts();
-  const {
-    disbursement,
-    isLoading: isLoadingDisbursement,
-    error,
-    createExistingDisbursement,
-  } = useExistingDisbursement();
 
   const [, scrollerRef] = useInfiniteScroll({
     hasMore: pagination?.hasNextPage || false,
     isEnabled: isOpen,
     shouldUseLoader: false,
     onLoadMore: () => {
-      fetchContacts({ after: pagination?.endCursor });
+      fetchContacts({ after: pagination?.endCursor, search });
     },
   });
 
   useEffect(() => {
-    fetchContacts({ search });
-  }, [search]);
+    if (isOpen) {
+      fetchContacts({ search });
+    }
+  }, [isOpen, search]);
 
   const handleSelectionChange = (contactId: string) => {
     const selectedContact = contacts.find((contact) => contact.id === contactId);
@@ -56,16 +81,33 @@ export default function ExistingTransferFields({
     }
   };
 
+  const handleMethodChange = (value: DisbursementMethod) => {
+    const selectedDisbursement = selectedContact?.disbursements.find((disbursement) => disbursement.method === value);
+    setNewBillPay({
+      ...newBillPay,
+      vendorMethod: value,
+      memo: selectedDisbursement?.paymentMessage || undefined,
+      disbursementId: selectedDisbursement?.id || undefined,
+    });
+  };
+
   const toggleVisibility = () => {
     setIsVisible((prevState) => !prevState);
   };
 
+  const validationResults = getValidationResults(newBillPay, settlementBalance);
+  const selectedContact = contacts.find((contact) => contact.accountOwnerName === newBillPay.vendorName);
+  const availableMethods = selectedContact
+    ? selectedContact.disbursements.map((disbursement) => disbursement.method)
+    : [];
+
   return (
     <>
       <Autocomplete
-        label="Account Holder"
+        label={FieldLabels.ACCOUNT_HOLDER}
         placeholder="Select an account holder"
         isRequired
+        {...validationResults.accountHolder}
         listboxProps={{
           emptyContent: (
             <button
@@ -106,12 +148,18 @@ export default function ExistingTransferFields({
           </AutocompleteItem>
         )}
       </Autocomplete>
-      <Input isDisabled label="Bank Name" value={newBillPay.vendorBankName} />
+      <Input
+        label={FieldLabels.BANK_NAME}
+        isDisabled={!newBillPay.vendorName}
+        {...validationResults.bankName}
+        value={newBillPay.vendorBankName}
+      />
       <div className="flex space-x-4">
         <Input
+          label={FieldLabels.ACCOUNT_NUMBER}
           isReadOnly
           isDisabled={!newBillPay.accountNumber}
-          label="Account Number"
+          {...validationResults.accountNumber}
           value={
             newBillPay.accountNumber
               ? isVisible
@@ -141,12 +189,14 @@ export default function ExistingTransferFields({
         <Input isDisabled label="Routing Number" value={`${newBillPay.routingNumber}`} className="w-2/5 md:w-1/2" />
       </div>
       <Autocomplete
+        label={FieldLabels.PAYMENT_METHOD}
+        isRequired
         isDisabled={!newBillPay.vendorName}
-        label="Method"
+        {...validationResults.paymentMethod}
         value={newBillPay.vendorMethod}
-        onSelectionChange={(value) => setNewBillPay({ ...newBillPay, vendorMethod: value as DisbursementMethod })}
+        onSelectionChange={(value) => handleMethodChange(value as DisbursementMethod)}
       >
-        {vendorMethods.map((method) => (
+        {availableMethods.map((method) => (
           <AutocompleteItem key={method} textValue={method}>
             {method}
           </AutocompleteItem>
@@ -157,21 +207,26 @@ export default function ExistingTransferFields({
           <Input
             isDisabled={newBillPay.vendorMethod === DisbursementMethod.WIRE}
             label={`${newBillPay.vendorMethod === DisbursementMethod.WIRE ? "Wire Message" : "ACH Reference"}`}
+            description={`${newBillPay.vendorMethod === DisbursementMethod.WIRE ? "This cannot be changed." : ""}`}
             value={newBillPay.memo}
             onChange={(e) => setNewBillPay({ ...newBillPay, memo: e.target.value })}
           />
         )}
       <Input
-        label="Amount"
+        label={FieldLabels.AMOUNT}
         type="number"
-        min={1}
-        step={0.01}
-        isDisabled={!newBillPay.vendorName && !newBillPay.vendorMethod}
         isRequired
-        isInvalid={parseFloat(newBillPay.amount) < 1}
-        errorMessage={`Amount must be greater than 1 ${newBillPay.currency}`}
+        isDisabled={!newBillPay.vendorName && !newBillPay.vendorMethod}
+        {...validationResults.amount}
         value={newBillPay.amount}
-        onChange={(e) => setNewBillPay({ ...newBillPay, amount: e.target.value })}
+        onChange={(e) => {
+          const value = e.target.value;
+          // Only allow 2 decimal places
+          const regex = /^\d*\.?\d{0,2}$/;
+          if (regex.test(value) || value === "") {
+            setNewBillPay({ ...newBillPay, amount: value });
+          }
+        }}
         startContent={
           <div className="pointer-events-none flex items-center">
             <span className="text-default-400 text-small">$</span>
@@ -189,7 +244,7 @@ export default function ExistingTransferFields({
               value={newBillPay.currency}
               onChange={(e) => setNewBillPay({ ...newBillPay, currency: e.target.value })}
             >
-              {vendorCurrencies.map((currency) => (
+              {Object.values(FiatCurrency).map((currency) => (
                 <option key={currency} value={currency}>
                   {currency}
                 </option>

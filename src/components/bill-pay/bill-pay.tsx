@@ -1,14 +1,31 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { Tabs, Tab } from "@nextui-org/tabs";
 import Contacts from "./contacts-tab";
 import Transfers from "./transfers-tab";
 import { billPayConfig, BillPayId } from "@/config/tabs";
 import { Button } from "@nextui-org/button";
-import CreateBillPayModal from "./bill-actions/create";
+import CreateBillPayModal, { NewBillPay } from "./bill-actions/create";
+import { useAppKitAccount } from "@reown/appkit/react";
+import { FiatCurrency } from "@backpack-fux/pylon-sdk";
+
+export const DEFAULT_BILL_PAY: NewBillPay = {
+  vendorName: "",
+  vendorMethod: undefined,
+  currency: FiatCurrency.USD,
+  vendorBankName: "",
+  routingNumber: "",
+  accountNumber: "",
+  memo: "",
+  amount: "",
+  fee: "",
+  total: "",
+};
 
 export default function BillPayTabs() {
+  const [newBillPay, setNewBillPay] = useState<NewBillPay>(DEFAULT_BILL_PAY);
   const [selectedService, setSelectedService] = useState<string>(billPayConfig[0].id);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const { isConnected } = useAppKitAccount();
 
   const renderTabContent = (tabId: string) => {
     switch (tabId) {
@@ -27,7 +44,7 @@ export default function BillPayTabs() {
         <Tabs
           aria-label="Bill Pay options"
           classNames={{
-            base: "w-full overflow-x-auto sm:overflow-x-visible",
+            base: "w-full overflow-x-auto sm:overflow-x-viseible",
             tabList: "bg-charyo-500/60 backdrop-blur-sm border-none",
             tab: "flex-grow sm:flex-grow-0",
             tabContent: "text-notpurple-500/60",
@@ -46,10 +63,15 @@ export default function BillPayTabs() {
       <div className="mt-4">{renderTabContent(selectedService)}</div>
       <CreateBillPayModal
         isOpen={isCreateModalOpen}
-        onClose={() => setIsCreateModalOpen(false)}
-        onSave={(newBillPay) => {
-          console.log("Creating bill pay:", newBillPay);
+        onClose={() => {
           setIsCreateModalOpen(false);
+          setNewBillPay(DEFAULT_BILL_PAY);
+        }}
+        newBillPay={newBillPay}
+        setNewBillPay={setNewBillPay}
+        isWalletConnected={isConnected}
+        onSave={(newBillPay) => {
+          console.log("Creating transfer:", newBillPay);
         }}
       />
     </div>

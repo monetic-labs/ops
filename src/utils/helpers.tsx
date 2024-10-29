@@ -3,6 +3,9 @@ import { ChainAddress, OrderID } from "@/types";
 import { ISO3166Alpha2Country } from "@backpack-fux/pylon-sdk";
 import { PostcodeLookupResult } from "@/hooks/generics/usePostcodeLookup";
 
+export const isLocal = process.env.NEXT_PUBLIC_NODE_ENV === "development";
+export const isProduction = process.env.NEXT_PUBLIC_NODE_ENV === "production";
+
 export function generateUserInviteUrl(onboardId: string, email: string): string {
   return `/onboard/${onboardId}?email=${encodeURIComponent(email)}`;
 }
@@ -114,12 +117,18 @@ export const getFullName = (firstName: string, lastName: string) => {
   return `${firstName} ${lastName}`;
 };
 
-export function formatNumber(value: number) {
+export const formatNumber = (value: number) => {
   return new Intl.NumberFormat("en-US", {
     currency: "USD",
   }).format(value);
-}
+};
 
-export function formatAmountUSD(value: number) {
+export const formatAmountUSD = (value: number) => {
   return new Intl.NumberFormat("en-US", { currency: "USD" }).format(value);
-}
+};
+
+export const formatDecimals = (value: string): string => {
+  const [whole, decimal = ""] = value.split(".");
+  const truncatedDecimal = decimal.slice(0, 2).padEnd(2, "0");
+  return `${whole}.${truncatedDecimal}`;
+};

@@ -1,20 +1,20 @@
 import { useEffect, useState } from "react";
 import { useInfiniteScroll } from "@nextui-org/use-infinite-scroll";
-import { DisbursementMethod } from "@backpack-fux/pylon-sdk";
-import { Countries, DEFAULT_BILL_PAY, NewBillPay, States, vendorCurrencies, vendorMethods } from "../create";
+import { DisbursementMethod, FiatCurrency } from "@backpack-fux/pylon-sdk";
+import { Countries, NewBillPay, States } from "../create";
 import { Autocomplete, AutocompleteItem } from "@nextui-org/autocomplete";
 import { Input } from "@nextui-org/input";
 import { Avatar } from "@nextui-org/avatar";
 import { Alpha3 } from "convert-iso-codes";
 
+const vendorMethods = [DisbursementMethod.ACH_SAME_DAY, DisbursementMethod.WIRE];
+
 export default function NewTransferFields({
   newBillPay,
   setNewBillPay,
-  showMemo,
 }: {
   newBillPay: NewBillPay;
   setNewBillPay: (newBillPay: NewBillPay) => void;
-  showMemo: boolean;
 }) {
   return (
     <>
@@ -141,7 +141,7 @@ export default function NewTransferFields({
               value={newBillPay.currency}
               onChange={(e) => setNewBillPay({ ...newBillPay, currency: e.target.value })}
             >
-              {vendorCurrencies.map((currency) => (
+              {Object.values(FiatCurrency).map((currency) => (
                 <option key={currency} value={currency}>
                   {currency}
                 </option>

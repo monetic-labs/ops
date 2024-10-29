@@ -14,7 +14,6 @@ import ComplianceTable from "@/components/compliance/compliance";
 import UserTab from "@/components/users/users";
 import { tabsConfig } from "@/config/tabs";
 import { useGetComplianceStatus } from "@/hooks/merchant/useGetComplianceStatus";
-import { PersonRole } from "@backpack-fux/pylon-sdk";
 
 export default function MerchantServicesTabs({ userId }: { userId: string }) {
   const [selectedService, setSelectedService] = useState<string>(tabsConfig[0].id);

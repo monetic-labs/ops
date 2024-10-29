@@ -13,7 +13,7 @@
     "map:postcode": "node scripts/preprocess-postcodes.js"
   },
   "dependencies": {
-    "@backpack-fux/pylon-sdk": "0.2.958",
+    "@backpack-fux/pylon-sdk": "^0.2.958",
     "@hookform/resolvers": "^3.9.0",
     "@nextui-org/accordion": "^2.0.40",
     "@nextui-org/autocomplete": "^2.1.7",
@@ -47,6 +47,7 @@
     "@react-aria/ssr": "3.9.4",
     "@react-aria/visually-hidden": "3.8.12",
     "@react-stately/data": "^3.11.7",
+    "@reown/appkit": "^1.1.7",
     "@svgr/webpack": "^8.1.0",
     "chart.js": "^4.4.5",
     "clsx": "2.1.1",
@@ -54,6 +55,7 @@
     "framer-motion": "~11.9.0",
     "intl-messageformat": "^10.7.0",
     "jwt-decode": "^4.0.0",
+    "lokijs": "1.x",
     "lucide-react": "^0.441.0",
     "next": "14.2.4",
     "next-themes": "^0.2.1",
@@ -64,6 +66,7 @@
     "react-dom": "18.3.1",
     "react-hook-form": "^7.53.1",
     "uuid": "^10.0.0",
+    "viem": "^2.21.34",
     "zod": "^3.23.8"
   },
   "devDependencies": {

@@ -136,8 +136,8 @@ export default function BillPayDetailsModal({ isOpen, onClose, billPay }: BillPa
                         billPay.state === DisbursementState.COMPLETED
                           ? "text-ualert-100"
                           : billPay.state === DisbursementState.PENDING
-                          ? "text-ualert-300"
-                          : "text-ualert-500"
+                            ? "text-ualert-300"
+                            : "text-ualert-500"
                       }`}
                     >
                       {billPay.state}
