@@ -1,6 +1,7 @@
 import React, { useMemo, useState } from "react";
 import { Select, SelectItem } from "@nextui-org/select";
 import { FormModal } from "@/components/generics/form-modal";
+import { CardType } from "@backpack-fux/pylon-sdk";
 import pylon from "@/libs/pylon-sdk";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
@@ -21,7 +22,7 @@ import { CardStatus, ISO3166Alpha2Country } from "@backpack-fux/pylon-sdk";
 
 export default function CreateCardModal({ isOpen, onClose }: CreateCardModalProps) {
   const [error, setError] = useState<string | null>();
-  const [cardType, setCardType] = useState("virtual");
+  const [cardType, setCardType] = useState<CardType>(CardType.VIRTUAL);
   const [loading, setLoading] = useState(false);
   const {
     control: controlFirstForm,
@@ -67,10 +68,8 @@ export default function CreateCardModal({ isOpen, onClose }: CreateCardModalProp
         shipping: {
           ...secondData,
           countryCode: secondData.country as ISO3166Alpha2Country,
-          // @ts-ignore
-          line1: secondData.street1,
-          // @ts-ignore
-          line2: secondData.street2,
+          street1: secondData.street1,
+          street2: secondData.street2,
         },
       });
       reset();
@@ -87,11 +86,11 @@ export default function CreateCardModal({ isOpen, onClose }: CreateCardModalProp
     try {
       setLoading(true);
       switch (cardType) {
-        case "physical": {
+        case CardType.PHYSICAL: {
           handleSubmit(onSubmitSecondForm)();
           break;
         }
-        case "virtual": {
+        case CardType.VIRTUAL: {
           await pylon.createVirtualCard({
             displayName: data.displayName,
             limit: { amount: data.limitAmount, frequency: data.limitFrequency },
@@ -128,8 +127,8 @@ export default function CreateCardModal({ isOpen, onClose }: CreateCardModalProp
           label="Card Type"
           placeholder="Select card type"
           value={cardType}
-          onChange={(e) => setCardType(e.target.value)}
-          defaultSelectedKeys={["virtual"]}
+          onChange={(e) => setCardType(e.target.value as CardType)}
+          defaultSelectedKeys={[CardType.VIRTUAL]}
         >
           <SelectItem value={"virtual"} key={"virtual"}>
             Virtual
@@ -191,7 +190,7 @@ export default function CreateCardModal({ isOpen, onClose }: CreateCardModalProp
           placeholder="Select card limit cycle"
           items={limitCyclesObject}
         />
-        {cardType === "physical" ? (
+        {cardType === CardType.PHYSICAL ? (
           <>
             <p>Shipping Details</p>
             <FormInput
