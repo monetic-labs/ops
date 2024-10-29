@@ -1,4 +1,4 @@
-import { SetStateAction, useMemo, useState } from "react";
+import { SetStateAction, useEffect, useMemo, useState } from "react";
 import { Info } from "lucide-react";
 import { Modal, ModalBody, ModalContent, ModalHeader } from "@nextui-org/modal";
 import { Divider } from "@nextui-org/divider";
@@ -14,6 +14,8 @@ import { modal } from "@/context/reown";
 import { Button } from "@nextui-org/button";
 import TransferStatusView, { TransferStatus } from "@/components/generics/transfer-status";
 import { buildTransfer } from "@/utils/bill-pay-transfer";
+import { useBalance } from "@/hooks/account-contracts/useBalance";
+import { validateBillPay } from "./fields/validation";
 
 type CreateBillPayModalProps = {
   isOpen: boolean;
@@ -38,10 +40,6 @@ export type NewBillPay = {
   total: string;
 };
 
-export enum Currency {
-  USD = "USD",
-}
-
 export enum Countries {
   CAN = "Canada",
   CYM = "Cayman Islands",
@@ -54,8 +52,6 @@ export enum States {
   CA = "California",
   TX = "Texas",
 }
-
-export const vendorCurrencies: Currency[] = [Currency.USD];
 
 const methodFees: Record<DisbursementMethod, number> = {
   [DisbursementMethod.ACH_SAME_DAY]: 0,
@@ -72,12 +68,23 @@ export default function CreateBillPayModal({
 }: CreateBillPayModalProps) {
   const [isNewSender, setIsNewSender] = useState(false);
   const [transferStatus, setTransferStatus] = useState<TransferStatus>(TransferStatus.IDLE);
+  const [formIsValid, setFormIsValid] = useState(false);
+  const { balance: settlementBalance, isLoading: isLoadingBalance } = useBalance({
+    amount: newBillPay.amount,
+    isModalOpen: isOpen,
+  });
+
   const {
     disbursement,
     isLoading: isLoadingDisbursement,
     error,
     createExistingDisbursement,
   } = useExistingDisbursement();
+
+  useEffect(() => {
+    const formValid = validateBillPay(newBillPay, settlementBalance);
+    setFormIsValid(formValid);
+  }, [newBillPay, settlementBalance, setFormIsValid]);
 
   const fee = useMemo(() => {
     if (!newBillPay.vendorMethod) return 0;
@@ -116,14 +123,15 @@ export default function CreateBillPayModal({
 
         console.log("Transaction hash:", txHash);
         setTransferStatus(TransferStatus.SENT);
-        timeout = 5000;
+        timeout = 3000;
         return;
       } else if (!newBillPay.disbursementId && newBillPay.vendorMethod) {
         // TODO: Create new disbursement
       }
     } catch (error) {
       console.error("Error creating disbursement:", error);
-      setTransferStatus(TransferStatus.IDLE);
+      setTransferStatus(TransferStatus.ERROR);
+      timeout = 3000;
       // TODO: Handle error case (like when user rejects request) – we may want to revert PUT request
     } finally {
       setTimeout(() => {
@@ -142,6 +150,7 @@ export default function CreateBillPayModal({
     {
       label: "Create",
       onClick: handleSave,
+      isDisabled: !formIsValid || !isWalletConnected,
     },
   ];
 
@@ -154,6 +163,7 @@ export default function CreateBillPayModal({
         setNewBillPay={setNewBillPay}
         isNewSender={isNewSender}
         setIsNewSender={setIsNewSender}
+        settlementBalance={settlementBalance}
       />
     );
   };

@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useInfiniteScroll } from "@nextui-org/use-infinite-scroll";
-import { DisbursementMethod } from "@backpack-fux/pylon-sdk";
-import { NewBillPay, vendorCurrencies } from "../create";
+import { DisbursementMethod, FiatCurrency } from "@backpack-fux/pylon-sdk";
+import { NewBillPay } from "../create";
 import { useGetContacts } from "@/hooks/bill-pay/useGetContacts";
 import { Autocomplete, AutocompleteItem } from "@nextui-org/autocomplete";
 import { Input } from "@nextui-org/input";
@@ -9,16 +9,44 @@ import { Eye, EyeOff } from "lucide-react";
 import { DEFAULT_BILL_PAY } from "../../bill-pay";
 import { FieldLabels, getFieldValidation } from "./validation";
 
+function getValidationProps(label: FieldLabels, value: string, currency: string, balance?: string) {
+  const validation = getFieldValidation({ label, currency, value, balance });
+  return {
+    min: validation.min,
+    max: validation.max,
+    step: validation.step,
+    isInvalid: validation.isInvalid,
+    errorMessage: validation.errorMessage,
+    description: validation.description,
+  };
+}
+
+function getValidationResults(newBillPay: NewBillPay, settlementBalance?: string) {
+  return {
+    accountHolder: getValidationProps(FieldLabels.ACCOUNT_HOLDER, newBillPay.vendorName, newBillPay.currency),
+    bankName: getValidationProps(FieldLabels.BANK_NAME, newBillPay.vendorBankName, newBillPay.currency),
+    accountNumber: getValidationProps(FieldLabels.ACCOUNT_NUMBER, newBillPay.accountNumber, newBillPay.currency),
+    paymentMethod: getValidationProps(FieldLabels.PAYMENT_METHOD, newBillPay.vendorMethod || "", newBillPay.currency),
+    amount: getValidationProps(FieldLabels.AMOUNT, newBillPay.amount, newBillPay.currency, settlementBalance),
+  };
+}
+
+function isFormValid(validationResults: Record<string, { isInvalid: boolean }>): boolean {
+  return Object.values(validationResults).every((result) => !result.isInvalid);
+}
+
 export default function ExistingTransferFields({
   newBillPay,
   setNewBillPay,
   isNewSender,
   setIsNewSender,
+  settlementBalance,
 }: {
   newBillPay: NewBillPay;
   setNewBillPay: (newBillPay: NewBillPay) => void;
   isNewSender: boolean;
   setIsNewSender: (isNewSender: boolean) => void;
+  settlementBalance?: string;
 }) {
   const [search, setSearch] = useState("");
   const [isOpen, setIsOpen] = useState(false);
@@ -67,6 +95,7 @@ export default function ExistingTransferFields({
     setIsVisible((prevState) => !prevState);
   };
 
+  const validationResults = getValidationResults(newBillPay, settlementBalance);
   const selectedContact = contacts.find((contact) => contact.accountOwnerName === newBillPay.vendorName);
   const availableMethods = selectedContact
     ? selectedContact.disbursements.map((disbursement) => disbursement.method)
@@ -78,12 +107,7 @@ export default function ExistingTransferFields({
         label={FieldLabels.ACCOUNT_HOLDER}
         placeholder="Select an account holder"
         isRequired
-        min={getFieldValidation(FieldLabels.ACCOUNT_HOLDER, newBillPay.currency, newBillPay.vendorName).min}
-        max={getFieldValidation(FieldLabels.ACCOUNT_HOLDER, newBillPay.currency, newBillPay.vendorName).max}
-        isInvalid={getFieldValidation(FieldLabels.ACCOUNT_HOLDER, newBillPay.currency, newBillPay.vendorName).isInvalid}
-        errorMessage={
-          getFieldValidation(FieldLabels.ACCOUNT_HOLDER, newBillPay.currency, newBillPay.vendorName).errorMessage
-        }
+        {...validationResults.accountHolder}
         listboxProps={{
           emptyContent: (
             <button
@@ -127,28 +151,15 @@ export default function ExistingTransferFields({
       <Input
         label={FieldLabels.BANK_NAME}
         isDisabled={!newBillPay.vendorName}
-        min={getFieldValidation(FieldLabels.BANK_NAME, newBillPay.currency, newBillPay.vendorBankName).min}
-        max={getFieldValidation(FieldLabels.BANK_NAME, newBillPay.currency, newBillPay.vendorBankName).max}
-        isInvalid={getFieldValidation(FieldLabels.BANK_NAME, newBillPay.currency, newBillPay.vendorBankName).isInvalid}
-        errorMessage={
-          getFieldValidation(FieldLabels.BANK_NAME, newBillPay.currency, newBillPay.vendorBankName).errorMessage
-        }
+        {...validationResults.bankName}
         value={newBillPay.vendorBankName}
       />
       <div className="flex space-x-4">
-        {/** TODO: check user balance is sufficient in validation */}
         <Input
           label={FieldLabels.ACCOUNT_NUMBER}
           isReadOnly
           isDisabled={!newBillPay.accountNumber}
-          min={getFieldValidation(FieldLabels.ACCOUNT_NUMBER, newBillPay.currency, newBillPay.accountNumber).min}
-          max={getFieldValidation(FieldLabels.ACCOUNT_NUMBER, newBillPay.currency, newBillPay.accountNumber).max}
-          isInvalid={
-            getFieldValidation(FieldLabels.ACCOUNT_NUMBER, newBillPay.currency, newBillPay.accountNumber).isInvalid
-          }
-          errorMessage={
-            getFieldValidation(FieldLabels.ACCOUNT_NUMBER, newBillPay.currency, newBillPay.accountNumber).errorMessage
-          }
+          {...validationResults.accountNumber}
           value={
             newBillPay.accountNumber
               ? isVisible
@@ -181,12 +192,7 @@ export default function ExistingTransferFields({
         label={FieldLabels.PAYMENT_METHOD}
         isRequired
         isDisabled={!newBillPay.vendorName}
-        isInvalid={
-          getFieldValidation(FieldLabels.PAYMENT_METHOD, newBillPay.currency, newBillPay.vendorMethod).isInvalid
-        }
-        errorMessage={
-          getFieldValidation(FieldLabels.PAYMENT_METHOD, newBillPay.currency, newBillPay.vendorMethod).errorMessage
-        }
+        {...validationResults.paymentMethod}
         value={newBillPay.vendorMethod}
         onSelectionChange={(value) => handleMethodChange(value as DisbursementMethod)}
       >
@@ -211,12 +217,16 @@ export default function ExistingTransferFields({
         type="number"
         isRequired
         isDisabled={!newBillPay.vendorName && !newBillPay.vendorMethod}
-        min={getFieldValidation(FieldLabels.AMOUNT, newBillPay.currency, newBillPay.amount).min}
-        step={getFieldValidation(FieldLabels.AMOUNT, newBillPay.currency, newBillPay.amount).step}
-        isInvalid={getFieldValidation(FieldLabels.AMOUNT, newBillPay.currency, newBillPay.amount).isInvalid}
-        errorMessage={getFieldValidation(FieldLabels.AMOUNT, newBillPay.currency, newBillPay.amount).errorMessage}
+        {...validationResults.amount}
         value={newBillPay.amount}
-        onChange={(e) => setNewBillPay({ ...newBillPay, amount: e.target.value })}
+        onChange={(e) => {
+          const value = e.target.value;
+          // Only allow 2 decimal places
+          const regex = /^\d*\.?\d{0,2}$/;
+          if (regex.test(value) || value === "") {
+            setNewBillPay({ ...newBillPay, amount: value });
+          }
+        }}
         startContent={
           <div className="pointer-events-none flex items-center">
             <span className="text-default-400 text-small">$</span>
@@ -234,7 +244,7 @@ export default function ExistingTransferFields({
               value={newBillPay.currency}
               onChange={(e) => setNewBillPay({ ...newBillPay, currency: e.target.value })}
             >
-              {vendorCurrencies.map((currency) => (
+              {Object.values(FiatCurrency).map((currency) => (
                 <option key={currency} value={currency}>
                   {currency}
                 </option>

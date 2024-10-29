@@ -2,7 +2,7 @@ import { modal } from "@/context/reown";
 import { encodeFunctionData, Address, parseUnits, Hex } from "viem";
 import type UniversalProvider from "@walletconnect/universal-provider";
 import { BASE_USDC } from "./constants";
-import { getChain } from "@/config/web3";
+import { getChain, publicClient } from "@/config/web3";
 import { TransferStatus } from "@/components/generics/transfer-status";
 
 type BuildTransferArgs = {
@@ -11,7 +11,7 @@ type BuildTransferArgs = {
   setTransferStatus: (status: TransferStatus) => void;
 };
 
-const getProvider = async () => {
+const getProvider = async (): Promise<UniversalProvider> => {
   const wcProvider = await modal.universalAdapter?.getWalletConnectProvider();
   if (!wcProvider) {
     throw new Error("No wallet provider found");
@@ -19,7 +19,8 @@ const getProvider = async () => {
   return wcProvider;
 };
 
-const getAccounts = async (wcProvider: UniversalProvider): Promise<Address> => {
+export const getAccount = async (): Promise<Address> => {
+  const wcProvider = await getProvider();
   // OR await wcProvider.request({ method: "eth_requestAccounts" })
   const accounts = await wcProvider.enable();
   if (!accounts) {
@@ -28,20 +29,9 @@ const getAccounts = async (wcProvider: UniversalProvider): Promise<Address> => {
   return accounts[0] as Address;
 };
 
-// TODO: Check user has enough balance
-const isBalanceSufficient = async ({
-  walletAddress,
-  intendedAmountToTransfer,
-}: {
-  walletAddress: Address;
-  intendedAmountToTransfer: number;
-}) => {
-  // TODO: returns true if user has sufficient balance for intended transfer
-};
-
 const buildTransfer = async ({ liquidationAddress, amount, setTransferStatus }: BuildTransferArgs): Promise<Hex> => {
   const wcProvider = await getProvider();
-  const walletAddress = await getAccounts(wcProvider);
+  const settlementAddress = await getAccount();
 
   const transferData = encodeFunctionData({
     abi: BASE_USDC.ABI,
@@ -50,12 +40,20 @@ const buildTransfer = async ({ liquidationAddress, amount, setTransferStatus }: 
   });
 
   const transactionParameters = {
-    from: walletAddress, // The sender's address
+    from: settlementAddress, // The sender's address
     to: BASE_USDC.ADDRESS, // The USDC contract address
     data: transferData,
   };
 
-  // TODO: run contract simulation
+  const { result } = await publicClient.simulateContract({
+    address: BASE_USDC.ADDRESS,
+    abi: BASE_USDC.ABI,
+    functionName: "transfer",
+    args: [liquidationAddress, parseUnits(amount, BASE_USDC.DECIMALS)],
+    account: settlementAddress,
+  });
+
+  if (!result) throw new Error("Failed to simulate contract");
 
   setTransferStatus(TransferStatus.WAITING);
   return await wcProvider.request(

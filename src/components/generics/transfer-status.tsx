@@ -1,12 +1,13 @@
 import React from "react";
 import { Spinner } from "@nextui-org/spinner";
-import { CheckIcon } from "lucide-react";
+import { CheckIcon, CircleX } from "lucide-react";
 
 export enum TransferStatus {
   IDLE = "idle",
   PREPARING = "preparing",
   WAITING = "waiting",
   SENT = "sent",
+  ERROR = "error",
 }
 
 const getTransferStatusDescription = (status: TransferStatus) => {
@@ -17,6 +18,8 @@ const getTransferStatusDescription = (status: TransferStatus) => {
       return "Please check your wallet and approve the transaction. This may take a few seconds to appear.";
     case TransferStatus.SENT:
       return "Your funds have been sent!";
+    case TransferStatus.ERROR:
+      return "Something went wrong. Please try again.";
     default:
       return "";
   }
@@ -25,7 +28,9 @@ const getTransferStatusDescription = (status: TransferStatus) => {
 const getTransferStatusIcon = (status: TransferStatus) => {
   switch (status) {
     case TransferStatus.SENT:
-      return <CheckIcon size={32} className="text-white" />;
+      return <CheckIcon size={32} className="text-green-500" />;
+    case TransferStatus.ERROR:
+      return <CircleX size={32} className="text-red-500" />;
     default:
       return <Spinner size="lg" color="secondary" />;
   }

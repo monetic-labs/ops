@@ -1,10 +1,20 @@
+import { BASE_USDC } from "@/utils/constants";
 import { isLocal } from "@/utils/helpers";
 import { DisbursementMethod } from "@backpack-fux/pylon-sdk";
+import { NewBillPay } from "../create";
 
-type FieldValidation = {
+type FieldValidationInput = {
+  label: FieldLabels;
+  currency: string;
+  balance?: string;
+  value?: string;
+};
+
+type FieldValidationOutput = {
   min?: number;
   max?: number;
   step?: number;
+  description?: string;
   isInvalid: boolean;
   errorMessage: string;
 };
@@ -18,7 +28,16 @@ export enum FieldLabels {
   ROUTING_NUMBER = "Routing Number",
 }
 
-export const getFieldValidation = (label: FieldLabels, currency: string, value?: string): FieldValidation => {
+export const getFieldValidation = ({
+  label,
+  currency,
+  balance,
+  value,
+}: FieldValidationInput): FieldValidationOutput => {
+  if (!balance) {
+    return { isInvalid: false, errorMessage: "Fetching balance..." };
+  }
+
   if (value === "" || !value) {
     return { isInvalid: false, errorMessage: "" };
   }
@@ -49,9 +68,18 @@ export const getFieldValidation = (label: FieldLabels, currency: string, value?:
     }
     case FieldLabels.AMOUNT: {
       const minAmount = isLocal ? 0.1 : 1;
-      const isInvalidAmount = parseFloat(value) < minAmount;
-      const errorMessageAmount = `Amount must be greater than ${minAmount} ${currency}`;
-      return { min: minAmount, step: 0.01, isInvalid: isInvalidAmount, errorMessage: errorMessageAmount };
+      const maxAmount = balance ? parseFloat(balance) : 0;
+      const isInvalidAmount = parseFloat(value) < minAmount || parseFloat(value) > maxAmount;
+      const errorMessageAmount = `Amount must be between ${minAmount} and ${maxAmount} ${BASE_USDC.SYMBOL}`;
+      const description = `You have ${balance} ${BASE_USDC.SYMBOL} available in your account`;
+      return {
+        min: minAmount,
+        max: maxAmount,
+        step: 0.01,
+        isInvalid: isInvalidAmount,
+        errorMessage: errorMessageAmount,
+        description,
+      };
     }
     case FieldLabels.BANK_NAME: {
       const minLength = 1;
@@ -83,4 +111,51 @@ export const getFieldValidation = (label: FieldLabels, currency: string, value?:
     default:
       return { isInvalid: false, errorMessage: "" };
   }
+};
+
+export const validateBillPay = (billPay: NewBillPay, balance?: string): boolean => {
+  // Check required fields are present
+  const requiredFields = [
+    billPay.vendorName,
+    billPay.vendorBankName,
+    billPay.accountNumber,
+    billPay.vendorMethod,
+    billPay.amount,
+  ];
+
+  if (requiredFields.some((field) => !field)) {
+    return false;
+  }
+
+  // Validate each field using existing getFieldValidation
+  const validations = {
+    accountHolder: getFieldValidation({
+      label: FieldLabels.ACCOUNT_HOLDER,
+      value: billPay.vendorName,
+      currency: billPay.currency,
+    }),
+    bankName: getFieldValidation({
+      label: FieldLabels.BANK_NAME,
+      value: billPay.vendorBankName,
+      currency: billPay.currency,
+    }),
+    accountNumber: getFieldValidation({
+      label: FieldLabels.ACCOUNT_NUMBER,
+      value: billPay.accountNumber,
+      currency: billPay.currency,
+    }),
+    paymentMethod: getFieldValidation({
+      label: FieldLabels.PAYMENT_METHOD,
+      value: billPay.vendorMethod,
+      currency: billPay.currency,
+    }),
+    amount: getFieldValidation({
+      label: FieldLabels.AMOUNT,
+      value: billPay.amount,
+      currency: billPay.currency,
+      balance,
+    }),
+  };
+
+  return Object.values(validations).every((result) => !result.isInvalid);
 };
