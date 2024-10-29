@@ -68,8 +68,8 @@ export default function CreateCardModal({ isOpen, onClose }: CreateCardModalProp
         shipping: {
           ...secondData,
           countryCode: secondData.country as ISO3166Alpha2Country,
-          street1: secondData.street1,
-          street2: secondData.street2,
+          line1: secondData.street1,
+          line2: secondData.street2,
         },
       });
       reset();

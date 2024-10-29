@@ -1,7 +1,6 @@
 import { useState } from "react";
 import pylon from "@/libs/pylon-sdk";
 import { MerchantRainCompanyCreateOutput, MerchantRainCompanyCreateInput } from "@backpack-fux/pylon-sdk";
-import { RainMerchantCreateDto } from "@/types/dtos/rainDTO";
 import { merchantConfig } from "@/config/merchant";
 
 export const useRainCreateMerchant = () => {
@@ -9,7 +8,9 @@ export const useRainCreateMerchant = () => {
   const [error, setError] = useState<string | null>(null);
   const [data, setData] = useState<MerchantRainCompanyCreateOutput | null>(null);
 
-  const createRainMerchant = async (data: RainMerchantCreateDto): Promise<MerchantRainCompanyCreateOutput | null> => {
+  const createRainMerchant = async (
+    data: MerchantRainCompanyCreateInput
+  ): Promise<MerchantRainCompanyCreateOutput | null> => {
     setIsLoading(true);
     setError(null);
     setData(null);
@@ -18,8 +19,6 @@ export const useRainCreateMerchant = () => {
       const createRainMerchant: MerchantRainCompanyCreateInput = {
         initialUser: {
           ...data.initialUser,
-          //id: merchantConfig.id,
-          // @ts-ignore
           iovationBlackbox: merchantConfig.iovationBlackbox,
         },
         name: data.name,
@@ -28,7 +27,7 @@ export const useRainCreateMerchant = () => {
         representatives: data.representatives,
         ultimateBeneficialOwners: data.ultimateBeneficialOwners,
       };
-      
+
       console.log("useRainCreateMerchant:", JSON.stringify(createRainMerchant, null, 2));
       const response = await pylon.applyCardCompany(createRainMerchant);
 
