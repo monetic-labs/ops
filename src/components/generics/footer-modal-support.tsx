@@ -4,7 +4,8 @@ import { ModalFooter } from "@nextui-org/modal";
 import { Switch } from "@nextui-org/switch";
 import { Kbd } from "@nextui-org/kbd";
 import html2canvas from "html2canvas";
-import SupportChat from "@/components/support/support-chat";
+
+import { ChatPane } from "../messaging/pane";
 import LeftPaneChat from "../support/pane-chat";
 import { Tooltip } from "@nextui-org/tooltip";
 
@@ -134,8 +135,8 @@ export default function ModalFooterWithSupport({
           ))}
         </div>
       </ModalFooter>
-      {/* {showSupportChat && <SupportChat />} */}
-      {isChatOpen && <LeftPaneChat isOpen={isChatOpen} onClose={() => setIsChatOpen(false)} />}
+      {/* {showSupportChat && <SupportChat /> } */}
+      {isChatOpen && <ChatPane isOpen={isChatOpen} onClose={() => setIsChatOpen(false)} />}
     </>
   );
 }

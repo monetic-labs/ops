@@ -3,7 +3,6 @@
 import React, { useRef, useEffect } from 'react';
 import { useChatStorage } from '@/hooks/chat/useChatStorage';
 import { useRagChat } from '@/hooks/chat/useRagChat';
-import RAGMessage from './chat-interface/message-rag';
 
 interface SupportChatProps {
   mode: 'bot' | 'support';
@@ -36,7 +35,22 @@ const SupportChat: React.FC<SupportChatProps> = ({ mode }) => {
     const messageText = newMessage;
     setNewMessage(''); // Clear input immediately
     
-    await saveMessage(messageText);
+    try {
+      // Create a temporary message object for optimistic UI update
+      const tempMessage = {
+        id: Date.now().toString(),
+        text: messageText, // Make sure this is set
+        type: 'user' as const,
+        status: 'sending' as const
+      };
+      
+      // Add to messages immediately for optimistic UI
+      await saveMessage(messageText);
+      
+      console.log('Message sent:', messageText); // Debug log
+    } catch (error) {
+      console.error('Error sending message:', error);
+    }
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -61,11 +75,10 @@ const SupportChat: React.FC<SupportChatProps> = ({ mode }) => {
                   : 'bg-charyo-500/50 text-notpurple-500'
               }`}
             >
-              {message.type === 'bot' && mode === 'bot' ? (
-                <RAGMessage message={message} />
-              ) : (
-                <p className="whitespace-pre-wrap break-words">{message.text}</p>
-              )}
+              {/* Add the message text display */}
+              <span className="break-words">{message.text}</span>
+
+              {/* Status indicators */}
               {message.type === 'user' && (
                 <span className="text-xs ml-2 opacity-75">
                   {message.status === 'sending' && '⏳'}

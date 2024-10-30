@@ -1,10 +1,16 @@
 import { useState, useCallback } from 'react';
 import { useOptimistic } from 'react';
-import { Message } from '@/components/support/chat-interface/message-types';
 
 interface RAGResponse {
   answer: string;
   sources?: string[];
+}
+
+interface Message {
+  id: string;
+  text: string;
+  type: 'user' | 'bot';
+  status: 'sending' | 'sent' | 'error';
 }
 
 export function useRagChat() {
