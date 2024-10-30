@@ -10,7 +10,8 @@
     "lint": "eslint . --ext .ts,.tsx -c .eslintrc.json --fix",
     "unfuck": "rm -rf .next && rm -rf node_modules && rm -rf package-lock.json && pnpm i",
     "build:postcode": "node scripts/convert-csv.js",
-    "map:postcode": "node scripts/preprocess-postcodes.js"
+    "map:postcode": "node scripts/preprocess-postcodes.js",
+    "upload-docs": "tsx src/libs/pinecone/upload-docs.ts"
   },
   "dependencies": {
     "@ai-sdk/openai": "^0.0.70",
@@ -55,6 +56,7 @@
     "clsx": "2.1.1",
     "convert-iso-codes": "^1.0.10",
     "framer-motion": "~11.9.0",
+    "gray-matter": "^4.0.3",
     "heroicons": "^2.1.5",
     "html2canvas": "^1.4.1",
     "intl-messageformat": "^10.7.0",
@@ -70,6 +72,9 @@
     "react-chartjs-2": "^5.2.0",
     "react-dom": "18.3.1",
     "react-hook-form": "^7.53.1",
+    "remark-parse": "^11.0.0",
+    "remark-stringify": "^11.0.0",
+    "unified": "^11.0.5",
     "uuid": "^10.0.0",
     "ws": "^8.18.0",
     "zod": "^3.23.8",
