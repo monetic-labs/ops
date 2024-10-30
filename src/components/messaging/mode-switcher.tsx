@@ -12,15 +12,15 @@ export const ModeSwitcher: React.FC = () => {
     <Tabs 
       aria-label="Chat modes" 
       selectedKey={mode}
-      onSelectionChange={(key) => setMode(key as 'bot' | 'support')}
+      onSelectionChange={(key) => setMode(key as 'agent' | 'support')}
       className="w-full"
     >
       <Tab
-        key="bot"
+        key="agent"
         title={
           <div className="flex items-center gap-2">
             <Bot size={18} />
-            <span>AI Assistant</span>
+            <span>AI Agent</span>
           </div>
         }
       />

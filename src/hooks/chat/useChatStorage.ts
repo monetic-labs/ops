@@ -1,6 +1,6 @@
 import { useState, useCallback, useEffect, useTransition } from 'react';
 import { useOptimistic } from 'react';
-import { sendMessageToTelegram } from '@/components/support/telegram/send-message';
+import { sendMessageToTelegram } from '@/components/messaging/support/telegram/send-message';
 
 interface ChatMessage {
   id: string;

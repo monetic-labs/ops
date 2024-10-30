@@ -3,10 +3,17 @@
 import React, { useRef, useEffect } from 'react';
 import { MessageBubble } from './message-bubble';
 import { useChatMessages } from '@/hooks/messaging/useChatMessages';
+import { useChatMode } from '@/hooks/messaging/useChatMode';
+import { useChat } from 'ai/react';
+import { useChatContext } from '@/hooks/messaging/useChatContext';
 
 export const ChatBody: React.FC = () => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const { messages } = useChatMessages();
+  const { mode } = useChatMode();
+  const { messages: aiMessages } = useChatContext();
+  const { messages: supportMessages } = useChatMessages();
+
+  const messages = mode === 'agent' ? aiMessages : supportMessages;
 
   useEffect(() => {
     const scrollToBottom = () => {

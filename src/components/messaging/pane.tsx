@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useCallback } from 'react';
+import React from 'react';
 import { ChatHeader } from './header';
 import { ChatBody } from './body';
 import { ChatFooter } from './footer';

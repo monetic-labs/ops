@@ -2,7 +2,7 @@ import { useCallback } from 'react';
 import { useChatMode } from './useChatMode';
 import { useChatMessages } from './useChatMessages';
 import { sendTelegramMessage } from '@/libs/telegram';
-import { sendMessageToOpenAI } from '@/libs/ai/openai';
+
 import { Message, UserMessage } from '@/types/messaging';
 
 export const useChatActions = () => {
@@ -29,7 +29,7 @@ export const useChatActions = () => {
           throw new Error(result.error || 'Failed to send message');
         }
       } else {
-        await sendMessageToOpenAI(text);
+        console.log('Weird spot to be in');
       }
       
       updateMessageStatus(messageId, 'sent');

@@ -45,6 +45,7 @@
     "@nextui-org/tooltip": "^2.0.41",
     "@nextui-org/use-infinite-scroll": "^2.1.5",
     "@nextui-org/user": "^2.0.34",
+    "@pinecone-database/pinecone": "^4.0.0",
     "@react-aria/ssr": "3.9.4",
     "@react-aria/visually-hidden": "3.8.12",
     "@react-stately/data": "^3.11.7",

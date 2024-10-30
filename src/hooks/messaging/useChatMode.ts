@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 
-type ChatMode = 'bot' | 'support';
+type ChatMode = 'agent' | 'support';
 
 interface ChatModeStore {
   mode: ChatMode;
@@ -8,6 +8,6 @@ interface ChatModeStore {
 }
 
 export const useChatMode = create<ChatModeStore>((set) => ({
-  mode: 'bot',
+  mode: 'agent',
   setMode: (mode) => set({ mode })
 }));

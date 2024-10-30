@@ -6,7 +6,6 @@ import { Kbd } from "@nextui-org/kbd";
 import html2canvas from "html2canvas";
 
 import { ChatPane } from "../messaging/pane";
-import LeftPaneChat from "../support/pane-chat";
 import { Tooltip } from "@nextui-org/tooltip";
 
 interface ActionButton {

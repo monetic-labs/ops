@@ -1,7 +1,7 @@
-import { Message } from '@/components/support/chat-interface/message-types';
+
 
 export async function sendMessageToTelegram(text: string) {
-  const response = await fetch('/api/support/message-send', {
+  const response = await fetch('/api/messaging/support/message-send', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
