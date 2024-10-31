@@ -8,6 +8,7 @@ import { TransferStatus } from "@/components/generics/transfer-status";
 type BuildTransferArgs = {
   liquidationAddress: Address;
   amount: string;
+  settlementAddress: Address;
   setTransferStatus: (status: TransferStatus) => void;
 };
 
@@ -29,9 +30,16 @@ export const getAccount = async (): Promise<Address> => {
   return accounts[0] as Address;
 };
 
-const buildTransfer = async ({ liquidationAddress, amount, setTransferStatus }: BuildTransferArgs): Promise<Hex> => {
+const buildTransfer = async ({
+  liquidationAddress,
+  amount,
+  settlementAddress,
+  setTransferStatus,
+}: BuildTransferArgs): Promise<Hex> => {
   const wcProvider = await getProvider();
-  const settlementAddress = await getAccount();
+  if (!settlementAddress) {
+    settlementAddress = await getAccount();
+  }
 
   const transferData = encodeFunctionData({
     abi: BASE_USDC.ABI,

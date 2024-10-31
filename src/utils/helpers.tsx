@@ -133,3 +133,4 @@ export const formatDecimals = (value: string): string => {
   const truncatedDecimal = decimal.slice(0, 2).padEnd(2, "0");
   return `${whole}.${truncatedDecimal}`;
 };
+

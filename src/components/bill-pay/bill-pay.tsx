@@ -1,19 +1,20 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Tabs, Tab } from "@nextui-org/tabs";
 import Contacts from "./contacts-tab";
 import Transfers from "./transfers-tab";
 import { billPayConfig, BillPayId } from "@/config/tabs";
 import { Button } from "@nextui-org/button";
 import CreateBillPayModal from "./bill-actions/create";
-import { useAppKitAccount } from "@reown/appkit/react";
+import { modal, useAppKitAccount } from "@reown/appkit/react";
 import { DEFAULT_NEW_BILL_PAY } from "@/types/bill-pay";
 import { NewBillPay, ExistingBillPay } from "@/types/bill-pay";
+import { Address } from "viem";
 
 export default function BillPayTabs() {
   const [billPay, setBillPay] = useState<NewBillPay | ExistingBillPay>(DEFAULT_NEW_BILL_PAY);
   const [selectedService, setSelectedService] = useState<string>(billPayConfig[0].id);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
-  const { isConnected } = useAppKitAccount();
+  const { isConnected, address: settlementAddress } = useAppKitAccount();
 
   const renderTabContent = (tabId: string) => {
     switch (tabId) {
@@ -58,6 +59,7 @@ export default function BillPayTabs() {
         billPay={billPay}
         setBillPay={setBillPay}
         isWalletConnected={isConnected}
+        settlementAddress={settlementAddress as Address}
         onSave={(newBillPay) => {
           console.log("Creating transfer:", newBillPay);
         }}

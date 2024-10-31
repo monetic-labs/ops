@@ -3,7 +3,11 @@ import { Info } from "lucide-react";
 import { Modal, ModalBody, ModalContent, ModalHeader } from "@nextui-org/modal";
 import { Divider } from "@nextui-org/divider";
 import { Tooltip } from "@nextui-org/tooltip";
-import { DisbursementMethod } from "@backpack-fux/pylon-sdk";
+import {
+  DisbursementMethod,
+  MerchantDisbursementUpdateOutput,
+  MerchantDisbursementCreateOutput,
+} from "@backpack-fux/pylon-sdk";
 import { Address } from "viem";
 import NewTransferFields from "./fields/new-transfer";
 import ModalFooterWithSupport from "../../generics/footer-modal-support";
@@ -22,6 +26,7 @@ import {
   isExistingBillPay,
   NewBillPay,
 } from "@/types/bill-pay";
+import { useNewDisbursement } from "@/hooks/bill-pay/useNewDisbursement";
 
 type CreateBillPayModalProps = {
   isOpen: boolean;
@@ -30,11 +35,26 @@ type CreateBillPayModalProps = {
   billPay: NewBillPay | ExistingBillPay;
   setBillPay: (billPay: NewBillPay | ExistingBillPay) => void;
   isWalletConnected: boolean;
+  settlementAddress: Address;
 };
 
 const methodFees: Record<DisbursementMethod, number> = {
   [DisbursementMethod.ACH_SAME_DAY]: 0,
   [DisbursementMethod.WIRE]: 0.02,
+};
+
+const getLiquidationAddress = (
+  response: MerchantDisbursementUpdateOutput | MerchantDisbursementCreateOutput,
+  isExisting: boolean
+): Address => {
+  if (isExisting) {
+    // For existing disbursements (MerchantDisbursementUpdateOutput)
+    return response.address as Address;
+  } else {
+    // For new disbursements (MerchantDisbursementCreateOutput)
+    const createResponse = response as MerchantDisbursementCreateOutput;
+    return createResponse.disbursements[0].address as Address;
+  }
 };
 
 export default function CreateBillPayModal({
@@ -44,6 +64,7 @@ export default function CreateBillPayModal({
   isWalletConnected,
   billPay,
   setBillPay,
+  settlementAddress,
 }: CreateBillPayModalProps) {
   const [isNewSender, setIsNewSender] = useState(false);
   const [transferStatus, setTransferStatus] = useState<TransferStatus>(TransferStatus.IDLE);
@@ -52,13 +73,18 @@ export default function CreateBillPayModal({
     amount: billPay.amount,
     isModalOpen: isOpen,
   });
-
   const {
-    disbursement,
-    isLoading: isLoadingDisbursement,
-    error,
+    disbursement: existingDisbursement,
+    isLoading: isLoadingExistingDisbursement,
+    error: existingDisbursementError,
     createExistingDisbursement,
   } = useExistingDisbursement();
+  const {
+    disbursement: newDisbursement,
+    isLoading: isLoadingNewDisbursement,
+    error: newDisbursementError,
+    createNewDisbursement,
+  } = useNewDisbursement();
 
   useEffect(() => {
     const formValid = validateBillPay(billPay, settlementBalance);
@@ -76,42 +102,60 @@ export default function CreateBillPayModal({
   }, [billPay.amount, fee]);
 
   const handleSave = async () => {
-    if (!isWalletConnected) return;
+    if (!isWalletConnected || !settlementAddress) return;
     setTransferStatus(TransferStatus.PREPARING);
     let timeout: number = 0;
+
     try {
-      // Create existing disbursement
-      if (isExistingBillPay(billPay) && billPay.vendorMethod) {
-        const response = await createExistingDisbursement(billPay.disbursementId, {
-          amount: billPay.amount,
-          disbursementMethod: billPay.vendorMethod,
-          ...(billPay.vendorMethod === DisbursementMethod.WIRE && { wireMessage: billPay.memo }),
-          ...(billPay.vendorMethod === DisbursementMethod.ACH_SAME_DAY && {
-            achReference: billPay.memo,
-          }),
-        });
-        console.log("Existing disbursement response:", response);
-
-        if (!response) throw new Error("Failed to create disbursement");
-
-        const txHash = await buildTransfer({
-          liquidationAddress: response.address as Address,
-          amount: billPay.amount,
-          setTransferStatus,
-        });
-
-        console.log("Transaction hash:", txHash);
-        setTransferStatus(TransferStatus.SENT);
-        timeout = 3000;
-        return;
-      } else if (billPay.vendorMethod) {
-        // TODO: Create new disbursement
+      if (!billPay.vendorMethod) {
+        throw new Error("Payment method is required");
       }
+
+      const response = isExistingBillPay(billPay)
+        ? await createExistingDisbursement(billPay.disbursementId, {
+            amount: billPay.amount,
+            disbursementMethod: billPay.vendorMethod,
+            ...(billPay.vendorMethod === DisbursementMethod.WIRE && { wireMessage: billPay.memo }),
+            ...(billPay.vendorMethod === DisbursementMethod.ACH_SAME_DAY && {
+              achReference: billPay.memo,
+            }),
+          })
+        : await createNewDisbursement({
+            accountOwnerName: billPay.vendorName,
+            bankName: billPay.vendorBankName,
+            accountNumber: billPay.accountNumber,
+            routingNumber: billPay.routingNumber,
+            address: billPay.address,
+            returnAddress: settlementAddress,
+            amount: parseFloat(billPay.amount),
+            paymentRail: billPay.vendorMethod,
+            ...(billPay.vendorMethod === DisbursementMethod.WIRE && {
+              wireMessage: billPay.memo,
+            }),
+            ...(billPay.vendorMethod === DisbursementMethod.ACH_SAME_DAY && {
+              achReference: billPay.memo,
+            }),
+          });
+
+      if (!response) {
+        throw new Error(`Failed to create ${isExistingBillPay(billPay) ? "existing" : "new"} disbursement`);
+      }
+
+      const liquidationAddress = getLiquidationAddress(response, isExistingBillPay(billPay));
+      const txHash = await buildTransfer({
+        liquidationAddress,
+        amount: billPay.amount,
+        settlementAddress,
+        setTransferStatus,
+      });
+
+      console.log("Transaction hash:", txHash);
+      setTransferStatus(TransferStatus.SENT);
+      timeout = 3000;
     } catch (error) {
       console.error("Error creating disbursement:", error);
       setTransferStatus(TransferStatus.ERROR);
       timeout = 3000;
-      // TODO: Handle error case (like when user rejects request) – we may want to revert PUT request
     } finally {
       setTimeout(() => {
         onClose();
@@ -122,7 +166,6 @@ export default function CreateBillPayModal({
 
   const handleNewSenderChange = (newValue: boolean) => {
     setIsNewSender(newValue);
-    // Reset to appropriate default state when switching modes
     setBillPay(newValue ? DEFAULT_NEW_BILL_PAY : DEFAULT_EXISTING_BILL_PAY);
   };
 

@@ -1,9 +1,6 @@
-import { useEffect, useState } from "react";
-import { useInfiniteScroll } from "@nextui-org/use-infinite-scroll";
 import {
   DisbursementMethod,
   FiatCurrency,
-  ISO3166Alpha3Country as Countries,
   ISO3166Alpha2State as States,
   ISO3166Alpha2State,
 } from "@backpack-fux/pylon-sdk";
@@ -11,9 +8,8 @@ import { NewBillPay } from "@/types/bill-pay";
 import { Autocomplete, AutocompleteItem } from "@nextui-org/autocomplete";
 import { Input } from "@nextui-org/input";
 import { Avatar } from "@nextui-org/avatar";
-import { Alpha3 } from "convert-iso-codes";
-import { getCountryName, getRegion, getTree } from "iso3166-helper";
-import { getValidationProps, newBillPaySchema } from "@/types/validations/bill-pay";
+import { getRegion } from "iso3166-helper";
+import { getValidationProps } from "@/types/validations/bill-pay";
 import { FieldLabel } from "@/types/validations/bill-pay";
 import { useCountries } from "@/hooks/bill-pay/useCountries";
 
@@ -173,7 +169,7 @@ export default function NewTransferFields({ billPay, setBillPay, settlementBalan
         onChange={(e) =>
           setBillPay({
             ...billPay,
-            address: { ...billPay.address, street2: e.target.value },
+            address: { ...billPay.address, street2: e.target.value || undefined },
           })
         }
         {...validationResults.streetLine2}
@@ -261,7 +257,7 @@ export default function NewTransferFields({ billPay, setBillPay, settlementBalan
           return /^[A-Za-z0-9 ]{0,10}$/.test(value) || "Cannot contain special characters";
         }}
         value={billPay.memo}
-        onChange={(e) => setBillPay({ ...billPay, memo: e.target.value })}
+        onChange={(e) => setBillPay({ ...billPay, memo: e.target.value || undefined })}
       />
       <Input
         label={FieldLabel.AMOUNT}

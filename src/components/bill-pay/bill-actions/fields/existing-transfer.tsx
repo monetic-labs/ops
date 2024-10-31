@@ -219,7 +219,7 @@ export default function ExistingTransferFields({
             label={`${billPay.vendorMethod === DisbursementMethod.WIRE ? "Wire Message" : "ACH Reference"}`}
             description={`${billPay.vendorMethod === DisbursementMethod.WIRE ? "This cannot be changed." : ""}`}
             value={billPay.memo}
-            onChange={(e) => setBillPay({ ...billPay, memo: e.target.value })}
+            onChange={(e) => setBillPay({ ...billPay, memo: e.target.value || undefined })}
           />
         )}
       <Input

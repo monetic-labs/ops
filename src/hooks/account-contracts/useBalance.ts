@@ -1,10 +1,10 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { publicClient } from "@/config/web3";
 import { BASE_USDC } from "@/utils/constants";
-import { formatUnits } from "viem";
-import { getAccount } from "@/utils/reown";
-import { debounce } from "lodash";
+import { Address, formatUnits } from "viem";
 import { formatDecimals } from "@/utils/helpers";
+import { useAppKitAccount } from "@reown/appkit/react";
+import { useDebounce } from "use-debounce";
 
 type UseBalanceProps = {
   amount: string;
@@ -12,41 +12,71 @@ type UseBalanceProps = {
 };
 
 export const useBalance = ({ amount, isModalOpen }: UseBalanceProps) => {
+  const { address: account } = useAppKitAccount();
   const [balance, setBalance] = useState<string | undefined>(undefined);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
+  const [lastFetchTime, setLastFetchTime] = useState(0);
 
-  const getUserBalance = async (): Promise<string> => {
-    const account = await getAccount();
+  const [debouncedAmount] = useDebounce(amount, 500); // 500ms delay
+
+  const getUserBalance = useCallback(async (): Promise<string> => {
+    if (!account) return "0";
+
     const balanceResult = await publicClient.readContract({
       address: BASE_USDC.ADDRESS,
       abi: BASE_USDC.ABI,
       functionName: "balanceOf",
-      args: [account],
+      args: [account as Address],
     });
     const formattedBalance = formatUnits(balanceResult, BASE_USDC.DECIMALS);
     return formatDecimals(formattedBalance);
-  };
+  }, [account]);
 
-  const fetchBalance = async () => {
-    try {
-      setIsLoading(true);
-      setBalance(await getUserBalance());
-    } catch (error) {
-      setError(error as Error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  const fetchBalance = useCallback(
+    async (force = false) => {
+      const now = Date.now();
+      // Only fetch if it's been more than 1 minute since last fetch or if forced
+      if (!force && now - lastFetchTime < 60000) return;
 
+      try {
+        setIsLoading(true);
+        const newBalance = await getUserBalance();
+        setBalance(newBalance);
+        setLastFetchTime(now);
+      } catch (error) {
+        setError(error as Error);
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [getUserBalance, lastFetchTime]
+  );
+
+  // Initial fetch when modal opens
   useEffect(() => {
-    if (isModalOpen) {
-      fetchBalance(); // Fetch balance once when the amount changes
-      const intervalId = setInterval(fetchBalance, 300_000); // Fetch balance every 5 minutes
-
-      return () => clearInterval(intervalId); // Clear interval on unmount or when modal closes
+    if (isModalOpen && account && !balance) {
+      fetchBalance(true);
     }
-  }, [amount, isModalOpen]); // Trigger when amount changes and modal state is open
+  }, [isModalOpen, account]);
+
+  // Fetch on debounced amount change
+  useEffect(() => {
+    if (isModalOpen && account && debouncedAmount) {
+      fetchBalance();
+    }
+  }, [debouncedAmount, isModalOpen, account]);
+
+  // Periodic refresh
+  useEffect(() => {
+    if (!isModalOpen || !account) return;
+
+    const intervalId = setInterval(() => {
+      fetchBalance();
+    }, 300_000); // 1 minute
+
+    return () => clearInterval(intervalId);
+  }, [isModalOpen, account]);
 
   return { balance, isLoading, error };
 };

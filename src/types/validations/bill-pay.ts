@@ -195,9 +195,11 @@ export function getValidationProps({ label, value, currency, balance, method }: 
       break;
     case FieldLabel.ROUTING_NUMBER:
       schema = newBillPaySchema.shape.routingNumber;
+      // TODO: check routing number is unique against existing disbursement contacts
       break;
     case FieldLabel.PAYMENT_METHOD:
       schema = newBillPaySchema.shape.vendorMethod;
+      // TODO: check account number is unique against existing disbursement contacts
       break;
     case FieldLabel.AMOUNT:
       schema = newBillPaySchema.shape.amount.refine((val) => {
