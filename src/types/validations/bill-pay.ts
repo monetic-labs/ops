@@ -1,24 +1,14 @@
+import { z } from "zod";
 import { BASE_USDC } from "@/utils/constants";
 import { isLocal } from "@/utils/helpers";
-import { DisbursementMethod, ISO3166Alpha2State, ISO3166Alpha3Country } from "@backpack-fux/pylon-sdk";
-import { ExistingBillPay, NewBillPay } from "@/types/bill-pay";
-
-type FieldValidationInput = {
-  label: FieldLabel;
-  currency: string;
-  balance?: string;
-  value?: string;
-  method?: DisbursementMethod;
-};
-
-type FieldValidationOutput = {
-  min?: number;
-  max?: number;
-  step?: number;
-  description?: string;
-  isInvalid: boolean;
-  errorMessage?: string;
-};
+import {
+  DisbursementMethod,
+  ISO3166Alpha2Country,
+  ISO3166Alpha2State,
+  ISO3166Alpha3Country,
+} from "@backpack-fux/pylon-sdk";
+import { NewBillPay } from "../bill-pay";
+import { ExistingBillPay } from "../bill-pay";
 
 export enum FieldLabel {
   ACCOUNT_HOLDER = "Account Holder",
@@ -37,295 +27,238 @@ export enum FieldLabel {
   MEMO = "Memo",
 }
 
-export const getFieldValidation = ({
-  label,
-  currency,
-  balance,
-  value,
-  method,
-}: FieldValidationInput): FieldValidationOutput => {
-  if (!balance && label === FieldLabel.AMOUNT) {
-    return { isInvalid: false, errorMessage: "Fetching balance..." };
-  }
-
-  if (value === "" || !value) {
-    return { isInvalid: false, errorMessage: "" };
-  }
-  switch (label) {
-    case FieldLabel.ACCOUNT_HOLDER: {
-      const minLength = 1;
-      const maxLength = 50;
-      const isInvalidAccountHolder = value.length < minLength || value.length > maxLength;
-      const errorMessageAccountHolder = `Account Holder must be between ${minLength} and ${maxLength} characters`;
-      return {
-        min: minLength,
-        max: maxLength,
-        isInvalid: isInvalidAccountHolder,
-        errorMessage: isInvalidAccountHolder ? errorMessageAccountHolder : undefined,
-      };
-    }
-    case FieldLabel.ACCOUNT_NUMBER: {
-      const minLength = 5;
-      const maxLength = 17;
-      const isInvalidAccountNumber = value.length < minLength || value.length > maxLength;
-      const errorMessageAccountNumber = `Account Number must be between ${minLength} and ${maxLength} digits`;
-      return {
-        min: minLength,
-        max: maxLength,
-        isInvalid: isInvalidAccountNumber,
-        errorMessage: isInvalidAccountNumber ? errorMessageAccountNumber : undefined,
-      };
-    }
-    case FieldLabel.AMOUNT: {
-      const minAmount = isLocal ? 0.1 : 1;
-      const maxAmount = balance ? parseFloat(balance) : 0;
-      const isInvalidAmount = parseFloat(value) < minAmount || parseFloat(value) > maxAmount;
-      const errorMessageAmount = `Amount must be between ${minAmount} and ${maxAmount} ${BASE_USDC.SYMBOL}`;
-      const description = `You have ${balance} ${BASE_USDC.SYMBOL} available in your account`;
-      return {
-        min: minAmount,
-        max: maxAmount,
-        step: 0.01,
-        isInvalid: isInvalidAmount,
-        errorMessage: isInvalidAmount ? errorMessageAmount : undefined,
-        description,
-      };
-    }
-    case FieldLabel.BANK_NAME: {
-      const minLength = 1;
-      const maxLength = 30;
-      const isInvalidBankName = value.length < minLength || value.length > maxLength;
-      const errorMessageBankName = `Bank Name must be between ${minLength} and ${maxLength} characters`;
-      return {
-        min: minLength,
-        max: maxLength,
-        isInvalid: isInvalidBankName,
-        errorMessage: isInvalidBankName ? errorMessageBankName : undefined,
-      };
-    }
-    case FieldLabel.PAYMENT_METHOD: {
-      const isInvalidMethod = !Object.values(DisbursementMethod).includes(value as DisbursementMethod);
-      const errorMessageMethod = `Method must be a valid value`;
-      return { isInvalid: isInvalidMethod, errorMessage: isInvalidMethod ? errorMessageMethod : undefined };
-    }
-    case FieldLabel.ROUTING_NUMBER: {
-      const length = 9;
-      const routingNumberPattern = /^[0-9]+$/;
-      const isInvalidRoutingNumber = value.length !== length || !routingNumberPattern.test(value);
-      const errorMessageRoutingNumber = `Routing Number must be ${length} digits and contain only numbers`;
-      return {
-        min: length,
-        max: length,
-        isInvalid: isInvalidRoutingNumber,
-        errorMessage: isInvalidRoutingNumber ? errorMessageRoutingNumber : undefined,
-      };
-    }
-    case FieldLabel.STREET_LINE_1: {
-      const minLength = 1;
-      const maxLength = 100;
-      const lengthInvalid = value.length < minLength || value.length > maxLength;
-
-      let streetNumberInvalid = false;
-      if (method === DisbursementMethod.WIRE) {
-        const streetNumberRegex = /^\d+\s/;
-        streetNumberInvalid = !streetNumberRegex.test(value);
-      }
-
-      const isInvalid = lengthInvalid || streetNumberInvalid;
-
-      return {
-        min: minLength,
-        max: maxLength,
-        isInvalid,
-        errorMessage: isInvalid
-          ? lengthInvalid
-            ? `Street address must be between ${minLength} and ${maxLength} characters`
-            : "US wire transfers require a street number at the start of the address"
-          : undefined,
-      };
-    }
-    case FieldLabel.STREET_LINE_2: {
-      const maxLength = 100;
-      const isInvalid = value.length > maxLength;
-      return {
-        max: maxLength,
-        isInvalid,
-        errorMessage: isInvalid ? `Street address line 2 must be less than ${maxLength} characters` : undefined,
-      };
-    }
-    case FieldLabel.CITY: {
-      const minLength = 1;
-      const maxLength = 50;
-      const isInvalid = value.length < minLength || value.length > maxLength;
-      return {
-        min: minLength,
-        max: maxLength,
-        isInvalid,
-        errorMessage: isInvalid ? `City must be between ${minLength} and ${maxLength} characters` : undefined,
-      };
-    }
-    case FieldLabel.STATE: {
-      const isInvalid = !Object.values(ISO3166Alpha2State).includes(value as any);
-      return {
-        isInvalid,
-        errorMessage: isInvalid ? "Please select a valid state" : undefined,
-      };
-    }
-    case FieldLabel.ZIP: {
-      const zipRegex = /^\d{5}(-\d{4})?$/;
-      const isInvalid = !zipRegex.test(value);
-      return {
-        isInvalid,
-        errorMessage: isInvalid ? "Please enter a valid ZIP code (e.g., 12345 or 12345-6789)" : undefined,
-      };
-    }
-    case FieldLabel.COUNTRY: {
-      const isInvalid = !Object.values(ISO3166Alpha3Country).includes(value as any);
-      return {
-        isInvalid,
-        errorMessage: isInvalid ? "Please select a valid country" : undefined,
-      };
-    }
-    case FieldLabel.MEMO: {
-      const isWire = value.startsWith("WIRE_");
-      const maxLength = isWire ? 35 : 10;
-      const regex = /^[A-Za-z0-9 ]*$/;
-      const isInvalid = !regex.test(value) || value.length > maxLength;
-      return {
-        max: maxLength,
-        isInvalid,
-        errorMessage: isInvalid
-          ? `Cannot contain special characters and must be less than ${maxLength} characters`
-          : undefined,
-      };
-    }
-    default:
-      return { isInvalid: false, errorMessage: "" };
-  }
+type FieldValidationInput = {
+  label: FieldLabel;
+  currency: string;
+  balance?: string;
+  value?: string;
+  method?: DisbursementMethod;
 };
 
-export const validateBillPay = (billPay: NewBillPay | ExistingBillPay, balance?: string): boolean => {
-  // Add debug logging
-  console.log("Validating bill pay:", {
-    billPay,
-    balance,
-    type: billPay.type,
-  });
+type FieldValidationOutput = {
+  min?: number;
+  max?: number;
+  step?: number;
+  description?: string;
+  isInvalid: boolean;
+  errorMessage?: string;
+};
 
-  const commonRequiredFields = [billPay.vendorName, billPay.vendorBankName, billPay.vendorMethod, billPay.amount];
+export const existingBillPaySchema = z.object({
+  type: z.literal("existing"),
+  vendorName: z
+    .string()
+    .min(1, "Account holder name is required")
+    .max(50, "Account holder name must be less than 50 characters")
+    .optional(), // Make optional
+  vendorBankName: z
+    .string()
+    .min(1, "Bank name is required")
+    .max(30, "Bank name must be less than 30 characters")
+    .optional(), // Make optional
+  vendorMethod: z.nativeEnum(DisbursementMethod).optional(), // Make optional
+  accountNumber: z
+    .string()
+    .min(5, "Account number must be at least 5 digits")
+    .max(17, "Account number must be less than 17 digits")
+    .optional(), // Make optional
+  routingNumber: z
+    .string()
+    .length(9, "Routing number must be 9 digits")
+    .regex(/^[0-9]+$/, "Routing number must contain only numbers")
+    .optional(), // Make optional
+  amount: z
+    .string()
+    .refine(
+      (val) => {
+        const amount = parseFloat(val);
+        const minAmount = isLocal ? 0.1 : 1;
+        return amount >= minAmount;
+      },
+      `Amount must be at least ${isLocal ? 0.1 : 1} ${BASE_USDC.SYMBOL}`
+    )
+    .optional(), // Make optional
+  currency: z.string(),
+  disbursementId: z.string().min(1, "Disbursement ID is required").optional(), // Make optional
+  memo: z
+    .string()
+    .regex(/^[A-Za-z0-9 ]*$/, "Cannot contain special characters")
+    .refine(
+      (val) => {
+        const isWire = val.startsWith("WIRE_");
+        const maxLength = isWire ? 35 : 10;
+        return val.length <= maxLength;
+      },
+      (val) => ({
+        message: `Must be less than ${val.startsWith("WIRE_") ? 35 : 10} characters`,
+      })
+    )
+    .optional(),
+});
 
-  const isNewBillPay = billPay.type === "new";
+export const newBillPaySchema = z.object({
+  type: z.literal("new"),
+  vendorName: z
+    .string()
+    .min(1, "Account holder name is required")
+    .max(50, "Account holder name must be less than 50 characters"),
+  vendorBankName: z.string().min(1, "Bank name is required").max(30, "Bank name must be less than 30 characters"),
+  vendorMethod: z.nativeEnum(DisbursementMethod),
+  accountNumber: z
+    .string()
+    .min(5, "Account number must be at least 5 digits")
+    .max(17, "Account number must be less than 17 digits"),
+  routingNumber: z
+    .string()
+    .length(9, "Routing number must be 9 digits")
+    .regex(/^[0-9]+$/, "Routing number must contain only numbers"),
+  amount: z.string().refine(
+    (val) => {
+      const amount = parseFloat(val || "0");
+      const minAmount = isLocal ? 0.1 : 1;
+      return amount >= minAmount;
+    },
+    `Amount must be at least ${isLocal ? 0.1 : 1} ${BASE_USDC.SYMBOL}`
+  ),
+  currency: z.string(),
+  memo: z
+    .string()
+    .regex(/^[A-Za-z0-9 ]*$/, "Cannot contain special characters")
+    .refine(
+      (val) => {
+        const isWire = val.startsWith("WIRE_");
+        const maxLength = isWire ? 35 : 10;
+        return val.length <= maxLength;
+      },
+      (val) => ({
+        message: `Must be less than ${val.startsWith("WIRE_") ? 35 : 10} characters`,
+      })
+    )
+    .optional(),
+  address: z.object({
+    street1: z
+      .string()
+      .min(1, "Street address is required")
+      .max(100, "Street address must be less than 100 characters"),
+    street2: z.string().max(100, "Street address line 2 must be less than 100 characters").optional(),
+    city: z.string().min(1, "City is required").max(50, "City must be less than 50 characters"),
+    state: z.nativeEnum(ISO3166Alpha2State, {
+      errorMap: () => ({ message: "Please select a valid state" }),
+    }),
+    postcode: z.string().regex(/^\d{5}(-\d{4})?$/, "Please enter a valid ZIP code (e.g., 12345 or 12345-6789)"),
+    country: z.nativeEnum(ISO3166Alpha3Country, {
+      errorMap: () => ({ message: "Please select a valid country" }),
+    }),
+  }),
+});
 
-  if (isNewBillPay) {
-    const newBillPayRequiredFields = [
-      ...commonRequiredFields,
-      billPay.routingNumber,
-      billPay.accountNumber,
-      billPay.address.street1,
-      billPay.address.city,
-      billPay.address.state,
-      billPay.address.postcode,
-      billPay.address.country,
-    ];
-
-    if (newBillPayRequiredFields.some((field) => !field)) {
-      console.log("New bill pay validation failed:", {
-        missingFields: newBillPayRequiredFields.map((field, index) => ({ field, index })).filter(({ field }) => !field),
-      });
-      return false;
-    }
-  } else {
-    const existingBillPayRequiredFields = [
-      ...commonRequiredFields,
-      billPay.disbursementId,
-      billPay.routingNumber,
-      billPay.accountNumber,
-    ];
-
-    if (existingBillPayRequiredFields.some((field) => !field)) {
-      console.log("Existing bill pay validation failed:", {
-        missingFields: existingBillPayRequiredFields.filter((field) => !field),
-      });
-      return false;
-    }
+const getZodFieldValidation = (
+  schema: z.ZodType,
+  value: unknown,
+  field?: FieldLabel,
+  balance?: string
+): FieldValidationOutput => {
+  if (!value || value === "") {
+    return {
+      isInvalid: false,
+      errorMessage: undefined,
+      ...(field === FieldLabel.AMOUNT && {
+        step: 0.01,
+        description: balance ? `Available balance: ${balance} ${BASE_USDC.SYMBOL}` : "Fetching balance...",
+      }),
+    };
   }
 
-  // Validate each field using existing getFieldValidation
-  const validations = {
-    accountHolder: getFieldValidation({
-      label: FieldLabel.ACCOUNT_HOLDER,
-      value: billPay.vendorName,
-      currency: billPay.currency,
-    }),
-    bankName: getFieldValidation({
-      label: FieldLabel.BANK_NAME,
-      value: billPay.vendorBankName,
-      currency: billPay.currency,
-    }),
-    accountNumber: getFieldValidation({
-      label: FieldLabel.ACCOUNT_NUMBER,
-      value: billPay.accountNumber,
-      currency: billPay.currency,
-    }),
-    paymentMethod: getFieldValidation({
-      label: FieldLabel.PAYMENT_METHOD,
-      value: billPay.vendorMethod || "",
-      currency: billPay.currency,
-    }),
-    paymentMemo: billPay.memo
-      ? getFieldValidation({
-          label: FieldLabel.MEMO,
-          value: billPay.memo,
-          currency: billPay.currency,
-        })
-      : { isInvalid: false, errorMessage: "" },
-    amount: getFieldValidation({
-      label: FieldLabel.AMOUNT,
-      value: billPay.amount,
-      currency: billPay.currency,
-      balance,
+  const result = schema.safeParse(value);
+
+  return {
+    isInvalid: !result.success,
+    errorMessage: result.success ? undefined : result.error.errors[0]?.message,
+    ...(field === FieldLabel.AMOUNT && {
+      step: 0.01,
+      description: balance ? `Available balance: ${balance} ${BASE_USDC.SYMBOL}` : "Fetching balance...",
     }),
   };
+};
 
-  if (isNewBillPay) {
-    Object.assign(validations, {
-      streetLine1: getFieldValidation({
-        label: FieldLabel.STREET_LINE_1,
-        value: billPay.address.street1,
-        currency: billPay.currency,
-        method: billPay.vendorMethod,
-      }),
-      streetLine2: billPay.address.street2
-        ? getFieldValidation({
-            label: FieldLabel.STREET_LINE_2,
-            value: billPay.address.street2,
-            currency: billPay.currency,
-          })
-        : { isInvalid: false, errorMessage: "" },
-      city: getFieldValidation({
-        label: FieldLabel.CITY,
-        value: billPay.address.city,
-        currency: billPay.currency,
-      }),
-      state: getFieldValidation({
-        label: FieldLabel.STATE,
-        value: billPay.address.state,
-        currency: billPay.currency,
-      }),
-      zipCode: getFieldValidation({
-        label: FieldLabel.ZIP,
-        value: billPay.address.postcode,
-        currency: billPay.currency,
-      }),
-      country: getFieldValidation({
-        label: FieldLabel.COUNTRY,
-        value: billPay.address.country,
-        currency: billPay.currency,
-      }),
-    });
+export function getValidationProps({ label, value, currency, balance, method }: FieldValidationInput) {
+  let schema;
+  switch (label) {
+    case FieldLabel.ACCOUNT_HOLDER:
+      schema = newBillPaySchema.shape.vendorName;
+      break;
+    case FieldLabel.BANK_NAME:
+      schema = newBillPaySchema.shape.vendorBankName;
+      break;
+    case FieldLabel.ACCOUNT_NUMBER:
+      schema = newBillPaySchema.shape.accountNumber;
+      break;
+    case FieldLabel.ROUTING_NUMBER:
+      schema = newBillPaySchema.shape.routingNumber;
+      break;
+    case FieldLabel.PAYMENT_METHOD:
+      schema = newBillPaySchema.shape.vendorMethod;
+      break;
+    case FieldLabel.AMOUNT:
+      schema = newBillPaySchema.shape.amount.refine((val) => {
+        const amount = parseFloat(val || "0");
+        const maxAmount = balance ? parseFloat(balance) : 0;
+        return amount <= maxAmount;
+      }, `Amount must be less than ${balance} ${BASE_USDC.SYMBOL}`);
+      break;
+    case FieldLabel.STREET_LINE_1:
+      const validateWireAddress = (val: string, method?: DisbursementMethod) => {
+        if (method === DisbursementMethod.WIRE && !/^\d+\s/.test(val)) {
+          return false;
+        }
+        return true;
+      };
+      schema = z
+        .string()
+        .min(1, "Street address is required")
+        .max(100, "Street address must be less than 100 characters")
+        .refine(
+          (val) => validateWireAddress(val, method),
+          "US wire transfers require a street number at the start of the address"
+        );
+      break;
+    case FieldLabel.STREET_LINE_2:
+      schema = newBillPaySchema.shape.address.shape.street2;
+      break;
+    case FieldLabel.CITY:
+      schema = newBillPaySchema.shape.address.shape.city;
+      break;
+    case FieldLabel.STATE:
+      schema = newBillPaySchema.shape.address.shape.state;
+      break;
+    case FieldLabel.ZIP:
+      schema = newBillPaySchema.shape.address.shape.postcode;
+      break;
+    case FieldLabel.COUNTRY:
+      schema = newBillPaySchema.shape.address.shape.country;
+      break;
+    case FieldLabel.MEMO:
+      schema = newBillPaySchema.shape.memo;
+      break;
+    default:
+      schema = z.string();
   }
 
-  const isValid = Object.values(validations).every((result) => !result.isInvalid);
+  return getZodFieldValidation(schema, value, label, balance);
+}
 
-  return isValid;
+export const validateBillPay = (billPay: NewBillPay | ExistingBillPay, balance?: string): boolean => {
+  const schema = billPay.type === "new" ? newBillPaySchema : existingBillPaySchema;
+
+  const result = schema
+    .extend({
+      amount: z.string().refine((val) => {
+        const amount = parseFloat(val || "0");
+        const maxAmount = balance ? parseFloat(balance) : 0;
+        return amount <= maxAmount;
+      }, `Amount must be less than ${balance} ${BASE_USDC.SYMBOL}`),
+    })
+    .safeParse(billPay);
+
+  return result.success;
 };

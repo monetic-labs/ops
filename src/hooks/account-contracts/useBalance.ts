@@ -46,7 +46,7 @@ export const useBalance = ({ amount, isModalOpen }: UseBalanceProps) => {
 
       return () => clearInterval(intervalId); // Clear interval on unmount or when modal closes
     }
-  }, [amount && isModalOpen]); // Trigger when amount changes and modal state is open
+  }, [amount, isModalOpen]); // Trigger when amount changes and modal state is open
 
   return { balance, isLoading, error };
 };

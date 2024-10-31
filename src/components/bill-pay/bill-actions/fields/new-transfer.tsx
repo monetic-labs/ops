@@ -13,8 +13,9 @@ import { Input } from "@nextui-org/input";
 import { Avatar } from "@nextui-org/avatar";
 import { Alpha3 } from "convert-iso-codes";
 import { getCountryName, getRegion, getTree } from "iso3166-helper";
-import { getFieldValidation } from "@/types/validations/bill-pay";
+import { getValidationProps, newBillPaySchema } from "@/types/validations/bill-pay";
 import { FieldLabel } from "@/types/validations/bill-pay";
+import { useCountries } from "@/hooks/bill-pay/useCountries";
 
 type NewTransferFieldsProps = {
   billPay: NewBillPay;
@@ -22,55 +23,77 @@ type NewTransferFieldsProps = {
   settlementBalance?: string;
 };
 
-// Helper function to get validation props
-function getValidationProps(
-  label: FieldLabel,
-  value: string,
-  currency: string,
-  balance?: string,
-  method?: DisbursementMethod
-) {
-  const validation = getFieldValidation({ label, currency, value, balance, method });
-  return {
-    min: validation.min,
-    max: validation.max,
-    step: validation.step,
-    isInvalid: validation.isInvalid,
-    errorMessage: validation.errorMessage,
-    description: validation.description,
-  };
-}
-
-// Get all validation results
 function getValidationResults(billPay: NewBillPay, settlementBalance?: string) {
   return {
-    accountHolder: getValidationProps(FieldLabel.ACCOUNT_HOLDER, billPay.vendorName, billPay.currency),
-    bankName: getValidationProps(FieldLabel.BANK_NAME, billPay.vendorBankName, billPay.currency),
-    accountNumber: getValidationProps(FieldLabel.ACCOUNT_NUMBER, billPay.accountNumber, billPay.currency),
-    routingNumber: getValidationProps(FieldLabel.ROUTING_NUMBER, billPay.routingNumber || "", billPay.currency),
-    paymentMethod: getValidationProps(FieldLabel.PAYMENT_METHOD, billPay.vendorMethod || "", billPay.currency),
-    amount: getValidationProps(FieldLabel.AMOUNT, billPay.amount, billPay.currency, settlementBalance),
+    accountHolder: getValidationProps({
+      label: FieldLabel.ACCOUNT_HOLDER,
+      value: billPay.vendorName,
+      currency: billPay.currency,
+    }),
+    bankName: getValidationProps({
+      label: FieldLabel.BANK_NAME,
+      value: billPay.vendorBankName,
+      currency: billPay.currency,
+    }),
+    accountNumber: getValidationProps({
+      label: FieldLabel.ACCOUNT_NUMBER,
+      value: billPay.accountNumber,
+      currency: billPay.currency,
+    }),
+    routingNumber: getValidationProps({
+      label: FieldLabel.ROUTING_NUMBER,
+      value: billPay.routingNumber || "",
+      currency: billPay.currency,
+    }),
+    paymentMethod: getValidationProps({
+      label: FieldLabel.PAYMENT_METHOD,
+      value: billPay.vendorMethod || "",
+      currency: billPay.currency,
+    }),
+    amount: getValidationProps({
+      label: FieldLabel.AMOUNT,
+      value: billPay.amount,
+      currency: billPay.currency,
+      balance: settlementBalance,
+    }),
     // Add address validations
-    streetLine1: getValidationProps(
-      FieldLabel.STREET_LINE_1,
-      billPay.address.street1,
-      billPay.currency,
-      undefined,
-      billPay.vendorMethod
-    ),
-    streetLine2: billPay.address.street2
-      ? getValidationProps(FieldLabel.STREET_LINE_2, billPay.address.street2, billPay.currency)
-      : undefined,
-    city: getValidationProps(FieldLabel.CITY, billPay.address.city, billPay.currency),
-    state: getValidationProps(FieldLabel.STATE, billPay.address.state || "", billPay.currency),
-    zipCode: getValidationProps(FieldLabel.ZIP, billPay.address.postcode || "", billPay.currency),
-    country: getValidationProps(FieldLabel.COUNTRY, billPay.address.country, billPay.currency),
+    streetLine1: getValidationProps({
+      label: FieldLabel.STREET_LINE_1,
+      value: billPay.address.street1,
+      currency: billPay.currency,
+      method: billPay.vendorMethod,
+    }),
+    streetLine2: getValidationProps({
+      label: FieldLabel.STREET_LINE_2,
+      value: billPay.address.street2,
+      currency: billPay.currency,
+    }),
+    city: getValidationProps({
+      label: FieldLabel.CITY,
+      value: billPay.address.city,
+      currency: billPay.currency,
+    }),
+    state: getValidationProps({
+      label: FieldLabel.STATE,
+      value: billPay.address.state || "",
+      currency: billPay.currency,
+    }),
+    zipCode: getValidationProps({
+      label: FieldLabel.ZIP,
+      value: billPay.address.postcode || "",
+      currency: billPay.currency,
+    }),
+    country: getValidationProps({
+      label: FieldLabel.COUNTRY,
+      value: billPay.address.country,
+      currency: billPay.currency,
+    }),
   };
 }
 
 export default function NewTransferFields({ billPay, setBillPay, settlementBalance }: NewTransferFieldsProps) {
+  const countries = useCountries();
   const validationResults = getValidationResults(billPay, settlementBalance);
-  console.log(validationResults);
 
   return (
     <>
@@ -214,21 +237,15 @@ export default function NewTransferFields({ billPay, setBillPay, settlementBalan
         />
       </div>
       <Autocomplete isClearable={false} isRequired label={FieldLabel.COUNTRY} className="flex-1">
-        {Object.entries(Countries).map(([key, value]) => {
-          const countryCode = Alpha3.toAlpha2(key);
-          const countryFullName = getCountryName(countryCode, "int");
-          return (
-            <AutocompleteItem
-              key={key}
-              textValue={`${countryFullName} (${key})`}
-              startContent={
-                <Avatar alt={value} className="w-6 h-6" src={`https://flagcdn.com/${countryCode.toLowerCase()}.svg`} />
-              }
-            >
-              {countryFullName}
-            </AutocompleteItem>
-          );
-        })}
+        {countries.map((country) => (
+          <AutocompleteItem
+            key={country.key}
+            textValue={`${country.label} (${country.key})`}
+            startContent={<Avatar alt={country.value} className="w-6 h-6" src={country.flagUrl} />}
+          >
+            {country.label}
+          </AutocompleteItem>
+        ))}
       </Autocomplete>
       <Input
         label={`${billPay.vendorMethod === DisbursementMethod.WIRE ? "Wire Message" : "ACH Reference"}`}

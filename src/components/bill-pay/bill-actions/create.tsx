@@ -15,7 +15,13 @@ import TransferStatusView, { TransferStatus } from "@/components/generics/transf
 import { buildTransfer } from "@/utils/reown";
 import { useBalance } from "@/hooks/account-contracts/useBalance";
 import { validateBillPay } from "@/types/validations/bill-pay";
-import { ExistingBillPay, isExistingBillPay, NewBillPay } from "@/types/bill-pay";
+import {
+  DEFAULT_EXISTING_BILL_PAY,
+  DEFAULT_NEW_BILL_PAY,
+  ExistingBillPay,
+  isExistingBillPay,
+  NewBillPay,
+} from "@/types/bill-pay";
 
 type CreateBillPayModalProps = {
   isOpen: boolean;
@@ -56,11 +62,6 @@ export default function CreateBillPayModal({
 
   useEffect(() => {
     const formValid = validateBillPay(billPay, settlementBalance);
-    console.log("Form validation update:", {
-      formValid,
-      billPay,
-      settlementBalance,
-    });
     setFormIsValid(formValid);
   }, [billPay, settlementBalance, setFormIsValid]);
 
@@ -119,6 +120,12 @@ export default function CreateBillPayModal({
     }
   };
 
+  const handleNewSenderChange = (newValue: boolean) => {
+    setIsNewSender(newValue);
+    // Reset to appropriate default state when switching modes
+    setBillPay(newValue ? DEFAULT_NEW_BILL_PAY : DEFAULT_EXISTING_BILL_PAY);
+  };
+
   const handleSupportClick = () => {
     // Handle support action
     console.log("Support clicked");
@@ -143,7 +150,7 @@ export default function CreateBillPayModal({
       <ExistingTransferFields
         billPay={billPay as ExistingBillPay}
         setBillPay={setBillPay}
-        setIsNewSender={setIsNewSender}
+        setIsNewSender={handleNewSenderChange}
         settlementBalance={settlementBalance}
       />
     );
@@ -197,7 +204,7 @@ export default function CreateBillPayModal({
         <ModalFooterWithSupport
           onSupportClick={handleSupportClick}
           isNewSender={isNewSender}
-          onNewSenderChange={setIsNewSender}
+          onNewSenderChange={handleNewSenderChange}
           actions={footerActions}
         />
         {!isWalletConnected && (

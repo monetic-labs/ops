@@ -5,35 +5,44 @@ import { useGetContacts } from "@/hooks/bill-pay/useGetContacts";
 import { Autocomplete, AutocompleteItem } from "@nextui-org/autocomplete";
 import { Input } from "@nextui-org/input";
 import { Eye, EyeOff } from "lucide-react";
-import { DEFAULT_EXISTING_BILL_PAY, ExistingBillPay, NewBillPay } from "@/types/bill-pay";
-import { FieldLabel, getFieldValidation } from "@/types/validations/bill-pay";
+import { DEFAULT_EXISTING_BILL_PAY, DEFAULT_NEW_BILL_PAY, ExistingBillPay, NewBillPay } from "@/types/bill-pay";
+import { FieldLabel, getValidationProps } from "@/types/validations/bill-pay";
 
 type ExistingTransferFieldsProps = {
   billPay: ExistingBillPay;
-  setBillPay: (billPay: ExistingBillPay) => void;
+  setBillPay: (billPay: NewBillPay | ExistingBillPay) => void;
   setIsNewSender: (isNewSender: boolean) => void;
   settlementBalance?: string;
 };
 
-function getValidationProps(label: FieldLabel, value: string, currency: string, balance?: string) {
-  const validation = getFieldValidation({ label, currency, value, balance });
-  return {
-    min: validation.min,
-    max: validation.max,
-    step: validation.step,
-    isInvalid: validation.isInvalid,
-    errorMessage: validation.errorMessage,
-    description: validation.description,
-  };
-}
-
 function getValidationResults(billPay: ExistingBillPay, settlementBalance?: string) {
   return {
-    accountHolder: getValidationProps(FieldLabel.ACCOUNT_HOLDER, billPay.vendorName, billPay.currency),
-    bankName: getValidationProps(FieldLabel.BANK_NAME, billPay.vendorBankName, billPay.currency),
-    accountNumber: getValidationProps(FieldLabel.ACCOUNT_NUMBER, billPay.accountNumber, billPay.currency),
-    paymentMethod: getValidationProps(FieldLabel.PAYMENT_METHOD, billPay.vendorMethod || "", billPay.currency),
-    amount: getValidationProps(FieldLabel.AMOUNT, billPay.amount, billPay.currency, settlementBalance),
+    accountHolder: getValidationProps({
+      label: FieldLabel.ACCOUNT_HOLDER,
+      value: billPay.vendorName,
+      currency: billPay.currency,
+    }),
+    bankName: getValidationProps({
+      label: FieldLabel.BANK_NAME,
+      value: billPay.vendorBankName,
+      currency: billPay.currency,
+    }),
+    accountNumber: getValidationProps({
+      label: FieldLabel.ACCOUNT_NUMBER,
+      value: billPay.accountNumber,
+      currency: billPay.currency,
+    }),
+    paymentMethod: getValidationProps({
+      label: FieldLabel.PAYMENT_METHOD,
+      value: billPay.vendorMethod || "",
+      currency: billPay.currency,
+    }),
+    amount: getValidationProps({
+      label: FieldLabel.AMOUNT,
+      value: billPay.amount,
+      currency: billPay.currency,
+      balance: settlementBalance,
+    }),
   };
 }
 
@@ -107,6 +116,7 @@ export default function ExistingTransferFields({
           emptyContent: (
             <button
               onClick={() => {
+                setBillPay(DEFAULT_NEW_BILL_PAY);
                 setIsNewSender(true);
               }}
             >
@@ -145,7 +155,7 @@ export default function ExistingTransferFields({
       </Autocomplete>
       <Input
         label={FieldLabel.BANK_NAME}
-        isDisabled={!billPay.vendorName}
+        isDisabled={!billPay.vendorBankName}
         {...validationResults.bankName}
         value={billPay.vendorBankName}
       />
@@ -181,7 +191,12 @@ export default function ExistingTransferFields({
           type="text"
           className="w-3/5 md:w-1/2"
         />
-        <Input isDisabled label="Routing Number" value={`${billPay.routingNumber}`} className="w-2/5 md:w-1/2" />
+        <Input
+          label={FieldLabel.ROUTING_NUMBER}
+          isDisabled={!billPay.routingNumber}
+          value={`${billPay.routingNumber}`}
+          className="w-2/5 md:w-1/2"
+        />
       </div>
       <Autocomplete
         label={FieldLabel.PAYMENT_METHOD}
