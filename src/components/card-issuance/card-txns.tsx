@@ -74,8 +74,8 @@ export default function TransactionDetailsModal({ isOpen, onClose, transaction }
                       transaction.status === "COMPLETED"
                         ? "text-ugh-400"
                         : transaction.status === "PENDING"
-                        ? "text-yellow-500"
-                        : "text-red-500"
+                          ? "text-yellow-500"
+                          : "text-red-500"
                     }`}
                   >
                     {transaction.status}
