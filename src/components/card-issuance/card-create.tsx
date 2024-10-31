@@ -22,7 +22,7 @@ import { CardStatus, ISO3166Alpha2Country } from "@backpack-fux/pylon-sdk";
 
 export default function CreateCardModal({ isOpen, onClose }: CreateCardModalProps) {
   const [error, setError] = useState<string | null>();
-  const [cardType, setCardType] = useState<CardType>(CardType.VIRTUAL);
+  const [cardType, setCardType] = useState(CardType.VIRTUAL);
   const [loading, setLoading] = useState(false);
   const {
     control: controlFirstForm,
@@ -110,10 +110,7 @@ export default function CreateCardModal({ isOpen, onClose }: CreateCardModalProp
       console.error(error);
     } finally {
       setLoading(false);
-      // onClose
     }
-
-    // Handle your form submission logic here
   };
 
   const country = watch("country");
@@ -124,20 +121,22 @@ export default function CreateCardModal({ isOpen, onClose }: CreateCardModalProp
     <FormModal isOpen={isOpen} onClose={onClose} title="Create New Card" onSubmit={() => {}} isValid={true}>
       <>
         <Select
+          data-testid="card-selector"
           label="Card Type"
           placeholder="Select card type"
           value={cardType}
           onChange={(e) => setCardType(e.target.value as CardType)}
           defaultSelectedKeys={[CardType.VIRTUAL]}
         >
-          <SelectItem value={"virtual"} key={"virtual"}>
+          <SelectItem value={CardType.VIRTUAL} key={CardType.VIRTUAL}>
             Virtual
           </SelectItem>
-          <SelectItem key={"physical"} value={"physical"}>
+          <SelectItem data-testid="card-physical" key={CardType.PHYSICAL} value={CardType.PHYSICAL}>
             Physical
           </SelectItem>
         </Select>
         <FormInput
+          data-testid="card-displayName"
           about="Enter card name"
           control={controlFirstForm}
           errorMessage={firstFormErrors.displayName?.message}
@@ -146,6 +145,7 @@ export default function CreateCardModal({ isOpen, onClose }: CreateCardModalProp
           placeholder="Enter card name"
         />
         <FormInput
+          data-testid="card-firstName"
           about="Enter card holder's first name"
           control={controlFirstForm}
           errorMessage={firstFormErrors.ownerFirstName?.message}
@@ -154,6 +154,7 @@ export default function CreateCardModal({ isOpen, onClose }: CreateCardModalProp
           placeholder="Enter card holder's first name"
         />
         <FormInput
+          data-testid="card-lastName"
           about="Enter card holder's last name"
           control={controlFirstForm}
           errorMessage={firstFormErrors.ownerLastName?.message}
@@ -162,6 +163,7 @@ export default function CreateCardModal({ isOpen, onClose }: CreateCardModalProp
           placeholder="Enter card holder's last name"
         />
         <FormInput
+          data-testid="card-email"
           about="Enter card holder's email"
           control={controlFirstForm}
           errorMessage={firstFormErrors.ownerEmail?.message}
@@ -171,6 +173,7 @@ export default function CreateCardModal({ isOpen, onClose }: CreateCardModalProp
           type="email"
         />
         <FormInput
+          data-testid="card-limitAmount"
           about="Limit Amount"
           control={controlFirstForm}
           errorMessage={firstFormErrors.limitAmount?.message}
@@ -182,6 +185,7 @@ export default function CreateCardModal({ isOpen, onClose }: CreateCardModalProp
         />
 
         <AutocompleteInput
+          testid="card-limitCycle"
           control={controlFirstForm}
           about="Select card limit cycle"
           errorMessage={firstFormErrors.limitFrequency?.message}
@@ -194,6 +198,7 @@ export default function CreateCardModal({ isOpen, onClose }: CreateCardModalProp
           <>
             <p>Shipping Details</p>
             <FormInput
+              data-testid="card-address"
               about="Enter address line 1"
               control={control}
               errorMessage={errors.street1?.message}
@@ -202,6 +207,7 @@ export default function CreateCardModal({ isOpen, onClose }: CreateCardModalProp
               placeholder="Enter address line 1"
             />
             <FormInput
+              data-testid="card-address2"
               about="Enter address line 2 (optional)"
               control={control}
               errorMessage={errors.street2?.message}
@@ -210,6 +216,7 @@ export default function CreateCardModal({ isOpen, onClose }: CreateCardModalProp
               placeholder="Enter address line 2 (optional)"
             />
             <FormInput
+              data-testid="card-city"
               about="Enter city"
               control={control}
               errorMessage={errors.city?.message}
@@ -219,6 +226,7 @@ export default function CreateCardModal({ isOpen, onClose }: CreateCardModalProp
             />
 
             <FormInput
+              data-testid="card-postalCode"
               about="Enter postal code"
               control={control}
               errorMessage={errors.postalCode?.message}
@@ -228,6 +236,7 @@ export default function CreateCardModal({ isOpen, onClose }: CreateCardModalProp
             />
 
             <AutocompleteInput
+              testid="card-country"
               control={control}
               about="Select country"
               errorMessage={errors.country?.message}
@@ -238,6 +247,7 @@ export default function CreateCardModal({ isOpen, onClose }: CreateCardModalProp
             />
 
             <AutocompleteInput
+              testid="card-region"
               control={control}
               about="Select region"
               errorMessage={errors.region?.message}
@@ -248,6 +258,7 @@ export default function CreateCardModal({ isOpen, onClose }: CreateCardModalProp
             />
 
             <FormInput
+              data-testid="card-phoneNumber"
               about="Enter phone number"
               control={control}
               errorMessage={errors.phoneNumber?.message}
@@ -256,6 +267,7 @@ export default function CreateCardModal({ isOpen, onClose }: CreateCardModalProp
               placeholder="Enter phone number"
             />
             <FormInput
+              data-testid="card-phoneCountryCode"
               about="Enter phone country code"
               control={control}
               errorMessage={errors.phoneCountryCode?.message}
@@ -265,6 +277,7 @@ export default function CreateCardModal({ isOpen, onClose }: CreateCardModalProp
               maxLength={3}
             />
             <AutocompleteInput
+              testid="card-shippingMethod"
               control={control}
               about="Select shipping method"
               errorMessage={errors.shippingMethod?.message}
@@ -278,10 +291,12 @@ export default function CreateCardModal({ isOpen, onClose }: CreateCardModalProp
         {error ? <p className="text-danger-300">{error}</p> : null}
         <div className="flex justify-between">
           <Button
+            data-testid="card-createButton"
             className={`bg-ualert-500 text-notpurple-500 w-full sm:w-auto`}
             onPress={() => {
               if (loading) return;
               setError(null);
+
               handleFirstFormSubmit(onSubmitFirstForm)();
             }}
             isLoading={loading}
