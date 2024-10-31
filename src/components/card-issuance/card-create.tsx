@@ -4,10 +4,9 @@ import { FormModal } from "@/components/generics/form-modal";
 import { CardType } from "@backpack-fux/pylon-sdk";
 import pylon from "@/libs/pylon-sdk";
 import { z } from "zod";
-import { useForm } from "react-hook-form";
+import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { FormInput } from "../generics/form-input";
-import { AutocompleteInput } from "../generics/autocomplete-input";
 import {
   CreateCardSchema,
   CreateCardModalProps,
@@ -184,16 +183,33 @@ export default function CreateCardModal({ isOpen, onClose }: CreateCardModalProp
           min={1}
         />
 
-        <AutocompleteInput
-          testid="card-limitCycle"
+        <Controller
           control={controlFirstForm}
-          about="Select card limit cycle"
-          errorMessage={firstFormErrors.limitFrequency?.message}
-          label="Limit Cycle"
           name="limitFrequency"
-          placeholder="Select card limit cycle"
-          items={limitCyclesObject}
+          render={({ field, formState: { errors } }) => {
+            return (
+              <div>
+                <Select
+                  value={field.value}
+                  onChange={field.onChange}
+                  data-testid="card-limitCycle"
+                  label="Card limit cycle"
+                  placeholder="Select card limit cycle"
+                >
+                  {limitCyclesObject.map((t) => (
+                    <SelectItem value={t.value} key={t.value} data-testid={t.value}>
+                      {t.label}
+                    </SelectItem>
+                  ))}
+                </Select>
+                {errors.limitFrequency?.message && (
+                  <p className="mt-1 text-sm text-ualert-500">{errors.limitFrequency?.message}</p>
+                )}
+              </div>
+            );
+          }}
         />
+
         {cardType === CardType.PHYSICAL ? (
           <>
             <p>Shipping Details</p>
@@ -235,26 +251,56 @@ export default function CreateCardModal({ isOpen, onClose }: CreateCardModalProp
               placeholder="Enter postal code"
             />
 
-            <AutocompleteInput
-              testid="card-country"
+            <Controller
               control={control}
-              about="Select country"
-              errorMessage={errors.country?.message}
-              label="Country"
               name="country"
-              placeholder="Select country"
-              items={cardDeliveryCountries}
+              render={({ field, formState: { errors } }) => {
+                return (
+                  <div>
+                    <Select
+                      value={field.value}
+                      onChange={field.onChange}
+                      data-testid="card-country"
+                      label="Country"
+                      placeholder="Select country"
+                    >
+                      {cardDeliveryCountries.map((t) => (
+                        <SelectItem value={t.value} key={t.value} data-testid={t.value}>
+                          {t.label}
+                        </SelectItem>
+                      ))}
+                    </Select>
+                    {errors.country?.message && (
+                      <p className="mt-1 text-sm text-ualert-500">{errors.country?.message}</p>
+                    )}
+                  </div>
+                );
+              }}
             />
 
-            <AutocompleteInput
-              testid="card-region"
+            <Controller
               control={control}
-              about="Select region"
-              errorMessage={errors.region?.message}
-              label="Region"
               name="region"
-              placeholder="Select region"
-              items={regions}
+              render={({ field, formState: { errors } }) => {
+                return (
+                  <div>
+                    <Select
+                      value={field.value}
+                      onChange={field.onChange}
+                      data-testid="card-region"
+                      label="Region"
+                      placeholder="Select region"
+                    >
+                      {regions.map((t) => (
+                        <SelectItem value={t.value} key={t.value} data-testid={t.value}>
+                          {t.label}
+                        </SelectItem>
+                      ))}
+                    </Select>
+                    {errors.region?.message && <p className="mt-1 text-sm text-ualert-500">{errors.region?.message}</p>}
+                  </div>
+                );
+              }}
             />
 
             <FormInput
@@ -276,15 +322,31 @@ export default function CreateCardModal({ isOpen, onClose }: CreateCardModalProp
               placeholder="Enter phone country code (e.g., 1)"
               maxLength={3}
             />
-            <AutocompleteInput
-              testid="card-shippingMethod"
+            <Controller
               control={control}
-              about="Select shipping method"
-              errorMessage={errors.shippingMethod?.message}
-              label="Shipping Method"
               name="shippingMethod"
-              placeholder="Select shipping method"
-              items={shippingMethodOptions}
+              render={({ field, formState: { errors } }) => {
+                return (
+                  <div>
+                    <Select
+                      value={field.value}
+                      onChange={field.onChange}
+                      data-testid="card-shippingMethod"
+                      label="Shipping method"
+                      placeholder="Select shipping method"
+                    >
+                      {shippingMethodOptions.map((t) => (
+                        <SelectItem value={t.value} key={t.value} data-testid={t.value}>
+                          {t.label}
+                        </SelectItem>
+                      ))}
+                    </Select>
+                    {errors.shippingMethod?.message && (
+                      <p className="mt-1 text-sm text-ualert-500">{errors.shippingMethod?.message}</p>
+                    )}
+                  </div>
+                );
+              }}
             />
           </>
         ) : null}

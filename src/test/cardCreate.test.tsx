@@ -1,6 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { render, screen, waitFor } from "@testing-library/react";
-import userEvent from "@testing-library/user-event";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import pylon from "@/libs/pylon-sdk";
 import CreateCardModal from "@/components/card-issuance/card-create";
 import { CardStatus, CardType } from "@backpack-fux/pylon-sdk";
@@ -24,19 +23,19 @@ describe("CreateCardModal", () => {
   });
 
   describe("Virtual Card Creation", () => {
-    const fillVirtualCardForm = async (user: ReturnType<typeof userEvent.setup>) => {
-      await user.type(screen.getByTestId("card-displayName"), "Test Card");
-      await user.type(screen.getByTestId("card-firstName"), "John");
-      await user.type(screen.getByTestId("card-lastName"), "Doe");
-      await user.type(screen.getByTestId("card-email"), "john@example.com");
-      await user.type(screen.getByTestId("card-limitAmount"), "1000");
-      await user.click(screen.getByTestId("card-limitCycle"));
+    const fillVirtualCardForm = async () => {
+      fireEvent.change(screen.getByTestId("card-displayName"), { target: { value: "Test Card" } });
+      fireEvent.change(screen.getByTestId("card-firstName"), { target: { value: "John" } });
+      fireEvent.change(screen.getByTestId("card-lastName"), { target: { value: "Doe" } });
+      fireEvent.change(screen.getByTestId("card-email"), { target: { value: "john@example.com" } });
+      fireEvent.change(screen.getByTestId("card-limitAmount"), { target: { value: "1000" } });
+
+      fireEvent.click(screen.getByTestId("card-limitCycle"));
 
       await waitFor(async () => {
-        expect(screen.getByText("Month")).toBeInTheDocument();
+        expect(screen.getByTestId("MONTH")).toBeInTheDocument();
       });
-
-      await user.click(screen.getByText("Month"));
+      fireEvent.click(screen.getByTestId("MONTH"));
     };
 
     it("should render virtual card form by default", () => {
@@ -49,12 +48,10 @@ describe("CreateCardModal", () => {
     });
 
     it("should successfully create a virtual card", async () => {
-      const user = userEvent.setup();
       render(<CreateCardModal {...defaultProps} />);
 
-      await fillVirtualCardForm(user);
-
-      await user.click(screen.getByTestId("card-createButton"));
+      await fillVirtualCardForm();
+      fireEvent.click(screen.getByTestId("card-createButton"));
 
       await waitFor(() => {
         expect(pylon.createVirtualCard).toHaveBeenCalledWith({
@@ -73,13 +70,12 @@ describe("CreateCardModal", () => {
     });
 
     it("should handle virtual card creation error", async () => {
-      const user = userEvent.setup();
       const error = new Error("API Error");
       vi.mocked(pylon.createVirtualCard).mockRejectedValueOnce(error);
 
       render(<CreateCardModal {...defaultProps} />);
-      await fillVirtualCardForm(user);
-      await user.click(screen.getByTestId("card-createButton"));
+      await fillVirtualCardForm();
+      fireEvent.click(screen.getByTestId("card-createButton"));
 
       await waitFor(() => {
         expect(screen.getByText("API Error")).toBeInTheDocument();
@@ -89,73 +85,54 @@ describe("CreateCardModal", () => {
   });
 
   describe("Physical Card Creation", () => {
-    const fillPhysicalCardForm = async (user: ReturnType<typeof userEvent.setup>) => {
-      await user.click(screen.getByTestId("card-selector"));
+    const fillPhysicalCardForm = async () => {
+      fireEvent.click(screen.getByTestId("card-selector"));
       await waitFor(() => {
         expect(screen.getByTestId("card-physical")).toBeInTheDocument();
       });
-      await user.click(screen.getByTestId("card-physical"));
-
-      // Fill shipping details
-      await user.type(screen.getByTestId("card-address"), "123 Main St");
-      await user.type(screen.getByTestId("card-city"), "New York");
-      await user.type(screen.getByTestId("card-postalCode"), "10001");
-      await user.click(screen.getByTestId("card-country"));
-      await waitFor(async () => {
-        expect(screen.getByText("United States")).toBeInTheDocument();
-      });
-      await user.click(screen.getByText("United States"));
-      await user.click(screen.getByTestId("card-region"));
-      await waitFor(async () => {
-        expect(screen.getByText("New York")).toBeInTheDocument();
-      });
-      await user.click(screen.getByText("New York"));
-      await user.type(screen.getByTestId("card-phoneNumber"), "1234567890");
-      await user.type(screen.getByTestId("card-phoneCountryCode"), "1");
-      await user.click(screen.getByTestId("card-shippingMethod"));
-      await waitFor(async () => {
-        expect(screen.getByText("Standard")).toBeInTheDocument();
-      });
-      await user.click(screen.getByText("Standard"));
+      fireEvent.click(screen.getByTestId("card-physical"));
 
       // Fill basic card details
-      await user.type(screen.getByTestId("card-address"), "123 Main St");
-      await user.type(screen.getByTestId("card-city"), "New York");
-      await user.type(screen.getByTestId("card-displayName"), "Test Card");
-      await user.type(screen.getByTestId("card-firstName"), "John");
-      await user.type(screen.getByTestId("card-lastName"), "Doe");
-      await user.type(screen.getByTestId("card-email"), "john@example.com");
-      await user.type(screen.getByTestId("card-limitAmount"), "1000");
-      await user.click(screen.getByTestId("card-limitCycle"));
+      fireEvent.change(screen.getByTestId("card-displayName"), { target: { value: "Test Card" } });
+      fireEvent.change(screen.getByTestId("card-firstName"), { target: { value: "John" } });
+      fireEvent.change(screen.getByTestId("card-lastName"), { target: { value: "Doe" } });
+      fireEvent.change(screen.getByTestId("card-email"), { target: { value: "john@example.com" } });
+      fireEvent.change(screen.getByTestId("card-limitAmount"), { target: { value: "1000" } });
+
+      fireEvent.click(screen.getByTestId("card-limitCycle"));
 
       await waitFor(async () => {
-        expect(screen.getByText("Month")).toBeInTheDocument();
+        expect(screen.getByTestId("MONTH")).toBeInTheDocument();
       });
+      fireEvent.click(screen.getByTestId("MONTH"));
 
-      await user.click(screen.getByText("Month"));
+      // Fill shipping details
+      fireEvent.change(screen.getByTestId("card-address"), { target: { value: "123 Main St" } });
+      fireEvent.change(screen.getByTestId("card-city"), { target: { value: "New York" } });
+      fireEvent.change(screen.getByTestId("card-postalCode"), { target: { value: "10001" } });
+      fireEvent.click(screen.getByTestId("card-country"));
+      await waitFor(async () => {
+        expect(screen.getByTestId("US")).toBeInTheDocument();
+      });
+      fireEvent.click(screen.getByTestId("US"));
+      fireEvent.click(screen.getByTestId("card-region"));
+      await waitFor(async () => {
+        expect(screen.getByTestId("NY")).toBeInTheDocument();
+      });
+      fireEvent.click(screen.getByTestId("NY"));
+      fireEvent.change(screen.getByTestId("card-phoneNumber"), { target: { value: "1234567890" } });
+      fireEvent.change(screen.getByTestId("card-phoneCountryCode"), { target: { value: "1" } });
+      fireEvent.click(screen.getByTestId("card-shippingMethod"));
+      await waitFor(async () => {
+        expect(screen.getByTestId("STANDARD")).toBeInTheDocument();
+      });
+      fireEvent.click(screen.getByTestId("STANDARD"));
     };
-
-    it("should show shipping details when physical card is selected", async () => {
-      const user = userEvent.setup();
-      render(<CreateCardModal {...defaultProps} />);
-
-      await user.click(screen.getByTestId("card-selector"));
-      await waitFor(() => {
-        expect(screen.getByTestId("card-physical")).toBeInTheDocument();
-      });
-      await user.click(screen.getByTestId("card-physical"));
-
-      await waitFor(() => {
-        expect(screen.getByTestId("card-address2")).toBeInTheDocument();
-      });
-    });
-
     it("should successfully create a physical card", async () => {
-      const user = userEvent.setup();
       render(<CreateCardModal {...defaultProps} />);
 
-      await fillPhysicalCardForm(user);
-      await user.click(screen.getByText("Create Card"));
+      await fillPhysicalCardForm();
+      fireEvent.click(screen.getByTestId("card-createButton"));
 
       await waitFor(() => {
         expect(pylon.createPhysicalCard).toHaveBeenCalledWith({
@@ -191,13 +168,12 @@ describe("CreateCardModal", () => {
     });
 
     it("should handle physical card creation error", async () => {
-      const user = userEvent.setup();
       const error = new Error("Physical Card API Error");
       vi.mocked(pylon.createPhysicalCard).mockRejectedValueOnce(error);
 
       render(<CreateCardModal {...defaultProps} />);
-      await fillPhysicalCardForm(user);
-      await user.click(screen.getByText("Create Card"));
+      await fillPhysicalCardForm();
+      fireEvent.click(screen.getByText("Create Card"));
 
       await waitFor(() => {
         expect(screen.getByText("Physical Card API Error")).toBeInTheDocument();
@@ -207,29 +183,25 @@ describe("CreateCardModal", () => {
   });
 
   describe("Form Validation", () => {
-    const fillVirtualCardForm = async (user: ReturnType<typeof userEvent.setup>) => {
-      await user.type(screen.getByTestId("card-displayName"), "Test Card");
-      await user.type(screen.getByTestId("card-firstName"), "John");
-      await user.type(screen.getByTestId("card-lastName"), "Doe");
-      await user.type(screen.getByTestId("card-email"), "john@example.com");
-      await user.type(screen.getByTestId("card-limitAmount"), "1000");
-      await user.click(screen.getByTestId("card-limitCycle"));
+    const fillVirtualCardForm = async () => {
+      fireEvent.change(screen.getByTestId("card-displayName"), { target: { value: "Test Card" } });
+      fireEvent.change(screen.getByTestId("card-firstName"), { target: { value: "John" } });
+      fireEvent.change(screen.getByTestId("card-lastName"), { target: { value: "Doe" } });
+      fireEvent.change(screen.getByTestId("card-email"), { target: { value: "john@example.com" } });
+      fireEvent.change(screen.getByTestId("card-limitAmount"), { target: { value: "1000" } });
+
+      fireEvent.click(screen.getByTestId("card-limitCycle"));
 
       await waitFor(async () => {
-        expect(screen.getByText("Month")).toBeInTheDocument();
+        expect(screen.getByTestId("MONTH")).toBeInTheDocument();
       });
-
-      await user.click(screen.getByText("Month"));
-      await user.type(screen.getByTestId("card-displayName"), "Test Card");
-      await user.type(screen.getByTestId("card-firstName"), "John");
-      await user.type(screen.getByTestId("card-lastName"), "Doe");
+      fireEvent.click(screen.getByTestId("MONTH"));
     };
 
     it("should validate required fields for virtual card", async () => {
-      const user = userEvent.setup();
       render(<CreateCardModal {...defaultProps} />);
 
-      await user.click(screen.getByTestId("card-createButton"));
+      fireEvent.click(screen.getByTestId("card-createButton"));
 
       await waitFor(() => {
         expect(screen.getByText(/Enter valid card name/i)).toBeInTheDocument();
@@ -240,31 +212,28 @@ describe("CreateCardModal", () => {
     });
 
     it("should validate required fields for physical card", async () => {
-      const user = userEvent.setup();
       render(<CreateCardModal {...defaultProps} />);
 
-      await user.click(screen.getByTestId("card-selector"));
+      fireEvent.click(screen.getByTestId("card-selector"));
       await waitFor(() => {
         expect(screen.getByTestId("card-physical")).toBeInTheDocument();
       });
-      await user.click(screen.getByTestId("card-physical"));
+      fireEvent.click(screen.getByTestId("card-physical"));
 
-      await fillVirtualCardForm(user);
+      await fillVirtualCardForm();
 
-      await user.click(screen.getByTestId("card-createButton"));
+      fireEvent.click(screen.getByTestId("card-createButton"));
 
-      console.log(screen.getByTestId("form-modal").innerHTML);
       await waitFor(() => {
         expect(screen.getAllByText(/Please select a country/i).length).toBeGreaterThan(0);
       });
     });
 
     it("should validate email format", async () => {
-      const user = userEvent.setup();
       render(<CreateCardModal {...defaultProps} />);
 
-      await user.type(screen.getByTestId("card-email"), "invalid-email");
-      await user.click(screen.getByTestId("card-createButton"));
+      fireEvent.change(screen.getByTestId("card-email"), { target: { value: "invalid-email" } });
+      fireEvent.click(screen.getByTestId("card-createButton"));
 
       await waitFor(() => {
         expect(screen.getByText(/invalid email/i)).toBeInTheDocument();
