@@ -14,6 +14,7 @@ interface AutocompleteInputProps<T extends FieldValues> {
   about?: string;
   isReadOnly?: boolean;
   filterItems?: (items: { label: string; value: string }[]) => { label: string; value: string }[];
+  testid?: string;
 }
 
 export const AutocompleteInput = <T extends FieldValues>({
@@ -27,8 +28,8 @@ export const AutocompleteInput = <T extends FieldValues>({
   about,
   isReadOnly,
   filterItems,
+  testid,
 }: AutocompleteInputProps<T>) => {
-
   const filteredItems = filterItems ? filterItems(items) : items;
 
   return (
@@ -39,6 +40,7 @@ export const AutocompleteInput = <T extends FieldValues>({
         render={({ field }) => (
           <Tooltip content={about}>
             <Autocomplete
+              data-testid={testid}
               {...field}
               isReadOnly={isReadOnly}
               label={label}

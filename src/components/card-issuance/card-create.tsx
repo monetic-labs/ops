@@ -4,10 +4,9 @@ import { FormModal } from "@/components/generics/form-modal";
 import { CardType } from "@backpack-fux/pylon-sdk";
 import pylon from "@/libs/pylon-sdk";
 import { z } from "zod";
-import { useForm } from "react-hook-form";
+import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { FormInput } from "../generics/form-input";
-import { AutocompleteInput } from "../generics/autocomplete-input";
 import {
   CreateCardSchema,
   CreateCardModalProps,
@@ -22,7 +21,7 @@ import { CardStatus, ISO3166Alpha2Country } from "@backpack-fux/pylon-sdk";
 
 export default function CreateCardModal({ isOpen, onClose }: CreateCardModalProps) {
   const [error, setError] = useState<string | null>();
-  const [cardType, setCardType] = useState<CardType>(CardType.VIRTUAL);
+  const [cardType, setCardType] = useState(CardType.VIRTUAL);
   const [loading, setLoading] = useState(false);
   const {
     control: controlFirstForm,
@@ -110,10 +109,7 @@ export default function CreateCardModal({ isOpen, onClose }: CreateCardModalProp
       console.error(error);
     } finally {
       setLoading(false);
-      // onClose
     }
-
-    // Handle your form submission logic here
   };
 
   const country = watch("country");
@@ -124,20 +120,22 @@ export default function CreateCardModal({ isOpen, onClose }: CreateCardModalProp
     <FormModal isOpen={isOpen} onClose={onClose} title="Create New Card" onSubmit={() => {}} isValid={true}>
       <>
         <Select
+          data-testid="card-selector"
           label="Card Type"
           placeholder="Select card type"
           value={cardType}
           onChange={(e) => setCardType(e.target.value as CardType)}
           defaultSelectedKeys={[CardType.VIRTUAL]}
         >
-          <SelectItem value={"virtual"} key={"virtual"}>
+          <SelectItem value={CardType.VIRTUAL} key={CardType.VIRTUAL}>
             Virtual
           </SelectItem>
-          <SelectItem key={"physical"} value={"physical"}>
+          <SelectItem data-testid="card-physical" key={CardType.PHYSICAL} value={CardType.PHYSICAL}>
             Physical
           </SelectItem>
         </Select>
         <FormInput
+          data-testid="card-displayName"
           about="Enter card name"
           control={controlFirstForm}
           errorMessage={firstFormErrors.displayName?.message}
@@ -146,6 +144,7 @@ export default function CreateCardModal({ isOpen, onClose }: CreateCardModalProp
           placeholder="Enter card name"
         />
         <FormInput
+          data-testid="card-firstName"
           about="Enter card holder's first name"
           control={controlFirstForm}
           errorMessage={firstFormErrors.ownerFirstName?.message}
@@ -154,6 +153,7 @@ export default function CreateCardModal({ isOpen, onClose }: CreateCardModalProp
           placeholder="Enter card holder's first name"
         />
         <FormInput
+          data-testid="card-lastName"
           about="Enter card holder's last name"
           control={controlFirstForm}
           errorMessage={firstFormErrors.ownerLastName?.message}
@@ -162,6 +162,7 @@ export default function CreateCardModal({ isOpen, onClose }: CreateCardModalProp
           placeholder="Enter card holder's last name"
         />
         <FormInput
+          data-testid="card-email"
           about="Enter card holder's email"
           control={controlFirstForm}
           errorMessage={firstFormErrors.ownerEmail?.message}
@@ -171,6 +172,7 @@ export default function CreateCardModal({ isOpen, onClose }: CreateCardModalProp
           type="email"
         />
         <FormInput
+          data-testid="card-limitAmount"
           about="Limit Amount"
           control={controlFirstForm}
           errorMessage={firstFormErrors.limitAmount?.message}
@@ -181,19 +183,38 @@ export default function CreateCardModal({ isOpen, onClose }: CreateCardModalProp
           min={1}
         />
 
-        <AutocompleteInput
+        <Controller
           control={controlFirstForm}
-          about="Select card limit cycle"
-          errorMessage={firstFormErrors.limitFrequency?.message}
-          label="Limit Cycle"
           name="limitFrequency"
-          placeholder="Select card limit cycle"
-          items={limitCyclesObject}
+          render={({ field, formState: { errors } }) => {
+            return (
+              <div>
+                <Select
+                  value={field.value}
+                  onChange={field.onChange}
+                  data-testid="card-limitCycle"
+                  label="Card limit cycle"
+                  placeholder="Select card limit cycle"
+                >
+                  {limitCyclesObject.map((t) => (
+                    <SelectItem value={t.value} key={t.value} data-testid={t.value}>
+                      {t.label}
+                    </SelectItem>
+                  ))}
+                </Select>
+                {errors.limitFrequency?.message && (
+                  <p className="mt-1 text-sm text-ualert-500">{errors.limitFrequency?.message}</p>
+                )}
+              </div>
+            );
+          }}
         />
+
         {cardType === CardType.PHYSICAL ? (
           <>
             <p>Shipping Details</p>
             <FormInput
+              data-testid="card-address"
               about="Enter address line 1"
               control={control}
               errorMessage={errors.street1?.message}
@@ -202,6 +223,7 @@ export default function CreateCardModal({ isOpen, onClose }: CreateCardModalProp
               placeholder="Enter address line 1"
             />
             <FormInput
+              data-testid="card-address2"
               about="Enter address line 2 (optional)"
               control={control}
               errorMessage={errors.street2?.message}
@@ -210,6 +232,7 @@ export default function CreateCardModal({ isOpen, onClose }: CreateCardModalProp
               placeholder="Enter address line 2 (optional)"
             />
             <FormInput
+              data-testid="card-city"
               about="Enter city"
               control={control}
               errorMessage={errors.city?.message}
@@ -219,6 +242,7 @@ export default function CreateCardModal({ isOpen, onClose }: CreateCardModalProp
             />
 
             <FormInput
+              data-testid="card-postalCode"
               about="Enter postal code"
               control={control}
               errorMessage={errors.postalCode?.message}
@@ -227,27 +251,60 @@ export default function CreateCardModal({ isOpen, onClose }: CreateCardModalProp
               placeholder="Enter postal code"
             />
 
-            <AutocompleteInput
+            <Controller
               control={control}
-              about="Select country"
-              errorMessage={errors.country?.message}
-              label="Country"
               name="country"
-              placeholder="Select country"
-              items={cardDeliveryCountries}
+              render={({ field, formState: { errors } }) => {
+                return (
+                  <div>
+                    <Select
+                      value={field.value}
+                      onChange={field.onChange}
+                      data-testid="card-country"
+                      label="Country"
+                      placeholder="Select country"
+                    >
+                      {cardDeliveryCountries.map((t) => (
+                        <SelectItem value={t.value} key={t.value} data-testid={t.value}>
+                          {t.label}
+                        </SelectItem>
+                      ))}
+                    </Select>
+                    {errors.country?.message && (
+                      <p className="mt-1 text-sm text-ualert-500">{errors.country?.message}</p>
+                    )}
+                  </div>
+                );
+              }}
             />
 
-            <AutocompleteInput
+            <Controller
               control={control}
-              about="Select region"
-              errorMessage={errors.region?.message}
-              label="Region"
               name="region"
-              placeholder="Select region"
-              items={regions}
+              render={({ field, formState: { errors } }) => {
+                return (
+                  <div>
+                    <Select
+                      value={field.value}
+                      onChange={field.onChange}
+                      data-testid="card-region"
+                      label="Region"
+                      placeholder="Select region"
+                    >
+                      {regions.map((t) => (
+                        <SelectItem value={t.value} key={t.value} data-testid={t.value}>
+                          {t.label}
+                        </SelectItem>
+                      ))}
+                    </Select>
+                    {errors.region?.message && <p className="mt-1 text-sm text-ualert-500">{errors.region?.message}</p>}
+                  </div>
+                );
+              }}
             />
 
             <FormInput
+              data-testid="card-phoneNumber"
               about="Enter phone number"
               control={control}
               errorMessage={errors.phoneNumber?.message}
@@ -256,6 +313,7 @@ export default function CreateCardModal({ isOpen, onClose }: CreateCardModalProp
               placeholder="Enter phone number"
             />
             <FormInput
+              data-testid="card-phoneCountryCode"
               about="Enter phone country code"
               control={control}
               errorMessage={errors.phoneCountryCode?.message}
@@ -264,24 +322,43 @@ export default function CreateCardModal({ isOpen, onClose }: CreateCardModalProp
               placeholder="Enter phone country code (e.g., 1)"
               maxLength={3}
             />
-            <AutocompleteInput
+            <Controller
               control={control}
-              about="Select shipping method"
-              errorMessage={errors.shippingMethod?.message}
-              label="Shipping Method"
               name="shippingMethod"
-              placeholder="Select shipping method"
-              items={shippingMethodOptions}
+              render={({ field, formState: { errors } }) => {
+                return (
+                  <div>
+                    <Select
+                      value={field.value}
+                      onChange={field.onChange}
+                      data-testid="card-shippingMethod"
+                      label="Shipping method"
+                      placeholder="Select shipping method"
+                    >
+                      {shippingMethodOptions.map((t) => (
+                        <SelectItem value={t.value} key={t.value} data-testid={t.value}>
+                          {t.label}
+                        </SelectItem>
+                      ))}
+                    </Select>
+                    {errors.shippingMethod?.message && (
+                      <p className="mt-1 text-sm text-ualert-500">{errors.shippingMethod?.message}</p>
+                    )}
+                  </div>
+                );
+              }}
             />
           </>
         ) : null}
         {error ? <p className="text-danger-300">{error}</p> : null}
         <div className="flex justify-between">
           <Button
+            data-testid="card-createButton"
             className={`bg-ualert-500 text-notpurple-500 w-full sm:w-auto`}
             onPress={() => {
               if (loading) return;
               setError(null);
+
               handleFirstFormSubmit(onSubmitFirstForm)();
             }}
             isLoading={loading}

@@ -15,11 +15,11 @@ import {
 import pylon from "@/libs/pylon-sdk";
 import { formatAmountUSD } from "@/utils/helpers";
 import { z } from "zod";
-import { useForm } from "react-hook-form";
+import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { limitCyclesObject, limitStatesObject, UpateCardSchema } from "@/data";
 import { FormInput } from "../generics/form-input";
-import { AutocompleteInput } from "../generics/autocomplete-input";
+import { Select, SelectItem } from "@nextui-org/select";
 
 type HybridCard = MerchantCardGetOutput["cards"][number] & {
   avatar?: string;
@@ -103,6 +103,7 @@ export default function CardDetailsModal({ isOpen, onClose, card: propsCard }: C
     control: control,
     formState: { errors },
     handleSubmit: handleSubmit,
+    getValues,
   } = useForm<z.infer<typeof UpateCardSchema>>({
     resolver: zodResolver(UpateCardSchema),
     defaultValues: {
@@ -111,7 +112,7 @@ export default function CardDetailsModal({ isOpen, onClose, card: propsCard }: C
       limitFrequency: card.limitFrequency,
     },
   });
-
+  console.log(getValues());
   return (
     <Modal isOpen={isOpen} size="2xl" onClose={onClose}>
       {isEditing ? (
@@ -121,6 +122,7 @@ export default function CardDetailsModal({ isOpen, onClose, card: propsCard }: C
           </ModalHeader>
           <ModalBody>
             <FormInput
+              data-testid="card-limitAmount"
               about="Limit Amount"
               control={control}
               errorMessage={errors.limitAmount?.message}
@@ -131,24 +133,58 @@ export default function CardDetailsModal({ isOpen, onClose, card: propsCard }: C
               min={1}
             />
 
-            <AutocompleteInput
+            <Controller
               control={control}
-              about="Select card limit cycle"
-              errorMessage={errors.limitFrequency?.message}
-              label="Limit Cycle"
               name="limitFrequency"
-              placeholder="Select card limit cycle"
-              items={limitCyclesObject}
+              render={({ field, formState: { errors } }) => {
+                return (
+                  <div>
+                    <Select
+                      value={field.value}
+                      onChange={field.onChange}
+                      data-testid="card-limitFrequency"
+                      label="Card limit cycle"
+                      placeholder="Select card limit cycle"
+                      defaultSelectedKeys={[card.limitFrequency]}
+                    >
+                      {limitCyclesObject.map((t) => (
+                        <SelectItem value={t.value} key={t.value} data-testid={t.value}>
+                          {t.label}
+                        </SelectItem>
+                      ))}
+                    </Select>
+                    {errors.limitFrequency?.message && (
+                      <p className="mt-1 text-sm text-ualert-500">{errors.limitFrequency?.message}</p>
+                    )}
+                  </div>
+                );
+              }}
             />
 
-            <AutocompleteInput
+            <Controller
               control={control}
-              about="Select card status"
-              errorMessage={errors.status?.message}
-              label="Status"
               name="status"
-              placeholder="Select card status"
-              items={limitStatesObject}
+              render={({ field, formState: { errors } }) => {
+                return (
+                  <div>
+                    <Select
+                      value={field.value}
+                      onChange={field.onChange}
+                      data-testid="card-status"
+                      label="Status"
+                      placeholder="Select status"
+                      defaultSelectedKeys={[card.status]}
+                    >
+                      {limitStatesObject.map((t) => (
+                        <SelectItem value={t.value} key={t.value} data-testid={t.value}>
+                          {t.label}
+                        </SelectItem>
+                      ))}
+                    </Select>
+                    {errors.status?.message && <p className="mt-1 text-sm text-ualert-500">{errors.status?.message}</p>}
+                  </div>
+                );
+              }}
             />
           </ModalBody>
           {updateError ? <p className="text-danger-300 px-6">{updateError}</p> : null}
@@ -246,7 +282,9 @@ export default function CardDetailsModal({ isOpen, onClose, card: propsCard }: C
             >
               Edit
             </Button>
-            <Button className={`bg-ualert-500 text-notpurple-500 w-full sm:w-auto `}>Close</Button>
+            <Button className={`bg-ualert-500 text-notpurple-500 w-full sm:w-auto `} onClick={onClose}>
+              Close
+            </Button>
           </div>
         </ModalContent>
       )}
