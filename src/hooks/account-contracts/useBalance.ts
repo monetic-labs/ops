@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { publicClient } from "@/config/web3";
 import { BASE_USDC } from "@/utils/constants";
 import { formatUnits } from "viem";
-import { getAccount } from "@/utils/bill-pay-transfer";
+import { getAccount } from "@/utils/reown";
 import { debounce } from "lodash";
 import { formatDecimals } from "@/utils/helpers";
 

@@ -4,25 +4,13 @@ import Contacts from "./contacts-tab";
 import Transfers from "./transfers-tab";
 import { billPayConfig, BillPayId } from "@/config/tabs";
 import { Button } from "@nextui-org/button";
-import CreateBillPayModal, { NewBillPay } from "./bill-actions/create";
+import CreateBillPayModal from "./bill-actions/create";
 import { useAppKitAccount } from "@reown/appkit/react";
-import { FiatCurrency } from "@backpack-fux/pylon-sdk";
-
-export const DEFAULT_BILL_PAY: NewBillPay = {
-  vendorName: "",
-  vendorMethod: undefined,
-  currency: FiatCurrency.USD,
-  vendorBankName: "",
-  routingNumber: "",
-  accountNumber: "",
-  memo: "",
-  amount: "",
-  fee: "",
-  total: "",
-};
+import { DEFAULT_NEW_BILL_PAY } from "@/types/bill-pay";
+import { NewBillPay, ExistingBillPay } from "@/types/bill-pay";
 
 export default function BillPayTabs() {
-  const [newBillPay, setNewBillPay] = useState<NewBillPay>(DEFAULT_BILL_PAY);
+  const [billPay, setBillPay] = useState<NewBillPay | ExistingBillPay>(DEFAULT_NEW_BILL_PAY);
   const [selectedService, setSelectedService] = useState<string>(billPayConfig[0].id);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const { isConnected } = useAppKitAccount();
@@ -65,10 +53,10 @@ export default function BillPayTabs() {
         isOpen={isCreateModalOpen}
         onClose={() => {
           setIsCreateModalOpen(false);
-          setNewBillPay(DEFAULT_BILL_PAY);
+          setBillPay(DEFAULT_NEW_BILL_PAY);
         }}
-        newBillPay={newBillPay}
-        setNewBillPay={setNewBillPay}
+        billPay={billPay}
+        setBillPay={setBillPay}
         isWalletConnected={isConnected}
         onSave={(newBillPay) => {
           console.log("Creating transfer:", newBillPay);

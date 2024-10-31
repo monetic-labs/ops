@@ -9,49 +9,22 @@ import NewTransferFields from "./fields/new-transfer";
 import ModalFooterWithSupport from "../../generics/footer-modal-support";
 import ExistingTransferFields from "./fields/existing-transfer";
 import { useExistingDisbursement } from "@/hooks/bill-pay/useExistingDisbursement";
-import { useAppKitAccount, useDisconnect } from "@reown/appkit/react";
 import { modal } from "@/context/reown";
 import { Button } from "@nextui-org/button";
 import TransferStatusView, { TransferStatus } from "@/components/generics/transfer-status";
-import { buildTransfer } from "@/utils/bill-pay-transfer";
+import { buildTransfer } from "@/utils/reown";
 import { useBalance } from "@/hooks/account-contracts/useBalance";
-import { validateBillPay } from "./fields/validation";
+import { validateBillPay } from "@/types/validations/bill-pay";
+import { ExistingBillPay, isExistingBillPay, NewBillPay } from "@/types/bill-pay";
 
 type CreateBillPayModalProps = {
   isOpen: boolean;
   onClose: () => void;
-  onSave: (newBillPay: NewBillPay) => void;
-  newBillPay: NewBillPay;
-  setNewBillPay: (newBillPay: NewBillPay) => void;
+  onSave: (billPay: NewBillPay | ExistingBillPay) => void;
+  billPay: NewBillPay | ExistingBillPay;
+  setBillPay: (billPay: NewBillPay | ExistingBillPay) => void;
   isWalletConnected: boolean;
 };
-
-export type NewBillPay = {
-  vendorName: string;
-  vendorBankName: string;
-  vendorMethod?: DisbursementMethod;
-  currency: string;
-  routingNumber: string;
-  accountNumber: string;
-  memo?: string;
-  disbursementId?: string;
-  amount: string;
-  fee: string;
-  total: string;
-};
-
-export enum Countries {
-  CAN = "Canada",
-  CYM = "Cayman Islands",
-  USA = "United States",
-  VGB = "British Virgin Islands",
-}
-
-export enum States {
-  NY = "New York",
-  CA = "California",
-  TX = "Texas",
-}
 
 const methodFees: Record<DisbursementMethod, number> = {
   [DisbursementMethod.ACH_SAME_DAY]: 0,
@@ -63,14 +36,14 @@ export default function CreateBillPayModal({
   onClose,
   onSave,
   isWalletConnected,
-  setNewBillPay,
-  newBillPay,
+  billPay,
+  setBillPay,
 }: CreateBillPayModalProps) {
   const [isNewSender, setIsNewSender] = useState(false);
   const [transferStatus, setTransferStatus] = useState<TransferStatus>(TransferStatus.IDLE);
   const [formIsValid, setFormIsValid] = useState(false);
   const { balance: settlementBalance, isLoading: isLoadingBalance } = useBalance({
-    amount: newBillPay.amount,
+    amount: billPay.amount,
     isModalOpen: isOpen,
   });
 
@@ -82,19 +55,24 @@ export default function CreateBillPayModal({
   } = useExistingDisbursement();
 
   useEffect(() => {
-    const formValid = validateBillPay(newBillPay, settlementBalance);
+    const formValid = validateBillPay(billPay, settlementBalance);
+    console.log("Form validation update:", {
+      formValid,
+      billPay,
+      settlementBalance,
+    });
     setFormIsValid(formValid);
-  }, [newBillPay, settlementBalance, setFormIsValid]);
+  }, [billPay, settlementBalance, setFormIsValid]);
 
   const fee = useMemo(() => {
-    if (!newBillPay.vendorMethod) return 0;
-    return methodFees[newBillPay.vendorMethod] || 0;
-  }, [newBillPay.vendorMethod]);
+    if (!billPay.vendorMethod) return 0;
+    return methodFees[billPay.vendorMethod] || 0;
+  }, [billPay.vendorMethod]);
 
   const total = useMemo(() => {
-    const amount = parseFloat(newBillPay.amount) || 0;
+    const amount = parseFloat(billPay.amount) || 0;
     return amount + amount * fee;
-  }, [newBillPay.amount, fee]);
+  }, [billPay.amount, fee]);
 
   const handleSave = async () => {
     if (!isWalletConnected) return;
@@ -102,13 +80,13 @@ export default function CreateBillPayModal({
     let timeout: number = 0;
     try {
       // Create existing disbursement
-      if (newBillPay.disbursementId && newBillPay.vendorMethod) {
-        const response = await createExistingDisbursement(newBillPay.disbursementId, {
-          amount: newBillPay.amount,
-          disbursementMethod: newBillPay.vendorMethod,
-          ...(newBillPay.vendorMethod === DisbursementMethod.WIRE && { wireMessage: newBillPay.memo }),
-          ...(newBillPay.vendorMethod === DisbursementMethod.ACH_SAME_DAY && {
-            achReference: newBillPay.memo,
+      if (isExistingBillPay(billPay) && billPay.vendorMethod) {
+        const response = await createExistingDisbursement(billPay.disbursementId, {
+          amount: billPay.amount,
+          disbursementMethod: billPay.vendorMethod,
+          ...(billPay.vendorMethod === DisbursementMethod.WIRE && { wireMessage: billPay.memo }),
+          ...(billPay.vendorMethod === DisbursementMethod.ACH_SAME_DAY && {
+            achReference: billPay.memo,
           }),
         });
         console.log("Existing disbursement response:", response);
@@ -117,7 +95,7 @@ export default function CreateBillPayModal({
 
         const txHash = await buildTransfer({
           liquidationAddress: response.address as Address,
-          amount: newBillPay.amount,
+          amount: billPay.amount,
           setTransferStatus,
         });
 
@@ -125,7 +103,7 @@ export default function CreateBillPayModal({
         setTransferStatus(TransferStatus.SENT);
         timeout = 3000;
         return;
-      } else if (!newBillPay.disbursementId && newBillPay.vendorMethod) {
+      } else if (billPay.vendorMethod) {
         // TODO: Create new disbursement
       }
     } catch (error) {
@@ -156,12 +134,15 @@ export default function CreateBillPayModal({
 
   const renderTransferFields = () => {
     return isNewSender ? (
-      <NewTransferFields newBillPay={newBillPay} setNewBillPay={setNewBillPay} />
+      <NewTransferFields
+        billPay={billPay as NewBillPay}
+        setBillPay={setBillPay}
+        settlementBalance={settlementBalance}
+      />
     ) : (
       <ExistingTransferFields
-        newBillPay={newBillPay}
-        setNewBillPay={setNewBillPay}
-        isNewSender={isNewSender}
+        billPay={billPay as ExistingBillPay}
+        setBillPay={setBillPay}
         setIsNewSender={setIsNewSender}
         settlementBalance={settlementBalance}
       />
@@ -177,7 +158,7 @@ export default function CreateBillPayModal({
             <div className="flex items-center gap-2">
               <Tooltip
                 content={
-                  newBillPay.vendorMethod === DisbursementMethod.WIRE
+                  billPay.vendorMethod === DisbursementMethod.WIRE
                     ? "We pass on the fees from the receiving bank. We do not add any additional fees."
                     : "We cover these fees for you."
                 }

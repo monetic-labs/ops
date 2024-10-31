@@ -1,15 +1,21 @@
 import { useEffect, useState } from "react";
 import { useInfiniteScroll } from "@nextui-org/use-infinite-scroll";
 import { DisbursementMethod, FiatCurrency } from "@backpack-fux/pylon-sdk";
-import { NewBillPay } from "../create";
 import { useGetContacts } from "@/hooks/bill-pay/useGetContacts";
 import { Autocomplete, AutocompleteItem } from "@nextui-org/autocomplete";
 import { Input } from "@nextui-org/input";
 import { Eye, EyeOff } from "lucide-react";
-import { DEFAULT_BILL_PAY } from "../../bill-pay";
-import { FieldLabels, getFieldValidation } from "./validation";
+import { DEFAULT_EXISTING_BILL_PAY, ExistingBillPay, NewBillPay } from "@/types/bill-pay";
+import { FieldLabel, getFieldValidation } from "@/types/validations/bill-pay";
 
-function getValidationProps(label: FieldLabels, value: string, currency: string, balance?: string) {
+type ExistingTransferFieldsProps = {
+  billPay: ExistingBillPay;
+  setBillPay: (billPay: ExistingBillPay) => void;
+  setIsNewSender: (isNewSender: boolean) => void;
+  settlementBalance?: string;
+};
+
+function getValidationProps(label: FieldLabel, value: string, currency: string, balance?: string) {
   const validation = getFieldValidation({ label, currency, value, balance });
   return {
     min: validation.min,
@@ -21,33 +27,22 @@ function getValidationProps(label: FieldLabels, value: string, currency: string,
   };
 }
 
-function getValidationResults(newBillPay: NewBillPay, settlementBalance?: string) {
+function getValidationResults(billPay: ExistingBillPay, settlementBalance?: string) {
   return {
-    accountHolder: getValidationProps(FieldLabels.ACCOUNT_HOLDER, newBillPay.vendorName, newBillPay.currency),
-    bankName: getValidationProps(FieldLabels.BANK_NAME, newBillPay.vendorBankName, newBillPay.currency),
-    accountNumber: getValidationProps(FieldLabels.ACCOUNT_NUMBER, newBillPay.accountNumber, newBillPay.currency),
-    paymentMethod: getValidationProps(FieldLabels.PAYMENT_METHOD, newBillPay.vendorMethod || "", newBillPay.currency),
-    amount: getValidationProps(FieldLabels.AMOUNT, newBillPay.amount, newBillPay.currency, settlementBalance),
+    accountHolder: getValidationProps(FieldLabel.ACCOUNT_HOLDER, billPay.vendorName, billPay.currency),
+    bankName: getValidationProps(FieldLabel.BANK_NAME, billPay.vendorBankName, billPay.currency),
+    accountNumber: getValidationProps(FieldLabel.ACCOUNT_NUMBER, billPay.accountNumber, billPay.currency),
+    paymentMethod: getValidationProps(FieldLabel.PAYMENT_METHOD, billPay.vendorMethod || "", billPay.currency),
+    amount: getValidationProps(FieldLabel.AMOUNT, billPay.amount, billPay.currency, settlementBalance),
   };
 }
 
-function isFormValid(validationResults: Record<string, { isInvalid: boolean }>): boolean {
-  return Object.values(validationResults).every((result) => !result.isInvalid);
-}
-
 export default function ExistingTransferFields({
-  newBillPay,
-  setNewBillPay,
-  isNewSender,
+  billPay,
+  setBillPay,
   setIsNewSender,
   settlementBalance,
-}: {
-  newBillPay: NewBillPay;
-  setNewBillPay: (newBillPay: NewBillPay) => void;
-  isNewSender: boolean;
-  setIsNewSender: (isNewSender: boolean) => void;
-  settlementBalance?: string;
-}) {
+}: ExistingTransferFieldsProps) {
   const [search, setSearch] = useState("");
   const [isOpen, setIsOpen] = useState(false);
   const [isVisible, setIsVisible] = useState(false);
@@ -67,12 +62,12 @@ export default function ExistingTransferFields({
       fetchContacts({ search });
     }
   }, [isOpen, search]);
-
   const handleSelectionChange = (contactId: string) => {
     const selectedContact = contacts.find((contact) => contact.id === contactId);
     if (selectedContact) {
-      setNewBillPay({
-        ...newBillPay,
+      setBillPay({
+        ...billPay,
+        type: "existing",
         vendorName: selectedContact.accountOwnerName,
         vendorBankName: selectedContact.bankName,
         routingNumber: selectedContact.routingNumber,
@@ -83,11 +78,11 @@ export default function ExistingTransferFields({
 
   const handleMethodChange = (value: DisbursementMethod) => {
     const selectedDisbursement = selectedContact?.disbursements.find((disbursement) => disbursement.method === value);
-    setNewBillPay({
-      ...newBillPay,
+    setBillPay({
+      ...billPay,
       vendorMethod: value,
-      memo: selectedDisbursement?.paymentMessage || undefined,
-      disbursementId: selectedDisbursement?.id || undefined,
+      memo: selectedDisbursement?.paymentMessage || "",
+      disbursementId: selectedDisbursement?.id || "",
     });
   };
 
@@ -95,8 +90,8 @@ export default function ExistingTransferFields({
     setIsVisible((prevState) => !prevState);
   };
 
-  const validationResults = getValidationResults(newBillPay, settlementBalance);
-  const selectedContact = contacts.find((contact) => contact.accountOwnerName === newBillPay.vendorName);
+  const validationResults = getValidationResults(billPay, settlementBalance);
+  const selectedContact = contacts.find((contact) => contact.accountOwnerName === billPay.vendorName);
   const availableMethods = selectedContact
     ? selectedContact.disbursements.map((disbursement) => disbursement.method)
     : [];
@@ -104,7 +99,7 @@ export default function ExistingTransferFields({
   return (
     <>
       <Autocomplete
-        label={FieldLabels.ACCOUNT_HOLDER}
+        label={FieldLabel.ACCOUNT_HOLDER}
         placeholder="Select an account holder"
         isRequired
         {...validationResults.accountHolder}
@@ -121,12 +116,12 @@ export default function ExistingTransferFields({
             </button>
           ),
         }}
-        value={newBillPay.vendorName}
+        value={billPay.vendorName}
         onSelectionChange={(contactId) => {
           if (contactId) {
             handleSelectionChange(contactId as string);
           } else {
-            setNewBillPay(DEFAULT_BILL_PAY);
+            setBillPay(DEFAULT_EXISTING_BILL_PAY);
           }
         }}
         onInputChange={(value) => {
@@ -149,22 +144,22 @@ export default function ExistingTransferFields({
         )}
       </Autocomplete>
       <Input
-        label={FieldLabels.BANK_NAME}
-        isDisabled={!newBillPay.vendorName}
+        label={FieldLabel.BANK_NAME}
+        isDisabled={!billPay.vendorName}
         {...validationResults.bankName}
-        value={newBillPay.vendorBankName}
+        value={billPay.vendorBankName}
       />
       <div className="flex space-x-4">
         <Input
-          label={FieldLabels.ACCOUNT_NUMBER}
+          label={FieldLabel.ACCOUNT_NUMBER}
           isReadOnly
-          isDisabled={!newBillPay.accountNumber}
+          isDisabled={!billPay.accountNumber}
           {...validationResults.accountNumber}
           value={
-            newBillPay.accountNumber
+            billPay.accountNumber
               ? isVisible
-                ? newBillPay.accountNumber
-                : `${"•".repeat(newBillPay.accountNumber.length - 4)}${newBillPay.accountNumber.slice(-4)}`
+                ? billPay.accountNumber
+                : `${"•".repeat(billPay.accountNumber.length - 4)}${billPay.accountNumber.slice(-4)}`
               : ""
           }
           endContent={
@@ -174,7 +169,7 @@ export default function ExistingTransferFields({
               onClick={toggleVisibility}
               aria-label="toggle account number visibility"
             >
-              {newBillPay.accountNumber ? (
+              {billPay.accountNumber ? (
                 isVisible ? (
                   <Eye className="text-2xl text-default-400 pointer-events-none" />
                 ) : (
@@ -186,14 +181,14 @@ export default function ExistingTransferFields({
           type="text"
           className="w-3/5 md:w-1/2"
         />
-        <Input isDisabled label="Routing Number" value={`${newBillPay.routingNumber}`} className="w-2/5 md:w-1/2" />
+        <Input isDisabled label="Routing Number" value={`${billPay.routingNumber}`} className="w-2/5 md:w-1/2" />
       </div>
       <Autocomplete
-        label={FieldLabels.PAYMENT_METHOD}
+        label={FieldLabel.PAYMENT_METHOD}
         isRequired
-        isDisabled={!newBillPay.vendorName}
+        isDisabled={!billPay.vendorName}
         {...validationResults.paymentMethod}
-        value={newBillPay.vendorMethod}
+        value={billPay.vendorMethod}
         onSelectionChange={(value) => handleMethodChange(value as DisbursementMethod)}
       >
         {availableMethods.map((method) => (
@@ -202,29 +197,29 @@ export default function ExistingTransferFields({
           </AutocompleteItem>
         ))}
       </Autocomplete>
-      {newBillPay.vendorMethod &&
-        [DisbursementMethod.WIRE, DisbursementMethod.ACH_SAME_DAY].includes(newBillPay.vendorMethod) && (
+      {billPay.vendorMethod &&
+        [DisbursementMethod.WIRE, DisbursementMethod.ACH_SAME_DAY].includes(billPay.vendorMethod) && (
           <Input
-            isDisabled={newBillPay.vendorMethod === DisbursementMethod.WIRE}
-            label={`${newBillPay.vendorMethod === DisbursementMethod.WIRE ? "Wire Message" : "ACH Reference"}`}
-            description={`${newBillPay.vendorMethod === DisbursementMethod.WIRE ? "This cannot be changed." : ""}`}
-            value={newBillPay.memo}
-            onChange={(e) => setNewBillPay({ ...newBillPay, memo: e.target.value })}
+            isDisabled={billPay.vendorMethod === DisbursementMethod.WIRE}
+            label={`${billPay.vendorMethod === DisbursementMethod.WIRE ? "Wire Message" : "ACH Reference"}`}
+            description={`${billPay.vendorMethod === DisbursementMethod.WIRE ? "This cannot be changed." : ""}`}
+            value={billPay.memo}
+            onChange={(e) => setBillPay({ ...billPay, memo: e.target.value })}
           />
         )}
       <Input
-        label={FieldLabels.AMOUNT}
+        label={FieldLabel.AMOUNT}
         type="number"
         isRequired
-        isDisabled={!newBillPay.vendorName && !newBillPay.vendorMethod}
+        isDisabled={!billPay.vendorName && !billPay.vendorMethod}
         {...validationResults.amount}
-        value={newBillPay.amount}
+        value={billPay.amount}
         onChange={(e) => {
           const value = e.target.value;
           // Only allow 2 decimal places
           const regex = /^\d*\.?\d{0,2}$/;
           if (regex.test(value) || value === "") {
-            setNewBillPay({ ...newBillPay, amount: value });
+            setBillPay({ ...billPay, amount: value });
           }
         }}
         startContent={
@@ -241,8 +236,8 @@ export default function ExistingTransferFields({
               className="outline-none border-0 bg-transparent text-default-400 text-small"
               id="currency"
               name="currency"
-              value={newBillPay.currency}
-              onChange={(e) => setNewBillPay({ ...newBillPay, currency: e.target.value })}
+              value={billPay.currency}
+              onChange={(e) => setBillPay({ ...billPay, currency: e.target.value as FiatCurrency })}
             >
               {Object.values(FiatCurrency).map((currency) => (
                 <option key={currency} value={currency}>
