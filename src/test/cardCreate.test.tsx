@@ -222,6 +222,7 @@ describe("CreateCardModal", () => {
       await user.click(screen.getByText("Month"));
       await user.type(screen.getByTestId("card-displayName"), "Test Card");
       await user.type(screen.getByTestId("card-firstName"), "John");
+      await user.type(screen.getByTestId("card-lastName"), "Doe");
     };
 
     it("should validate required fields for virtual card", async () => {
@@ -252,8 +253,9 @@ describe("CreateCardModal", () => {
 
       await user.click(screen.getByTestId("card-createButton"));
 
+      console.log(screen.getByTestId("form-modal").innerHTML);
       await waitFor(() => {
-        expect(screen.getAllByText(/Please select a country/i)[0]).toBeInTheDocument();
+        expect(screen.getAllByText(/Please select a country/i).length).toBeGreaterThan(0);
       });
     });
 
