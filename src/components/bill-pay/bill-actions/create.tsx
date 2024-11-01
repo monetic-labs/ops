@@ -231,7 +231,7 @@ export default function CreateBillPayModal({
   };
 
   return (
-    <Modal isOpen={isOpen} size="2xl" onClose={onClose}>
+    <Modal data-testid="create-transfer-modal" isOpen={isOpen} size="2xl" onClose={onClose}>
       <ModalContent className="relative">
         {transferStatus !== TransferStatus.IDLE && (
           <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-70 z-50">
@@ -253,6 +253,7 @@ export default function CreateBillPayModal({
         {!isWalletConnected && (
           <div className="absolute inset-0 flex items-center justify-center z-20">
             <Button
+              data-testid="connect-wallet-button"
               color="primary"
               onPress={async () => {
                 await modal.open();

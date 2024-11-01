@@ -5,7 +5,7 @@ import Transfers from "./transfers-tab";
 import { billPayConfig, BillPayId } from "@/config/tabs";
 import { Button } from "@nextui-org/button";
 import CreateBillPayModal from "./bill-actions/create";
-import { modal, useAppKitAccount } from "@reown/appkit/react";
+import { useAppKitAccount } from "@reown/appkit/react";
 import { DEFAULT_NEW_BILL_PAY } from "@/types/bill-pay";
 import { NewBillPay, ExistingBillPay } from "@/types/bill-pay";
 import { Address } from "viem";
@@ -45,7 +45,7 @@ export default function BillPayTabs() {
             <Tab key={tab.id} title={tab.label} />
           ))}
         </Tabs>
-        <Button color="default" onPress={() => setIsCreateModalOpen(true)}>
+        <Button data-testid="create-transfer-button" color="default" onPress={() => setIsCreateModalOpen(true)}>
           Create Transfer
         </Button>
       </div>
