@@ -16,31 +16,42 @@ import { pinecone } from '@/libs/pinecone';
 
 async function uploadDocs() {
   try {
+    // First check if index exists
+    const indexName = 'fintech-knowledge';
+    let index;
+    
+    try {
+      // Try to get the index first
+      index = pinecone.index(indexName);
+      console.log('Found existing index:', indexName);
+    } catch (error) {
+      // If index doesn't exist, create it
+      console.log('Creating new index:', indexName);
+      await pinecone.createIndex({
+        name: indexName,
+        dimension: 1536,
+        metric: 'cosine',
+        spec: {
+          serverless: {
+            cloud: 'aws',
+            region: 'us-east-1'  // or your preferred region
+          }
+        }
+      });
+
+      // Wait for index to be ready
+      console.log('Waiting for index to initialize...');
+      await new Promise(resolve => setTimeout(resolve, 60000));
+      
+      index = pinecone.index(indexName);
+    }
+
     const docsDir = path.join(process.cwd(), 'src', 'docs');
     console.log(`Looking for documents in: ${docsDir}`);
     
-    // Check if docs directory exists
-    if (!fs.existsSync(docsDir)) {
-      console.error(`Docs directory not found at: ${docsDir}`);
-      process.exit(1);
-    }
-
-    // List all subdirectories for debugging
-    const subdirs = fs.readdirSync(docsDir);
-    console.log('Found directories:', subdirs);
-
     const documents = await processDocuments(docsDir);
-    
-    if (documents.length === 0) {
-      console.log('No markdown files found in docs directory');
-      process.exit(1);
-    }
-    
     console.log(`Processing ${documents.length} documents...`);
-    
-    const index = pinecone.index('fintech-knowledge');
 
-    // Get initial stats
     const beforeStats = await index.describeIndexStats();
     console.log('Initial index stats:', beforeStats);
 
@@ -51,17 +62,16 @@ async function uploadDocs() {
         id: `${doc.category}-${Date.now()}`,
         values: embedding,
         metadata: {
-            text: doc.content,
-            category: doc.category,
-            title: doc.title,
-            ...doc.metadata
-          }
+          text: doc.content,
+          category: doc.category,
+          title: doc.title,
+          ...doc.metadata
+        }
       }]);
       
       console.log(`Uploaded: ${doc.title} (${doc.category})`);
     }
 
-    // Get final stats to verify upload
     const afterStats = await index.describeIndexStats();
     console.log('Final index stats:', afterStats);
     
@@ -74,6 +84,9 @@ async function uploadDocs() {
 
   } catch (error) {
     console.error('Error uploading documents:', error);
+    if (error instanceof Error) {
+      console.error('Error details:', error.message);
+    }
     process.exit(1);
   }
 }

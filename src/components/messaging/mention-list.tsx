@@ -9,10 +9,19 @@ interface MentionListProps {
   onSelect: (option: MentionOption) => void;
   position: { top: number; left: number };
   visible: boolean;
+  selectedIndex: number;
+  setSelectedIndex: (index: number) => void;
 }
 
-export const MentionList: React.FC<MentionListProps> = ({ options, searchText, onSelect, position, visible }) => {
-  const [selectedIndex, setSelectedIndex] = useState(0);
+export const MentionList: React.FC<MentionListProps> = ({ 
+  options, 
+  searchText, 
+  onSelect, 
+  position, 
+  visible, 
+  selectedIndex, 
+  setSelectedIndex 
+}) => {
 
   // Filter options based on search text
   const filteredOptions = options.filter((option) => option.label.toLowerCase().includes(searchText.toLowerCase()));
@@ -23,38 +32,35 @@ export const MentionList: React.FC<MentionListProps> = ({ options, searchText, o
   }, [searchText]);
 
   // Handle keyboard navigation
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (!visible) return;
+  // useEffect(() => {
+  //   const handleKeyDown = (e: KeyboardEvent) => {
+  //     if (!visible) return;
 
-      switch (e.key) {
-        case "ArrowDown":
-          e.preventDefault();
-          setSelectedIndex((prev) => (prev < filteredOptions.length - 1 ? prev + 1 : prev));
-          break;
-        case "ArrowUp":
-          e.preventDefault();
-          setSelectedIndex((prev) => (prev > 0 ? prev - 1 : prev));
-          break;
-        case "Tab":
-          e.preventDefault();
-          if (filteredOptions[selectedIndex]) {
-            onSelect(filteredOptions[selectedIndex]);
-          }
-          break;
-        case "Enter":
-          e.preventDefault();
-          if (filteredOptions[selectedIndex]) {
-            onSelect(filteredOptions[selectedIndex]);
-          }
-          break;
-      }
-    };
+  //     switch (e.key) {
+  //       case "ArrowDown":
+  //         e.preventDefault();
+  //         setSelectedIndex((prev) => (prev + 1) % filteredOptions.length);
+  //         break;
+  //       case "ArrowUp":
+  //         e.preventDefault();
+  //         setSelectedIndex((prev) => 
+  //           prev - 1 < 0 ? filteredOptions.length - 1 : prev - 1
+  //         );
+  //         break;
+  //       case "Enter":
+  //       case "Tab":
+  //         e.preventDefault();
+  //         if (filteredOptions[selectedIndex]) {
+  //           onSelect(filteredOptions[selectedIndex]);
+  //         }
+  //         break;
+  //     }
+  //   };
 
-    window.addEventListener("keydown", handleKeyDown);
+  //   window.addEventListener("keydown", handleKeyDown);
 
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [visible, filteredOptions, selectedIndex, onSelect]);
+  //   return () => window.removeEventListener("keydown", handleKeyDown);
+  // }, [visible, filteredOptions, selectedIndex, onSelect]);
 
   if (!visible) return null;
 

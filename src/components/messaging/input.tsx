@@ -18,6 +18,7 @@ export const ChatInput: React.FC = () => {
   const [inputValue, setInputValue] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
   const { options } = useMentions();
+  const [selectedIndex, setSelectedIndex] = useState(0);
 
   const [mentionState, setMentionState] = useState({
     isActive: false,
@@ -105,6 +106,10 @@ export const ChatInput: React.FC = () => {
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (mentionState.isActive) {
+      const filteredOptions = options.filter((option) =>
+        option.label.toLowerCase().includes(mentionState.searchText.toLowerCase())
+      );
+  
       switch (e.key) {
         case "Escape":
           e.preventDefault();
@@ -112,9 +117,20 @@ export const ChatInput: React.FC = () => {
           break;
         case "Tab":
         case "Enter":
+          e.preventDefault();
+          if (filteredOptions.length > 0) {
+            handleMentionSelect(filteredOptions[selectedIndex]); 
+          }
+          break;
         case "ArrowUp":
+          e.preventDefault();
+          setSelectedIndex((prev) => 
+            prev - 1 < 0 ? filteredOptions.length - 1 : prev - 1
+          );
+          break;
         case "ArrowDown":
           e.preventDefault();
+          setSelectedIndex((prev) => (prev + 1) % filteredOptions.length);
           break;
         default:
           break;
@@ -162,6 +178,8 @@ export const ChatInput: React.FC = () => {
           searchText={mentionState.searchText}
           visible={true}
           onSelect={handleMentionSelect}
+          selectedIndex={selectedIndex}
+          setSelectedIndex={setSelectedIndex}
         />
       )}
     </div>
