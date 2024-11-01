@@ -32,6 +32,7 @@ export default function AuthPage() {
     if (email) {
       try {
         const response = await issueOTP(email);
+
         if (response) {
           setShowOtpInput(true);
           console.log("OTP issued:", email);

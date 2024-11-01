@@ -1,9 +1,10 @@
-'use client';
+"use client";
 
-import React from 'react';
-import { ChatInput } from './input';
-import { ChatActions } from './actions';
-import { ModeSwitcher } from './mode-switcher';
+import React from "react";
+
+import { ChatInput } from "./input";
+import { ChatActions } from "./actions";
+import { ModeSwitcher } from "./mode-switcher";
 
 export const ChatFooter: React.FC = () => {
   return (

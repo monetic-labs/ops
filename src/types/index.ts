@@ -7,4 +7,3 @@ export type IconSvgProps = SVGProps<SVGSVGElement> & {
 export type OrderID = `${string}-${string}-${string}-${string}`;
 
 export type ChainAddress = `0x${string}`;
-

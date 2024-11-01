@@ -4,8 +4,10 @@ import { Modal, ModalBody, ModalContent, ModalHeader } from "@nextui-org/modal";
 import { Divider } from "@nextui-org/divider";
 import { Tooltip } from "@nextui-org/tooltip";
 import { DisbursementMethod } from "@backpack-fux/pylon-sdk";
-import NewTransferFields from "./fields/new-transfer";
+
 import ModalFooterWithSupport from "../../generics/footer-modal-support";
+
+import NewTransferFields from "./fields/new-transfer";
 import ExistingTransferFields from "./fields/existing-transfer";
 
 type CreateBillPayModalProps = {
@@ -73,11 +75,13 @@ export default function CreateBillPayModal({ isOpen, onClose, onSave }: CreateBi
 
   const fee = useMemo(() => {
     if (!newBillPay.vendorMethod) return 0;
+
     return methodFees[newBillPay.vendorMethod] || 0;
   }, [newBillPay.vendorMethod]);
 
   const total = useMemo(() => {
     const amount = parseFloat(newBillPay.amount) || 0;
+
     return amount + amount * fee;
   }, [newBillPay.amount, fee]);
 
@@ -114,10 +118,10 @@ export default function CreateBillPayModal({ isOpen, onClose, onSave }: CreateBi
             <NewTransferFields newBillPay={newBillPay} setNewBillPay={setNewBillPay} showMemo={showMemo} />
           ) : (
             <ExistingTransferFields
-              newBillPay={newBillPay}
-              setNewBillPay={setNewBillPay}
               isNewSender={isNewSender}
+              newBillPay={newBillPay}
               setIsNewSender={setIsNewSender}
+              setNewBillPay={setNewBillPay}
             />
           )}
         </ModalBody>
@@ -150,10 +154,10 @@ export default function CreateBillPayModal({ isOpen, onClose, onSave }: CreateBi
         </ModalBody>
         <Divider className="my-1" />
         <ModalFooterWithSupport
-          onSupportClick={handleSupportClick}
+          actions={footerActions}
           isNewSender={isNewSender}
           onNewSenderChange={setIsNewSender}
-          actions={footerActions}
+          onSupportClick={handleSupportClick}
         />
       </ModalContent>
     </Modal>

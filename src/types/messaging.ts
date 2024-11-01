@@ -1,48 +1,52 @@
 // Message Types
-export type MessageType = 'user' | 'bot' | 'support' | 'system';
-export type MessageStatus = 'sending' | 'sent' | 'error';
-export type MessageService = 'telegram' | 'openai' | 'websocket';
+export type MessageType = "user" | "bot" | "support" | "system";
+export type MessageStatus = "sending" | "sent" | "error";
+export type MessageServiceType = "telegram" | "openai" | "websocket";
 
 // Base Message Interface
 export interface BaseMessage {
   id: string;
   text: string;
   timestamp: number;
+  status?: MessageStatus;
 }
 
 // User Message Interface
 export interface UserMessage extends BaseMessage {
-  type: 'user';
+  type: "user";
   status: MessageStatus;
 }
 
 // Bot Message Interface
 export interface BotMessage extends BaseMessage {
-  type: 'bot';
+  type: "bot";
   source?: string;
+  status?: MessageStatus;
 }
 
 // Support Message Interface
 export interface SupportMessage extends BaseMessage {
-  type: 'support';
+  type: "support";
   agentId?: string;
+  status?: MessageStatus;
 }
 
 // System Message Interface
 export interface SystemMessage extends BaseMessage {
-  type: 'system';
-  category: 'info' | 'warning' | 'error';
+  type: "system";
+  category: "info" | "warning" | "error";
+  status?: MessageStatus;
 }
 
 // Union type for all message types
 export type Message = UserMessage | BotMessage | SupportMessage | SystemMessage;
 
 // Chat Mode Types
-export type ChatMode = 'bot' | 'support';
+export type ChatMode = "bot" | "support";
 
 // Message Service Configuration
 export interface MessageServiceConfig {
-  type: MessageService;
+  service: MessageService;
   enabled: boolean;
   config?: Record<string, unknown>;
 }
@@ -55,4 +59,40 @@ export interface MentionOption {
   description?: string;
   icon?: string;
   category?: string;
+}
+
+// Update MessageService to be more specific
+// export interface MessageService {
+//   type: MessageServiceType;
+//   sendMessage(text: string): Promise<void>;
+//   getMessages(): (Message | AIMessage)[];
+//   onMessage?(callback: (message: Message) => void): void;
+// }
+
+export interface MessageService {
+  type: MessageServiceType;
+  getMessages: () => Message[];
+  sendMessage: (text: string) => Promise<void>;
+  getInputValue: () => string;
+  setInputValue: (value: string) => void;
+  isInputLoading: () => boolean;
+  handleSubmit: (e: React.FormEvent) => Promise<void>;
+}
+
+export interface AgentMessageService extends MessageService {
+  type: "openai";
+  model: string;
+  context?: {
+    systemPrompt?: string;
+    temperature?: number;
+  };
+}
+
+export interface SupportMessageService extends MessageService {
+  type: "telegram" | "websocket";
+  channel: string;
+  metadata?: {
+    agentId?: string;
+    department?: string;
+  };
 }

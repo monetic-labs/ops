@@ -34,10 +34,13 @@ export default function InfiniteTable<T extends { id: string }>({
         if (!cursor) {
           setIsLoading(false);
           setHasMore(true);
+
           return { items: initialData, cursor: initialData.length.toString() };
         }
         const { items, cursor: newCursor } = await loadMore(cursor);
+
         setHasMore(!!newCursor);
+
         return { items, cursor: newCursor };
       } finally {
         setIsLoading(false);
@@ -55,8 +58,6 @@ export default function InfiniteTable<T extends { id: string }>({
       isHeaderSticky
       aria-label="Generic table with infinite scroll"
       baseRef={scrollerRef}
-      selectionMode="single"
-      onRowAction={(key) => onRowSelect && onRowSelect(list.items.find((item) => item.id === key) as T)}
       bottomContent={
         hasMore ? (
           <div className="flex justify-center items-center py-4">
@@ -67,6 +68,8 @@ export default function InfiniteTable<T extends { id: string }>({
       classNames={{
         wrapper: "max-h-[400px]",
       }}
+      selectionMode="single"
+      onRowAction={(key) => onRowSelect && onRowSelect(list.items.find((item) => item.id === key) as T)}
     >
       <TableHeader columns={columns as Column<T>[]}>
         {(column) => <TableColumn key={column.uid.toString()}>{column.name}</TableColumn>}

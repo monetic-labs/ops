@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { MerchantDisbursementCreateInput, MerchantDisbursementCreateOutput } from "@backpack-fux/pylon-sdk";
-import pylon from "@/libs/pylon-sdk";
 
 export const useNewDisbursement = () => {
   const [disbursement, setDisbursement] = useState<MerchantDisbursementCreateOutput | null>(null);

@@ -1,7 +1,7 @@
 import { useState, useCallback } from "react";
+import { ISO3166Alpha2Country } from "@backpack-fux/pylon-sdk";
 
 import { lookupPostcode } from "@/utils/helpers";
-import { ISO3166Alpha2Country } from "@backpack-fux/pylon-sdk";
 
 export type PostcodeLookupResult = {
   city: string | null;
@@ -22,8 +22,10 @@ export const usePostcodeLookup = () => {
 
     try {
       const data = await lookupPostcode(zipCode);
+
       if (data) {
         setResult(data);
+
         return data;
       } else {
         throw new Error("No data returned from postcode lookup");

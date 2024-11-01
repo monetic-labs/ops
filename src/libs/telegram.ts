@@ -1,5 +1,5 @@
 // Instead of directly using Telegram's API, we'll route through our Next.js API
-const API_BASE = '/api/support';
+const API_BASE = "/api/messaging/support";
 
 interface TelegramResponse {
   success: boolean;
@@ -14,9 +14,9 @@ interface TelegramResponse {
 export async function sendTelegramMessage(text: string): Promise<TelegramResponse> {
   try {
     const response = await fetch(`${API_BASE}/message-send`, {
-      method: 'POST',
+      method: "POST",
       headers: {
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
       },
       body: JSON.stringify({ text }),
     });
@@ -30,7 +30,7 @@ export async function sendTelegramMessage(text: string): Promise<TelegramRespons
 
     return data;
   } catch (error) {
-    console.error('Telegram service error:', error);
+    console.error("Telegram service error:", error);
     throw error;
   }
 }
@@ -39,20 +39,15 @@ export async function sendTelegramMessage(text: string): Promise<TelegramRespons
  * Send a photo through Telegram
  * Routes through our Next.js API to avoid exposing tokens and CORS issues
  */
-export async function sendTelegramPhoto(
-  photo: string, 
-  caption?: string
-): Promise<TelegramResponse> {
+export async function sendTelegramPhoto(photo: string, caption?: string): Promise<TelegramResponse> {
   try {
     // Handle base64 images or file paths
-    const photoData = photo.startsWith('data:image') 
-      ? { base64: photo }
-      : { url: photo };
+    const photoData = photo.startsWith("data:image") ? { base64: photo } : { url: photo };
 
-    const response = await fetch(`${API_BASE}/start-chat`, {
-      method: 'POST',
+    const response = await fetch(`${API_BASE}/start-support-screenshot`, {
+      method: "POST",
       headers: {
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
       },
       body: JSON.stringify({
         ...photoData,
@@ -68,7 +63,7 @@ export async function sendTelegramPhoto(
 
     return data;
   } catch (error) {
-    console.error('Error sending photo:', error);
+    console.error("Error sending photo:", error);
     throw error;
   }
 }
@@ -77,12 +72,10 @@ export async function sendTelegramPhoto(
  * Get updates from Telegram
  * This should also be routed through our API if needed
  */
-export async function getTelegramUpdates(
-  offset?: number
-): Promise<TelegramResponse> {
+export async function getTelegramUpdates(offset?: number): Promise<TelegramResponse> {
   try {
-    const response = await fetch(`${API_BASE}/updates${offset ? `?offset=${offset}` : ''}`);
-    
+    const response = await fetch(`${API_BASE}/updates${offset ? `?offset=${offset}` : ""}`);
+
     const data = await response.json();
 
     if (!response.ok || !data.success) {
@@ -91,7 +84,7 @@ export async function getTelegramUpdates(
 
     return data;
   } catch (error) {
-    console.error('Error getting updates:', error);
+    console.error("Error getting updates:", error);
     throw error;
   }
 }

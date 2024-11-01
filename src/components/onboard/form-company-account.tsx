@@ -11,7 +11,12 @@ import { CompanyAccountSchema, companyAccountSchema } from "@/types/validations/
 import { emailRegex } from "@/types/validations/auth";
 
 import { PostcodeInput } from "../generics/form-input-postcode";
-import { handleEmailChange, handlePostcodeLookup, handleWebsiteChange, PostcodeLookupResult } from "../generics/form-input-handlers";
+import {
+  handleEmailChange,
+  handlePostcodeLookup,
+  handleWebsiteChange,
+  PostcodeLookupResult,
+} from "../generics/form-input-handlers";
 
 export const FormCompanyInfo: React.FC<{
   onSubmit: (data: CompanyAccountSchema) => void;
@@ -22,7 +27,7 @@ export const FormCompanyInfo: React.FC<{
   const [emailInput, setEmailInput] = useState(initialData.company.email || "");
   const [websiteInput, setWebsiteInput] = useState(initialData.company.website || "");
   const [showAddressInputs, setShowAddressInputs] = useState(false);
-  
+
   const {
     control,
     formState: { errors },
@@ -86,41 +91,45 @@ export const FormCompanyInfo: React.FC<{
           control={control}
           errorMessage={errors.company?.email?.message}
           label="Email"
-          type="email"
           name="company.email"
-          placeholder="nope@algersoft.com"
-          value={emailInput}
-          onChange={(e) => handleEmailChange(
-            e, 
-            setValue, 
-            (value) => {
-              setEmailInput(value as string);
-            },
-            "company.email"
-          )}
           pattern={emailRegex.source}
+          placeholder="nope@algersoft.com"
+          type="email"
+          value={emailInput}
+          onChange={(e) =>
+            handleEmailChange(
+              e,
+              setValue,
+              (value) => {
+                setEmailInput(value as string);
+              },
+              "company.email"
+            )
+          }
         />
         <FormInput
+          control={control}
+          errorMessage={errors.company?.website?.message}
+          label="Website"
+          name="company.website"
+          placeholder="algersoft.com"
           startContent={
             <div className="pointer-events-none flex items-center">
               {/* <span className="text-default-400 text-small">https://</span> */}
             </div>
           }
-          control={control}
-          errorMessage={errors.company?.website?.message}
-          label="Website"
           type="url"
-          name="company.website"
-          placeholder="algersoft.com"
           value={websiteInput}
-          onChange={(e) => handleWebsiteChange(
-            e, 
-            setValue, 
-            (value) => {
-              setWebsiteInput(value as string);
-            },
-            "company.website"
-          )}
+          onChange={(e) =>
+            handleWebsiteChange(
+              e,
+              setValue,
+              (value) => {
+                setWebsiteInput(value as string);
+              },
+              "company.website"
+            )
+          }
         />
         <PostcodeInput
           about="Address where the company is registered."
@@ -128,8 +137,8 @@ export const FormCompanyInfo: React.FC<{
           errorMessage={errors.company?.registeredAddress?.postcode?.message}
           name="company.registeredAddress.postcode"
           showAddressInputs={showAddressInputs}
-          onLookupComplete={onPostcodeLookup}
           watchPostcode={watchPostcode}
+          onLookupComplete={onPostcodeLookup}
         />
         <div className={`fade-in ${showAddressInputs ? "show" : ""}`}>
           <FormInput

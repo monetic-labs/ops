@@ -1,12 +1,15 @@
 "use client";
 
+import { Button } from "@nextui-org/button";
+
 import { title } from "@/components/primitives";
 import { useGetComplianceStatus } from "@/hooks/merchant/useGetComplianceStatus";
-import { Button } from "@nextui-org/button";
 
 export default function UnapprovedKYB() {
   const { complianceStatus } = useGetComplianceStatus();
+
   console.log(complianceStatus);
+
   return (
     <section className="flex flex-col items-center justify-center gap-6 py-12 px-4 max-w-3xl mx-auto">
       <h1 className={title({ color: "chardient" })}>KYB Verification in Progress</h1>

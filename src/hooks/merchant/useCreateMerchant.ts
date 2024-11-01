@@ -6,6 +6,7 @@ import { BridgeMerchantCreateDto } from "@/types/dtos/bridgeDTO";
 
 function mapBridgeUserRoleToPersonRole(bridgeUserRole: PersonRole | undefined): PersonRole | undefined {
   if (bridgeUserRole === undefined) return undefined;
+
   return bridgeUserRole;
 }
 
@@ -27,6 +28,7 @@ export function useCreateBridgeMerchant() {
         ...data,
         representatives: data.representatives.map((rep) => {
           const { appRole, bridgeUserRole, ...rest } = rep;
+
           return {
             ...rest,
             role: mapBridgeUserRoleToPersonRole(bridgeUserRole),

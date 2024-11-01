@@ -1,19 +1,17 @@
-import React, { useState, ReactNode, useCallback } from "react";
+import React, { useState, useCallback } from "react";
 import { Chip } from "@nextui-org/chip";
 import { TransactionListItem } from "@backpack-fux/pylon-sdk";
-import pylon from "@/libs/pylon-sdk";
+import { Table, TableBody, TableCell, TableColumn, TableHeader, TableRow } from "@nextui-org/table";
 
+import pylon from "@/libs/pylon-sdk";
 import { useOrderManagement } from "@/hooks/orders/useOrderManagement";
 import { centsToDollars, getTimeAgo, mapCurrencyToSymbol } from "@/utils/helpers";
+import { Column, paymentsColumns, paymentsStatusColorMap } from "@/data";
 
 import { PaymentDetails } from "./actions/order-details";
 import { CancelConfirmationModal } from "./actions/order-cancel";
 import { RefundModal } from "./actions/order-refund";
 import { RefundSuccessModal } from "./actions/order-success";
-
-import { Column, paymentsColumns, paymentsStatusColorMap } from "@/data";
-import InfiniteTable from "../generics/table-infinite";
-import { Table, TableBody, TableCell, TableColumn, TableHeader, TableRow } from "@nextui-org/table";
 
 export default function PaymentsTab() {
   const { transactions, isLoading, error } = useOrderManagement();
@@ -60,6 +58,7 @@ export default function PaymentsTab() {
           currency: refundPayment.currency,
           ...(refundReference && { reference: refundReference }),
         });
+
         if (refundResponse.statusCode === 200 && refundResponse.data.success) {
           console.log("Refund request successful for transaction:", refundPayment.id);
           setShowRefundSuccessModal(true);
@@ -200,19 +199,19 @@ export default function PaymentsTab() {
             orderAmount: parseFloat(centsToDollars(refundPayment.subtotal)),
             totalAmount: parseFloat(centsToDollars(refundPayment.total)),
           }}
-          setRefundReference={setRefundReference}
           refundReference={refundReference}
+          setRefundReference={setRefundReference}
           onClose={handleCloseRefundModal}
           onConfirm={handleConfirmRefund}
         />
       )}
       {showRefundSuccessModal && (
         <RefundSuccessModal
-          isOpen={showRefundSuccessModal}
-          title="Refund Successful"
-          message="The refund has been processed successfully."
-          onClose={() => setShowRefundSuccessModal(false)}
           fadeOutOpts={{ autoFadeOut: false }}
+          isOpen={showRefundSuccessModal}
+          message="The refund has been processed successfully."
+          title="Refund Successful"
+          onClose={() => setShowRefundSuccessModal(false)}
         />
       )}
     </>

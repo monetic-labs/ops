@@ -1,6 +1,7 @@
 import { useState } from "react";
-import { useFormPersistence } from "@/hooks/generics/useFormPersistence";
 import { CardCompanyType, ISO3166Alpha2Country } from "@backpack-fux/pylon-sdk";
+
+import { useFormPersistence } from "@/hooks/generics/useFormPersistence";
 
 export const useFormState = (initialEmail: string) => {
   const initialData = {
@@ -69,6 +70,7 @@ export const useFormState = (initialEmail: string) => {
   const synchronizeUserDetails = (representativesCount: number) => {
     console.log("Synchronizing user details");
     const currentDetailsCount = formData.userDetails.length;
+
     if (representativesCount > currentDetailsCount) {
       // Add default userDetails
       const additionalDetails = Array(representativesCount - currentDetailsCount).fill({
@@ -83,6 +85,7 @@ export const useFormState = (initialEmail: string) => {
           country: ISO3166Alpha2Country.US,
         },
       });
+
       updateFormData({
         ...formData,
         userDetails: [...formData.userDetails, ...additionalDetails],

@@ -4,9 +4,9 @@ import { ModalFooter } from "@nextui-org/modal";
 import { Switch } from "@nextui-org/switch";
 import { Kbd } from "@nextui-org/kbd";
 import html2canvas from "html2canvas";
+import { Tooltip } from "@nextui-org/tooltip";
 
 import { ChatPane } from "../messaging/pane";
-import { Tooltip } from "@nextui-org/tooltip";
 
 interface ActionButton {
   label: string;
@@ -31,26 +31,25 @@ export default function ModalFooterWithSupport({
   actions,
   captureElementId = "root",
 }: ModalFooterWithSupportProps) {
-
   const [isChatOpen, setIsChatOpen] = useState(false);
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
-      if ((event.metaKey || event.ctrlKey) && event.key === 'k') {
+      if ((event.metaKey || event.ctrlKey) && event.key === "k") {
         event.preventDefault();
-        setIsChatOpen(prev => !prev);
+        setIsChatOpen((prev) => !prev);
       }
     };
 
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
+    window.addEventListener("keydown", handleKeyDown);
+
+    return () => window.removeEventListener("keydown", handleKeyDown);
   }, []);
 
   const handleSupportClick = async () => {
     try {
-
       // Add a small delay to ensure all elements are rendered
-      await new Promise(resolve => setTimeout(resolve, 100));
+      await new Promise((resolve) => setTimeout(resolve, 100));
       // Capture the entire visible page
       const canvas = await html2canvas(document.body, {
         logging: false,
@@ -62,19 +61,19 @@ export default function ModalFooterWithSupport({
         onclone: (document) => {
           // This function runs on the cloned document before rendering
           // You can modify elements here if needed
-          document.querySelectorAll('img, image').forEach((img) => {
-            img.setAttribute('crossorigin', 'anonymous');
+          document.querySelectorAll("img, image").forEach((img) => {
+            img.setAttribute("crossorigin", "anonymous");
           });
         },
       });
-      
-      // Reduce the image quality and size
-      const screenshot = canvas.toDataURL('image/jpeg', 0.5);
 
-      const response = await fetch('/api/support/start-chat', {
-        method: 'POST',
+      // Reduce the image quality and size
+      const screenshot = canvas.toDataURL("image/jpeg", 0.5);
+
+      const response = await fetch("/api/messaging/support/start-support-screenshot", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({ screenshot: screenshot }),
       });
@@ -87,7 +86,7 @@ export default function ModalFooterWithSupport({
       setIsChatOpen(true);
       onSupportClick();
     } catch (error) {
-      console.error('Error capturing screenshot:', error);
+      console.error("Error capturing screenshot:", error);
       setIsChatOpen(true);
       onSupportClick();
     }
@@ -97,15 +96,17 @@ export default function ModalFooterWithSupport({
     <>
       <ModalFooter className="flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-2 max-h-[50vh] overflow-y-auto">
         <Tooltip content="When you hit support, a screenshot of the current page will be sent to the support team so we can get immediately into helping you.">
-        <Button
-          variant="light"
-          className="text-notpurple-500 w-2/3 sm:w-auto mx-auto sm:mx-0 order-2 sm:order-none"
-          onPress={handleSupportClick}
-        >
-          Support
-          <div className="hidden sm:flex items-center gap-1 text-xs">
-            <Kbd keys={["command"]} className="px-2 py-0.5">K</Kbd>
-          </div>
+          <Button
+            className="text-notpurple-500 w-2/3 sm:w-auto mx-auto sm:mx-0 order-2 sm:order-none"
+            variant="light"
+            onPress={handleSupportClick}
+          >
+            Support
+            <div className="hidden sm:flex items-center gap-1 text-xs">
+              <Kbd className="px-2 py-0.5" keys={["command"]}>
+                K
+              </Kbd>
+            </div>
           </Button>
         </Tooltip>
         <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto order-1 sm:order-none">
@@ -114,8 +115,8 @@ export default function ModalFooterWithSupport({
               <span className="items-center font-mono">New Sender?</span>
               <Switch
                 defaultSelected
-                color="secondary"
                 aria-label="New Customer"
+                color="secondary"
                 isSelected={isNewSender}
                 onValueChange={onNewSenderChange}
               />
@@ -125,9 +126,9 @@ export default function ModalFooterWithSupport({
             <Button
               key={index}
               className={`bg-ualert-500 text-notpurple-500 w-full sm:w-auto ${action.className || ""}`}
-              onPress={action.onClick}
-              isLoading={action.isLoading}
               isDisabled={action.isDisabled}
+              isLoading={action.isLoading}
+              onPress={action.onClick}
             >
               {action.label}
             </Button>

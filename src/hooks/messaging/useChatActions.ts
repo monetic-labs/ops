@@ -1,53 +1,45 @@
-import { useCallback } from 'react';
-import { useChatMode } from './useChatMode';
-import { useChatMessages } from './useChatMessages';
-import { sendTelegramMessage } from '@/libs/telegram';
+import { useCallback } from "react";
 
-import { Message, UserMessage } from '@/types/messaging';
+import { UserMessage } from "@/types/messaging";
+
+import { useChatMessages } from "./useChatMessages";
+import { useChatContext } from "./useChatContext";
+import { useChatMode } from "./useChatMode";
+
 
 export const useChatActions = () => {
-  const { mode } = useChatMode();
   const { addMessage, updateMessageStatus } = useChatMessages();
+  const { service } = useChatContext();
+  const { mode } = useChatMode();
 
   const sendMessage = useCallback(async (text: string) => {
-    // Create optimistic message
     const messageId = Date.now().toString();
-    const message: UserMessage = {
-      id: messageId,
-      text,
-      type: 'user',
-      status: 'sending',
-      timestamp: Date.now()
-    };
 
-    addMessage(message);
-
-    try {
-      if (mode === 'support') {
-        const result = await sendTelegramMessage(text);
-        if (!result.success) {
-          throw new Error(result.error || 'Failed to send message');
-        }
-      } else {
-        console.log('Weird spot to be in');
+    if (mode === 'agent') {
+      try {
+        await service.sendMessage(text);
+      } catch (error) {
+        console.error('Error sending message:', error);
       }
-      
-      updateMessageStatus(messageId, 'sent');
-    } catch (error) {
-      console.error('Error sending message:', error);
-      updateMessageStatus(messageId, 'error');
-      
-      // Add system message for error
-      const errorMessage: Message = {
-        id: Date.now().toString(),
-        type: 'system',
-        text: 'Failed to send message. Please try again.',
+    } else {
+      const message: UserMessage = {
+        id: messageId,
+        text,
+        type: "user",
+        status: "sending",
         timestamp: Date.now(),
-        category: 'error'
       };
-      
-      addMessage(errorMessage);
+
+      addMessage(message);
+      try {
+        await service.sendMessage(text);
+        updateMessageStatus(messageId, 'sent');
+      } catch (error) {
+        console.error('Error sending message:', error);
+        updateMessageStatus(messageId, 'error');
+      }
     }
-  }, [mode, addMessage, updateMessageStatus]);
+  }, [mode, service, addMessage, updateMessageStatus]);
+
   return { sendMessage };
 };

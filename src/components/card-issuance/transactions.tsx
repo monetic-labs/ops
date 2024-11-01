@@ -18,17 +18,19 @@ export default function TransactionListTable() {
   const [selectedTransaction, setSelectedTransaction] = useState<(typeof cardTransactionData)[0] | null>(null);
   const [avatars, setAvatars] = useState<Record<string, string>>({});
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
-  
+
   useEffect(() => {
     const newAvatars: Record<string, string> = {};
+
     cardTransactionData.forEach((transaction) => {
       newAvatars[transaction.id] = getOpepenAvatar(transaction.id, 32);
     });
     setAvatars(newAvatars);
   }, []);
 
-  const renderCell = useCallback((transaction: CardTransactions, columnKey: keyof CardTransactions) => {
-    const cellValue = transaction[columnKey];
+  const renderCell = useCallback(
+    (transaction: CardTransactions, columnKey: keyof CardTransactions) => {
+      const cellValue = transaction[columnKey];
 
       switch (columnKey) {
         case "merchantId":
@@ -52,8 +54,10 @@ export default function TransactionListTable() {
           );
         default:
           return cellValue;
-    }
-  }, [avatars]);
+      }
+    },
+    [avatars]
+  );
 
   const loadMore = async (cursor: string | undefined) => {
     const pageSize = 10;
@@ -61,7 +65,7 @@ export default function TransactionListTable() {
     const endIndex = startIndex + pageSize;
     const newItems = cardTransactionData.slice(startIndex, endIndex);
     const newCursor = endIndex < cardTransactionData.length ? endIndex.toString() : undefined;
-    
+
     return { items: newItems, cursor: newCursor };
   };
 
@@ -75,15 +79,15 @@ export default function TransactionListTable() {
       <InfiniteTable
         columns={cardTransactionColumns}
         initialData={cardTransactionData}
-        renderCell={renderCell}
         loadMore={loadMore}
+        renderCell={renderCell}
         onRowSelect={handleRowSelect}
       />
       {selectedTransaction && (
         <>
           <TransactionReceiptModal
-            transaction={selectedTransaction}
             isOpen={isDetailsModalOpen}
+            transaction={selectedTransaction}
             onClose={() => setIsDetailsModalOpen(false)}
           />
         </>

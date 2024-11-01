@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { ISO3166Alpha2Country, CardCompanyType, PersonRole } from "@backpack-fux/pylon-sdk";
+
 import { emailSchema } from "./auth";
 
 export const countryISO3166Alpha2Regex = /^[A-Z]{2}$/;
@@ -18,6 +19,7 @@ const ssnSchema = z.string().refine(
   (value) => {
     // Accept SSN with or without hyphens
     const ssnRegex = /^(?:\d{3}-?\d{2}-?\d{4})$/;
+
     return ssnRegex.test(value);
   },
   {

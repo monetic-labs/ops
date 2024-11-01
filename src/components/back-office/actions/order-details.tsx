@@ -26,18 +26,13 @@ interface PaymentDetailsResponseProps {
 }
 
 export function PaymentDetails({ isOpen, response, onClose }: PaymentDetailsResponseProps) {
-
   const handleSupportClick = () => {
     // Handle support action
     console.log("Support clicked");
   };
+
   return (
-    <Modal
-      className="max-w-md mx-auto"
-      isOpen={isOpen}
-      onClose={onClose}
-      scrollBehavior="inside"
-    >
+    <Modal className="max-w-md mx-auto" isOpen={isOpen} scrollBehavior="inside" onClose={onClose}>
       <ModalContent>
         {(onClose) => (
           <>
@@ -51,13 +46,15 @@ export function PaymentDetails({ isOpen, response, onClose }: PaymentDetailsResp
                 {/* Transaction details */}
                 <div className="grid grid-cols-2 gap-2">
                   <span>Response Status:</span>
-                  <span className={`text-right font-bold ${
-                    response.transactionStatus === "Approved"
-                      ? "text-ualert-100"
-                      : response.transactionStatus === "Failed"
-                        ? "text-ualert-300"
-                        : "text-ualert-500"
-                  }`}>
+                  <span
+                    className={`text-right font-bold ${
+                      response.transactionStatus === "Approved"
+                        ? "text-ualert-100"
+                        : response.transactionStatus === "Failed"
+                          ? "text-ualert-300"
+                          : "text-ualert-500"
+                    }`}
+                  >
                     {response.transactionStatus}
                   </span>
                   <span>Processor:</span>
@@ -82,11 +79,25 @@ export function PaymentDetails({ isOpen, response, onClose }: PaymentDetailsResp
                 <div>
                   <span className="font-bold mb-1">Billing Address:</span>
                   <address className="not-italic text-right">
-                    {response.transactionBillingAddress.firstName} {response.transactionBillingAddress.lastName}<br />
-                    {response.transactionBillingAddress.street1}<br />
-                    {response.transactionBillingAddress.street2 && <>{response.transactionBillingAddress.street2}<br /></>}
-                    {response.transactionBillingAddress.street3 && <>{response.transactionBillingAddress.street3}<br /></>}
-                    {response.transactionBillingAddress.city}, {response.transactionBillingAddress.state} {response.transactionBillingAddress.postcode}<br />
+                    {response.transactionBillingAddress.firstName} {response.transactionBillingAddress.lastName}
+                    <br />
+                    {response.transactionBillingAddress.street1}
+                    <br />
+                    {response.transactionBillingAddress.street2 && (
+                      <>
+                        {response.transactionBillingAddress.street2}
+                        <br />
+                      </>
+                    )}
+                    {response.transactionBillingAddress.street3 && (
+                      <>
+                        {response.transactionBillingAddress.street3}
+                        <br />
+                      </>
+                    )}
+                    {response.transactionBillingAddress.city}, {response.transactionBillingAddress.state}{" "}
+                    {response.transactionBillingAddress.postcode}
+                    <br />
                     {response.transactionBillingAddress.country}
                   </address>
                 </div>
@@ -94,11 +105,25 @@ export function PaymentDetails({ isOpen, response, onClose }: PaymentDetailsResp
                 <div>
                   <span className="font-bold mb-1">Shipping Address:</span>
                   <address className="not-italic text-right">
-                    {response.transactionShippingAddress.firstName} {response.transactionShippingAddress.lastName}<br />
-                    {response.transactionShippingAddress.street1}<br />
-                    {response.transactionShippingAddress.street2 && <>{response.transactionShippingAddress.street2}<br /></>}
-                    {response.transactionShippingAddress.street3 && <>{response.transactionShippingAddress.street3}<br /></>}
-                    {response.transactionShippingAddress.city}, {response.transactionShippingAddress.state} {response.transactionShippingAddress.postcode}<br />
+                    {response.transactionShippingAddress.firstName} {response.transactionShippingAddress.lastName}
+                    <br />
+                    {response.transactionShippingAddress.street1}
+                    <br />
+                    {response.transactionShippingAddress.street2 && (
+                      <>
+                        {response.transactionShippingAddress.street2}
+                        <br />
+                      </>
+                    )}
+                    {response.transactionShippingAddress.street3 && (
+                      <>
+                        {response.transactionShippingAddress.street3}
+                        <br />
+                      </>
+                    )}
+                    {response.transactionShippingAddress.city}, {response.transactionShippingAddress.state}{" "}
+                    {response.transactionShippingAddress.postcode}
+                    <br />
                     {response.transactionShippingAddress.country}
                   </address>
                 </div>
@@ -115,8 +140,8 @@ export function PaymentDetails({ isOpen, response, onClose }: PaymentDetailsResp
                 {
                   label: "Close",
                   onClick: onClose,
-                  className: "bg-ualert-500 text-notpurple-500"
-                }
+                  className: "bg-ualert-500 text-notpurple-500",
+                },
               ]}
               onSupportClick={handleSupportClick}
             />

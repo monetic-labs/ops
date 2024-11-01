@@ -1,10 +1,10 @@
-import { Button } from "@nextui-org/button";
 import { Chip } from "@nextui-org/chip";
 import { Input } from "@nextui-org/input";
-import { Modal, ModalBody, ModalContent, ModalFooter, ModalHeader } from "@nextui-org/modal";
+import { Modal, ModalBody, ModalContent, ModalHeader } from "@nextui-org/modal";
 import { Progress } from "@nextui-org/progress";
 import { Snippet } from "@nextui-org/snippet";
 import { useState } from "react";
+
 import ModalFooterWithSupport from "../generics/footer-modal-support";
 
 interface CardDetailsModalProps {
@@ -128,10 +128,7 @@ export default function CardDetailsModal({ isOpen, onClose, card }: CardDetailsM
           <Input isReadOnly={!isEditing} label="Billing Address" value={card.billingAddress} />
           <Input isReadOnly={!isEditing} label="Email" value={card.email} />
         </ModalBody>
-        <ModalFooterWithSupport
-          onSupportClick={handleSupportClick}
-          actions={footerActions}
-        />
+        <ModalFooterWithSupport actions={footerActions} onSupportClick={handleSupportClick} />
       </ModalContent>
     </Modal>
   );

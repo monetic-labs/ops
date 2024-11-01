@@ -2,11 +2,11 @@
 
 import React, { useEffect } from "react";
 import { Control, FieldValues, Path, useController } from "react-hook-form";
+import { Tooltip } from "@nextui-org/tooltip";
 
 import { usePostcodeLookup } from "@/hooks/generics/usePostcodeLookup";
 import { FormInput } from "@/components/generics/form-input";
 import { postcodeRegex } from "@/types/validations/onboard";
-import { Tooltip } from "@nextui-org/tooltip";
 
 interface PostcodeInputProps<T extends FieldValues> {
   name: Path<T>;
@@ -29,12 +29,12 @@ export const PostcodeInput = <T extends FieldValues>({
   watchPostcode,
   ...props
 }: PostcodeInputProps<T>) => {
-  
   const { lookup, isLoading, error, result } = usePostcodeLookup();
   const { field } = useController({ name, control });
 
   const handlePostcodeChange = async (value: string) => {
-    const numericValue = value.replace(/\D/g, '');
+    const numericValue = value.replace(/\D/g, "");
+
     field.onChange(numericValue);
 
     if (numericValue.length === 5) {
@@ -61,16 +61,16 @@ export const PostcodeInput = <T extends FieldValues>({
           <FormInput
             className="text-notpurple-500"
             control={control}
+            inputMode="numeric"
             label="Postcode"
             maxLength={5}
             minLength={5}
-            type="text"
-            inputMode="numeric"
             name={name}
             pattern={postcodeRegex.source}
             placeholder="12345"
-            onChange={(e) => handlePostcodeChange(e.target.value)}
+            type="text"
             value={watchPostcode}
+            onChange={(e) => handlePostcodeChange(e.target.value)}
             {...props}
           />
         </div>

@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { ISO3166Alpha2Country } from "@backpack-fux/pylon-sdk";
 
 import { FormInput } from "@/components/generics/form-input";
 import {
@@ -9,11 +10,11 @@ import {
   companyUserDetailsSchema,
   ssnRegex,
 } from "@/types/validations/onboard";
+import { TabData } from "@/hooks/generics/useDynamicTabs";
+
 import { FormCardTabs } from "../generics/form-card-tabs";
 import { AutocompleteInput } from "../generics/autocomplete-input";
-import { ISO3166Alpha2Country } from "@backpack-fux/pylon-sdk";
 import { PostcodeInput } from "../generics/form-input-postcode";
-import { TabData } from "@/hooks/generics/useDynamicTabs";
 import {
   handleBirthdayChange,
   handlePostcodeLookup,
@@ -78,6 +79,7 @@ export const FormUserDetails: React.FC<{
       setValue,
       (value) => {
         const newShowAddressInputs = [...showAddressInputs];
+
         newShowAddressInputs[index] = value as boolean;
         setShowAddressInputs(newShowAddressInputs);
       },
@@ -88,20 +90,20 @@ export const FormUserDetails: React.FC<{
   const renderTabContent = (tab: TabData, index: number) => (
     <div className="space-y-4">
       <AutocompleteInput
+        about="Select the country that issued your identification"
         control={control}
         errorMessage={errors.userDetails?.[index]?.countryOfIssue?.message}
+        items={countries.map((country) => ({ label: country.label, value: country.value }))}
         label="Country of Issue"
         name={`userDetails.${index}.countryOfIssue`}
         placeholder="Select a country"
-        items={countries.map((country) => ({ label: country.label, value: country.value }))}
-        about="Select the country that issued your identification"
       />
       <FormInput
         control={control}
         errorMessage={errors.userDetails?.[index]?.birthday?.message}
         label="Birthday"
-        name={`userDetails.${index}.birthday`}
         maxLength={10}
+        name={`userDetails.${index}.birthday`}
         pattern={birthdayRegex.source}
         placeholder="YYYY-MM-DD"
         value={birthdayInputs[index]}
@@ -111,6 +113,7 @@ export const FormUserDetails: React.FC<{
             setValue,
             (value) => {
               const newBirthdayInputs = [...birthdayInputs];
+
               newBirthdayInputs[index] = value as string;
               setBirthdayInputs(newBirthdayInputs);
             },
@@ -122,8 +125,8 @@ export const FormUserDetails: React.FC<{
         control={control}
         errorMessage={errors.userDetails?.[index]?.ssn?.message}
         label="Social Security"
-        name={`userDetails.${index}.ssn`}
         maxLength={11}
+        name={`userDetails.${index}.ssn`}
         pattern={ssnRegex.source}
         placeholder="123-45-6789"
         value={ssnInputs[index]}
@@ -133,6 +136,7 @@ export const FormUserDetails: React.FC<{
             setValue,
             (value) => {
               const newSSNInputs = [...ssnInputs];
+
               newSSNInputs[index] = value as string;
               setSSNInputs(newSSNInputs);
             },
@@ -146,8 +150,8 @@ export const FormUserDetails: React.FC<{
         errorMessage={errors.userDetails?.[index]?.registeredAddress?.postcode?.message}
         name={`userDetails.${index}.registeredAddress.postcode`}
         showAddressInputs={showAddressInputs[index]}
-        onLookupComplete={(result) => onPostcodeLookup(result, index)}
         watchPostcode={watch(`userDetails.${index}.registeredAddress.postcode`)}
+        onLookupComplete={(result) => onPostcodeLookup(result, index)}
       />
       {showAddressInputs[index] && (
         <>

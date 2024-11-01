@@ -1,84 +1,78 @@
-import { readFileSync, readdirSync } from 'fs';
-import { join } from 'path';
-import matter from 'gray-matter';
-import { unified } from 'unified';
-import remarkParse from 'remark-parse';
-import remarkStringify from 'remark-stringify';
-import { visit } from 'unist-util-visit';
-import type { Paragraph } from 'mdast';
+import path from "path";
+import fs from "fs";
 
-interface ProcessedDocument {
+import matter from "gray-matter";
+
+export type ProcessedDocument = {
+  content: string;
   category: string;
   title: string;
-  content: string;
-  metadata: {
-    source: string;
-    section: string;
-    type: 'api' | 'guide' | 'tutorial' | 'reference';
-  };
+  metadata: Record<string, any>;
+};
+
+function processMarkdownFile(filePath: string): ProcessedDocument | null {
+  try {
+    const fileContent = fs.readFileSync(filePath, "utf-8");
+    const { data, content } = matter(fileContent);
+
+    // Get category from directory structure if not in frontmatter
+    const category = data.category || path.basename(path.dirname(filePath));
+
+    return {
+      content: content.trim(),
+      category,
+      title: data.title || path.basename(filePath, ".md"),
+      metadata: data,
+    };
+  } catch (error) {
+    console.error(`Error processing file ${filePath}:`, error);
+
+    return null;
+  }
+}
+
+function getAllMarkdownFiles(dir: string): string[] {
+  let results: string[] = [];
+  const items = fs.readdirSync(dir);
+
+  for (const item of items) {
+    const fullPath = path.join(dir, item);
+    const stat = fs.statSync(fullPath);
+
+    if (stat.isDirectory()) {
+      // Recursively get files from subdirectories
+      results = results.concat(getAllMarkdownFiles(fullPath));
+    } else if (item.endsWith(".md")) {
+      results.push(fullPath);
+    }
+  }
+
+  return results;
 }
 
 export async function processDocuments(docsDir: string): Promise<ProcessedDocument[]> {
-  const documents: ProcessedDocument[] = [];
-  
-  // Read all markdown files from the docs directory
-  const files = readdirSync(docsDir).filter(file => file.endsWith('.md'));
-  
-  for (const file of files) {
-    const filePath = join(docsDir, file);
-    const fileContent = readFileSync(filePath, 'utf-8');
-    
-    // Parse frontmatter and content
-    const { data, content } = matter(fileContent);
-    
-    // Split content into chunks (e.g., by headers)
-    const chunks = await splitIntoChunks(content);
-    
-    for (const chunk of chunks) {
-      documents.push({
-        category: data.category,
-        title: data.title,
-        content: chunk,
-        metadata: {
-          source: file,
-          section: data.section,
-          type: data.type || 'guide'
-        }
-      });
-    }
-  }
-  
-  return documents;
-}
+  console.log(`Scanning directory: ${docsDir}`);
 
-async function splitIntoChunks(content: string): Promise<string[]> {
-  // Process with unified/remark to split by headers
-  const processor = unified()
-    .use(remarkParse)
-    .use(remarkStringify);
-    
-  const ast = await processor.parse(content);
-  
-  // Split content into ~500 token chunks
-  const chunks: string[] = [];
-  let currentChunk = '';
-  
-  // Walk the AST and build chunks
-  visit(ast, 'paragraph', (node: Paragraph) => {
-    if ('value' in node) {
-      const text = node.value as string;
-      if ((currentChunk + text).length > 500) {
-        chunks.push(currentChunk);
-        currentChunk = text;
-      } else {
-        currentChunk += '\n\n' + text;
+  const markdownFiles = getAllMarkdownFiles(docsDir);
+
+  console.log(`Found ${markdownFiles.length} markdown files:`, markdownFiles);
+
+  const documents = markdownFiles
+    .map((filePath) => {
+      const doc = processMarkdownFile(filePath);
+
+      if (doc) {
+        console.log(`Processed: ${doc.title} (${doc.category})`);
       }
-    }
-  });
-  
-  if (currentChunk) {
-    chunks.push(currentChunk);
-  }
-  
-  return chunks;
+
+      return doc;
+    })
+    .filter((doc): doc is ProcessedDocument => doc !== null);
+
+  // Fix for Set spread operator issue
+  const categories = Array.from(new Set(documents.map((doc) => doc.category)));
+
+  console.log("Categories found:", categories);
+
+  return documents;
 }

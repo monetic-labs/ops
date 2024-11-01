@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Input } from "@nextui-org/input";
 import { Select, SelectItem } from "@nextui-org/select";
+
 import { FormModal } from "@/components/generics/form-modal";
 import ModalFooterWithSupport from "@/components/generics/footer-modal-support";
 
@@ -48,10 +49,10 @@ export default function CreateCardModal({ isOpen, onClose }: CreateCardModalProp
   return (
     <FormModal
       isOpen={isOpen}
-      onClose={onClose}
+      isValid={isFormValid}
       title="Create New Card"
+      onClose={onClose}
       onSubmit={handleCreateCard}
-      isValid={isFormValid} 
     >
       <>
         <Input
@@ -90,10 +91,7 @@ export default function CreateCardModal({ isOpen, onClose }: CreateCardModalProp
           value={limitCycle}
           onChange={(e) => setLimitCycle(e.target.value)}
         />
-        <ModalFooterWithSupport
-          onSupportClick={handleSupportClick}
-          actions={footerActions}
-        />
+        <ModalFooterWithSupport actions={footerActions} onSupportClick={handleSupportClick} />
       </>
     </FormModal>
   );

@@ -3,7 +3,6 @@ import { Button } from "@nextui-org/button";
 import { Input } from "@nextui-org/input";
 import { Modal, ModalBody, ModalContent, ModalFooter, ModalHeader } from "@nextui-org/modal";
 import { Select, SelectItem } from "@nextui-org/select";
-import { Switch } from "@nextui-org/switch";
 import { useState } from "react";
 
 interface UserEditModalProps {
@@ -102,13 +101,13 @@ export default function UserEditModal({
         <ModalFooter>
           <Button
             className="bg-ualert-500 text-notpurple-500"
-            onPress={() => setIsRemoveConfirmOpen(true)}
             isDisabled={isSelf || !isEditable}
+            onPress={() => setIsRemoveConfirmOpen(true)}
           >
             Remove User
           </Button>
           <Button onPress={onClose}>Cancel</Button>
-          <Button color="primary" onPress={handleSave} isDisabled={!isEditable}>
+          <Button color="primary" isDisabled={!isEditable} onPress={handleSave}>
             Save
           </Button>
         </ModalFooter>

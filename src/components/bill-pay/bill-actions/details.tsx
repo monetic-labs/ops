@@ -1,16 +1,16 @@
 "use client";
 
-import { Button } from "@nextui-org/button";
 import { Divider } from "@nextui-org/divider";
-import { Modal, ModalBody, ModalContent, ModalFooter, ModalHeader } from "@nextui-org/modal";
-
+import { Modal, ModalBody, ModalContent, ModalHeader } from "@nextui-org/modal";
 import { useState } from "react";
-import BillPayCloneModal from "./clone";
-import IDSnippet from "../../generics/snippet-id";
-import ModalFooterWithSupport from "../../generics/footer-modal-support";
 import { DisbursementState, MerchantDisbursementEventGetOutput } from "@backpack-fux/pylon-sdk";
 import { Input } from "@nextui-org/input";
 import { Eye, EyeOff } from "lucide-react";
+
+import ModalFooterWithSupport from "../../generics/footer-modal-support";
+import IDSnippet from "../../generics/snippet-id";
+
+import BillPayCloneModal from "./clone";
 
 interface BillPayDetailsModalProps {
   isOpen: boolean;
@@ -39,7 +39,7 @@ export default function BillPayDetailsModal({ isOpen, onClose, billPay }: BillPa
 
   return (
     <>
-      <Modal isOpen={isOpen} size="lg" onClose={onClose} scrollBehavior="inside">
+      <Modal isOpen={isOpen} scrollBehavior="inside" size="lg" onClose={onClose}>
         <ModalContent>
           {(onClose) => (
             <>
@@ -62,18 +62,14 @@ export default function BillPayDetailsModal({ isOpen, onClose, billPay }: BillPa
                     <span>Account Number:</span>
                     <div className="text-right">
                       <Input
-                        value={
-                          isVisible
-                            ? billPay.contact.accountNumber
-                            : `${"•".repeat(billPay.contact.accountNumber.length - 4)}${billPay.contact.accountNumber.slice(-4)}`
-                        }
                         isReadOnly
+                        className="max-w-xs"
                         endContent={
                           <button
+                            aria-label="toggle account number visibility"
                             className="focus:outline-none"
                             type="button"
                             onClick={toggleVisibility}
-                            aria-label="toggle account number visibility"
                           >
                             {isVisible ? (
                               <Eye className="text-2xl text-default-400 pointer-events-none" />
@@ -83,7 +79,11 @@ export default function BillPayDetailsModal({ isOpen, onClose, billPay }: BillPa
                           </button>
                         }
                         type="text"
-                        className="max-w-xs"
+                        value={
+                          isVisible
+                            ? billPay.contact.accountNumber
+                            : `${"•".repeat(billPay.contact.accountNumber.length - 4)}${billPay.contact.accountNumber.slice(-4)}`
+                        }
                       />
                     </div>
                   </div>
@@ -119,8 +119,8 @@ export default function BillPayDetailsModal({ isOpen, onClose, billPay }: BillPa
                         billPay.state === DisbursementState.COMPLETED
                           ? "text-ualert-100"
                           : billPay.state === DisbursementState.PENDING
-                          ? "text-ualert-300"
-                          : "text-ualert-500"
+                            ? "text-ualert-300"
+                            : "text-ualert-500"
                       }`}
                     >
                       {billPay.state}
@@ -129,7 +129,7 @@ export default function BillPayDetailsModal({ isOpen, onClose, billPay }: BillPa
                 </div>
               </ModalBody>
               <Divider />
-              <ModalFooterWithSupport onSupportClick={handleSupportClick} actions={footerActions} />
+              <ModalFooterWithSupport actions={footerActions} onSupportClick={handleSupportClick} />
             </>
           )}
         </ModalContent>

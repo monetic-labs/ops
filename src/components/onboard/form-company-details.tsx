@@ -9,6 +9,7 @@ import { FormButton } from "@/components/generics/form-button";
 import { CompanyDetailsSchema, companyDetailsSchema } from "@/types/validations/onboard";
 import { AutocompleteInput } from "@/components/generics/autocomplete-input";
 import { companyEINRegex, walletAddressRegex } from "@/types/validations/onboard";
+
 import { handleCompanyEINChange } from "../generics/form-input-handlers";
 import { handleWalletAddressChange } from "../generics/form-input-handlers";
 
@@ -67,8 +68,8 @@ export const FormCompanyDetails: React.FC<{
           control={control}
           errorMessage={errors.walletAddress?.message}
           label="Settlement Address"
-          name="walletAddress"
           maxLength={42}
+          name="walletAddress"
           pattern={walletAddressRegex.source}
           placeholder="0x1234567890123456789012345678901234567890"
           value={walletAddressInput}
@@ -79,8 +80,8 @@ export const FormCompanyDetails: React.FC<{
           control={control}
           errorMessage={errors.companyEIN?.message}
           label="Company EIN"
-          name="companyEIN"
           maxLength={10}
+          name="companyEIN"
           pattern={companyEINRegex.source}
           placeholder="12-3456789"
           value={companyEINInput}
@@ -90,17 +91,17 @@ export const FormCompanyDetails: React.FC<{
           about="Select the type of company structure"
           control={control}
           errorMessage={errors.companyType?.message}
+          items={companyTypes}
           label="Company Type"
           name="companyType"
           placeholder="Select Company Type"
-          items={companyTypes}
         />
         <FormInput
           control={control}
           errorMessage={errors.companyDescription?.message}
           label="Company Description"
-          name="companyDescription"
           maxLength={100}
+          name="companyDescription"
           placeholder="Describe your company"
         />
         <div className="flex justify-end space-x-4">

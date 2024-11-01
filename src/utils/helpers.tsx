@@ -1,6 +1,6 @@
 import { createIcon } from "opepen-standard";
+
 import { ChainAddress, OrderID } from "@/types";
-import { ISO3166Alpha2Country } from "@backpack-fux/pylon-sdk";
 import { PostcodeLookupResult } from "@/hooks/generics/usePostcodeLookup";
 
 export function generateUserInviteUrl(onboardId: string, email: string): string {

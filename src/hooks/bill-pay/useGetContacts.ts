@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { MerchantDisbursementCreateOutput, Pagination } from "@backpack-fux/pylon-sdk";
+
 import pylon from "@/libs/pylon-sdk";
 
 export const useGetContacts = () => {
@@ -18,6 +19,7 @@ export const useGetContacts = () => {
         after,
         search,
       });
+
       setContacts(response.contacts);
       setPagination(response.meta);
     } catch (error) {

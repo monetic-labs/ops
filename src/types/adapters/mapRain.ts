@@ -64,6 +64,7 @@ export function mapToRainMerchantCreateDto(
   // Map representatives to RainPersonDto[]
   const rainRepresentatives: RainPersonWithRole[] = representatives.map((rep, index) => {
     const userDetail = userDetails[index]; // Assuming the order matches
+
     return {
       id: additionalData.id,
       firstName: rep.firstName,
@@ -104,6 +105,7 @@ export function mapToRainMerchantCreateDto(
   // If there are no representatives, use the initial user as a representative
   if (representatives.length === 0) {
     const { isTermsOfServiceAccepted, role, walletAddress, ...initialUserWithoutExtra } = initialUser;
+
     representativesWithoutRole = [initialUserWithoutExtra];
   }
   // Construct the final RainMerchantCreateDto object

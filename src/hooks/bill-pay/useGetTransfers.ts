@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { MerchantDisbursementEventGetOutput, Pagination } from "@backpack-fux/pylon-sdk";
+
 import pylon from "@/libs/pylon-sdk";
 
 export const useGetTransfers = ({ before, after }: { before?: string; after?: string }) => {
@@ -17,6 +18,7 @@ export const useGetTransfers = ({ before, after }: { before?: string; after?: st
         before,
         after,
       });
+
       setTransfers(response.events);
       setPagination(response.meta);
     } catch (error) {

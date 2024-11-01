@@ -1,6 +1,7 @@
 import { useState, useCallback } from "react";
-import pylon from "@/libs/pylon-sdk";
 import { ApiKeyGetOutput } from "@backpack-fux/pylon-sdk";
+
+import pylon from "@/libs/pylon-sdk";
 
 export function useApiService() {
   const [apiKeys, setApiKeys] = useState<ApiKeyGetOutput[]>([]);
@@ -12,6 +13,7 @@ export function useApiService() {
     setError(null);
     try {
       const keys = await pylon.getApiKeys();
+
       setApiKeys(keys);
     } catch (err) {
       setError("Failed to load API keys");
@@ -25,10 +27,13 @@ export function useApiService() {
     setError(null);
     try {
       const newKey = await pylon.createApiKey({ apiKeyName: name });
+
       setApiKeys((prevKeys) => [...prevKeys, newKey]);
+
       return newKey;
     } catch (err) {
       setError("Failed to generate API key");
+
       return null;
     } finally {
       setIsLoading(false);

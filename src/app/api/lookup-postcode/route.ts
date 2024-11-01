@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
-import postcodeMap from "@/data/postcodes-map.json";
 
+import postcodeMap from "@/data/postcodes-map.json";
 import { merchantConfig } from "@/config/merchant";
 
 export async function GET(request: Request) {

@@ -14,6 +14,7 @@ export function useGetComplianceStatus() {
         pylon.getComplianceStatus(),
         pylon.getCardCompanyStatus(),
       ]);
+
       console.log("bridgeTosStatus", complianceStatus.tosStatus);
       console.log("bridgeKybStatus", complianceStatus.kycStatus);
       console.log("rainKybStatus", rainCardCompany.applicationStatus);

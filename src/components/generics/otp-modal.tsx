@@ -1,8 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { Button } from "@nextui-org/button";
-import { Input } from "@nextui-org/input";
 import { Modal, ModalContent, ModalHeader, ModalBody, ModalFooter } from "@nextui-org/modal";
-import { VerifyOTP } from "@backpack-fux/pylon-sdk";
+
 import { useVerifyOTP } from "@/hooks/auth/useOTP";
 import { useIssueOTP } from "@/hooks/auth/useOTP";
 import { OTP_CODE_LENGTH } from "@/utils/constants";
@@ -39,8 +38,10 @@ export const OTPVerificationModal: React.FC<OTPVerificationModalProps> = ({ isOp
 
   const handleOtpChange = (index: number, value: string) => {
     const newOtp = otp.split("");
+
     newOtp[index] = value;
     const updatedOtp = newOtp.join("");
+
     setOtp(updatedOtp);
 
     if (value !== "" && index < OTP_CODE_LENGTH - 1) {
@@ -58,6 +59,7 @@ export const OTPVerificationModal: React.FC<OTPVerificationModalProps> = ({ isOp
   const handleVerify = async (otpValue: string) => {
     try {
       const verified = await verifyOTP({ email, otp: otpValue });
+
       if (verified) {
         onVerified();
         onClose();
@@ -74,6 +76,7 @@ export const OTPVerificationModal: React.FC<OTPVerificationModalProps> = ({ isOp
   const handlePaste = (e: React.ClipboardEvent) => {
     e.preventDefault();
     const pasteData = e.clipboardData.getData("text");
+
     if (pasteData.length === OTP_CODE_LENGTH) {
       setOtp(pasteData);
       pasteData.split("").forEach((char, i) => {
@@ -120,7 +123,7 @@ export const OTPVerificationModal: React.FC<OTPVerificationModalProps> = ({ isOp
           <Button className="text-notpurple-500" variant="light" onPress={onClose}>
             Cancel
           </Button>
-          <Button className="bg-ualert-500" onPress={handleIssueOTP} isLoading={isIssueLoading}>
+          <Button className="bg-ualert-500" isLoading={isIssueLoading} onPress={handleIssueOTP}>
             Resend OTP
           </Button>
         </ModalFooter>

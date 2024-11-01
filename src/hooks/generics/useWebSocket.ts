@@ -1,9 +1,9 @@
-import { useEffect, useCallback } from 'react';
+import { useEffect } from "react";
 
 interface WebSocketMessage {
   id: string;
   text: string;
-  type: 'telegram' | 'bot';
+  type: "telegram" | "bot";
   metadata: {
     telegramMessageId?: number;
     timestamp: number;
@@ -16,14 +16,15 @@ export function useWebSocket(onMessage: (message: WebSocketMessage) => void) {
     let reconnectTimer: NodeJS.Timeout;
 
     const connect = () => {
-      ws = new WebSocket(`${window.location.origin.replace('http', 'ws')}/api/websocket`);
+      ws = new WebSocket(`${window.location.origin.replace("http", "ws")}/api/websocket`);
 
       ws.onmessage = (event) => {
         try {
           const message = JSON.parse(event.data);
+
           onMessage(message);
         } catch (error) {
-          console.error('Error parsing WebSocket message:', error);
+          console.error("Error parsing WebSocket message:", error);
         }
       };
 
@@ -33,7 +34,7 @@ export function useWebSocket(onMessage: (message: WebSocketMessage) => void) {
       };
 
       ws.onerror = (error) => {
-        console.error('WebSocket error:', error);
+        console.error("WebSocket error:", error);
         ws.close();
       };
     };

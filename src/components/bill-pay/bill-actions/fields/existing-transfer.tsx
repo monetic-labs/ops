@@ -1,12 +1,14 @@
 import { useEffect, useState } from "react";
 import { useInfiniteScroll } from "@nextui-org/use-infinite-scroll";
 import { DisbursementMethod } from "@backpack-fux/pylon-sdk";
-import { DEFAULT_BILL_PAY, NewBillPay, vendorCurrencies, vendorMethods } from "../create";
-import { useGetContacts } from "@/hooks/bill-pay/useGetContacts";
-import { useExistingDisbursement } from "@/hooks/bill-pay/useExistingDisbursement";
 import { Autocomplete, AutocompleteItem } from "@nextui-org/autocomplete";
 import { Input } from "@nextui-org/input";
 import { Eye, EyeOff } from "lucide-react";
+
+import { useExistingDisbursement } from "@/hooks/bill-pay/useExistingDisbursement";
+import { useGetContacts } from "@/hooks/bill-pay/useGetContacts";
+
+import { DEFAULT_BILL_PAY, NewBillPay, vendorCurrencies, vendorMethods } from "../create";
 
 export default function ExistingTransferFields({
   newBillPay,
@@ -45,6 +47,7 @@ export default function ExistingTransferFields({
 
   const handleSelectionChange = (contactId: string) => {
     const selectedContact = contacts.find((contact) => contact.id === contactId);
+
     if (selectedContact) {
       setNewBillPay({
         ...newBillPay,
@@ -63,9 +66,10 @@ export default function ExistingTransferFields({
   return (
     <>
       <Autocomplete
-        label="Account Holder"
-        placeholder="Select an account holder"
         isRequired
+        defaultItems={contacts}
+        isLoading={isLoadingContacts}
+        label="Account Holder"
         listboxProps={{
           emptyContent: (
             <button
@@ -79,7 +83,13 @@ export default function ExistingTransferFields({
             </button>
           ),
         }}
+        placeholder="Select an account holder"
+        scrollRef={scrollerRef}
         value={newBillPay.vendorName}
+        onInputChange={(value) => {
+          setSearch(value);
+        }}
+        onOpenChange={setIsOpen}
         onSelectionChange={(contactId) => {
           if (contactId) {
             handleSelectionChange(contactId as string);
@@ -87,20 +97,13 @@ export default function ExistingTransferFields({
             setNewBillPay(DEFAULT_BILL_PAY);
           }
         }}
-        onInputChange={(value) => {
-          setSearch(value);
-        }}
-        isLoading={isLoadingContacts}
-        defaultItems={contacts}
-        scrollRef={scrollerRef}
-        onOpenChange={setIsOpen}
       >
         {(contact) => (
           <AutocompleteItem
             key={contact.id}
+            endContent={<div className="text-gray-400 text-xs">{contact.nickname}</div>}
             textValue={contact.accountOwnerName}
             value={contact.accountOwnerName}
-            endContent={<div className="text-gray-400 text-xs">{contact.nickname}</div>}
           >
             {contact.accountOwnerName}
           </AutocompleteItem>
@@ -110,21 +113,13 @@ export default function ExistingTransferFields({
       <div className="flex space-x-4">
         <Input
           isReadOnly
-          isDisabled={!newBillPay.accountNumber}
-          label="Account Number"
-          value={
-            newBillPay.accountNumber
-              ? isVisible
-                ? newBillPay.accountNumber
-                : `${"•".repeat(newBillPay.accountNumber.length - 4)}${newBillPay.accountNumber.slice(-4)}`
-              : ""
-          }
+          className="w-3/5 md:w-1/2"
           endContent={
             <button
+              aria-label="toggle account number visibility"
               className="focus:outline-none"
               type="button"
               onClick={toggleVisibility}
-              aria-label="toggle account number visibility"
             >
               {newBillPay.accountNumber ? (
                 isVisible ? (
@@ -135,10 +130,18 @@ export default function ExistingTransferFields({
               ) : null}
             </button>
           }
+          isDisabled={!newBillPay.accountNumber}
+          label="Account Number"
           type="text"
-          className="w-3/5 md:w-1/2"
+          value={
+            newBillPay.accountNumber
+              ? isVisible
+                ? newBillPay.accountNumber
+                : `${"•".repeat(newBillPay.accountNumber.length - 4)}${newBillPay.accountNumber.slice(-4)}`
+              : ""
+          }
         />
-        <Input isDisabled label="Routing Number" value={`${newBillPay.routingNumber}`} className="w-2/5 md:w-1/2" />
+        <Input isDisabled className="w-2/5 md:w-1/2" label="Routing Number" value={`${newBillPay.routingNumber}`} />
       </div>
       <Autocomplete
         isDisabled={!newBillPay.vendorName}
@@ -162,21 +165,7 @@ export default function ExistingTransferFields({
           />
         )}
       <Input
-        label="Amount"
-        type="number"
-        min={1}
-        step={0.01}
-        isDisabled={!newBillPay.vendorName && !newBillPay.vendorMethod}
         isRequired
-        isInvalid={parseFloat(newBillPay.amount) < 1}
-        errorMessage={`Amount must be greater than 1 ${newBillPay.currency}`}
-        value={newBillPay.amount}
-        onChange={(e) => setNewBillPay({ ...newBillPay, amount: e.target.value })}
-        startContent={
-          <div className="pointer-events-none flex items-center">
-            <span className="text-default-400 text-small">$</span>
-          </div>
-        }
         endContent={
           <div className="flex items-center py-2">
             <label className="sr-only" htmlFor="currency">
@@ -197,6 +186,20 @@ export default function ExistingTransferFields({
             </select>
           </div>
         }
+        errorMessage={`Amount must be greater than 1 ${newBillPay.currency}`}
+        isDisabled={!newBillPay.vendorName && !newBillPay.vendorMethod}
+        isInvalid={parseFloat(newBillPay.amount) < 1}
+        label="Amount"
+        min={1}
+        startContent={
+          <div className="pointer-events-none flex items-center">
+            <span className="text-default-400 text-small">$</span>
+          </div>
+        }
+        step={0.01}
+        type="number"
+        value={newBillPay.amount}
+        onChange={(e) => setNewBillPay({ ...newBillPay, amount: e.target.value })}
       />
     </>
   );

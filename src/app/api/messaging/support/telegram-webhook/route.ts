@@ -1,6 +1,6 @@
-import { NextResponse } from 'next/server';
-import { sendTelegramMessage } from '@/libs/telegram';
-import { broadcastMessage } from '@/libs/websocket';
+import { NextResponse } from "next/server";
+
+import { broadcastMessage } from "@/libs/websocket";
 
 interface TelegramMessage {
   message_id: number;
@@ -22,34 +22,32 @@ export async function POST(request: Request) {
   const { message } = body;
 
   if (!message?.text || !message?.chat?.id) {
-    return NextResponse.json(
-      { success: false, error: 'Invalid message format' }, 
-      { status: 400 }
-    );
+    return NextResponse.json({ success: false, error: "Invalid message format" }, { status: 400 });
   }
 
   if (message && message.text) {
     const chatId = message.chat.id;
-    const responseText = 'Thank you for contacting support. An agent will be with you shortly.';
+    const responseText = "Thank you for contacting support. An agent will be with you shortly.";
 
     try {
       // Broadcast the message to all connected clients
       broadcastMessage({
         id: `telegram-${message.message_id}`,
         text: message.text,
-        type: 'telegram',
+        type: "telegram",
         metadata: {
           telegramMessageId: message.message_id,
-          timestamp: message.date * 1000
-        }
+          timestamp: message.date * 1000,
+        },
       });
-  
+
       return NextResponse.json({ success: true });
     } catch (error) {
-      console.error('Error handling webhook:', error);
-      return NextResponse.json({ success: false, error: 'Failed to process message' }, { status: 500 });
+      console.error("Error handling webhook:", error);
+
+      return NextResponse.json({ success: false, error: "Failed to process message" }, { status: 500 });
     }
   } else {
-    return NextResponse.json({ success: false, error: 'Invalid message format' }, { status: 400 });
+    return NextResponse.json({ success: false, error: "Invalid message format" }, { status: 400 });
   }
 }

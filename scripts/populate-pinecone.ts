@@ -1,6 +1,6 @@
 import { pinecone } from '@/libs/pinecone';
-import { getEmbedding } from '@/libs/ai/embedding';
-import { knowledgeBase } from '@/libs/ai/retrieve';
+import { getEmbedding } from '@/libs/openai/embedding';
+import { knowledgeBase } from '@/libs/openai/retrieve';
 
 async function populatePinecone() {
   const index = pinecone.index('fintech-knowledge');

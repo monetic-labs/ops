@@ -1,6 +1,7 @@
 import { useState } from "react";
-import pylon from "@/libs/pylon-sdk";
 import { MerchantRainCompanyCreateOutput, MerchantRainCompanyCreateInput } from "@backpack-fux/pylon-sdk";
+
+import pylon from "@/libs/pylon-sdk";
 import { RainMerchantCreateDto } from "@/types/dtos/rainDTO";
 import { merchantConfig } from "@/config/merchant";
 
@@ -28,7 +29,7 @@ export const useRainCreateMerchant = () => {
         representatives: data.representatives,
         ultimateBeneficialOwners: data.ultimateBeneficialOwners,
       };
-      
+
       console.log("useRainCreateMerchant:", JSON.stringify(createRainMerchant, null, 2));
       const response = await pylon.applyCardCompany(createRainMerchant);
 
@@ -36,6 +37,7 @@ export const useRainCreateMerchant = () => {
 
       setIsLoading(false);
       setData(response);
+
       return response;
     } catch (err) {
       setIsLoading(false);

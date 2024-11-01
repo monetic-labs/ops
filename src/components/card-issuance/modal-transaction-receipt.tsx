@@ -1,7 +1,9 @@
 import { Divider } from "@nextui-org/divider";
 import { Modal, ModalBody, ModalContent, ModalHeader } from "@nextui-org/modal";
-import ModalFooterWithSupport from "../generics/footer-modal-support";
+
 import { formattedDate } from "@/utils/helpers";
+
+import ModalFooterWithSupport from "../generics/footer-modal-support";
 
 interface TransactionReceiptModalProps {
   isOpen: boolean;
@@ -20,12 +22,7 @@ interface TransactionReceiptModalProps {
 
 export default function TransactionReceiptModal({ isOpen, onClose, transaction }: TransactionReceiptModalProps) {
   return (
-    <Modal
-      isOpen={isOpen}
-      onClose={onClose}
-      scrollBehavior="inside"
-      className="max-w-md mx-auto"
-    >
+    <Modal className="max-w-md mx-auto" isOpen={isOpen} scrollBehavior="inside" onClose={onClose}>
       <ModalContent>
         {(onClose) => (
           <>
@@ -61,8 +58,8 @@ export default function TransactionReceiptModal({ isOpen, onClose, transaction }
                       transaction.status === "Completed"
                         ? "text-ugh-400"
                         : transaction.status === "Pending"
-                        ? "text-yellow-500"
-                        : "text-red-500"
+                          ? "text-yellow-500"
+                          : "text-red-500"
                     }`}
                   >
                     {transaction.status}
@@ -76,8 +73,8 @@ export default function TransactionReceiptModal({ isOpen, onClose, transaction }
                 {
                   label: "Close",
                   onClick: onClose,
-                  className: "bg-ualert-500 text-notpurple-500"
-                }
+                  className: "bg-ualert-500 text-notpurple-500",
+                },
               ]}
               onSupportClick={() => {}}
             />

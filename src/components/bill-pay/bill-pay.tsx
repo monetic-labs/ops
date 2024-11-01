@@ -1,9 +1,11 @@
 import React, { useState } from "react";
 import { Tabs, Tab } from "@nextui-org/tabs";
+import { Button } from "@nextui-org/button";
+
+import { billPayConfig, BillPayId } from "@/config/tabs";
+
 import Contacts from "./contacts-tab";
 import Transfers from "./transfers-tab";
-import { billPayConfig, BillPayId } from "@/config/tabs";
-import { Button } from "@nextui-org/button";
 import CreateBillPayModal from "./bill-actions/create";
 
 export default function BillPayTabs() {

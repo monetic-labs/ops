@@ -2,19 +2,17 @@
 
 import React, { useState } from "react";
 import { Tabs, Tab } from "@nextui-org/tabs";
+import { PersonRole } from "@backpack-fux/pylon-sdk";
 
 import { FormCard } from "@/components/generics/form-card";
-import Notification from "@/components/generics/notification";
-
 import { useOnboardForm } from "@/hooks/onboard/useOnboardForm";
+import { CompanyAccountUsersSchema, CompanyUserDetailsSchema } from "@/types/validations/onboard";
 
 import { FormCompanyInfo } from "./form-company-account";
 import { AccountRegistration } from "./form-register-account";
 import { FormCompanyDetails } from "./form-company-details";
 import { FormUserDetails } from "./form-user-details";
 import { FormAccountUsers } from "./form-account-users";
-import { CompanyAccountUsersSchema, CompanyUserDetailsSchema } from "@/types/validations/onboard";
-import { PersonRole } from "@backpack-fux/pylon-sdk";
 
 type ValidRole = "owner" | "representative" | "beneficial-owner";
 
@@ -43,6 +41,7 @@ export const MerchantOnboard: React.FC<{ onCancel: () => void; initialEmail: str
 
   const ensureValidRole = (role: string): ValidRole => {
     const validRoles: ValidRole[] = ["owner", "representative", "beneficial-owner"];
+
     return validRoles.includes(role as ValidRole) ? (role as ValidRole) : "owner";
   };
 
@@ -50,12 +49,14 @@ export const MerchantOnboard: React.FC<{ onCancel: () => void; initialEmail: str
     if (role === "owner" || index === 0) {
       return PersonRole.SUPER_ADMIN;
     }
+
     return PersonRole.MEMBER;
   };
 
   const validatedAccountUsers: CompanyAccountUsersSchema = {
     representatives: formData.accountUsers.representatives.map((rep, index) => {
       const validatedRole = ensureValidRole(rep.role);
+
       return {
         firstName: rep.firstName,
         lastName: rep.lastName,
@@ -103,26 +104,26 @@ export const MerchantOnboard: React.FC<{ onCancel: () => void; initialEmail: str
             )}
             {tab.key === "user-details" && (
               <FormUserDetails
-                initialData={{ userDetails: formData.userDetails }}
-                updateFormData={(data: CompanyUserDetailsSchema) => updateFormData({ userDetails: data.userDetails })}
-                onSubmit={(data: CompanyUserDetailsSchema) => onSubmitStep(4, data)}
-                userCount={userCount}
                 accountUsers={formData.accountUsers.representatives}
-                tabs={userDetailTabs}
                 activeTab={activeTab}
+                initialData={{ userDetails: formData.userDetails }}
                 setActiveTab={setActiveTab}
+                tabs={userDetailTabs}
+                updateFormData={(data: CompanyUserDetailsSchema) => updateFormData({ userDetails: data.userDetails })}
+                userCount={userCount}
+                onSubmit={(data: CompanyUserDetailsSchema) => onSubmitStep(4, data)}
               />
             )}
             {tab.key === "register-account" && (
               <AccountRegistration
+                email={formData.accountUsers.representatives[0].email}
+                handleRainToSAccepted={handleRainToSAccepted}
+                isRainToSAccepted={isRainToSAccepted}
                 kybBridgeLink={createMerchantData?.data.kycLink || null}
+                rainToSError={rainToSError}
                 tosBridgeLink={createMerchantData?.data.tosLink || null}
                 onCancel={handleCancel}
                 onKYCDone={handleKYCDone}
-                isRainToSAccepted={isRainToSAccepted}
-                rainToSError={rainToSError}
-                handleRainToSAccepted={handleRainToSAccepted}
-                email={formData.accountUsers.representatives[0].email}
               />
             )}
           </Tab>

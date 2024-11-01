@@ -3,14 +3,14 @@ import { Chip } from "@nextui-org/chip";
 import { Table, TableBody, TableCell, TableColumn, TableHeader, TableRow } from "@nextui-org/table";
 import { User } from "@nextui-org/user";
 import React, { useCallback, useEffect, useState } from "react";
+import { MerchantUserGetOutput, PersonRole } from "@backpack-fux/pylon-sdk";
 
 import { Column, usersColumns, usersStatusColorMap } from "@/data";
+import { getFullName, getOpepenAvatar } from "@/utils/helpers";
+import pylon from "@/libs/pylon-sdk";
+
 import CreateUserModal from "./user-create";
 import UserEditModal from "./user-edit";
-import { getFullName, getOpepenAvatar } from "@/utils/helpers";
-
-import pylon from "@/libs/pylon-sdk";
-import { MerchantUserGetOutput, PersonRole } from "@backpack-fux/pylon-sdk";
 
 export default function UserTab({ userId }: { userId: string }) {
   const [users, setUsers] = useState<MerchantUserGetOutput[]>([]);
@@ -27,6 +27,7 @@ export default function UserTab({ userId }: { userId: string }) {
   const availableRoles = Object.values(PersonRole).filter((role) => {
     if (userRole === PersonRole.SUPER_ADMIN) return true;
     if (userRole === PersonRole.ADMIN) return role !== PersonRole.SUPER_ADMIN;
+
     return role === PersonRole.MEMBER;
   });
 
@@ -35,6 +36,7 @@ export default function UserTab({ userId }: { userId: string }) {
       setIsLoading(true);
       try {
         const users = await pylon.getUsers();
+
         setUsers(users);
         setUserRole(users.find((user) => user.id === userId)?.role || null);
       } catch (error) {
@@ -43,6 +45,7 @@ export default function UserTab({ userId }: { userId: string }) {
         setIsLoading(false);
       }
     };
+
     fetchUsers();
   }, []);
 
@@ -54,6 +57,7 @@ export default function UserTab({ userId }: { userId: string }) {
     switch (columnKey) {
       case "firstName":
         const fullName = getFullName(user.firstName, user.lastName);
+
         return (
           <div className="flex items-center gap-2">
             <User
@@ -120,17 +124,18 @@ export default function UserTab({ userId }: { userId: string }) {
       {selectedUser && (
         <>
           <UserEditModal
-            isOpen={isEditModalOpen && canManageUsers}
-            user={selectedUser}
             availableRoles={availableRoles}
             isEditable={isEditable}
+            isOpen={isEditModalOpen && canManageUsers}
             isSelf={selectedUser.id === userId}
+            user={selectedUser}
             onClose={() => {
               setSelectedUser(null);
               setIsEditModalOpen(false);
             }}
             onRemove={async (userId) => {
               const success = await pylon.deleteUser(selectedUser.id);
+
               if (success) {
                 setUsers(users.filter((user) => user.id !== selectedUser.id));
                 setSelectedUser(null);
@@ -148,6 +153,7 @@ export default function UserTab({ userId }: { userId: string }) {
                 role: updatedUser.role,
                 phone: updatedUser.phone,
               });
+
               setUsers(users.map((user) => (user.id === returnedUser.id ? returnedUser : user)));
               setSelectedUser(null);
               setIsEditModalOpen(false);
@@ -156,8 +162,8 @@ export default function UserTab({ userId }: { userId: string }) {
         </>
       )}
       <CreateUserModal
-        isOpen={isCreateModalOpen && canManageUsers}
         availableRoles={availableRoles}
+        isOpen={isCreateModalOpen && canManageUsers}
         onClose={() => setIsCreateModalOpen(false)}
         onSave={(newUser) => {
           setUsers([...users, newUser]);

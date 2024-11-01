@@ -1,10 +1,11 @@
-import pylon from "@/libs/pylon-sdk";
 import { MerchantUserGetOutput, PersonRole } from "@backpack-fux/pylon-sdk";
 import { Button } from "@nextui-org/button";
 import { Input } from "@nextui-org/input";
 import { Modal, ModalBody, ModalContent, ModalFooter, ModalHeader } from "@nextui-org/modal";
 import { Select, SelectItem } from "@nextui-org/select";
 import { useState } from "react";
+
+import pylon from "@/libs/pylon-sdk";
 
 interface CreateUserModalProps {
   isOpen: boolean;
@@ -44,7 +45,9 @@ export default function CreateUserModal({ isOpen, availableRoles, onClose, onSav
         : "Last name is required",
       email: newUser.email ? (emailRegex.test(newUser.email) ? "" : "Invalid email address") : "Email is required",
     };
+
     setErrors(newErrors);
+
     return !Object.values(newErrors).some((error) => error);
   };
 
@@ -56,6 +59,7 @@ export default function CreateUserModal({ isOpen, availableRoles, onClose, onSav
         lastName: newUser.lastName.charAt(0).toUpperCase() + newUser.lastName.slice(1),
         role: newUser.role,
       });
+
       if (user) {
         onSave(user);
         setNewUser({
@@ -78,26 +82,26 @@ export default function CreateUserModal({ isOpen, availableRoles, onClose, onSav
         <ModalHeader>Create New User</ModalHeader>
         <ModalBody>
           <Input
+            errorMessage={errors.firstName}
+            isInvalid={!!errors.firstName}
             label="First Name"
             value={newUser.firstName}
             onChange={(e) => setNewUser({ ...newUser, firstName: e.target.value })}
-            isInvalid={!!errors.firstName}
-            errorMessage={errors.firstName}
           />
           <Input
+            errorMessage={errors.lastName}
+            isInvalid={!!errors.lastName}
             label="Last Name"
             value={newUser.lastName}
             onChange={(e) => setNewUser({ ...newUser, lastName: e.target.value })}
-            isInvalid={!!errors.lastName}
-            errorMessage={errors.lastName}
           />
           <Input
+            errorMessage={errors.email}
+            isInvalid={!!errors.email}
             label="Email"
             type="email"
             value={newUser.email}
             onChange={(e) => setNewUser({ ...newUser, email: e.target.value })}
-            isInvalid={!!errors.email}
-            errorMessage={errors.email}
           />
           <Select
             label="Role"

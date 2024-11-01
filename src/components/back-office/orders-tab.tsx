@@ -2,13 +2,13 @@ import React, { useEffect, useState } from "react";
 import { Input } from "@nextui-org/input";
 import { Button } from "@nextui-org/button";
 import { Snippet } from "@nextui-org/snippet";
-
 import { GetOrderLinksOutput, ISO4217Currency } from "@backpack-fux/pylon-sdk";
 import { Card, CardHeader, CardBody } from "@nextui-org/card";
-import Countdown from "@/components/generics/countdown";
-import pylon from "@/libs/pylon-sdk";
 import { Accordion, AccordionItem } from "@nextui-org/accordion";
 import { z } from "zod";
+
+import Countdown from "@/components/generics/countdown";
+import pylon from "@/libs/pylon-sdk";
 
 const orderSchema = z.object({
   email: z.string().email("Invalid email address"),
@@ -48,8 +48,10 @@ export default function CreateOrders() {
   useEffect(() => {
     // Validate form data whenever it changes
     const result = orderSchema.safeParse(order);
+
     if (!result.success) {
       const errors: { [key: string]: string } = {};
+
       result.error.issues.forEach((issue) => {
         errors[issue.path[0]] = issue.message;
       });
@@ -67,6 +69,7 @@ export default function CreateOrders() {
   const fetchCurrentOrders = async () => {
     try {
       const orders = await pylon.getOrderLinks();
+
       setCurrentOrders(orders);
     } catch (err) {
       console.error("Failed to fetch current orders:", err);
@@ -79,13 +82,16 @@ export default function CreateOrders() {
 
     // Validate form data
     const result = orderSchema.safeParse(order);
+
     if (!result.success) {
       const errors: { [key: string]: string } = {};
+
       result.error.issues.forEach((issue) => {
         errors[issue.path[0]] = issue.message;
       });
       setValidationErrors(errors);
       setIsLoading(false);
+
       return;
     }
 
@@ -117,6 +123,7 @@ export default function CreateOrders() {
         },
         expiresAt: response.expiresAt,
       };
+
       setCurrentOrders([...currentOrders, newOrder]);
 
       // Clear input fields
@@ -137,6 +144,7 @@ export default function CreateOrders() {
 
   const handleDeleteOrder = async (orderLink: string) => {
     const orderId = orderLink.substring(orderLink.lastIndexOf("/") + 1);
+
     try {
       await pylon.deleteOrderLink(orderId);
       setCurrentOrders(currentOrders.filter((order) => order.id !== orderId));
@@ -159,8 +167,8 @@ export default function CreateOrders() {
               label="Customer Email"
               placeholder="Enter customer email"
               value={order.email}
-              onChange={(e) => setOrder({ ...order, email: e.target.value })}
               onBlur={() => handleBlur("email")}
+              onChange={(e) => setOrder({ ...order, email: e.target.value })}
             />
             {touched.email && validationErrors.email && <p className="text-red-500">{validationErrors.email}</p>}
           </div>
@@ -169,8 +177,8 @@ export default function CreateOrders() {
               label="Customer Phone"
               placeholder="Enter customer phone"
               value={order.phone}
-              onChange={(e) => setOrder({ ...order, phone: e.target.value })}
               onBlur={() => handleBlur("phone")}
+              onChange={(e) => setOrder({ ...order, phone: e.target.value })}
             />
             {touched.phone && validationErrors.phone && <p className="text-red-500">{validationErrors.phone}</p>}
           </div>
@@ -184,8 +192,8 @@ export default function CreateOrders() {
                 </div>
               }
               value={order.amount}
-              onChange={(e) => setOrder({ ...order, amount: e.target.value })}
               onBlur={() => handleBlur("amount")}
+              onChange={(e) => setOrder({ ...order, amount: e.target.value })}
             />
             {touched.amount && validationErrors.amount && <p className="text-ualert-500">{validationErrors.amount}</p>}
           </div>
@@ -207,11 +215,11 @@ export default function CreateOrders() {
                 title={`${order.customer.email} (${order.customer.phone}) - $${order.order.subtotal} ${order.order.currency}`}
               >
                 <div className="relative">
-                  <Snippet hideSymbol variant="bordered" size="md">
+                  <Snippet hideSymbol size="md" variant="bordered">
                     {order.id}
                   </Snippet>
                   <p className="mt-2">Expires in {<Countdown expiresAt={order.expiresAt} />}</p>
-                  <Button onClick={() => handleDeleteOrder(order.id)} className="absolute top-0 right-0 bg-ualert-500">
+                  <Button className="absolute top-0 right-0 bg-ualert-500" onClick={() => handleDeleteOrder(order.id)}>
                     Delete
                   </Button>
                 </div>

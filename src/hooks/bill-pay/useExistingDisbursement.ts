@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { MerchantDisbursementUpdateInput, MerchantDisbursementUpdateOutput } from "@backpack-fux/pylon-sdk";
+
 import pylon from "@/libs/pylon-sdk";
 
 export const useExistingDisbursement = () => {
@@ -11,6 +12,7 @@ export const useExistingDisbursement = () => {
     setIsLoading(true);
     try {
       const response = await pylon.initiateExistingDisbursement(disbursementId, disbursement);
+
       setDisbursement(response);
     } catch (error) {
       setError(error);

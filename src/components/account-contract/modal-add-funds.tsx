@@ -1,10 +1,11 @@
 import { useState } from "react";
-import { Button } from "@nextui-org/button";
 import { Divider } from "@nextui-org/divider";
 import { Input } from "@nextui-org/input";
-import { Modal, ModalBody, ModalContent, ModalFooter, ModalHeader } from "@nextui-org/modal";
+import { Modal, ModalBody, ModalContent, ModalHeader } from "@nextui-org/modal";
 import { Select, SelectItem } from "@nextui-org/select";
+
 import useAddFunds from "@/hooks/account-contracts/useAddFunds";
+
 import ModalFooterWithSupport from "../generics/footer-modal-support";
 
 interface AddFundsModalProps {
@@ -126,10 +127,7 @@ export default function AddFundsModal({ isOpen, onClose }: AddFundsModalProps) {
             </div>
           </div>
         </ModalBody>
-        <ModalFooterWithSupport
-            onSupportClick={handleSupportClick}
-            actions={footerActions}
-          />
+        <ModalFooterWithSupport actions={footerActions} onSupportClick={handleSupportClick} />
       </ModalContent>
     </Modal>
   );

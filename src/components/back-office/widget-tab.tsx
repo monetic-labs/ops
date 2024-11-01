@@ -1,11 +1,13 @@
 import React, { useEffect, useState } from "react";
 import { Input } from "@nextui-org/input";
 import { Select, SelectItem } from "@nextui-org/select";
-import { Button } from "@nextui-org/button";
-import { FormButton } from "../generics/form-button";
-import GenerateApiKeysModal from "./actions/widgets/api-keys";
-import pylon from "@/libs/pylon-sdk";
 import { Network, StableCurrency } from "@backpack-fux/pylon-sdk";
+
+import pylon from "@/libs/pylon-sdk";
+
+import { FormButton } from "../generics/form-button";
+
+import GenerateApiKeysModal from "./actions/widgets/api-keys";
 import { RefundSuccessModal } from "./actions/order-success";
 
 const networks = ["POLYGON", "SOLANA", "BASE", "OPTIMISM", "ARBITRUM"];
@@ -39,6 +41,7 @@ export default function WidgetManagement() {
   useEffect(() => {
     const fetchSettlementAccount = async () => {
       const accountDetails = await pylon.getSettlementAccount();
+
       setSettlementAddress(accountDetails.walletAddress);
       setSelectedNetwork(accountDetails.network);
       setSelectedCurrency(accountDetails.currency);
@@ -119,21 +122,21 @@ export default function WidgetManagement() {
         ))}
       </Select>
       <div className="flex flex-col sm:flex-row justify-end space-y-2 sm:space-y-0 sm:space-x-2">
-        <FormButton onClick={handleSaveSettings} className="w-full sm:w-auto" disabled={!hasChanges()}>
+        <FormButton className="w-full sm:w-auto" disabled={!hasChanges()} onClick={handleSaveSettings}>
           Save Settings
         </FormButton>
-        <FormButton onClick={() => setIsApiKeysModalOpen(true)} className="w-full sm:w-auto">
+        <FormButton className="w-full sm:w-auto" onClick={() => setIsApiKeysModalOpen(true)}>
           Manage API Keys
         </FormButton>
       </div>
 
       <GenerateApiKeysModal isOpen={isApiKeysModalOpen} onClose={() => setIsApiKeysModalOpen(false)} />
       <RefundSuccessModal
-        isOpen={modalProps.isOpen}
-        onClose={() => setModalProps({ ...modalProps, isOpen: false })}
-        title={modalProps.title}
-        message={modalProps.message}
         fadeOutOpts={modalProps.fadeOutOpts}
+        isOpen={modalProps.isOpen}
+        message={modalProps.message}
+        title={modalProps.title}
+        onClose={() => setModalProps({ ...modalProps, isOpen: false })}
       />
     </div>
   );

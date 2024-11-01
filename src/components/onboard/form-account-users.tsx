@@ -2,18 +2,18 @@ import React, { useEffect, useState } from "react";
 import { useFieldArray, useForm } from "react-hook-form";
 import { useRouter } from "next/navigation";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { PersonRole } from "@backpack-fux/pylon-sdk";
 
 import { FormCardTabs } from "@/components/generics/form-card-tabs";
 import { FormInput } from "@/components/generics/form-input";
 import { emailRegex } from "@/types/validations/auth";
 import { companyAccountUsersSchema, phoneRegex } from "@/types/validations/onboard";
-
-import { AutocompleteInput } from "../generics/autocomplete-input";
 import { CompanyAccountUsersSchema } from "@/types/validations/onboard";
 import { TabData } from "@/hooks/generics/useDynamicTabs";
 import { useDynamicTabs } from "@/hooks/generics/useDynamicTabs";
+
+import { AutocompleteInput } from "../generics/autocomplete-input";
 import { handleEmailChange, handlePhoneNumberChange } from "../generics/form-input-handlers";
-import { PersonRole } from "@backpack-fux/pylon-sdk";
 
 const userRoles = [
   { label: "Owner", value: "owner" },
@@ -151,6 +151,7 @@ export const FormAccountUsers: React.FC<{
             setValue,
             (value) => {
               const newEmailInputs = [...emailInputs];
+
               newEmailInputs[index] = value as string;
               setEmailInputs(newEmailInputs);
             },
@@ -162,8 +163,8 @@ export const FormAccountUsers: React.FC<{
         control={control}
         errorMessage={errors.representatives?.[index]?.phoneNumber?.message}
         label="Phone Number"
-        name={`representatives.${index}.phoneNumber`}
         maxLength={10}
+        name={`representatives.${index}.phoneNumber`}
         pattern={phoneRegex.source}
         placeholder="0701234567"
         value={phoneNumberInputs[index]}
@@ -173,6 +174,7 @@ export const FormAccountUsers: React.FC<{
             setValue,
             (value) => {
               const newPhoneNumberInputs = [...phoneNumberInputs];
+
               newPhoneNumberInputs[index] = value as string;
               setPhoneNumberInputs(newPhoneNumberInputs);
             },
@@ -182,23 +184,23 @@ export const FormAccountUsers: React.FC<{
       />
       {index === 0 ? (
         <FormInput
+          disabled
           isReadOnly
           control={control}
           label="Role"
           name={`representatives.${index}.role`}
           value="Owner"
-          disabled
         />
       ) : (
         <AutocompleteInput
+          about="Select the role for this user"
           control={control}
           errorMessage={errors.representatives?.[index]?.role?.message}
+          filterItems={(items) => items.filter((item) => item.value !== "owner")}
+          items={userRoles}
           label="Role"
           name={`representatives.${index}.role`}
           placeholder="Select user role"
-          items={userRoles}
-          about="Select the role for this user"
-          filterItems={(items) => items.filter((item) => item.value !== "owner")}
         />
       )}
     </div>

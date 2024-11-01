@@ -4,7 +4,6 @@ import * as React from "react";
 import { useRouter } from "next/navigation";
 import { ThemeProvider as NextThemesProvider } from "next-themes";
 import { ThemeProviderProps } from "next-themes/dist/types";
-
 import { NextUIProvider } from "@nextui-org/system";
 import { PylonProvider } from "@backpack-fux/pylon-sdk";
 
@@ -23,11 +22,11 @@ export function Providers({ children, themeProps }: ProvidersProps) {
   return (
     <PylonProvider pylon={pylonInstance}>
       <NextUIProvider navigate={router.push}>
-          <NextThemesProvider {...themeProps}>
-            <ChatProvider>
-              <PageWithScrollBackground>{children}</PageWithScrollBackground>
-            </ChatProvider>
-          </NextThemesProvider>
+        <NextThemesProvider {...themeProps}>
+          <ChatProvider>
+            <PageWithScrollBackground>{children}</PageWithScrollBackground>
+          </ChatProvider>
+        </NextThemesProvider>
       </NextUIProvider>
     </PylonProvider>
   );

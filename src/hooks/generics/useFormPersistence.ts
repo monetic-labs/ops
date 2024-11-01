@@ -5,6 +5,7 @@ export function useFormPersistence<T>(key: string, initialData: T) {
 
   useEffect(() => {
     const savedData = localStorage.getItem(key);
+
     console.log("savedData", savedData);
 
     if (savedData) {
@@ -19,6 +20,7 @@ export function useFormPersistence<T>(key: string, initialData: T) {
   const updateData = useCallback((newData: Partial<T>) => {
     setData((prevData) => {
       const updatedData = { ...prevData, ...newData };
+
       return updatedData;
     });
   }, []);
