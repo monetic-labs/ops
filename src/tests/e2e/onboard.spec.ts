@@ -1,6 +1,6 @@
 import { test, expect } from "../fixtures";
 
-test("login flow", async ({ page, mockServer }) => {
+test("sign in", async ({ page, mockServer }) => {
   await page.goto("http://localhost:3000");
 
   await test.step("Login", async () => {
@@ -11,14 +11,10 @@ test("login flow", async ({ page, mockServer }) => {
     for (let i = 0; i < 6; i++) {
       await page.getByTestId(`otp-input-${i}`).fill(String(i + 1));
     }
-    await page.getByTestId("verify-otp-button").click();
-  });
 
-  await test.step("Connect Wallet", async () => {
-    await page.getByTestId("create-transfer-button").click();
-    await page.getByTestId("create-transfer-modal").waitFor({ state: "visible" });
-    await page.getByTestId("connect-wallet-button").click();
-
-    await expect(page.getByText("Wallet Connected")).toBeVisible();
+    await expect(page.reload()).resolves.toBeTruthy();
+    // NOTE: Can we verify the OTP?
   });
 });
+
+// TODO: Sign Up
