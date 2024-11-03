@@ -1,4 +1,4 @@
-import { pinecone } from "@/libs/pinecone";
+import { pinecone } from "@/libs/pinecone/pinecone";
 import { knowledgeBase } from "@/libs/openai/retrieve";
 
 import { getEmbedding } from "./openai/embedding";

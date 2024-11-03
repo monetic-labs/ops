@@ -12,7 +12,7 @@ console.log('Pinecone Key present:', !!process.env.PINECONE_API_KEY);
 // Now import the rest of the modules
 import { processDocuments } from '@/libs/pinecone/processor';
 import { getEmbedding } from '@/libs/openai/embedding';
-import { pinecone } from '@/libs/pinecone';
+import { pinecone } from '@/libs/pinecone/pinecone';
 
 async function uploadDocs() {
   try {
