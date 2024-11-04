@@ -1,10 +1,13 @@
 import { test, expect, Page } from "@playwright/test";
 import { MOCK_BALANCE } from "@/utils/constants";
-import { setupTest } from "@/tests/setup";
+import { setupContactsApi } from "@/tests/fixtures/api/disbursement";
+import { setupAuthCookie } from "@/tests/fixtures/api/auth";
 
 test.describe("Bill Pay Modal", () => {
   test.beforeEach(async ({ page }) => {
-    await setupTest(page);
+    await setupAuthCookie(page);
+    await setupContactsApi(page);
+    await page.goto("http://localhost:3000");
     // Open the modal
     await page.getByTestId("create-transfer-button").click();
     await page.getByTestId("create-transfer-modal").waitFor({ state: "visible" });
@@ -86,8 +89,24 @@ test.describe("Bill Pay Modal", () => {
 
 // Helper functions
 async function fillBasicFormData(page: Page) {
+  // Handle account holder selection
   await page.getByTestId("account-holder").click();
-  await page.getByTestId(`account-holder-item-1`).click();
-  await page.getByTestId("payment-method").click();
-  await page.getByTestId("payment-method-item-ACH_SAME_DAY").click();
+
+  // Wait for dropdown list to be visible and select John Doe
+  const accountHolderList = page.getByRole("listbox");
+  await accountHolderList.waitFor({ state: "visible" });
+  await page.getByText("John Doe").click();
+
+  // Handle payment method selection
+  const paymentMethod = page.getByTestId("payment-method");
+  await expect(paymentMethod).toBeEnabled();
+  await paymentMethod.click();
+
+  // Wait for payment method dropdown and select ACH_SAME_DAY
+  const paymentMethodList = page.getByRole("listbox");
+  await paymentMethodList.waitFor({ state: "visible" });
+  await page.getByText("ACH_SAME_DAY").click();
+
+  // Wait for form to stabilize after selections
+  await page.waitForTimeout(100);
 }
