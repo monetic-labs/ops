@@ -16,9 +16,10 @@ export default function BillPayTabs() {
   const [billPay, setBillPay] = useState<NewBillPay | ExistingBillPay>(DEFAULT_NEW_BILL_PAY);
   const [selectedService, setSelectedService] = useState<string>(billPayConfig[0].id);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
-  const { isConnected, address: settlementAddress } = isTesting
-    ? { isConnected: true, address: MOCK_SETTLEMENT_ADDRESS }
-    : useAppKitAccount();
+
+  const appKitAccount = useAppKitAccount();
+  const isConnected = isTesting ? true : appKitAccount.isConnected;
+  const settlementAddress = isTesting ? MOCK_SETTLEMENT_ADDRESS : appKitAccount.address;
 
   const renderTabContent = (tabId: string) => {
     switch (tabId) {

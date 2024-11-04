@@ -12,13 +12,14 @@ type UseBalanceProps = {
 };
 
 export const useBalance = ({ amount, isModalOpen }: UseBalanceProps) => {
-  const { address: account } = isTesting ? { address: MOCK_SETTLEMENT_ADDRESS } : useAppKitAccount();
   const [balance, setBalance] = useState<string | undefined>(undefined);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
   const [lastFetchTime, setLastFetchTime] = useState(0);
-
   const [debouncedAmount] = useDebounce(amount, 500); // 500ms delay
+
+  const appKitAccount = useAppKitAccount();
+  const account = isTesting ? MOCK_SETTLEMENT_ADDRESS : appKitAccount.address;
 
   const getUserBalance = useCallback(async (): Promise<string> => {
     if (isTesting) return MOCK_BALANCE;
