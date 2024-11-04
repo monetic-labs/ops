@@ -1,7 +1,8 @@
 import { test, expect, Page } from "@playwright/test";
 import { MOCK_BALANCE } from "@/utils/constants";
-import { setupContactsApi } from "@/tests/fixtures/api/disbursement";
-import { setupAuthCookie } from "@/tests/fixtures/api/auth";
+import { setupContactsApi } from "@/tests/e2e/fixtures/api/disbursement";
+import { setupAuthCookie } from "@/tests/e2e/fixtures/api/auth";
+import { mockContacts } from "./fixtures/data/disbursement";
 
 test.describe("Bill Pay Modal", () => {
   test.beforeEach(async ({ page }) => {
@@ -90,23 +91,28 @@ test.describe("Bill Pay Modal", () => {
 // Helper functions
 async function fillBasicFormData(page: Page) {
   // Handle account holder selection
-  await page.getByTestId("account-holder").click();
+  const accountHolder = page.getByTestId("account-holder");
+  await accountHolder.waitFor({ state: "visible" });
 
-  // Wait for dropdown list to be visible and select John Doe
-  const accountHolderList = page.getByRole("listbox");
-  await accountHolderList.waitFor({ state: "visible" });
-  await page.getByText("John Doe").click();
+  // Focus and type to trigger dropdown
+  await accountHolder.click();
+  await page.keyboard.type(mockContacts[0].accountOwnerName.substring(0, 3)); // Type "Joh"
 
-  // Handle payment method selection
+  // Wait for dropdown and options
+  const dropdown = page.getByRole("listbox");
+  await dropdown.waitFor({ state: "visible" });
+
+  // Use keyboard navigation to select option
+  // await page.keyboard.type(mockContacts[0].accountOwnerName);
+  await page.keyboard.press("ArrowDown");
+  await page.keyboard.press("Enter");
+
+  // Handle payment method selection similarly
   const paymentMethod = page.getByTestId("payment-method");
   await expect(paymentMethod).toBeEnabled();
   await paymentMethod.click();
 
-  // Wait for payment method dropdown and select ACH_SAME_DAY
-  const paymentMethodList = page.getByRole("listbox");
-  await paymentMethodList.waitFor({ state: "visible" });
-  await page.getByText("ACH_SAME_DAY").click();
-
-  // Wait for form to stabilize after selections
-  await page.waitForTimeout(100);
+  await page.keyboard.type(mockContacts[0].disbursements[0].method);
+  await page.keyboard.press("ArrowDown");
+  await page.keyboard.press("Enter");
 }
