@@ -260,8 +260,6 @@ export function getValidationProps({ label, value, currency, balance, method }: 
 export const validateBillPay = (billPay: NewBillPay | ExistingBillPay, balance?: string): boolean => {
   const schema = billPay.type === "new" ? newBillPaySchema : existingBillPaySchema;
 
-  console.log("billPay", billPay);
-
   const amountSchema = z
     .string()
     .min(1, "Amount is required")

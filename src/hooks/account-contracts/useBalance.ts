@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { publicClient } from "@/config/web3";
-import { BASE_USDC, TESTING_SETTLEMENT_ADDRESS } from "@/utils/constants";
+import { BASE_USDC, MOCK_BALANCE, MOCK_SETTLEMENT_ADDRESS } from "@/utils/constants";
 import { Address, formatUnits } from "viem";
 import { formatDecimals, isTesting } from "@/utils/helpers";
 import { useAppKitAccount } from "@reown/appkit/react";
@@ -12,7 +12,7 @@ type UseBalanceProps = {
 };
 
 export const useBalance = ({ amount, isModalOpen }: UseBalanceProps) => {
-  const { address: account } = isTesting ? { address: TESTING_SETTLEMENT_ADDRESS } : useAppKitAccount();
+  const { address: account } = isTesting ? { address: MOCK_SETTLEMENT_ADDRESS } : useAppKitAccount();
   const [balance, setBalance] = useState<string | undefined>(undefined);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
@@ -21,6 +21,7 @@ export const useBalance = ({ amount, isModalOpen }: UseBalanceProps) => {
   const [debouncedAmount] = useDebounce(amount, 500); // 500ms delay
 
   const getUserBalance = useCallback(async (): Promise<string> => {
+    if (isTesting) return MOCK_BALANCE;
     if (!account) return "0";
 
     const balanceResult = await publicClient.readContract({

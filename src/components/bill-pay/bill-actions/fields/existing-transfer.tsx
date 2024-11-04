@@ -37,6 +37,12 @@ function getValidationResults(billPay: ExistingBillPay, settlementBalance?: stri
       value: billPay.vendorMethod || "",
       currency: billPay.currency,
     }),
+    memo: getValidationProps({
+      label: FieldLabel.MEMO,
+      value: billPay.memo,
+      currency: billPay.currency,
+      method: billPay.vendorMethod,
+    }),
     amount: getValidationProps({
       label: FieldLabel.AMOUNT,
       value: billPay.amount,
@@ -214,7 +220,7 @@ export default function ExistingTransferFields({
         onSelectionChange={(value) => handleMethodChange(value as DisbursementMethod)}
       >
         {availableMethods.map((method) => (
-          <AutocompleteItem key={method} textValue={method}>
+          <AutocompleteItem data-testid={`payment-method-item-${method}`} key={method} textValue={method}>
             {method}
           </AutocompleteItem>
         ))}
@@ -223,10 +229,15 @@ export default function ExistingTransferFields({
         <Input
           data-testid="memo"
           isDisabled={billPay.vendorMethod === DisbursementMethod.WIRE}
-          label={`${billPay.vendorMethod === DisbursementMethod.WIRE ? "Wire Message" : "ACH Reference"}`}
+          label={
+            <span data-testid="memo-label">
+              {billPay.vendorMethod === DisbursementMethod.WIRE ? "Wire Message" : "ACH Reference"}
+            </span>
+          }
           description={`${billPay.vendorMethod === DisbursementMethod.WIRE ? "This cannot be changed." : ""}`}
           value={billPay.memo}
           onChange={(e) => setBillPay({ ...billPay, memo: e.target.value || undefined })}
+          {...validationResults.memo}
         />
       )}
       <Input

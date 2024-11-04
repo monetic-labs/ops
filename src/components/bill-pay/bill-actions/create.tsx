@@ -218,12 +218,12 @@ export default function CreateBillPayModal({
               >
                 <Info className="text-gray-500 cursor-pointer" size={14} />
               </Tooltip>
-              <span>{fee.toFixed(2) === "0.00" ? "Free" : `${fee * 100}%`}</span>
+              <span data-testid="fee">{fee.toFixed(2) === "0.00" ? "Free" : `${fee * 100}%`}</span>
             </div>
           </div>
           <div className="flex justify-between text-lg font-bold">
             <span>Total:</span>
-            <span>${total.toFixed(2)}</span>
+            <span data-testid="total">${total.toFixed(2)}</span>
           </div>
         </div>
       </ModalBody>
