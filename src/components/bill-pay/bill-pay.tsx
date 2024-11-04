@@ -9,12 +9,16 @@ import { useAppKitAccount } from "@reown/appkit/react";
 import { DEFAULT_NEW_BILL_PAY } from "@/types/bill-pay";
 import { NewBillPay, ExistingBillPay } from "@/types/bill-pay";
 import { Address } from "viem";
+import { isTesting } from "@/utils/helpers";
+import { TESTING_SETTLEMENT_ADDRESS } from "@/utils/constants";
 
 export default function BillPayTabs() {
   const [billPay, setBillPay] = useState<NewBillPay | ExistingBillPay>(DEFAULT_NEW_BILL_PAY);
   const [selectedService, setSelectedService] = useState<string>(billPayConfig[0].id);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
-  const { isConnected, address: settlementAddress } = useAppKitAccount();
+  const { isConnected, address: settlementAddress } = isTesting
+    ? { isConnected: true, address: TESTING_SETTLEMENT_ADDRESS }
+    : useAppKitAccount();
 
   const renderTabContent = (tabId: string) => {
     switch (tabId) {

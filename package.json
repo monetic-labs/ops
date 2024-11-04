@@ -4,6 +4,8 @@
   "private": true,
   "scripts": {
     "test": "VITE_CJS_IGNORE_WARNING=true vitest",
+    "test:e2e": "dotenv -e .env.test -- playwright test",
+    "test:e2e:ui": "dotenv -e .env.test -- playwright test --ui",
     "dev": "next dev",
     "build": "next build",
     "start": "next start",

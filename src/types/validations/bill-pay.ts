@@ -49,37 +49,32 @@ export const existingBillPaySchema = z.object({
   vendorName: z
     .string()
     .min(1, "Account holder name is required")
-    .max(50, "Account holder name must be less than 50 characters")
-    .optional(), // Make optional
-  vendorBankName: z
-    .string()
-    .min(1, "Bank name is required")
-    .max(30, "Bank name must be less than 30 characters")
-    .optional(), // Make optional
-  vendorMethod: z.nativeEnum(DisbursementMethod).optional(), // Make optional
+    .max(50, "Account holder name must be less than 50 characters"),
+  vendorBankName: z.string().min(1, "Bank name is required").max(30, "Bank name must be less than 30 characters"),
+  vendorMethod: z.nativeEnum(DisbursementMethod),
   accountNumber: z
     .string()
     .min(5, "Account number must be at least 5 digits")
-    .max(17, "Account number must be less than 17 digits")
-    .optional(), // Make optional
+    .max(17, "Account number must be less than 17 digits"),
   routingNumber: z
     .string()
     .length(9, "Routing number must be 9 digits")
-    .regex(/^[0-9]+$/, "Routing number must contain only numbers")
-    .optional(), // Make optional
+    .regex(/^[0-9]+$/, "Routing number must contain only numbers"),
   amount: z
     .string()
+    .min(1, "Amount is required")
     .refine(
       (val) => {
+        if (!val || val === "") return false;
         const amount = parseFloat(val);
+        if (isNaN(amount)) return false;
         const minAmount = isLocal ? 0.1 : 1;
         return amount >= minAmount;
       },
       `Amount must be at least ${isLocal ? 0.1 : 1} ${BASE_USDC.SYMBOL}`
-    )
-    .optional(), // Make optional
+    ),
   currency: z.string(),
-  disbursementId: z.string().min(1, "Disbursement ID is required").optional(), // Make optional
+  disbursementId: z.string().min(1, "Disbursement ID is required"),
   memo: z
     .string()
     .regex(/^[A-Za-z0-9 ]*$/, "Cannot contain special characters")
@@ -202,11 +197,24 @@ export function getValidationProps({ label, value, currency, balance, method }: 
       // TODO: check account number is unique against existing disbursement contacts
       break;
     case FieldLabel.AMOUNT:
-      schema = newBillPaySchema.shape.amount.refine((val) => {
-        const amount = parseFloat(val || "0");
-        const maxAmount = balance ? parseFloat(balance) : 0;
-        return amount <= maxAmount;
-      }, `Amount must be less than ${balance} ${BASE_USDC.SYMBOL}`);
+      schema = z
+        .string()
+        .min(1, "Amount is required")
+        .refine(
+          (val) => {
+            if (!val || val === "") return false;
+            const amount = parseFloat(val);
+            if (isNaN(amount)) return false;
+            const minAmount = isLocal ? 0.1 : 1;
+            return amount >= minAmount;
+          },
+          `Amount must be at least ${isLocal ? 0.1 : 1} ${BASE_USDC.SYMBOL}`
+        )
+        .refine((val) => {
+          const amount = parseFloat(val);
+          const maxAmount = balance ? parseFloat(balance) : 0;
+          return amount <= maxAmount;
+        }, `Amount must be less than ${balance} ${BASE_USDC.SYMBOL}`);
       break;
     case FieldLabel.STREET_LINE_1:
       const validateWireAddress = (val: string, method?: DisbursementMethod) => {
@@ -252,13 +260,30 @@ export function getValidationProps({ label, value, currency, balance, method }: 
 export const validateBillPay = (billPay: NewBillPay | ExistingBillPay, balance?: string): boolean => {
   const schema = billPay.type === "new" ? newBillPaySchema : existingBillPaySchema;
 
+  console.log("billPay", billPay);
+
+  const amountSchema = z
+    .string()
+    .min(1, "Amount is required")
+    .refine(
+      (val) => {
+        if (!val || val === "") return false;
+        const amount = parseFloat(val);
+        if (isNaN(amount)) return false;
+        const minAmount = isLocal ? 0.1 : 1;
+        return amount >= minAmount;
+      },
+      `Amount must be at least ${isLocal ? 0.1 : 1} ${BASE_USDC.SYMBOL}`
+    )
+    .refine((val) => {
+      const amount = parseFloat(val);
+      const maxAmount = balance ? parseFloat(balance) : 0;
+      return amount <= maxAmount;
+    }, `Amount must be less than ${balance} ${BASE_USDC.SYMBOL}`);
+
   const result = schema
     .extend({
-      amount: z.string().refine((val) => {
-        const amount = parseFloat(val || "0");
-        const maxAmount = balance ? parseFloat(balance) : 0;
-        return amount <= maxAmount;
-      }, `Amount must be less than ${balance} ${BASE_USDC.SYMBOL}`),
+      amount: amountSchema,
     })
     .safeParse(billPay);
 

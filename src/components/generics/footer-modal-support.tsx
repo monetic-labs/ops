@@ -50,10 +50,12 @@ export default function ModalFooterWithSupport({
           {actions.map((action, index) => (
             <Button
               key={index}
+              data-testid={`${action.label.toLowerCase()}-modal-button`}
               className={`bg-ualert-500 text-notpurple-500 w-full sm:w-auto ${action.className || ""}`}
               onPress={action.onClick}
               isLoading={action.isLoading}
               isDisabled={action.isDisabled}
+              aria-label={action.label}
             >
               {action.label}
             </Button>

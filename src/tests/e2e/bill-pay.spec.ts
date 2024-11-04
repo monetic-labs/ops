@@ -1,4 +1,4 @@
-import { test, expect } from "../fixtures";
+import { test, expect, Page } from "@playwright/test";
 
 // TODO: we want to test form validation
 test("create existing transfer", async ({ page }) => {
@@ -10,17 +10,32 @@ test("create existing transfer", async ({ page }) => {
   // Wait for Create Bill Pay Modal to be visible
   await page.getByTestId("create-transfer-modal").waitFor({ state: "visible" });
 
-  // Click on Connect Wallet button
-  await page.getByTestId("connect-wallet-button").click();
+  // NOTE: We skip wallet connection as CI doesn't support it
 
-  // Wait for 15 seconds for the QR code to be visible
-  await page.waitForTimeout(15000);
+  // Check Account Holder is enabled
+  await expect(page.getByTestId("account-holder")).toBeEnabled();
 
-  // Click on Copy Link button by Label
-  await page.getByLabel("Copy Link").click();
+  // Check all other fields are disabled
+  await expect(page.getByTestId("bank-name")).toBeDisabled();
+  await expect(page.getByTestId("account-number")).toBeEnabled();
+  await expect(page.getByTestId("routing-number")).toBeDisabled();
+  await expect(page.getByTestId("payment-method")).toBeDisabled();
+  await expect(page.getByTestId("amount")).toBeDisabled();
 
-  // Wait for connect wallet button to not be visible
-  await expect(page.getByTestId("connect-wallet-button")).not.toBeVisible();
+  // Optional: Check memo field is not present initially
+  await expect(page.getByTestId("memo")).not.toBeVisible();
+
+  // Check for balance label and USDC separately
+  expect(page.getByText("Available balance:")).toBeVisible();
+  await expect(page.getByText("USDC", { exact: false })).toBeVisible();
+
+  // Expect create button to be disabled
+  expect(page.getByTestId("create-modal-button")).toBeDisabled();
+
+  // Click on Account Holder
+  await page.getByTestId("account-holder").click();
+
+  // Select 
 });
 
 // TODO: Create new transfer

@@ -31,19 +31,6 @@ async function mockLoginVerify(page: Page) {
       body: JSON.stringify(json),
     });
   });
-
-  await page.context().addCookies([
-    {
-      name: "pyv2_merchant_token",
-      value:
-        "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI4ZDhlZDM2YS1iMTExLTQzZWMtODQzMy04YjFlZDViYjk2NjgiLCJtZXJjaGFudElkIjoxLCJicmlkZ2VDdXN0b21lcklkIjoiZmRjZjg0MDktZWJiOC00NmU3LWI4MTYtNDVlZTA2NThmYzBiIiwic2Vzc2lvbklkIjoiOGM4YjhiOTQtNTlmZS00ZTQ4LWFjZDQtMjg3MThmMGJjZmJlIiwiaWF0IjoxNzMwNDc3MzE2LCJleHAiOjEwMDMxMDgyMTE2fQ.C_6rmLnTgsHAKs4JLc1GPy8Zlth0yE17QHZSnlZTkaA",
-      domain: "localhost",
-      path: "/",
-      httpOnly: true,
-      secure: false,
-      expires: Math.floor(Date.now() / 1000) + 86400 * 7, // 7 days from now
-    },
-  ]);
 }
 
 test("has text", async ({ page }) => {
@@ -82,6 +69,19 @@ test("login", async ({ page }) => {
   await page.getByTestId(`otp-input-3`).fill("4");
   await page.getByTestId(`otp-input-4`).fill("5");
   await page.getByTestId(`otp-input-5`).fill("6");
+
+  await page.context().addCookies([
+    {
+      name: "pyv2_merchant_token",
+      value:
+        "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI4ZDhlZDM2YS1iMTExLTQzZWMtODQzMy04YjFlZDViYjk2NjgiLCJtZXJjaGFudElkIjoxLCJicmlkZ2VDdXN0b21lcklkIjoiZmRjZjg0MDktZWJiOC00NmU3LWI4MTYtNDVlZTA2NThmYzBiIiwic2Vzc2lvbklkIjoiOGM4YjhiOTQtNTlmZS00ZTQ4LWFjZDQtMjg3MThmMGJjZmJlIiwiaWF0IjoxNzMwNDc3MzE2LCJleHAiOjEwMDMxMDgyMTE2fQ.C_6rmLnTgsHAKs4JLc1GPy8Zlth0yE17QHZSnlZTkaA",
+      domain: "localhost",
+      path: "/",
+      httpOnly: true,
+      secure: false,
+      expires: Math.floor(Date.now() / 1000) + 86400 * 7, // 7 days from now
+    },
+  ]);
 
   await expect(page.reload()).resolves.toBeTruthy();
 });

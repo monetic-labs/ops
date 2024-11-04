@@ -1,8 +1,8 @@
 import { useState, useEffect, useCallback } from "react";
 import { publicClient } from "@/config/web3";
-import { BASE_USDC } from "@/utils/constants";
+import { BASE_USDC, TESTING_SETTLEMENT_ADDRESS } from "@/utils/constants";
 import { Address, formatUnits } from "viem";
-import { formatDecimals } from "@/utils/helpers";
+import { formatDecimals, isTesting } from "@/utils/helpers";
 import { useAppKitAccount } from "@reown/appkit/react";
 import { useDebounce } from "use-debounce";
 
@@ -12,7 +12,7 @@ type UseBalanceProps = {
 };
 
 export const useBalance = ({ amount, isModalOpen }: UseBalanceProps) => {
-  const { address: account } = useAppKitAccount();
+  const { address: account } = isTesting ? { address: TESTING_SETTLEMENT_ADDRESS } : useAppKitAccount();
   const [balance, setBalance] = useState<string | undefined>(undefined);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
