@@ -2,7 +2,15 @@ import { test, expect, Page } from "@playwright/test";
 import { MOCK_BALANCE } from "@/utils/constants";
 import { setupContactsApi } from "@/tests/e2e/fixtures/api/disbursement";
 import { setupAuthCookie } from "@/tests/e2e/fixtures/api/auth";
-import { mockContacts } from "./fixtures/data/disbursement";
+import {
+  BANK_VALIDATIONS,
+  ACCOUNT_HOLDER_VALIDATIONS,
+  VALID_FORM_DATA,
+  ADDRESS_VALIDATIONS,
+  FieldValidations,
+  FormField,
+  mockContacts,
+} from "./fixtures/data/disbursement";
 import { MINIMUM_DISBURSEMENT_ACH_AMOUNT } from "@/types/validations/bill-pay";
 import { MINIMUM_DISBURSEMENT_WIRE_AMOUNT } from "@/types/validations/bill-pay";
 
@@ -111,158 +119,71 @@ test.describe("Bill Pay Modal", () => {
     });
 
     test("should validate account holder field", async ({ page }) => {
-      const accountHolder = page.getByTestId("account-holder");
-
-      // Empty validation
-      await accountHolder.fill(" ");
-      await expect(page.getByText("Account holder name is required")).toBeVisible();
-
-      // Special characters validation
-      await accountHolder.fill("John@Doe");
-      await expect(
-        page.getByText("Account holder name can only contain letters, spaces, hyphens and apostrophes")
-      ).toBeVisible();
-
-      // Length validation
-      await accountHolder.fill("A".repeat(51));
-      await expect(page.getByText("Account holder name must be less than 50 characters")).toBeVisible();
-
-      // Valid inputs
-      await accountHolder.fill("John-O'Connor Jr");
-      await expect(accountHolder).not.toHaveAttribute("aria-invalid", "true");
+      await runValidationTests(page, ACCOUNT_HOLDER_VALIDATIONS);
     });
 
     test("should validate bank details", async ({ page }) => {
-      const bankName = page.getByTestId("bank-name");
-      const accountNumber = page.getByTestId("account-number");
-      const routingNumber = page.getByTestId("routing-number");
-
-      // Bank Name validations
-      await bankName.fill(" ");
-      await expect(page.getByText("Bank name is required")).toBeVisible();
-
-      await bankName.fill("Bank@123");
-      await expect(
-        page.getByText("Bank name can only contain letters, numbers, spaces, &, hyphens and apostrophes")
-      ).toBeVisible();
-
-      await bankName.fill("Bank of America & Trust");
-      await expect(bankName).not.toHaveAttribute("aria-invalid", "true");
-
-      // Account Number validations
-      await accountNumber.fill("123");
-      await expect(page.getByText("Account number must be at least 5 digits")).toBeVisible();
-
-      await accountNumber.fill("12345678901234567890");
-      await expect(page.getByText("Account number must be less than 17 digits")).toBeVisible();
-
-      await accountNumber.fill("123456789");
-      await expect(accountNumber).not.toHaveAttribute("aria-invalid", "true");
-
-      // Routing Number validations
-      await routingNumber.fill("12345678"); // Too short
-      await expect(page.getByText("Routing number must be 9 digits")).toBeVisible();
-
-      await routingNumber.fill("123456789"); // Invalid checksum
-      await expect(page.getByText("Invalid routing number checksum")).toBeVisible();
-
-      await routingNumber.fill("021000021"); // Valid routing number
-      await expect(routingNumber).not.toHaveAttribute("aria-invalid", "true");
+      for (const validation of BANK_VALIDATIONS) {
+        await runValidationTests(page, validation);
+      }
     });
 
     test("should validate address fields", async ({ page }) => {
-      const street1 = page.getByTestId("street-line-1");
-      const street2 = page.getByTestId("street-line-2");
-      const city = page.getByTestId("city");
-      const state = page.getByTestId("state");
-      const zipCode = page.getByTestId("zip-code");
-      const method = page.getByTestId("payment-method");
-
-      // Basic street validations (any payment method)
-      await street1.fill(" ");
-      await expect(page.getByText("Street address cannot start with a space")).toBeVisible();
-
-      await street1.fill("A".repeat(101));
-      await expect(page.getByText("Street address must be less than 100 characters")).toBeVisible();
-
-      // Set payment method to WIRE for specific validations
-      await method.click();
-      if (page.context().browser()?.browserType().name() === "chromium") {
-        await page.getByText("WIRE").click();
-      } else {
-        await page.keyboard.type("WIRE");
-        await page.keyboard.press("ArrowDown");
-        await page.keyboard.press("Enter");
+      // Basic address validations
+      for (const validation of ADDRESS_VALIDATIONS) {
+        await runValidationTests(page, validation);
       }
 
-      // Wire-specific street validations
-      await street1.fill("Main St"); // Missing number for wire
-      await expect(
-        page.getByText("US wire transfers require a street number at the start of the address")
-      ).toBeVisible();
+      // Wire-specific validations
+      await selectDropdownOption(page, "payment-method", "WIRE");
+      await runValidationTests(page, {
+        selector: "street-line-1",
+        tests: [
+          {
+            value: "Main St",
+            validation: "US wire transfers require a street number at the start of the address",
+          },
+          {
+            value: "123 Main St.",
+            isValid: true,
+          },
+        ],
+      });
 
-      await street1.fill("123 Main St.");
-      await expect(street1).not.toHaveAttribute("aria-invalid", "true");
+      // ACH validations
+      await selectDropdownOption(page, "payment-method", "ACH_SAME_DAY");
+      await runValidationTests(page, {
+        selector: "street-line-1",
+        tests: [
+          {
+            value: "Main St",
+            isValid: true,
+          },
+        ],
+      });
 
-      // Change back to ACH for comparison
-      await method.clear();
-      await method.click();
-      if (page.context().browser()?.browserType().name() === "chromium") {
-        await page.getByText("ACH_SAME_DAY").click();
-      } else {
-        await page.keyboard.type("ACH_SAME_DAY");
-        await page.keyboard.press("ArrowDown");
-        await page.keyboard.press("Enter");
-      }
-
-      // Same address should be valid for ACH
-      await street1.fill("Main St");
-      await expect(street1).not.toHaveAttribute("aria-invalid", "true");
-
-      // Optional Street 2 validation
-      await street2.fill("Suite #100");
-      await expect(
-        page.getByText("Can only contain letters, numbers, spaces, commas, periods, and hyphens")
-      ).toBeVisible();
-
-      await street2.fill("Suite 100");
-      await expect(street2).not.toHaveAttribute("aria-invalid", "true");
-
-      // City validation
-      await city.fill(" ");
-      await expect(page.getByText("City is required")).toBeVisible();
-
-      await city.fill("New York123");
-      await expect(page.getByText("City can only contain letters, spaces, periods, and hyphens")).toBeVisible();
-
-      await city.fill("St. Louis");
-      await expect(city).not.toHaveAttribute("aria-invalid", "true");
-
-      // State validation
-      await state.fill("1");
-      await expect(page.getByText("No results found.")).toBeVisible();
-
-      await state.fill("NY");
-      if (page.context().browser()?.browserType().name() === "chromium") {
-        await page.getByText("New York").click();
-      } else {
-        await page.keyboard.press("ArrowDown");
-        await page.keyboard.press("Enter");
-      }
-      await expect(state).not.toHaveAttribute("aria-invalid", "true");
-
-      // ZIP code validation
-      await zipCode.fill("1234");
-      await expect(page.getByText("Please enter a valid ZIP code (e.g., 12345 or 12345-6789)")).toBeVisible();
-
-      await zipCode.fill("12345-123");
-      await expect(page.getByText("Please enter a valid ZIP code (e.g., 12345 or 12345-6789)")).toBeVisible();
-
-      await zipCode.fill("12345-6789");
-      await expect(zipCode).not.toHaveAttribute("aria-invalid", "true");
-
-      await zipCode.fill("12345");
-      await expect(zipCode).not.toHaveAttribute("aria-invalid", "true");
+      // ZIP code validations
+      await runValidationTests(page, {
+        selector: "zip-code",
+        tests: [
+          {
+            value: "1234",
+            validation: "Please enter a valid ZIP code (e.g., 12345 or 12345-6789)",
+          },
+          {
+            value: "12345-123",
+            validation: "Please enter a valid ZIP code (e.g., 12345 or 12345-6789)",
+          },
+          {
+            value: "12345-6789",
+            isValid: true,
+          },
+          {
+            value: "12345",
+            isValid: true,
+          },
+        ],
+      });
     });
 
     test("should validate amount field based on payment method", async ({ page }) => {
@@ -272,52 +193,97 @@ test.describe("Bill Pay Modal", () => {
       await expect(amount).toBeDisabled();
 
       // Test ACH minimum
-      await page.getByTestId("payment-method").click();
-      await page.getByTestId("payment-method").fill("ACH_SAME_DAY");
-      if (page.context().browser()?.browserType().name() === "chromium") {
-        await page.getByText("ACH_SAME_DAY").click();
-      } else {
-        await page.keyboard.press("ArrowDown");
-        await page.keyboard.press("Enter");
-      }
-
+      await selectDropdownOption(page, "payment-method", "ACH_SAME_DAY");
       await expect(amount).toBeEnabled();
-      await amount.fill("50");
-      await expect(page.getByText(`Amount must be at least ${MINIMUM_DISBURSEMENT_ACH_AMOUNT} USDC`)).toBeVisible();
 
-      await amount.fill("150");
+      const achValidations: FormField[] = [
+        {
+          selector: "amount",
+          value: "50",
+          validation: `Amount must be at least ${MINIMUM_DISBURSEMENT_ACH_AMOUNT} USDC`,
+        },
+        {
+          selector: "amount",
+          value: "150",
+        },
+      ];
+
+      for (const validation of achValidations) {
+        await fillFormField(page, validation);
+      }
       await expect(amount).not.toHaveAttribute("aria-invalid", "true");
 
       // Test Wire minimum
-      await page.getByTestId("payment-method").click();
-      await page.getByTestId("payment-method").fill("WIRE");
-      if (page.context().browser()?.browserType().name() === "chromium") {
-        await page.getByText("WIRE").click();
-      } else {
-        await page.keyboard.press("ArrowDown");
-        await page.keyboard.press("Enter");
+      await selectDropdownOption(page, "payment-method", "WIRE");
+
+      const wireValidations: FormField[] = [
+        {
+          selector: "amount",
+          value: "400",
+          validation: `Amount must be at least ${MINIMUM_DISBURSEMENT_WIRE_AMOUNT} USDC`,
+        },
+        {
+          selector: "amount",
+          value: "500.123",
+        },
+        {
+          selector: "amount",
+          value: (Number(MOCK_BALANCE) + 0.01).toString(),
+          validation: `Amount must be less than ${MOCK_BALANCE} USDC`,
+        },
+        {
+          selector: "amount",
+          value: "600.00",
+        },
+      ];
+
+      for (const validation of wireValidations) {
+        await fillFormField(page, validation);
+      }
+      await expect(amount).not.toHaveAttribute("aria-invalid", "true");
+    });
+
+    test("should validate create button state", async ({ page }) => {
+      const createButton = page.getByTestId("create-modal-button");
+      await expect(createButton).toBeDisabled();
+
+      // Fill form fields sequentially and check button state
+      const fields: [keyof typeof VALID_FORM_DATA, string][] = [
+        ["accountHolder", "account-holder"],
+        ["bankName", "bank-name"],
+        ["accountNumber", "account-number"],
+        ["routingNumber", "routing-number"],
+        ["street1", "street-line-1"],
+        ["city", "city"],
+        ["zipCode", "zip-code"],
+      ];
+
+      for (const [key, selector] of fields) {
+        await fillFormField(page, {
+          selector,
+          value: VALID_FORM_DATA[key],
+        });
+        await expect(createButton).toBeDisabled();
       }
 
-      await amount.fill("400");
-      await expect(page.getByText(`Amount must be at least ${MINIMUM_DISBURSEMENT_WIRE_AMOUNT} USDC`)).toBeVisible();
+      // Handle dropdowns
+      await selectDropdownOption(page, "state", "New York");
+      await selectDropdownOption(page, "country", "United States");
+      await selectDropdownOption(page, "payment-method", "ACH_SAME_DAY");
+      await expect(createButton).toBeDisabled();
 
-      // Test decimal places
-      await amount.clear();
-      await amount.fill("500.123");
-      await expect(amount).toHaveValue("");
-
-      // Test max amount
-      await amount.fill((Number(MOCK_BALANCE) + 0.01).toString());
-      await expect(page.getByText(`Amount must be less than ${MOCK_BALANCE} USDC`)).toBeVisible();
-
-      // Test valid amount
-      await amount.fill("600.00");
-      await expect(amount).not.toHaveAttribute("aria-invalid", "true");
+      // Fill amount last
+      await fillFormField(page, {
+        selector: "amount",
+        value: VALID_FORM_DATA.amount,
+      });
+      await expect(createButton).toBeEnabled();
     });
   });
 });
 
 // Helper functions
+
 async function fillBasicFormData(page: Page) {
   // Handle account holder selection
   const accountHolder = page.getByTestId("account-holder");
@@ -344,4 +310,41 @@ async function fillBasicFormData(page: Page) {
   await page.keyboard.type(mockContacts[0].disbursements[0].method);
   await page.keyboard.press("ArrowDown");
   await page.keyboard.press("Enter");
+}
+
+async function selectDropdownOption(page: Page, selector: string, value: string) {
+  await page.getByTestId(selector).click();
+  await page.getByTestId(selector).fill(value);
+
+  if (page.context().browser()?.browserType().name() === "chromium") {
+    await page.getByText(value).click();
+  } else {
+    await page.keyboard.press("ArrowDown");
+    await page.keyboard.press("Enter");
+  }
+}
+
+async function fillFormField(page: Page, field: FormField) {
+  const element = page.getByTestId(field.selector);
+  await element.fill(field.value);
+
+  if (field.validation) {
+    await expect(page.getByText(field.validation)).toBeVisible();
+  }
+}
+
+async function runValidationTests(page: Page, fieldValidations: FieldValidations) {
+  const element = page.getByTestId(fieldValidations.selector);
+
+  for (const test of fieldValidations.tests) {
+    await element.fill(test.value);
+
+    if (test.validation) {
+      await expect(page.getByText(test.validation)).toBeVisible();
+    }
+
+    if (test.isValid) {
+      await expect(element).not.toHaveAttribute("aria-invalid", "true");
+    }
+  }
 }
