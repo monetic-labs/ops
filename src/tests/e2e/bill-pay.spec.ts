@@ -3,6 +3,8 @@ import { MOCK_BALANCE } from "@/utils/constants";
 import { setupContactsApi } from "@/tests/e2e/fixtures/api/disbursement";
 import { setupAuthCookie } from "@/tests/e2e/fixtures/api/auth";
 import { mockContacts } from "./fixtures/data/disbursement";
+import { MINIMUM_DISBURSEMENT_ACH_AMOUNT } from "@/types/validations/bill-pay";
+import { MINIMUM_DISBURSEMENT_WIRE_AMOUNT } from "@/types/validations/bill-pay";
 
 test.describe("Bill Pay Modal", () => {
   test.beforeEach(async ({ page }) => {
@@ -53,17 +55,43 @@ test.describe("Bill Pay Modal", () => {
       test("should validate amount field", async ({ page }) => {
         await fillBasicFormData(page);
 
-        // Test amount exceeding balance
-        await page.getByTestId("amount").fill("100.01");
-        await expect(page.getByText(`Amount must be less than ${MOCK_BALANCE} USDC`)).toBeVisible();
+        const amount = page.getByTestId("amount");
 
-        // Test amount below minimum
-        await page.getByTestId("amount").fill("0.99");
-        await expect(page.getByText(`Amount must be at least 1 USDC`)).toBeVisible();
+        // Test ACH amount validations
+        await page.getByTestId("payment-method").click();
+        await page.keyboard.type("ACH");
+        await page.keyboard.press("ArrowDown");
+        await page.keyboard.press("Enter");
 
-        // Test valid amount
-        await page.getByTestId("amount").fill("1");
+        await amount.fill("50");
+        await expect(page.getByText(`Amount must be at least ${MINIMUM_DISBURSEMENT_ACH_AMOUNT} USDC`)).toBeVisible();
+
+        await amount.fill("150");
         await expect(page.getByTestId("create-modal-button")).toBeEnabled();
+
+        await page.getByTestId("amount").clear();
+        await page.getByTestId("payment-method").clear();
+
+        // Test WIRE amount validations
+        await page.getByTestId("payment-method").click();
+        await page.getByTestId("payment-method").fill("WIRE");
+        if (page.context().browser()?.browserType().name() === "chromium") {
+          await page.getByText("WIRE").click();
+        } else {
+          await page.keyboard.press("ArrowDown");
+          await page.keyboard.press("Enter");
+        }
+
+        await amount.fill("400");
+        await expect(page.getByText(`Amount must be at least ${MINIMUM_DISBURSEMENT_WIRE_AMOUNT} USDC`)).toBeVisible();
+
+        await amount.fill("600");
+        await expect(page.getByTestId("create-modal-button")).toBeEnabled();
+
+        // Test amount exceeding balance
+        await amount.fill((Number(MOCK_BALANCE) + 0.01).toString());
+        await expect(page.getByText(`Amount must be less than ${MOCK_BALANCE} USDC`)).toBeVisible();
+        await expect(page.getByTestId("create-modal-button")).toBeDisabled();
       });
 
       test("should show correct fee and total", async ({ page }) => {
@@ -79,12 +107,213 @@ test.describe("Bill Pay Modal", () => {
 
   test.describe("New Transfer", () => {
     test.beforeEach(async ({ page }) => {
-      // Switch to new transfer mode
       await page.getByTestId("new-sender-toggle").click();
     });
 
-    // Add similar validation tests for new transfer form
-    // ...
+    test("should validate account holder field", async ({ page }) => {
+      const accountHolder = page.getByTestId("account-holder");
+
+      // Empty validation
+      await accountHolder.fill(" ");
+      await expect(page.getByText("Account holder name is required")).toBeVisible();
+
+      // Special characters validation
+      await accountHolder.fill("John@Doe");
+      await expect(
+        page.getByText("Account holder name can only contain letters, spaces, hyphens and apostrophes")
+      ).toBeVisible();
+
+      // Length validation
+      await accountHolder.fill("A".repeat(51));
+      await expect(page.getByText("Account holder name must be less than 50 characters")).toBeVisible();
+
+      // Valid inputs
+      await accountHolder.fill("John-O'Connor Jr");
+      await expect(accountHolder).not.toHaveAttribute("aria-invalid", "true");
+    });
+
+    test("should validate bank details", async ({ page }) => {
+      const bankName = page.getByTestId("bank-name");
+      const accountNumber = page.getByTestId("account-number");
+      const routingNumber = page.getByTestId("routing-number");
+
+      // Bank Name validations
+      await bankName.fill(" ");
+      await expect(page.getByText("Bank name is required")).toBeVisible();
+
+      await bankName.fill("Bank@123");
+      await expect(
+        page.getByText("Bank name can only contain letters, numbers, spaces, &, hyphens and apostrophes")
+      ).toBeVisible();
+
+      await bankName.fill("Bank of America & Trust");
+      await expect(bankName).not.toHaveAttribute("aria-invalid", "true");
+
+      // Account Number validations
+      await accountNumber.fill("123");
+      await expect(page.getByText("Account number must be at least 5 digits")).toBeVisible();
+
+      await accountNumber.fill("12345678901234567890");
+      await expect(page.getByText("Account number must be less than 17 digits")).toBeVisible();
+
+      await accountNumber.fill("123456789");
+      await expect(accountNumber).not.toHaveAttribute("aria-invalid", "true");
+
+      // Routing Number validations
+      await routingNumber.fill("12345678"); // Too short
+      await expect(page.getByText("Routing number must be 9 digits")).toBeVisible();
+
+      await routingNumber.fill("123456789"); // Invalid checksum
+      await expect(page.getByText("Invalid routing number checksum")).toBeVisible();
+
+      await routingNumber.fill("021000021"); // Valid routing number
+      await expect(routingNumber).not.toHaveAttribute("aria-invalid", "true");
+    });
+
+    test("should validate address fields", async ({ page }) => {
+      const street1 = page.getByTestId("street-line-1");
+      const street2 = page.getByTestId("street-line-2");
+      const city = page.getByTestId("city");
+      const state = page.getByTestId("state");
+      const zipCode = page.getByTestId("zip-code");
+      const method = page.getByTestId("payment-method");
+
+      // Basic street validations (any payment method)
+      await street1.fill(" ");
+      await expect(page.getByText("Street address cannot start with a space")).toBeVisible();
+
+      await street1.fill("A".repeat(101));
+      await expect(page.getByText("Street address must be less than 100 characters")).toBeVisible();
+
+      // Set payment method to WIRE for specific validations
+      await method.click();
+      if (page.context().browser()?.browserType().name() === "chromium") {
+        await page.getByText("WIRE").click();
+      } else {
+        await page.keyboard.type("WIRE");
+        await page.keyboard.press("ArrowDown");
+        await page.keyboard.press("Enter");
+      }
+
+      // Wire-specific street validations
+      await street1.fill("Main St"); // Missing number for wire
+      await expect(
+        page.getByText("US wire transfers require a street number at the start of the address")
+      ).toBeVisible();
+
+      await street1.fill("123 Main St.");
+      await expect(street1).not.toHaveAttribute("aria-invalid", "true");
+
+      // Change back to ACH for comparison
+      await method.clear();
+      await method.click();
+      if (page.context().browser()?.browserType().name() === "chromium") {
+        await page.getByText("ACH_SAME_DAY").click();
+      } else {
+        await page.keyboard.type("ACH_SAME_DAY");
+        await page.keyboard.press("ArrowDown");
+        await page.keyboard.press("Enter");
+      }
+
+      // Same address should be valid for ACH
+      await street1.fill("Main St");
+      await expect(street1).not.toHaveAttribute("aria-invalid", "true");
+
+      // Optional Street 2 validation
+      await street2.fill("Suite #100");
+      await expect(
+        page.getByText("Can only contain letters, numbers, spaces, commas, periods, and hyphens")
+      ).toBeVisible();
+
+      await street2.fill("Suite 100");
+      await expect(street2).not.toHaveAttribute("aria-invalid", "true");
+
+      // City validation
+      await city.fill(" ");
+      await expect(page.getByText("City is required")).toBeVisible();
+
+      await city.fill("New York123");
+      await expect(page.getByText("City can only contain letters, spaces, periods, and hyphens")).toBeVisible();
+
+      await city.fill("St. Louis");
+      await expect(city).not.toHaveAttribute("aria-invalid", "true");
+
+      // State validation
+      await state.fill("1");
+      await expect(page.getByText("No results found.")).toBeVisible();
+
+      await state.fill("NY");
+      if (page.context().browser()?.browserType().name() === "chromium") {
+        await page.getByText("New York").click();
+      } else {
+        await page.keyboard.press("ArrowDown");
+        await page.keyboard.press("Enter");
+      }
+      await expect(state).not.toHaveAttribute("aria-invalid", "true");
+
+      // ZIP code validation
+      await zipCode.fill("1234");
+      await expect(page.getByText("Please enter a valid ZIP code (e.g., 12345 or 12345-6789)")).toBeVisible();
+
+      await zipCode.fill("12345-123");
+      await expect(page.getByText("Please enter a valid ZIP code (e.g., 12345 or 12345-6789)")).toBeVisible();
+
+      await zipCode.fill("12345-6789");
+      await expect(zipCode).not.toHaveAttribute("aria-invalid", "true");
+
+      await zipCode.fill("12345");
+      await expect(zipCode).not.toHaveAttribute("aria-invalid", "true");
+    });
+
+    test("should validate amount field based on payment method", async ({ page }) => {
+      const amount = page.getByTestId("amount");
+
+      // Initially disabled
+      await expect(amount).toBeDisabled();
+
+      // Test ACH minimum
+      await page.getByTestId("payment-method").click();
+      await page.getByTestId("payment-method").fill("ACH_SAME_DAY");
+      if (page.context().browser()?.browserType().name() === "chromium") {
+        await page.getByText("ACH_SAME_DAY").click();
+      } else {
+        await page.keyboard.press("ArrowDown");
+        await page.keyboard.press("Enter");
+      }
+
+      await expect(amount).toBeEnabled();
+      await amount.fill("50");
+      await expect(page.getByText(`Amount must be at least ${MINIMUM_DISBURSEMENT_ACH_AMOUNT} USDC`)).toBeVisible();
+
+      await amount.fill("150");
+      await expect(amount).not.toHaveAttribute("aria-invalid", "true");
+
+      // Test Wire minimum
+      await page.getByTestId("payment-method").click();
+      await page.getByTestId("payment-method").fill("WIRE");
+      if (page.context().browser()?.browserType().name() === "chromium") {
+        await page.getByText("WIRE").click();
+      } else {
+        await page.keyboard.press("ArrowDown");
+        await page.keyboard.press("Enter");
+      }
+
+      await amount.fill("400");
+      await expect(page.getByText(`Amount must be at least ${MINIMUM_DISBURSEMENT_WIRE_AMOUNT} USDC`)).toBeVisible();
+
+      // Test decimal places
+      await amount.clear();
+      await amount.fill("500.123");
+      await expect(amount).toHaveValue("");
+
+      // Test max amount
+      await amount.fill((Number(MOCK_BALANCE) + 0.01).toString());
+      await expect(page.getByText(`Amount must be less than ${MOCK_BALANCE} USDC`)).toBeVisible();
+
+      // Test valid amount
+      await amount.fill("600.00");
+      await expect(amount).not.toHaveAttribute("aria-invalid", "true");
+    });
   });
 });
 

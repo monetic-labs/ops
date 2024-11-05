@@ -40,6 +40,7 @@ export default function ModalFooterWithSupport({
               <span className="items-center font-mono">New Sender?</span>
               <Switch
                 defaultSelected
+                data-testid="new-sender-toggle"
                 color="secondary"
                 aria-label="New Customer"
                 isSelected={isNewSender}

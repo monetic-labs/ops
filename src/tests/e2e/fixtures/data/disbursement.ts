@@ -13,6 +13,11 @@ export const mockContacts = [
         method: DisbursementMethod.ACH_SAME_DAY,
         paymentMessage: "INV1234",
       },
+      {
+        id: "disb_2",
+        method: DisbursementMethod.WIRE,
+        paymentMessage: "Payment for Invoice 1234",
+      },
     ],
   },
   // Add more mock contacts as needed

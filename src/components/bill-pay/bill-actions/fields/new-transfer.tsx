@@ -51,6 +51,7 @@ function getValidationResults(billPay: NewBillPay, settlementBalance?: string) {
       value: billPay.amount,
       currency: billPay.currency,
       balance: settlementBalance,
+      method: billPay.vendorMethod,
     }),
     // Add address validations
     streetLine1: getValidationProps({
@@ -94,6 +95,7 @@ export default function NewTransferFields({ billPay, setBillPay, settlementBalan
   return (
     <>
       <Input
+        data-testid="account-holder"
         label={FieldLabel.ACCOUNT_HOLDER}
         placeholder="e.g. John Felix Anthony Cena"
         isRequired
@@ -103,6 +105,7 @@ export default function NewTransferFields({ billPay, setBillPay, settlementBalan
       />
       <div className="flex space-x-4">
         <Autocomplete
+          data-testid="payment-method"
           isRequired
           isClearable={false}
           label={FieldLabel.PAYMENT_METHOD}
@@ -120,6 +123,7 @@ export default function NewTransferFields({ billPay, setBillPay, settlementBalan
         </Autocomplete>
       </div>
       <Input
+        data-testid="bank-name"
         label={FieldLabel.BANK_NAME}
         placeholder="e.g. Bank of America"
         isRequired
@@ -129,6 +133,7 @@ export default function NewTransferFields({ billPay, setBillPay, settlementBalan
       />
       <div className="flex space-x-4">
         <Input
+          data-testid="routing-number"
           label={FieldLabel.ROUTING_NUMBER}
           placeholder="e.g. 123000848"
           type="number"
@@ -139,6 +144,7 @@ export default function NewTransferFields({ billPay, setBillPay, settlementBalan
           {...validationResults.routingNumber}
         />
         <Input
+          data-testid="account-number"
           label={FieldLabel.ACCOUNT_NUMBER}
           placeholder="e.g. 10987654321"
           type="number"
@@ -150,6 +156,7 @@ export default function NewTransferFields({ billPay, setBillPay, settlementBalan
         />
       </div>
       <Input
+        data-testid="street-line-1"
         label={FieldLabel.STREET_LINE_1}
         isRequired
         placeholder="1234 Main St"
@@ -163,6 +170,7 @@ export default function NewTransferFields({ billPay, setBillPay, settlementBalan
         {...validationResults.streetLine1}
       />
       <Input
+        data-testid="street-line-2"
         label={FieldLabel.STREET_LINE_2}
         placeholder="Apt 4B"
         value={billPay.address.street2}
@@ -176,6 +184,7 @@ export default function NewTransferFields({ billPay, setBillPay, settlementBalan
       />
       <div className="flex space-x-4">
         <Input
+          data-testid="city"
           label={FieldLabel.CITY}
           isRequired
           placeholder="New York"
@@ -189,6 +198,7 @@ export default function NewTransferFields({ billPay, setBillPay, settlementBalan
           {...validationResults.city}
         />
         <Autocomplete
+          data-testid="state"
           label={FieldLabel.STATE}
           isRequired
           isClearable={false}
@@ -219,6 +229,7 @@ export default function NewTransferFields({ billPay, setBillPay, settlementBalan
           )}
         </Autocomplete>
         <Input
+          data-testid="zip-code"
           label={FieldLabel.ZIP}
           isRequired
           placeholder="10001"
@@ -232,7 +243,7 @@ export default function NewTransferFields({ billPay, setBillPay, settlementBalan
           {...validationResults.zipCode}
         />
       </div>
-      <Autocomplete isClearable={false} isRequired label={FieldLabel.COUNTRY} className="flex-1">
+      <Autocomplete data-testid="country" isClearable={false} isRequired label={FieldLabel.COUNTRY} className="flex-1">
         {countries.map((country) => (
           <AutocompleteItem
             key={country.key}
@@ -244,6 +255,7 @@ export default function NewTransferFields({ billPay, setBillPay, settlementBalan
         ))}
       </Autocomplete>
       <Input
+        data-testid="memo"
         label={`${billPay.vendorMethod === DisbursementMethod.WIRE ? "Wire Message" : "ACH Reference"}`}
         placeholder="e.g. Payment for invoice #123456"
         description={`${
@@ -260,10 +272,12 @@ export default function NewTransferFields({ billPay, setBillPay, settlementBalan
         onChange={(e) => setBillPay({ ...billPay, memo: e.target.value || undefined })}
       />
       <Input
+        data-testid="amount"
         label={FieldLabel.AMOUNT}
         type="number"
         inputMode="decimal"
         isRequired
+        isDisabled={!billPay.vendorMethod}
         value={billPay.amount}
         onChange={(e) => {
           const value = e.target.value;

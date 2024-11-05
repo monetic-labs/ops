@@ -48,6 +48,7 @@ function getValidationResults(billPay: ExistingBillPay, settlementBalance?: stri
       value: billPay.amount,
       currency: billPay.currency,
       balance: settlementBalance,
+      method: billPay.vendorMethod,
     }),
   };
 }
@@ -245,7 +246,7 @@ export default function ExistingTransferFields({
         data-testid="amount"
         type="number"
         isRequired
-        isDisabled={!billPay.vendorName && !billPay.vendorMethod}
+        isDisabled={!billPay.vendorName || !billPay.vendorMethod}
         {...validationResults.amount}
         value={billPay.amount}
         onChange={(e) => {
