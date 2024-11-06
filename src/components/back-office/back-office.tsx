@@ -7,7 +7,11 @@ import Payments from "./payments-tab";
 import CreateOrders from "./orders-tab";
 import WidgetManagement from "./widget-tab";
 
-export default function BackOfficeTabs() {
+type BackOfficeTabsProps = {
+  handleSubTabChange: (key: string) => void;
+};
+
+export default function BackOfficeTabs({ handleSubTabChange }: BackOfficeTabsProps) {
   const [selectedService, setSelectedService] = useState<string>(backOfficeConfig[0].id);
 
   const renderTabContent = (tabId: string) => {

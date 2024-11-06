@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Tabs, Tab } from "@nextui-org/tabs";
 import Contacts from "./contacts-tab";
 import Transfers from "./transfers-tab";
@@ -12,7 +12,11 @@ import { Address } from "viem";
 import { isTesting } from "@/utils/helpers";
 import { MOCK_SETTLEMENT_ADDRESS } from "@/utils/constants";
 
-export default function BillPayTabs() {
+type BillPayTabsProps = {
+  handleSubTabChange: (key: string) => void;
+};
+
+export default function BillPayTabs({ handleSubTabChange }: BillPayTabsProps) {
   const [billPay, setBillPay] = useState<NewBillPay | ExistingBillPay>(DEFAULT_NEW_BILL_PAY);
   const [selectedService, setSelectedService] = useState<string>(billPayConfig[0].id);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
