@@ -101,12 +101,8 @@ export default function CreateOrders() {
         },
       });
 
-      // Extract order ID from the order link
-      const orderId = response.orderLink.substring(response.orderLink.lastIndexOf("/") + 1);
-
-      // TODO: append newOrder to currentOrders
       const newOrder: GetOrderLinksOutput = {
-        id: orderId,
+        id: response.orderLink,
         customer: {
           email: order.email,
           phone: order.phone,
@@ -139,7 +135,7 @@ export default function CreateOrders() {
     const orderId = orderLink.substring(orderLink.lastIndexOf("/") + 1);
     try {
       await pylon.deleteOrderLink(orderId);
-      setCurrentOrders(currentOrders.filter((order) => order.id !== orderId));
+      setCurrentOrders(currentOrders.filter((order) => order.id !== orderLink));
     } catch (err) {
       console.error("Failed to delete order:", err);
     }
