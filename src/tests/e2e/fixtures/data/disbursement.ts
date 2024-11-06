@@ -1,5 +1,3 @@
-import { DisbursementMethod } from "@backpack-fux/pylon-sdk";
-
 export type FormField = {
   selector: string;
   value: string;
@@ -27,18 +25,21 @@ export const mockContacts = [
     disbursements: [
       {
         id: "disb_1",
-        method: DisbursementMethod.ACH_SAME_DAY,
+        method: "ACH_SAME_DAY",
         paymentMessage: "INV1234",
       },
       {
         id: "disb_2",
-        method: DisbursementMethod.WIRE,
+        method: "WIRE",
         paymentMessage: "Payment for Invoice 1234",
       },
     ],
   },
   // Add more mock contacts as needed
 ];
+
+export const MINIMUM_DISBURSEMENT_WIRE_AMOUNT = 500;
+export const MINIMUM_DISBURSEMENT_ACH_AMOUNT = 100;
 
 export const VALID_FORM_DATA = {
   accountHolder: "John Doe",

@@ -11,8 +11,7 @@ import {
   FormField,
   mockContacts,
 } from "./fixtures/data/disbursement";
-import { MINIMUM_DISBURSEMENT_ACH_AMOUNT } from "@/types/validations/bill-pay";
-import { MINIMUM_DISBURSEMENT_WIRE_AMOUNT } from "@/types/validations/bill-pay";
+import { MINIMUM_DISBURSEMENT_ACH_AMOUNT, MINIMUM_DISBURSEMENT_WIRE_AMOUNT } from "./fixtures/data/disbursement";
 
 test.describe("Bill Pay Modal", () => {
   test.beforeEach(async ({ page }) => {
@@ -128,14 +127,14 @@ test.describe("Bill Pay Modal", () => {
       }
     });
 
-    test("should validate address fields", async ({ page }) => {
+    test("should validate address fields", async ({ page, browserName }) => {
       // Basic address validations
       for (const validation of ADDRESS_VALIDATIONS) {
         await runValidationTests(page, validation);
       }
 
       // Wire-specific validations
-      await selectDropdownOption(page, "payment-method", "WIRE");
+      await selectDropdownOption(page, "payment-method", "WIRE", browserName);
       await runValidationTests(page, {
         selector: "street-line-1",
         tests: [
@@ -151,7 +150,7 @@ test.describe("Bill Pay Modal", () => {
       });
 
       // ACH validations
-      await selectDropdownOption(page, "payment-method", "ACH_SAME_DAY");
+      await selectDropdownOption(page, "payment-method", "ACH_SAME_DAY", browserName);
       await runValidationTests(page, {
         selector: "street-line-1",
         tests: [
@@ -186,14 +185,14 @@ test.describe("Bill Pay Modal", () => {
       });
     });
 
-    test("should validate amount field based on payment method", async ({ page }) => {
+    test("should validate amount field based on payment method", async ({ page, browserName }) => {
       const amount = page.getByTestId("amount");
 
       // Initially disabled
       await expect(amount).toBeDisabled();
 
       // Test ACH minimum
-      await selectDropdownOption(page, "payment-method", "ACH_SAME_DAY");
+      await selectDropdownOption(page, "payment-method", "ACH_SAME_DAY", browserName);
       await expect(amount).toBeEnabled();
 
       const achValidations: FormField[] = [
@@ -214,7 +213,7 @@ test.describe("Bill Pay Modal", () => {
       await expect(amount).not.toHaveAttribute("aria-invalid", "true");
 
       // Test Wire minimum
-      await selectDropdownOption(page, "payment-method", "WIRE");
+      await selectDropdownOption(page, "payment-method", "WIRE", browserName);
 
       const wireValidations: FormField[] = [
         {
@@ -243,7 +242,7 @@ test.describe("Bill Pay Modal", () => {
       await expect(amount).not.toHaveAttribute("aria-invalid", "true");
     });
 
-    test("should validate create button state", async ({ page }) => {
+    test("should validate create button state", async ({ page, browserName }) => {
       const createButton = page.getByTestId("create-modal-button");
       await expect(createButton).toBeDisabled();
 
@@ -267,9 +266,9 @@ test.describe("Bill Pay Modal", () => {
       }
 
       // Handle dropdowns
-      await selectDropdownOption(page, "state", "New York");
-      await selectDropdownOption(page, "country", "United States");
-      await selectDropdownOption(page, "payment-method", "ACH_SAME_DAY");
+      await selectDropdownOption(page, "state", "New York", browserName);
+      await selectDropdownOption(page, "country", "United States", browserName);
+      await selectDropdownOption(page, "payment-method", "ACH_SAME_DAY", browserName);
       await expect(createButton).toBeDisabled();
 
       // Fill amount last
@@ -312,11 +311,11 @@ async function fillBasicFormData(page: Page) {
   await page.keyboard.press("Enter");
 }
 
-async function selectDropdownOption(page: Page, selector: string, value: string) {
+async function selectDropdownOption(page: Page, selector: string, value: string, browserName?: string) {
   await page.getByTestId(selector).click();
   await page.getByTestId(selector).fill(value);
 
-  if (page.context().browser()?.browserType().name() === "chromium") {
+  if (browserName === "chromium") {
     await page.getByText(value).click();
   } else {
     await page.keyboard.press("ArrowDown");
