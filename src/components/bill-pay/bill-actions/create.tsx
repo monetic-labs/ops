@@ -218,12 +218,12 @@ export default function CreateBillPayModal({
               >
                 <Info className="text-gray-500 cursor-pointer" size={14} />
               </Tooltip>
-              <span>{fee.toFixed(2) === "0.00" ? "Free" : `${fee * 100}%`}</span>
+              <span data-testid="fee">{fee.toFixed(2) === "0.00" ? "Free" : `${fee * 100}%`}</span>
             </div>
           </div>
           <div className="flex justify-between text-lg font-bold">
             <span>Total:</span>
-            <span>${total.toFixed(2)}</span>
+            <span data-testid="total">${total.toFixed(2)}</span>
           </div>
         </div>
       </ModalBody>
@@ -231,7 +231,7 @@ export default function CreateBillPayModal({
   };
 
   return (
-    <Modal isOpen={isOpen} size="2xl" onClose={onClose}>
+    <Modal data-testid="create-transfer-modal" isOpen={isOpen} size="2xl" onClose={onClose}>
       <ModalContent className="relative">
         {transferStatus !== TransferStatus.IDLE && (
           <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-70 z-50">
@@ -253,6 +253,7 @@ export default function CreateBillPayModal({
         {!isWalletConnected && (
           <div className="absolute inset-0 flex items-center justify-center z-20">
             <Button
+              data-testid="connect-wallet-button"
               color="primary"
               onPress={async () => {
                 await modal.open();

@@ -4,8 +4,9 @@ import { ISO3166Alpha2Country } from "@backpack-fux/pylon-sdk";
 import { PostcodeLookupResult } from "@/hooks/generics/usePostcodeLookup";
 
 export const isLocal = process.env.NEXT_PUBLIC_NODE_ENV === "development";
-export const isProduction = process.env.NEXT_PUBLIC_NODE_ENV === "production";
+export const isTesting = process.env.NEXT_PUBLIC_NODE_ENV === "ci";
 export const isStaging = process.env.NEXT_PUBLIC_NODE_ENV === "staging";
+export const isProduction = process.env.NEXT_PUBLIC_NODE_ENV === "production";
 
 export function generateUserInviteUrl(onboardId: string, email: string): string {
   return `/onboard/${onboardId}?email=${encodeURIComponent(email)}`;
@@ -133,4 +134,3 @@ export const formatDecimals = (value: string): string => {
   const truncatedDecimal = decimal.slice(0, 2).padEnd(2, "0");
   return `${whole}.${truncatedDecimal}`;
 };
-

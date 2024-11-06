@@ -5,16 +5,21 @@ import Transfers from "./transfers-tab";
 import { billPayConfig, BillPayId } from "@/config/tabs";
 import { Button } from "@nextui-org/button";
 import CreateBillPayModal from "./bill-actions/create";
-import { modal, useAppKitAccount } from "@reown/appkit/react";
+import { useAppKitAccount } from "@reown/appkit/react";
 import { DEFAULT_NEW_BILL_PAY } from "@/types/bill-pay";
 import { NewBillPay, ExistingBillPay } from "@/types/bill-pay";
 import { Address } from "viem";
+import { isTesting } from "@/utils/helpers";
+import { MOCK_SETTLEMENT_ADDRESS } from "@/utils/constants";
 
 export default function BillPayTabs() {
   const [billPay, setBillPay] = useState<NewBillPay | ExistingBillPay>(DEFAULT_NEW_BILL_PAY);
   const [selectedService, setSelectedService] = useState<string>(billPayConfig[0].id);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
-  const { isConnected, address: settlementAddress } = useAppKitAccount();
+
+  const appKitAccount = useAppKitAccount();
+  const isConnected = isTesting ? true : appKitAccount.isConnected;
+  const settlementAddress = isTesting ? MOCK_SETTLEMENT_ADDRESS : appKitAccount.address;
 
   const renderTabContent = (tabId: string) => {
     switch (tabId) {
@@ -45,7 +50,7 @@ export default function BillPayTabs() {
             <Tab key={tab.id} title={tab.label} />
           ))}
         </Tabs>
-        <Button color="default" onPress={() => setIsCreateModalOpen(true)}>
+        <Button data-testid="create-transfer-button" color="default" onPress={() => setIsCreateModalOpen(true)}>
           Create Transfer
         </Button>
       </div>

@@ -13,3 +13,6 @@ export const BASE_USDC = {
   SYMBOL: "USDC",
   ABI: erc20Abi,
 };
+
+export const MOCK_SETTLEMENT_ADDRESS = "0x595ec62736Bf19445d7F00D66072B3a3c7aeA0F5";
+export const MOCK_BALANCE = "750";

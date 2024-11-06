@@ -37,11 +37,18 @@ function getValidationResults(billPay: ExistingBillPay, settlementBalance?: stri
       value: billPay.vendorMethod || "",
       currency: billPay.currency,
     }),
+    memo: getValidationProps({
+      label: FieldLabel.MEMO,
+      value: billPay.memo,
+      currency: billPay.currency,
+      method: billPay.vendorMethod,
+    }),
     amount: getValidationProps({
       label: FieldLabel.AMOUNT,
       value: billPay.amount,
       currency: billPay.currency,
       balance: settlementBalance,
+      method: billPay.vendorMethod,
     }),
   };
 }
@@ -71,6 +78,7 @@ export default function ExistingTransferFields({
       fetchContacts({ search });
     }
   }, [isOpen, search]);
+
   const handleSelectionChange = (contactId: string) => {
     const selectedContact = contacts.find((contact) => contact.id === contactId);
     if (selectedContact) {
@@ -108,6 +116,7 @@ export default function ExistingTransferFields({
   return (
     <>
       <Autocomplete
+        data-testid="account-holder"
         label={FieldLabel.ACCOUNT_HOLDER}
         placeholder="Select an account holder"
         isRequired
@@ -144,6 +153,7 @@ export default function ExistingTransferFields({
       >
         {(contact) => (
           <AutocompleteItem
+            data-testid={`account-holder-item-${contact.id}`}
             key={contact.id}
             textValue={contact.accountOwnerName}
             value={contact.accountOwnerName}
@@ -154,6 +164,7 @@ export default function ExistingTransferFields({
         )}
       </Autocomplete>
       <Input
+        data-testid="bank-name"
         label={FieldLabel.BANK_NAME}
         isDisabled={!billPay.vendorBankName}
         {...validationResults.bankName}
@@ -161,6 +172,7 @@ export default function ExistingTransferFields({
       />
       <div className="flex space-x-4">
         <Input
+          data-testid="account-number"
           label={FieldLabel.ACCOUNT_NUMBER}
           isReadOnly
           isDisabled={!billPay.accountNumber}
@@ -192,6 +204,7 @@ export default function ExistingTransferFields({
           className="w-3/5 md:w-1/2"
         />
         <Input
+          data-testid="routing-number"
           label={FieldLabel.ROUTING_NUMBER}
           isDisabled={!billPay.routingNumber}
           value={`${billPay.routingNumber}`}
@@ -199,6 +212,7 @@ export default function ExistingTransferFields({
         />
       </div>
       <Autocomplete
+        data-testid="payment-method"
         label={FieldLabel.PAYMENT_METHOD}
         isRequired
         isDisabled={!billPay.vendorName}
@@ -207,26 +221,32 @@ export default function ExistingTransferFields({
         onSelectionChange={(value) => handleMethodChange(value as DisbursementMethod)}
       >
         {availableMethods.map((method) => (
-          <AutocompleteItem key={method} textValue={method}>
+          <AutocompleteItem data-testid={`payment-method-item-${method}`} key={method} textValue={method}>
             {method}
           </AutocompleteItem>
         ))}
       </Autocomplete>
-      {billPay.vendorMethod &&
-        [DisbursementMethod.WIRE, DisbursementMethod.ACH_SAME_DAY].includes(billPay.vendorMethod) && (
-          <Input
-            isDisabled={billPay.vendorMethod === DisbursementMethod.WIRE}
-            label={`${billPay.vendorMethod === DisbursementMethod.WIRE ? "Wire Message" : "ACH Reference"}`}
-            description={`${billPay.vendorMethod === DisbursementMethod.WIRE ? "This cannot be changed." : ""}`}
-            value={billPay.memo}
-            onChange={(e) => setBillPay({ ...billPay, memo: e.target.value || undefined })}
-          />
-        )}
+      {billPay.vendorMethod && (
+        <Input
+          data-testid="memo"
+          isDisabled={billPay.vendorMethod === DisbursementMethod.WIRE}
+          label={
+            <span data-testid="memo-label">
+              {billPay.vendorMethod === DisbursementMethod.WIRE ? "Wire Message" : "ACH Reference"}
+            </span>
+          }
+          description={`${billPay.vendorMethod === DisbursementMethod.WIRE ? "This cannot be changed." : ""}`}
+          value={billPay.memo}
+          onChange={(e) => setBillPay({ ...billPay, memo: e.target.value || undefined })}
+          {...validationResults.memo}
+        />
+      )}
       <Input
         label={FieldLabel.AMOUNT}
+        data-testid="amount"
         type="number"
         isRequired
-        isDisabled={!billPay.vendorName && !billPay.vendorMethod}
+        isDisabled={!billPay.vendorName || !billPay.vendorMethod}
         {...validationResults.amount}
         value={billPay.amount}
         onChange={(e) => {

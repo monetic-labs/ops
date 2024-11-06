@@ -4,6 +4,8 @@
   "private": true,
   "scripts": {
     "test": "VITE_CJS_IGNORE_WARNING=true vitest",
+    "test:e2e": "dotenv -e .env.test -- playwright test",
+    "test:e2e:ui": "dotenv -e .env.test -- playwright test --ui",
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
@@ -13,7 +15,7 @@
     "map:postcode": "node scripts/preprocess-postcodes.js"
   },
   "dependencies": {
-    "@backpack-fux/pylon-sdk": "^0.2.961",
+    "@backpack-fux/pylon-sdk": "0.2.962",
     "@hookform/resolvers": "^3.9.0",
     "@nextui-org/accordion": "^2.0.40",
     "@nextui-org/autocomplete": "^2.1.7",
@@ -72,10 +74,12 @@
     "zod": "^3.23.8"
   },
   "devDependencies": {
+    "@playwright/test": "^1.48.2",
     "@testing-library/dom": "^10.4.0",
     "@testing-library/jest-dom": "^6.6.2",
     "@testing-library/react": "^16.0.1",
     "@testing-library/user-event": "^14.5.2",
+    "@types/bun": "latest",
     "@types/jest": "^29.5.13",
     "@types/node": "20.5.7",
     "@types/react": "18.3.3",
@@ -102,6 +106,7 @@
     "jest-environment-jsdom": "^29.7.0",
     "jest-fetch-mock": "^3.0.3",
     "jsdom": "^25.0.1",
+    "playwright": "^1.48.2",
     "postcss": "8.4.38",
     "tailwind-variants": "0.1.20",
     "tailwindcss": "3.4.3",
