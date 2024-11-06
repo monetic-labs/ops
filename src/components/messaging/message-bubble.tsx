@@ -2,7 +2,6 @@
 
 import React from "react";
 import { Message as AIMessage } from "ai";
-
 import { Message as CustomMessage } from "@/types/messaging";
 
 interface MessageBubbleProps {
@@ -11,29 +10,15 @@ interface MessageBubbleProps {
 
 export const MessageBubble: React.FC<MessageBubbleProps> = ({ message }) => {
   const getBubbleStyle = () => {
-    // Handle AI SDK message types
     if ("role" in message) {
-      switch (message.role) {
-        case "user":
-          return "bg-ualert-500 text-notpurple-500";
-        case "assistant":
-          return "bg-charyo-500/50 text-notpurple-500";
-        default:
-          return "bg-gray-500/50 text-notpurple-500";
-      }
+      return message.role === "user"
+        ? "bg-ualert-500 text-notpurple-500"
+        : "bg-charyo-500/50 text-notpurple-500";
     }
 
-    // Handle custom message types
-    switch (message.type) {
-      case "user":
-        return "bg-ualert-500 text-notpurple-500";
-      case "bot":
-        return "bg-charyo-500/50 text-notpurple-500";
-      case "support":
-        return "bg-charyo-500/50 text-notpurple-500";
-      case "system":
-        return "bg-gray-500/50 text-notpurple-500";
-    }
+    return message.type === "user"
+      ? "bg-ualert-500 text-notpurple-500"
+      : "bg-charyo-500/50 text-notpurple-500";
   };
 
   const getAlignment = () => {

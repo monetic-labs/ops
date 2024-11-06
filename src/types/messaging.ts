@@ -9,6 +9,22 @@ export interface BaseMessage {
   text: string;
   timestamp: number;
   status?: MessageStatus;
+  metadata?: {
+    telegramMessageId?: number;
+    chatId?: string;
+    timestamp?: number;
+  };
+}
+
+// Add this interface
+export interface WebSocketMessage extends BaseMessage {
+  type: "support" | "user";
+  metadata: {
+    telegramMessageId?: number;
+    chatId?: string;
+    timestamp: number;
+  };
+  status?: MessageStatus;
 }
 
 // User Message Interface
@@ -61,14 +77,6 @@ export interface MentionOption {
   category?: string;
 }
 
-// Update MessageService to be more specific
-// export interface MessageService {
-//   type: MessageServiceType;
-//   sendMessage(text: string): Promise<void>;
-//   getMessages(): (Message | AIMessage)[];
-//   onMessage?(callback: (message: Message) => void): void;
-// }
-
 export interface MessageService {
   type: MessageServiceType;
   getMessages: () => Message[];
@@ -77,6 +85,7 @@ export interface MessageService {
   setInputValue: (value: string) => void;
   isInputLoading: () => boolean;
   handleSubmit: (e: React.FormEvent) => Promise<void>;
+  destroy?: () => void;
 }
 
 export interface AgentMessageService extends MessageService {

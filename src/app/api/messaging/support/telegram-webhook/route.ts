@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
-
 import { broadcastMessage } from "@/libs/websocket";
+import { WebSocketMessage } from "@/types/messaging";
 
 interface TelegramMessage {
   message_id: number;
@@ -18,36 +18,76 @@ interface TelegramUpdate {
 }
 
 export async function POST(request: Request) {
-  const body: TelegramUpdate = await request.json();
-  const { message } = body;
+  console.log('📥 Telegram webhook received request');
+  
+  try {
+    const body: TelegramUpdate = await request.json();
+    console.log('📦 Webhook body:', body);
+    
+    const { message } = body;
 
-  if (!message?.text || !message?.chat?.id) {
-    return NextResponse.json({ success: false, error: "Invalid message format" }, { status: 400 });
-  }
+    // Validate message structure
+    if (!message?.text || !message?.chat?.id) {
+      console.error('❌ Invalid message format:', message);
+      return NextResponse.json({ 
+        success: false, 
+        error: "Invalid message format" 
+      }, { status: 400 });
+    }
 
-  if (message && message.text) {
     const chatId = message.chat.id;
     const responseText = "Thank you for contacting support. An agent will be with you shortly.";
 
-    try {
-      // Broadcast the message to all connected clients
-      broadcastMessage({
-        id: `telegram-${message.message_id}`,
-        text: message.text,
-        type: "telegram",
-        metadata: {
-          telegramMessageId: message.message_id,
-          timestamp: message.date * 1000,
+    // Prepare message for WebSocket broadcast
+    const timestamp = message.date * 1000;
+    const messageToSend = {
+      id: `telegram-${message.message_id}`,
+      text: message.text,
+      type: "support",
+      timestamp,
+      metadata: {
+        telegramMessageId: message.message_id,
+        chatId: message.chat.id
+      },
+      status: "received"
+    };
+
+    // Broadcast to WebSocket clients
+    console.log('📢 Broadcasting message to WebSocket:', messageToSend);
+    await broadcastMessage(messageToSend as WebSocketMessage);
+
+    // Send auto-reply to Telegram
+    console.log('📤 Sending auto-reply to Telegram chat:', chatId);
+    const telegramResponse = await fetch(
+      `https://api.telegram.org/bot${process.env.AGENTCHAD_TELEGRAM_BOT}/sendMessage`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
         },
-      });
+        body: JSON.stringify({
+          chat_id: chatId,
+          text: responseText,
+        }),
+      }
+    );
 
-      return NextResponse.json({ success: true });
-    } catch (error) {
-      console.error("Error handling webhook:", error);
-
-      return NextResponse.json({ success: false, error: "Failed to process message" }, { status: 500 });
+    if (!telegramResponse.ok) {
+      const errorData = await telegramResponse.json();
+      console.error('❌ Failed to send Telegram auto-reply:', errorData);
+      throw new Error('Failed to send Telegram auto-reply');
     }
-  } else {
-    return NextResponse.json({ success: false, error: "Invalid message format" }, { status: 400 });
+
+    console.log('✅ Successfully processed webhook request');
+    return NextResponse.json({ success: true });
+
+  } catch (error) {
+    console.error("❌ Error in webhook handler:", error);
+    return NextResponse.json({ 
+      success: false, 
+      error: error instanceof Error ? error.message : "Failed to process message" 
+    }, { status: 500 });
   }
+
+  
 }

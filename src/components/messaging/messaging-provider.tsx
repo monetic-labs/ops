@@ -1,15 +1,40 @@
 "use client";
 
-import { useCallback, useRef } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useChat } from "ai/react";
 
 import { useChatMode } from "@/hooks/messaging/useChatMode";
 import { AIAgentService } from "@/libs/messaging/agent-service";
 import { TelegramService } from "@/libs/messaging/support-service";
 import { ChatContext } from "@/hooks/messaging/useChatContext";
+import { useWebSocket } from "@/hooks/generics/useWebSocket";
+import { WebSocketMessage } from "@/types/messaging";
 
 export const ChatProvider = ({ children }: { children: React.ReactNode }) => {
   const { mode } = useChatMode();
+  const [forceUpdate, setForceUpdate] = useState(0);
+  const serviceInstances = useRef({
+    agent: null as AIAgentService | null,
+    support: new TelegramService(),
+  });
+
+  const handleWebSocketMessage = useCallback((message: WebSocketMessage) => {
+    if (mode === "support") {
+      const service = serviceInstances.current.support;
+      service.handleWebSocketMessage(message);
+    }
+  }, [mode]);
+
+  useWebSocket(handleWebSocketMessage);
+
+  useEffect(() => {
+    return () => {
+      if (mode === "support") {
+        const service = serviceInstances.current.support;
+        service.destroy?.();
+      }
+    };
+  }, [mode]);
 
   console.group("🔄 ChatProvider Render");
   console.log("Current Mode:", mode);
@@ -24,7 +49,6 @@ export const ChatProvider = ({ children }: { children: React.ReactNode }) => {
     onFinish: () => {
       console.log("Chat Helper: Message Stream Finished");
     },
-    // Add this to ensure proper message handling
     onResponse: (response) => {
       console.log("Chat Helper: Got Response", response);
     }
@@ -36,11 +60,19 @@ export const ChatProvider = ({ children }: { children: React.ReactNode }) => {
     hasInput: !!chatHelpers.input,
   });
 
-  // Keep service instances stable across renders
-  const serviceInstances = useRef({
-    agent: null as AIAgentService | null,
-    support: new TelegramService(),
-  });
+  useEffect(() => {
+    if (mode === "support") {
+      const service = serviceInstances.current.support;
+      const unsubscribe = service.subscribeToMessages((messages) => {
+        console.log("Received messages update:", messages);
+        setForceUpdate(prev => prev + 1);
+      });
+  
+      return () => {
+        unsubscribe();
+      };
+    }
+  }, [mode]);
 
   const getService = useCallback(() => {
     if (mode === "agent") {

@@ -1,51 +1,52 @@
-import { WebSocket, WebSocketServer } from "ws";
+import { WebSocket } from "ws";
+import { WebSocketMessage } from "@/types/messaging";
 
-let wss: WebSocketServer | null = null;
-const clients = new Set<WebSocket>();
+const WS_URL = process.env.NEXT_PUBLIC_WS_URL || 'ws://localhost:3001';
 
-export function getWebSocketServer() {
-  if (!wss) {
-    wss = new WebSocketServer({ noServer: true, clientTracking: true });
-    console.log("WebSocket server created");
+let wsInstance: WebSocket | null = null;
+let reconnectInterval: NodeJS.Timeout | null = null;
 
-    wss.on("connection", (ws) => {
-      console.log("WebSocket connection established");
-      clients.add(ws);
+export function getWebSocketInstance(): WebSocket | null {
+  if (!wsInstance || wsInstance.readyState === WebSocket.CLOSED) {
+    wsInstance = new WebSocket(WS_URL);
 
-      // Send a test message on connection
-      ws.send(
-        JSON.stringify({
-          id: "test",
-          text: "Connection established",
-          type: "bot",
-          metadata: {
-            timestamp: Date.now(),
-          },
-        })
-      );
-
-      ws.on("close", () => {
-        console.log("Client disconnected");
-        clients.delete(ws);
-      });
-
-      ws.on("error", (error) => {
-        console.error("WebSocket error:", error);
-        clients.delete(ws);
-      });
-    });
+    wsInstance.onclose = () => {
+      console.log('WebSocket closed');
+      
+      if (!reconnectInterval) {
+        reconnectInterval = setInterval(() => {
+          reconnectInterval = null;
+          getWebSocketInstance();
+        }, 5000);
+      }
+    };
   }
-
-  return wss;
+  return wsInstance;
 }
 
-export function broadcastMessage(message: any) {
-  console.log("Broadcasting message:", message);
-  const messageStr = JSON.stringify(message);
-
-  clients.forEach((client) => {
-    if (client.readyState === WebSocket.OPEN) {
-      client.send(messageStr);
+export async function broadcastMessage(message: WebSocketMessage) {
+  console.log('📢 Broadcasting message:', message);
+  
+  return new Promise((resolve, reject) => {
+    if (!wsInstance || wsInstance.readyState !== WebSocket.OPEN) {
+      wsInstance = new WebSocket(WS_URL);
+      
+      wsInstance.on('open', () => {
+        wsInstance?.send(JSON.stringify(message));
+        resolve(true);
+      });
+      
+      wsInstance.on('error', (error) => {
+        console.error('❌ WebSocket error:', error);
+        reject(error);
+      });
+    } else {
+      try {
+        wsInstance?.send(JSON.stringify(message));
+        resolve(true);
+      } catch (error) {
+        reject(error);
+      }
     }
   });
 }

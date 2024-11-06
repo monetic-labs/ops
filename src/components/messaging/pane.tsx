@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useEffect } from "react";
 
 import { useResizePanel } from "@/hooks/messaging/useResizePanel";
 
@@ -15,6 +15,22 @@ interface ChatPaneProps {
 
 export const ChatPane: React.FC<ChatPaneProps> = ({ isOpen, onClose }) => {
   const { width, isResizing, resizeHandleProps } = useResizePanel();
+
+  // Initialize WebSocket when chat pane opens
+  useEffect(() => {
+    if (isOpen) {
+      // Call telegram-setup endpoint to ensure webhook is configured
+      fetch("/api/messaging/support/telegram-setup", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          url: window.location.origin,
+        }),
+      });
+    }
+  }, [isOpen]);
 
   const handleOverlayKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "Enter" || e.key === " ") {
