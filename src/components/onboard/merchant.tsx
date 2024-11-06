@@ -71,7 +71,7 @@ export const MerchantOnboard: React.FC<{ onCancel: () => void; initialEmail: str
   const userDetailTabs = tabs.filter((tab) => tab.key.startsWith("user-details-"));
 
   return (
-    <FormCard className="overflow-y-auto max-h-screen" title="Know Your Business">
+    <FormCard className="overflow-y-auto max-h-screen" title="Know Your Business" data-testid="onboarding-form">
       <Tabs selectedKey={activeTab} onSelectionChange={(key) => setActiveTab(key as string)}>
         {mainTabs.map((tab) => (
           <Tab key={tab.key} title={tab.title}>

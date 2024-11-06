@@ -32,6 +32,7 @@ export const FormInput = <T extends FieldValues>({
                 field.onChange(e);
                 props.onChange && props.onChange(e);
               }}
+              type="email"
             />
           </Tooltip>
         )}

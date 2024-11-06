@@ -52,7 +52,7 @@ export const AutocompleteInput = <T extends FieldValues>({
               isInvalid={!!errorMessage}
             >
               {(item) => (
-                <AutocompleteItem key={item.value} value={item.value}>
+                <AutocompleteItem key={item.value} value={item.value} data-testid={`${testid}-item`}>
                   {item.label}
                 </AutocompleteItem>
               )}

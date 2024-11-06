@@ -63,6 +63,11 @@ export const FormCompanyDetails: React.FC<{
     <FormCard className="w-full" title="Company Details">
       <form className="space-y-4" onSubmit={onFormSubmit}>
         <FormInput
+          startContent={
+            <div className="pointer-events-none flex items-center">
+              <span className="text-default-400 text-small">0x</span>
+            </div>
+          }
           about="This is where you will receive your settled funds from your customers."
           control={control}
           errorMessage={errors.walletAddress?.message}
@@ -70,8 +75,9 @@ export const FormCompanyDetails: React.FC<{
           name="walletAddress"
           maxLength={42}
           pattern={walletAddressRegex.source}
-          placeholder="0x1234567890123456789012345678901234567890"
-          value={walletAddressInput}
+          placeholder="1234567890123456789012345678901234567890"
+          data-testid="company-details-settlement-address-input"
+          value={walletAddressInput.replace(/^0x/, "")}
           onChange={(e) => handleWalletAddressChange(e, setValue, setWalletAddressInput, "walletAddress")}
         />
         <FormInput
@@ -83,6 +89,7 @@ export const FormCompanyDetails: React.FC<{
           maxLength={10}
           pattern={companyEINRegex.source}
           placeholder="12-3456789"
+          data-testid="company-details-company-ein-input"
           value={companyEINInput}
           onChange={(e) => handleCompanyEINChange(e, setValue, setCompanyEINInput, "companyEIN")}
         />
@@ -93,6 +100,7 @@ export const FormCompanyDetails: React.FC<{
           label="Company Type"
           name="companyType"
           placeholder="Select Company Type"
+          testid="company-details-company-type-input"
           items={companyTypes}
         />
         <FormInput
@@ -102,9 +110,12 @@ export const FormCompanyDetails: React.FC<{
           name="companyDescription"
           maxLength={100}
           placeholder="Describe your company"
+          data-testid="company-details-company-description-input"
         />
         <div className="flex justify-end space-x-4">
-          <FormButton type="submit">Submit</FormButton>
+          <FormButton type="submit" data-testid="company-details-submit-button" onClick={onFormSubmit}>
+            Submit
+          </FormButton>
         </div>
       </form>
     </FormCard>
