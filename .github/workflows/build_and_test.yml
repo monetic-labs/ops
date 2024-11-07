@@ -43,6 +43,14 @@ jobs:
       - name: Run e2e tests
         run: npm run test:e2e
 
+      - name: Upload Playwright report
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 30
+
       - name: Setup LCOV
         uses: hrishikesh-kadam/setup-lcov@v1
 
@@ -54,15 +62,6 @@ jobs:
           minimum-coverage: 0
           github-token: ${{ secrets.GITHUB_TOKEN }}
           update-comment: true
-
-      - name: Upload test results
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: index.html
-          path: playwright-report/
-          retention-days: 30
-        env: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build application
         run: npm run build
