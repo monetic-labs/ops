@@ -52,7 +52,7 @@ jobs:
           check: "true"
           coverage-files: ./coverage/lcov.info
           minimum-coverage: 0
-          github-token: ${{ secrets.BACKPACK_GITHUB_TOKEN }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
           update-comment: true
 
       - name: Build application
