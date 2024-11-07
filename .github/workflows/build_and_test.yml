@@ -55,5 +55,14 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           update-comment: true
 
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 30
+        env: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Build application
         run: npm run build
