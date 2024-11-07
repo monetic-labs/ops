@@ -3,8 +3,8 @@
   "version": "0.0.1",
   "private": true,
   "scripts": {
-    "test": "VITE_CJS_IGNORE_WARNING=true vitest",
-    "test:e2e": "npx playwright test",
+    "test": "VITE_CJS_IGNORE_WARNING=true vitest --coverage --coverage.reporter=lcov",
+    "test:e2e": "npx playwright test --reporter=dot",
     "test:e2e:ui": "npx playwright test --ui",
     "dev": "next dev",
     "build": "next build",
@@ -89,6 +89,7 @@
     "@typescript-eslint/parser": "7.2.0",
     "@vitejs/plugin-react": "^4.3.3",
     "@vitest/browser": "^2.1.4",
+    "@vitest/coverage-v8": "^2.1.4",
     "autoprefixer": "10.4.19",
     "csvtojson": "^2.0.10",
     "dotenv": "^16.4.5",
