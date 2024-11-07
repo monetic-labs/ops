@@ -45,6 +45,7 @@ jobs:
 
       - name: Setup LCOV
         uses: hrishikesh-kadam/setup-lcov@v1
+        # random thing to compare
 
       - name: Check coverage thresholds
         uses: zgosalvez/github-actions-report-lcov@v3
