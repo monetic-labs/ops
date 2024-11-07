@@ -25,14 +25,15 @@ jobs:
 
       - name: Set up env
         run: |
-          export BACKPACK_GITHUB_TOKEN=${{ secrets.BACKPACK_GITHUB_TOKEN }}
           touch .env
           echo "NEXT_PUBLIC_PYLON_BASE_URL=http://localhost:5000" >> .env
           echo "NEXT_PUBLIC_NODE_ENV=ci" >> .env
           echo "NEXT_PUBLIC_REOWN_PROJECT_ID=d1885a44-da83-4e2f-bd10-de217d04beb2" >> .env
 
       - name: Install dependencies
-        run: npm install
+        run: |
+          export BACKPACK_GITHUB_TOKEN=${{ secrets.BACKPACK_GITHUB_TOKEN }}
+          npm install
 
       - name: Run tests
         run: npm test
