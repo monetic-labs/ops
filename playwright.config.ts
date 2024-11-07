@@ -5,13 +5,12 @@ import path from "path";
 dotenv.config({ path: path.resolve(__dirname, ".env") });
 
 export default defineConfig({
+  reporter: [["list", { printSteps: true }], ["github"], ["html"]],
   testDir: "./src/tests/e2e",
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
   retries: 2,
   workers: process.env.CI ? 1 : undefined,
-  reporter: "html",
-
   use: {
     trace: "on-first-retry",
   },
