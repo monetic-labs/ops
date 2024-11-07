@@ -34,6 +34,7 @@ jobs:
         run: |
           export BACKPACK_GITHUB_TOKEN=${{ secrets.BACKPACK_GITHUB_TOKEN }}
           npm install
+          npx playwright install
 
       - name: Run tests
         run: npm test
