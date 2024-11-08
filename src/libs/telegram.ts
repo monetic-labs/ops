@@ -11,14 +11,14 @@ interface TelegramResponse {
  * Send a message through Telegram
  * Routes through our Next.js API to avoid exposing tokens and CORS issues
  */
-export async function sendTelegramMessage(text: string): Promise<TelegramResponse> {
+export async function sendTelegramMessage(text: string, userId: string): Promise<TelegramResponse> {
   try {
     const response = await fetch(`${API_BASE}/message-send`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ text }),
+      body: JSON.stringify({ text, userId }),
     });
 
     const data = await response.json();

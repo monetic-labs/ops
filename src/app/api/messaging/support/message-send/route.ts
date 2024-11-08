@@ -13,7 +13,7 @@ if (!TELEGRAM_CHAT_ID) {
 
 export async function POST(request: Request) {
   try {
-    const { text } = await request.json();
+    const { text, userId } = await request.json();
 
     if (!TELEGRAM_BOT_TOKEN || !TELEGRAM_CHAT_ID) {
       return NextResponse.json(
@@ -25,6 +25,8 @@ export async function POST(request: Request) {
       );
     }
 
+    const formattedMessage = `Message from User ${userId}:\n${text}`;
+
     const response = await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
       method: "POST",
       headers: {
@@ -32,7 +34,7 @@ export async function POST(request: Request) {
       },
       body: JSON.stringify({
         chat_id: TELEGRAM_CHAT_ID,
-        text: text,
+        text: formattedMessage,
       }),
     });
 

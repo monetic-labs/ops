@@ -58,4 +58,8 @@ export class AIAgentService implements MessageService {
     if (!text.trim()) return;
     await this.sendMessage(text);
   }
+
+  getUserId(): string {
+    return 'ai-agent';
+  }
 }

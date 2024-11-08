@@ -10,14 +10,15 @@ import { Message } from "@/types/messaging";
 
 import { MessageBubble } from "./message-bubble";
 
+
 export const ChatBody: React.FC = () => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const { messages, isTyping } = useChatContext();
   const { mode } = useChatMode();
   const { chatHelpers, messages: supportMessages } = useChatContext();
 
   // Get messages from the appropriate service
-  //const messages: (Message | AIMessage)[] = mode === "agent" ? chatHelpers.messages : supportMessages;
-  const messages = useChatContext().messages;
+  //const messages = useChatContext().messages;
   
   useEffect(() => {
     const scrollToBottom = () => {
@@ -42,6 +43,13 @@ export const ChatBody: React.FC = () => {
         <MessageBubble key={message.id} message={message} />
       ))}
       <div ref={messagesEndRef} />
+      
+      {isTyping && (
+        <div className="flex items-center space-x-2 text-sm text-gray-500">
+          <span>Support is typing</span>
+          <span className="animate-pulse">...</span>
+        </div>
+      )}
     </div>
   );
 };

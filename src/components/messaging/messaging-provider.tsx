@@ -13,19 +13,27 @@ import { convertAIMessageToCustom } from "@/types/messageDTO";
 
 export const ChatProvider = ({ 
   children, 
-  userId = process.env.NEXT_PUBLIC_DEFAULT_USER_ID || 'default-user' 
-
+  userId
 }: { 
   children: React.ReactNode, 
-  userId?: string 
+  userId: string 
 }) => {
+  console.log("👤 User ID:", userId);
+
   const { mode } = useChatMode();
   const [messages, setMessages] = useState<Message[]>([]);
+  const [isTyping, setIsTyping] = useState(false);
 
   const serviceInstances = useRef({
     agent: null as AIAgentService | null,
     support: new TelegramService(userId, setMessages),
   });
+
+  useEffect(() => {
+    if (userId && serviceInstances.current.support.getUserId() !== userId) {
+      serviceInstances.current.support = new TelegramService(userId, setMessages);
+    }
+  }, [userId, setMessages]);
 
   const handleWebSocketMessage = useCallback((message: WebSocketMessage) => {
     if (mode === "support") {
@@ -106,7 +114,9 @@ export const ChatProvider = ({
       ? chatHelpers.messages.map(convertAIMessageToCustom)
       : messages,
     setMessages,
-  } as ChatContextType), [currentService, chatHelpers, messages, mode]);
+    isTyping,
+    setIsTyping,
+  } as ChatContextType), [currentService, chatHelpers, messages, mode, isTyping]);
 
   return (
     <ChatContext.Provider value={contextValue}>

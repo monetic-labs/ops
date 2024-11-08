@@ -39,18 +39,34 @@ bot.on('message', (msg) => {
   });
 });
 
+bot.on('chat_action', (action) => {
+  if (action.action === 'typing') {
+    clients.forEach((client) => {
+      if (client.readyState === WebSocket.OPEN) {
+        client.send(JSON.stringify({
+          type: 'typing',
+          chatId: action.chat.id
+        }));
+      }
+    });
+  }
+});
+
 wss.on('connection', (ws: WebSocket) => {
   console.log('🟢 WebSocket Client Connected - Total clients:', clients.size + 1);
   clients.add(ws);
 
-  ws.on('message', (message: Buffer) => {
+  ws.on('message', async (message: Buffer) => {
     try {
       const parsedMessage = JSON.parse(message.toString());
       console.log('📨 Received message from client:', parsedMessage);
 
-      // Optionally, send a message back to Telegram
+      // Show typing indicator before sending message
       if (parsedMessage.type === 'user') {
-        bot.sendMessage(parsedMessage.metadata.chatId, parsedMessage.text);
+        await bot.sendChatAction(parsedMessage.metadata.chatId, 'typing');
+        // You might want to add a small delay here to make the typing indicator visible
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        await bot.sendMessage(parsedMessage.metadata.chatId, parsedMessage.text);
       }
     } catch (error) {
       console.error('❌ Error handling message:', error);

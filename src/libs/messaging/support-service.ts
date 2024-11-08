@@ -27,40 +27,6 @@ export class TelegramService implements MessageService {
     this.messages = messages;
   }
 
-  // handleWebSocketMessage(message: WebSocketMessage) {
-  //   console.log('📥 TelegramService received message:', message);
-  //   if (this.isDestroyed) {
-  //     console.log('❌ Service is destroyed, ignoring message');
-  //     return;
-  //   }
-  
-  //   if (message.type === "support" || message.type === "user" || message.type === "telegram") {
-  //     const exists = this.messages.some(m => 
-  //       m.id === message.id || 
-  //       (m.text === message.text && Math.abs(m.timestamp - message.timestamp) < 1000)
-  //     );
-      
-  //     console.log('🔍 Message exists?', exists);
-      
-  //     if (!exists) {
-  //       const newMessage: Message = {
-  //         id: message.id,
-  //         text: message.text,
-  //         type: message.type === "support" ? "user" : message.type,
-  //         timestamp: message.timestamp,
-  //         status: message.status || "sent",
-  //         metadata: message.metadata
-  //       };
-        
-  //       this.messages = [...this.messages, newMessage];
-  //       //this.setMessages(this.messages);
-  //       this.notifySubscribers();
-  //       console.log('✅ Added new message:', newMessage);
-  //       console.log('📊 Current messages count:', this.messages.length);
-  //     }
-  //   }
-  // }
-
   handleWebSocketMessage(message: WebSocketMessage) {
     if (this.isDestroyed) return;
 
@@ -114,11 +80,16 @@ export class TelegramService implements MessageService {
           userId: this.userId
         }
       };
+
+      // Add message to local state immediately
+      // this.messages = [...this.messages, message];
+      // this.notifySubscribers();
   
       this.intervalId = undefined
       this.messages.push(message);
-      await sendTelegramMessage(text);
+      await sendTelegramMessage(text, this.userId);
       console.log("Sent telegram message:", text);
+      console.log("userID:", this.userId);
   
       const messageIndex = this.messages.findIndex((m) => m.id === message.id);
       if (messageIndex !== -1) {
@@ -181,6 +152,10 @@ export class TelegramService implements MessageService {
     } finally {
       this.isLoading = false;
     }
+  }
+
+  getUserId(): string {
+    return this.userId;
   }
 
 }

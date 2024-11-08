@@ -89,6 +89,7 @@ export interface MessageService {
   handleSubmit: (e: React.FormEvent) => Promise<void>;
   destroy?: () => void;
   setMessages: (messages: Message[]) => void;
+  getUserId: () => string;
 }
 
 export interface AgentMessageService extends MessageService {

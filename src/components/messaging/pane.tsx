@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 
 import { useResizePanel } from "@/hooks/messaging/useResizePanel";
 
@@ -14,6 +14,7 @@ interface ChatPaneProps {
 }
 
 export const ChatPane: React.FC<ChatPaneProps> = ({ isOpen, onClose }) => {
+  const [isTyping, setIsTyping] = useState(false);
   const { width, isResizing, resizeHandleProps } = useResizePanel();
 
   // Initialize WebSocket when chat pane opens
@@ -29,6 +30,21 @@ export const ChatPane: React.FC<ChatPaneProps> = ({ isOpen, onClose }) => {
           url: window.location.origin,
         }),
       });
+
+      const ws = new WebSocket(`ws://${window.location.hostname}:3001`);
+      
+      ws.onmessage = (event) => {
+        const data = JSON.parse(event.data);
+        
+        // Handle typing indicator
+        if (data.type === 'typing') {
+          setIsTyping(true);
+          // Automatically hide typing indicator after 5 seconds
+          setTimeout(() => setIsTyping(false), 5000);
+        }
+      };
+
+      return () => ws.close();
     }
   }, [isOpen]);
 

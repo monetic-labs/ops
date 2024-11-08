@@ -14,16 +14,17 @@ import { ChatProvider } from "@/components/messaging/messaging-provider";
 export interface ProvidersProps {
   children: React.ReactNode;
   themeProps?: ThemeProviderProps;
+  userId?: string;
 }
 
-export function Providers({ children, themeProps }: ProvidersProps) {
+export function Providers({ children, themeProps, userId }: ProvidersProps) {
   const router = useRouter();
 
   return (
     <PylonProvider pylon={pylonInstance}>
       <NextUIProvider navigate={router.push}>
         <NextThemesProvider {...themeProps}>
-          <ChatProvider userId="default-user">
+          <ChatProvider userId={userId || 'default-user'}>
             <PageWithScrollBackground>{children}</PageWithScrollBackground>
           </ChatProvider>
         </NextThemesProvider>
