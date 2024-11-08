@@ -13,6 +13,7 @@ export interface BaseMessage {
     telegramMessageId?: number;
     chatId?: string;
     timestamp?: number;
+    userId?: string;
   };
 }
 
@@ -23,6 +24,7 @@ export interface WebSocketMessage extends BaseMessage {
     telegramMessageId?: number;
     chatId?: string;
     timestamp: number;
+    userId?: string;
   };
   status?: MessageStatus;
 }
@@ -86,6 +88,7 @@ export interface MessageService {
   isInputLoading: () => boolean;
   handleSubmit: (e: React.FormEvent) => Promise<void>;
   destroy?: () => void;
+  setMessages: (messages: Message[]) => void;
 }
 
 export interface AgentMessageService extends MessageService {

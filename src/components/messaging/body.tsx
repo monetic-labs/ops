@@ -13,12 +13,12 @@ import { MessageBubble } from "./message-bubble";
 export const ChatBody: React.FC = () => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { mode } = useChatMode();
-  const { service, chatHelpers } = useChatContext();
-  const { messages: supportMessages } = useChatMessages();
+  const { chatHelpers, messages: supportMessages } = useChatContext();
 
   // Get messages from the appropriate service
-  const messages: (Message | AIMessage)[] = mode === "agent" ? chatHelpers.messages : service.getMessages();
-
+  //const messages: (Message | AIMessage)[] = mode === "agent" ? chatHelpers.messages : supportMessages;
+  const messages = useChatContext().messages;
+  
   useEffect(() => {
     const scrollToBottom = () => {
       messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });

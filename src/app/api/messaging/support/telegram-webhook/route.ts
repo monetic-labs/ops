@@ -10,6 +10,11 @@ interface TelegramMessage {
   };
   text: string;
   date: number;
+  metadata?: {
+    userId?: string;
+    telegramMessageId?: number;
+    chatId?: string;
+  };
 }
 
 interface TelegramUpdate {
@@ -22,7 +27,8 @@ export async function POST(request: Request) {
   
   try {
     const body: TelegramUpdate = await request.json();
-    console.log('📦 Webhook body:', body);
+    const userId = request.headers.get("x-user-id");
+    console.log('📦 Webhook body:', body, 'userId:', userId);
     
     const { message } = body;
 
@@ -47,7 +53,8 @@ export async function POST(request: Request) {
       timestamp,
       metadata: {
         telegramMessageId: message.message_id,
-        chatId: message.chat.id
+        chatId: message.chat.id,
+        userId: userId
       },
       status: "received"
     };

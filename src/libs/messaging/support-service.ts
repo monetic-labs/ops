@@ -3,6 +3,8 @@ import { sendTelegramMessage } from "@/libs/telegram";
 
 
 export class TelegramService implements MessageService {
+  private messageSubscribers: Set<(messages: Message[]) => void> = new Set();
+
   type: MessageServiceType = "telegram";
   private inputValue = "";
   private isLoading = false;
@@ -10,6 +12,14 @@ export class TelegramService implements MessageService {
   private isDestroyed = false;
   private intervalId: NodeJS.Timeout | undefined;
   private cleanup: (() => void)[] = [];
+  private userId?: string;
+
+  constructor(
+    userId: string,
+    public setMessages: (messages: Message[]) => void
+  ) {
+    this.userId = userId;
+  }
 
   updateMessages(messages: Message[]) {
     this.messages = messages;
@@ -41,6 +51,8 @@ export class TelegramService implements MessageService {
         };
         
         this.messages = [...this.messages, newMessage];
+        //this.setMessages(this.messages);
+        this.notifySubscribers();
         console.log('✅ Added new message:', newMessage);
         console.log('📊 Current messages count:', this.messages.length);
       }
@@ -48,18 +60,29 @@ export class TelegramService implements MessageService {
   }
 
   // This helps components know when to re-render
+  // subscribeToMessages(callback: (messages: Message[]) => void) {
+  //   // Clear any existing intervals first
+  //   this.cleanup.forEach(cleanup => cleanup());
+  //   this.cleanup = [];
+
+  //   const intervalId = setInterval(() => {
+  //     callback(this.messages);
+  //   }, 1000);
+
+  //   const cleanup = () => clearInterval(intervalId);
+  //   this.cleanup.push(cleanup);
+  //   return cleanup;
+  // }
+
   subscribeToMessages(callback: (messages: Message[]) => void) {
-    // Clear any existing intervals first
-    this.cleanup.forEach(cleanup => cleanup());
-    this.cleanup = [];
+    this.messageSubscribers.add(callback);
+    return () => {
+      this.messageSubscribers.delete(callback);
+    };
+  }
 
-    const intervalId = setInterval(() => {
-      callback(this.messages);
-    }, 1000);
-
-    const cleanup = () => clearInterval(intervalId);
-    this.cleanup.push(cleanup);
-    return cleanup;
+  private notifySubscribers() {
+    this.messageSubscribers.forEach(callback => callback(this.messages));
   }
 
   async sendMessage(text: string): Promise<void> {
@@ -76,10 +99,12 @@ export class TelegramService implements MessageService {
         timestamp,
         metadata: {
           telegramMessageId: undefined,
-          chatId: undefined
+          chatId: undefined,
+          userId: this.userId
         }
       };
   
+      this.intervalId = undefined
       this.messages.push(message);
       await sendTelegramMessage(text);
       console.log("Sent telegram message:", text);

@@ -5,7 +5,21 @@ import { MessageService, MessageServiceType, Message } from "@/types/messaging";
 export class AIAgentService implements MessageService {
   type: MessageServiceType = "openai";
 
-  constructor(private chatHelpers: UseChatHelpers) {}
+  constructor(
+    private chatHelpers: UseChatHelpers,
+    public setMessages: (messages: Message[]) => void
+  ) {}
+
+  private mapAIMessages(): Message[] {
+    return this.chatHelpers.messages.map((msg) => ({
+      id: msg.id,
+      text: msg.content,
+      type: msg.role === 'user' ? 'user' : 'bot',
+      status: 'sent',
+      timestamp: Date.now(),
+      source: msg.role === 'assistant' ? 'openai' : undefined
+    }));
+  }
 
   async sendMessage(text: string): Promise<void> {
     await this.chatHelpers.append({

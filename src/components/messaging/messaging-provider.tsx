@@ -1,21 +1,23 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useChat } from "ai/react";
 
 import { useChatMode } from "@/hooks/messaging/useChatMode";
 import { AIAgentService } from "@/libs/messaging/agent-service";
 import { TelegramService } from "@/libs/messaging/support-service";
-import { ChatContext } from "@/hooks/messaging/useChatContext";
+import { ChatContext, ChatContextType } from "@/hooks/messaging/useChatContext";
 import { useWebSocket } from "@/hooks/generics/useWebSocket";
-import { WebSocketMessage } from "@/types/messaging";
+import { Message, WebSocketMessage } from "@/types/messaging";
+import { convertAIMessageToCustom } from "@/types/messageDTO";
 
-export const ChatProvider = ({ children }: { children: React.ReactNode }) => {
+export const ChatProvider = ({ children, userId }: { children: React.ReactNode, userId: string }) => {
   const { mode } = useChatMode();
-  const [forceUpdate, setForceUpdate] = useState(0);
+  const [messages, setMessages] = useState<Message[]>([]);
+
   const serviceInstances = useRef({
     agent: null as AIAgentService | null,
-    support: new TelegramService(),
+    support: new TelegramService(userId, setMessages),
   });
 
   const handleWebSocketMessage = useCallback((message: WebSocketMessage) => {
@@ -65,7 +67,7 @@ export const ChatProvider = ({ children }: { children: React.ReactNode }) => {
       const service = serviceInstances.current.support;
       const unsubscribe = service.subscribeToMessages((messages) => {
         console.log("Received messages update:", messages);
-        setForceUpdate(prev => prev + 1);
+        setMessages(messages);
       });
   
       return () => {
@@ -77,25 +79,30 @@ export const ChatProvider = ({ children }: { children: React.ReactNode }) => {
   const getService = useCallback(() => {
     if (mode === "agent") {
       if (!serviceInstances.current.agent) {
-        serviceInstances.current.agent = new AIAgentService(chatHelpers);
+        serviceInstances.current.agent = new AIAgentService(chatHelpers, setMessages);
       }
       return serviceInstances.current.agent;
     }
     return serviceInstances.current.support;
-  }, [mode, chatHelpers]);
+  }, [mode, chatHelpers, setMessages]);
 
   const currentService = getService();
 
   if (!currentService) {
     throw new Error("No message service available");
   }
-  console.groupEnd();
 
-    return (
-    <ChatContext.Provider value={{ 
-      service: currentService, 
-      chatHelpers,
-    }}>
+  const contextValue = useMemo(() => ({
+    service: currentService,
+    chatHelpers,
+    messages: mode === 'agent' 
+      ? chatHelpers.messages.map(convertAIMessageToCustom)
+      : messages,
+    setMessages,
+  } satisfies ChatContextType), [currentService, chatHelpers, messages, mode]);
+
+  return (
+    <ChatContext.Provider value={contextValue}>
       {children}
     </ChatContext.Provider>
   );

@@ -1,11 +1,12 @@
-import { createContext, useContext } from "react";
-import { Message, UseChatHelpers } from "ai/react";
+import { createContext, Dispatch, SetStateAction, useContext } from "react";
+import { UseChatHelpers } from "ai/react";
+import { Message, MessageService } from "@/types/messaging";
 
-import { MessageService } from "@/types/messaging";
-
-interface ChatContextType {
+export interface ChatContextType {
   service: MessageService;
   chatHelpers: UseChatHelpers;
+  messages: Message[];
+  setMessages: Dispatch<SetStateAction<Message[]>>;
 }
 
 export const ChatContext = createContext<ChatContextType | undefined>(undefined);
