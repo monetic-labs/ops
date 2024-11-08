@@ -23,7 +23,7 @@ export function Providers({ children, themeProps }: ProvidersProps) {
     <PylonProvider pylon={pylonInstance}>
       <NextUIProvider navigate={router.push}>
         <NextThemesProvider {...themeProps}>
-          <ChatProvider>
+          <ChatProvider userId="default-user">
             <PageWithScrollBackground>{children}</PageWithScrollBackground>
           </ChatProvider>
         </NextThemesProvider>

@@ -4,6 +4,7 @@ import { sendTelegramMessage } from "@/libs/telegram";
 
 export class TelegramService implements MessageService {
   private messageSubscribers: Set<(messages: Message[]) => void> = new Set();
+  private userId: string;
 
   type: MessageServiceType = "telegram";
   private inputValue = "";
@@ -12,67 +13,77 @@ export class TelegramService implements MessageService {
   private isDestroyed = false;
   private intervalId: NodeJS.Timeout | undefined;
   private cleanup: (() => void)[] = [];
-  private userId?: string;
+
 
   constructor(
     userId: string,
     public setMessages: (messages: Message[]) => void
   ) {
     this.userId = userId;
+    this.setMessages = setMessages;
   }
 
   updateMessages(messages: Message[]) {
     this.messages = messages;
   }
 
-  handleWebSocketMessage(message: WebSocketMessage) {
-    console.log('📥 TelegramService received message:', message);
-    if (this.isDestroyed) {
-      console.log('❌ Service is destroyed, ignoring message');
-      return;
-    }
+  // handleWebSocketMessage(message: WebSocketMessage) {
+  //   console.log('📥 TelegramService received message:', message);
+  //   if (this.isDestroyed) {
+  //     console.log('❌ Service is destroyed, ignoring message');
+  //     return;
+  //   }
   
-    if (message.type === "support" || message.type === "user" || message.type === "telegram") {
-      const exists = this.messages.some(m => 
-        m.id === message.id || 
-        (m.text === message.text && Math.abs(m.timestamp - message.timestamp) < 1000)
-      );
+  //   if (message.type === "support" || message.type === "user" || message.type === "telegram") {
+  //     const exists = this.messages.some(m => 
+  //       m.id === message.id || 
+  //       (m.text === message.text && Math.abs(m.timestamp - message.timestamp) < 1000)
+  //     );
       
-      console.log('🔍 Message exists?', exists);
+  //     console.log('🔍 Message exists?', exists);
       
-      if (!exists) {
-        const newMessage: Message = {
-          id: message.id,
-          text: message.text,
-          type: message.type === "support" ? "user" : message.type,
-          timestamp: message.timestamp,
-          status: message.status || "sent",
-          metadata: message.metadata
-        };
+  //     if (!exists) {
+  //       const newMessage: Message = {
+  //         id: message.id,
+  //         text: message.text,
+  //         type: message.type === "support" ? "user" : message.type,
+  //         timestamp: message.timestamp,
+  //         status: message.status || "sent",
+  //         metadata: message.metadata
+  //       };
         
-        this.messages = [...this.messages, newMessage];
-        //this.setMessages(this.messages);
-        this.notifySubscribers();
-        console.log('✅ Added new message:', newMessage);
-        console.log('📊 Current messages count:', this.messages.length);
+  //       this.messages = [...this.messages, newMessage];
+  //       //this.setMessages(this.messages);
+  //       this.notifySubscribers();
+  //       console.log('✅ Added new message:', newMessage);
+  //       console.log('📊 Current messages count:', this.messages.length);
+  //     }
+  //   }
+  // }
+
+  handleWebSocketMessage(message: WebSocketMessage) {
+    if (this.isDestroyed) return;
+
+    // Add userId to the message metadata if it's missing
+    const messageWithUserId = {
+      ...message,
+      metadata: {
+        ...message.metadata,
+        userId: message.metadata?.userId || this.userId
       }
+    };
+
+    const exists = this.messages.some(m => 
+      m.id === messageWithUserId.id || 
+      (m.text === messageWithUserId.text && 
+       Math.abs(m.timestamp - messageWithUserId.timestamp) < 1000)
+    );
+
+    if (!exists) {
+      this.messages = [...this.messages, messageWithUserId as Message];
+      this.notifySubscribers();
     }
   }
-
-  // This helps components know when to re-render
-  // subscribeToMessages(callback: (messages: Message[]) => void) {
-  //   // Clear any existing intervals first
-  //   this.cleanup.forEach(cleanup => cleanup());
-  //   this.cleanup = [];
-
-  //   const intervalId = setInterval(() => {
-  //     callback(this.messages);
-  //   }, 1000);
-
-  //   const cleanup = () => clearInterval(intervalId);
-  //   this.cleanup.push(cleanup);
-  //   return cleanup;
-  // }
 
   subscribeToMessages(callback: (messages: Message[]) => void) {
     this.messageSubscribers.add(callback);

@@ -4,17 +4,22 @@ import { WebSocketMessage } from "@/types/messaging";
 
 interface TelegramMessage {
   message_id: number;
+  from?: {
+    id: number;
+    is_bot: boolean;
+    first_name: string;
+    last_name?: string;
+    username?: string;
+    language_code?: string;
+    is_premium?: boolean;
+  };
   chat: {
-    id: string;
+    id: number | string;
+    title?: string;
     type: string;
   };
   text: string;
   date: number;
-  metadata?: {
-    userId?: string;
-    telegramMessageId?: number;
-    chatId?: string;
-  };
 }
 
 interface TelegramUpdate {
@@ -27,8 +32,10 @@ export async function POST(request: Request) {
   
   try {
     const body: TelegramUpdate = await request.json();
-    const userId = request.headers.get("x-user-id");
-    console.log('📦 Webhook body:', body, 'userId:', userId);
+
+    const userId = body.message.from?.id?.toString();
+    console.log('📦 Webhook body:', JSON.stringify(body, null, 2));
+    console.log('📦 User ID:', userId);
     
     const { message } = body;
 

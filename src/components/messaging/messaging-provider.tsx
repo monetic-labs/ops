@@ -11,7 +11,14 @@ import { useWebSocket } from "@/hooks/generics/useWebSocket";
 import { Message, WebSocketMessage } from "@/types/messaging";
 import { convertAIMessageToCustom } from "@/types/messageDTO";
 
-export const ChatProvider = ({ children, userId }: { children: React.ReactNode, userId: string }) => {
+export const ChatProvider = ({ 
+  children, 
+  userId = process.env.NEXT_PUBLIC_DEFAULT_USER_ID || 'default-user' 
+
+}: { 
+  children: React.ReactNode, 
+  userId?: string 
+}) => {
   const { mode } = useChatMode();
   const [messages, setMessages] = useState<Message[]>([]);
 
@@ -99,7 +106,7 @@ export const ChatProvider = ({ children, userId }: { children: React.ReactNode, 
       ? chatHelpers.messages.map(convertAIMessageToCustom)
       : messages,
     setMessages,
-  } satisfies ChatContextType), [currentService, chatHelpers, messages, mode]);
+  } as ChatContextType), [currentService, chatHelpers, messages, mode]);
 
   return (
     <ChatContext.Provider value={contextValue}>
