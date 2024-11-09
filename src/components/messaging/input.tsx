@@ -5,17 +5,17 @@ import { Input } from "@nextui-org/input";
 
 import { useChatMode } from "@/hooks/messaging/useChatMode";
 import { useMentions } from "@/hooks/messaging/useMentions";
-import { MentionOption } from "@/types/messaging";
+import { isAgentContext, MentionOption } from "@/types/messaging";
 import { useChatContext } from "@/hooks/messaging/useChatContext";
 import { useChatActions } from "@/hooks/messaging/useChatActions";
 
 import { MentionList } from "./mention-list";
 
 export const ChatInput: React.FC = () => {
-  const { mode } = useChatMode();
-  const { service, chatHelpers } = useChatContext();
+  const context = useChatContext();
+  const { mode, service } = context;
   const { sendMessage } = useChatActions();
-  const [inputValue, setInputValue] = useState("");
+  const [localInputValue, setLocalInputValue] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
   const { options } = useMentions();
   const [selectedIndex, setSelectedIndex] = useState(0);
@@ -26,22 +26,29 @@ export const ChatInput: React.FC = () => {
     startPosition: 0,
   });
 
+  const isDisabled = isAgentContext(context) 
+  ? context.chatHelpers.isLoading 
+  : service.isLoading;
+
+const loadingText = isAgentContext(context)
+  ? context.chatHelpers.isLoading ? "Sending..." : "Send"
+  : service.isLoading ? "Sending..." : "Send";
+
+
   const handleMentionSelect = (option: MentionOption) => {
-    const beforeMention = inputValue.slice(0, mentionState.startPosition - 1);
-    const afterMention = inputValue.slice(
+    const beforeMention = localInputValue.slice(0, mentionState.startPosition - 1);
+    const afterMention = localInputValue.slice(
       inputRef.current?.selectionStart || mentionState.startPosition + mentionState.searchText.length
     );
 
     const mentionText = `@${option.value} `;
     const newInput = `${beforeMention}${mentionText}${afterMention}`;
 
-    setInputValue(newInput);
+    setLocalInputValue(newInput);
     setMentionState({ isActive: false, searchText: "", startPosition: 0 });
 
-    // Focus input and move cursor after the mention
     inputRef.current?.focus();
     const newCursorPosition = beforeMention.length + mentionText.length;
-
     setTimeout(() => {
       inputRef.current?.setSelectionRange(newCursorPosition, newCursorPosition);
     }, 0);
@@ -51,9 +58,9 @@ export const ChatInput: React.FC = () => {
     const newValue = e.target.value;
     const cursorPosition = e.target.selectionStart || 0;
 
-    setInputValue(newValue);
+    setLocalInputValue(newValue);
+    service.setInputValue(newValue);
 
-    // Only process mention logic if we're in an active mention state or just typed @
     if (mentionState.isActive || e.target.value[cursorPosition - 1] === "@") {
       const textBeforeCursor = e.target.value.slice(0, cursorPosition);
       const lastAtSymbol = textBeforeCursor.lastIndexOf("@");
@@ -62,20 +69,17 @@ export const ChatInput: React.FC = () => {
         const searchText = textBeforeCursor.slice(lastAtSymbol + 1);
         const textAfterMention = e.target.value.slice(lastAtSymbol + 1, cursorPosition);
 
-        // Only show mention list if we're still in a valid mention context
         if (/^[\w\s-]*$/.test(textAfterMention)) {
           setMentionState({
             isActive: true,
             searchText,
             startPosition: lastAtSymbol + 1,
           });
-
           return;
         }
       }
     }
 
-    // If we reach here, we're not in a mention context
     if (mentionState.isActive) {
       setMentionState({ isActive: false, searchText: "", startPosition: 0 });
     }
@@ -94,11 +98,12 @@ export const ChatInput: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!inputValue.trim()) return;
+    if (!localInputValue.trim()) return;
 
     try {
-      await sendMessage(inputValue);
-      setInputValue("");
+      await sendMessage(localInputValue);
+      setLocalInputValue("");
+      service.setInputValue("");
     } catch (error) {
       console.error("Error sending message:", error);
     }
@@ -147,11 +152,13 @@ export const ChatInput: React.FC = () => {
         ref={inputRef}
         aria-label="Chat input"
         className="flex-1"
-        disabled={mode === "agent" ? chatHelpers.isLoading : service.isInputLoading()}
-        placeholder={mode === "agent" ? "Ask me anything..." : "Type your message... Use @ to mention"}
+        disabled={isDisabled}
+        placeholder={isAgentContext(context) 
+          ? "Ask me anything..." 
+          : "Type your message... Use @ to mention"}
         size="lg"
         type="text"
-        value={inputValue}
+        value={localInputValue}
         variant="bordered"
         onChange={handleInputWithMentions}
         onKeyDown={handleKeyDown}
@@ -160,16 +167,10 @@ export const ChatInput: React.FC = () => {
         className="px-4 py-2 bg-ualert-500 text-notpurple-500 rounded-lg 
           hover:bg-ualert-600 focus:outline-none focus:ring-2 focus:ring-ualert-500 
           transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-        disabled={mode === "agent" ? chatHelpers.isLoading : service.isInputLoading()}
+        disabled={isDisabled}
         onClick={handleSubmit}
       >
-        {mode === "agent"
-          ? chatHelpers.isLoading
-            ? "Sending..."
-            : "Send"
-          : service.isInputLoading()
-            ? "Sending..."
-            : "Send"}
+        {loadingText}
       </button>
       {mentionState.isActive && (
         <MentionList

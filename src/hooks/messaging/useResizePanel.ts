@@ -3,7 +3,7 @@ import { useState, useCallback, useEffect } from "react";
 const MIN_WIDTH = 320;
 const MAX_WIDTH = 1200;
 
-export const useResizePanel = (initialWidth = 600) => {
+export const useResizePanel = (initialWidth = 1000) => {
   const [width, setWidth] = useState(initialWidth);
   const [isResizing, setIsResizing] = useState(false);
 

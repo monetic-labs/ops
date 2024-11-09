@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { useEffect } from "react";
 
 import { MentionOption } from "@/types/messaging";
@@ -30,37 +29,6 @@ export const MentionList: React.FC<MentionListProps> = ({
   useEffect(() => {
     setSelectedIndex(0);
   }, [searchText]);
-
-  // Handle keyboard navigation
-  // useEffect(() => {
-  //   const handleKeyDown = (e: KeyboardEvent) => {
-  //     if (!visible) return;
-
-  //     switch (e.key) {
-  //       case "ArrowDown":
-  //         e.preventDefault();
-  //         setSelectedIndex((prev) => (prev + 1) % filteredOptions.length);
-  //         break;
-  //       case "ArrowUp":
-  //         e.preventDefault();
-  //         setSelectedIndex((prev) => 
-  //           prev - 1 < 0 ? filteredOptions.length - 1 : prev - 1
-  //         );
-  //         break;
-  //       case "Enter":
-  //       case "Tab":
-  //         e.preventDefault();
-  //         if (filteredOptions[selectedIndex]) {
-  //           onSelect(filteredOptions[selectedIndex]);
-  //         }
-  //         break;
-  //     }
-  //   };
-
-  //   window.addEventListener("keydown", handleKeyDown);
-
-  //   return () => window.removeEventListener("keydown", handleKeyDown);
-  // }, [visible, filteredOptions, selectedIndex, onSelect]);
 
   if (!visible) return null;
 

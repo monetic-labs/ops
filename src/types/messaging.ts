@@ -1,6 +1,8 @@
+import { UseChatHelpers } from "ai/react";
+
 // Message Types
-export type MessageType = "user" | "bot" | "support" | "system";
-export type MessageStatus = "sending" | "sent" | "error";
+export type MessageType = "user" | "bot" | "support" | "system" | "typing";
+export type MessageStatus = "sending" | "sent" | "error" | "received";
 export type MessageServiceType = "telegram" | "openai" | "websocket";
 
 // Base Message Interface
@@ -17,16 +19,26 @@ export interface BaseMessage {
   };
 }
 
-// Add this interface
+export interface TypingIndicator {
+  type: "typing";
+  chatId: string | number;
+  isTyping: boolean;
+  userId?: string;
+}
+
+// Add this interface for types of messages that can be sent via websocket
 export interface WebSocketMessage extends BaseMessage {
-  type: "support" | "user";
+  type: MessageType;
+  id: string;
+  text: string;
+  status?: MessageStatus;
   metadata: {
     telegramMessageId?: number;
     chatId?: string;
     timestamp: number;
     userId?: string;
+    isTyping?: boolean;
   };
-  status?: MessageStatus;
 }
 
 // User Message Interface
@@ -81,19 +93,20 @@ export interface MentionOption {
 
 export interface MessageService {
   type: MessageServiceType;
-  getMessages: () => Message[];
-  sendMessage: (text: string) => Promise<void>;
-  getInputValue: () => string;
+  messages: Message[];
+  isTyping?: boolean;
+  isLoading: boolean;
+  inputValue: string;
   setInputValue: (value: string) => void;
-  isInputLoading: () => boolean;
+  sendMessage: (text: string) => Promise<void>;
   handleSubmit: (e: React.FormEvent) => Promise<void>;
-  destroy?: () => void;
-  setMessages: (messages: Message[]) => void;
+  handleWebSocketMessage?: (message: WebSocketMessage) => void;
   getUserId: () => string;
 }
 
 export interface AgentMessageService extends MessageService {
   type: "openai";
+  isLoading: boolean;
   model: string;
   context?: {
     systemPrompt?: string;
@@ -104,8 +117,48 @@ export interface AgentMessageService extends MessageService {
 export interface SupportMessageService extends MessageService {
   type: "telegram" | "websocket";
   channel: string;
+  isTyping: boolean;
+  handleWebSocketMessage: (message: WebSocketMessage) => void;
   metadata?: {
     agentId?: string;
     department?: string;
   };
+}
+
+// Base context interface that both modes share
+interface BaseChatContext {
+  messages: Message[];
+  inputValue: string;
+  setInputValue: (value: string) => void;
+  sendMessage: (text: string) => Promise<void>;
+  handleSubmit: (e: React.FormEvent) => Promise<void>;
+  userId: string;
+}
+
+// Agent-specific context
+export interface AgentChatContext extends BaseChatContext {
+  mode: 'agent';
+  service: AgentMessageService;
+  chatHelpers: UseChatHelpers;
+  isTyping: false; // Agent mode doesn't use typing indicators
+}
+
+// Support-specific context
+export interface SupportChatContext extends BaseChatContext {
+  mode: 'support';
+  service: SupportMessageService;
+  chatHelpers?: never; // Support mode doesn't use chat helpers
+  isTyping: boolean;
+}
+
+// Union type for the context
+export type ChatContextType = AgentChatContext | SupportChatContext;
+
+// Type guard functions
+export function isAgentContext(context: ChatContextType): context is AgentChatContext {
+  return context.mode === 'agent';
+}
+
+export function isSupportContext(context: ChatContextType): context is SupportChatContext {
+  return context.mode === 'support';
 }

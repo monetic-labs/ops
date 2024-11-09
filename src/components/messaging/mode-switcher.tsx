@@ -21,7 +21,7 @@ export const ModeSwitcher: React.FC = () => {
         title={
           <div className="flex items-center gap-2">
             <Bot size={18} />
-            <span>AI Agent</span>
+            <span>PACKS</span>
           </div>
         }
       />

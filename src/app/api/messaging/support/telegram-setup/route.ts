@@ -40,7 +40,8 @@ export async function POST(request: Request) {
           },
           body: JSON.stringify({
             url: webhookUrl,
-            allowed_updates: ["message"],
+            allowed_updates: ["message", "chat_action", "chat_member"],
+            drop_pending_updates: true
           }),
         }
       );

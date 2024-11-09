@@ -18,7 +18,7 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({ message }) => {
 
     return message.type === "user"
       ? "bg-ualert-500 text-notpurple-500"
-      : "bg-charyo-500/50 text-notpurple-500";
+      : "bg-charyo-400 text-notpurple-500";
   };
 
   const getAlignment = () => {
@@ -33,7 +33,6 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({ message }) => {
     if ("role" in message) {
       return message.content;
     }
-
     return message.text;
   };
 

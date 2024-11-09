@@ -1,12 +1,8 @@
 "use client";
 
 import React, { useRef, useEffect } from "react";
-import { Message as AIMessage } from "ai/react";
-
-import { useChatMessages } from "@/hooks/messaging/useChatMessages";
 import { useChatMode } from "@/hooks/messaging/useChatMode";
 import { useChatContext } from "@/hooks/messaging/useChatContext";
-import { Message } from "@/types/messaging";
 
 import { MessageBubble } from "./message-bubble";
 
@@ -15,10 +11,10 @@ export const ChatBody: React.FC = () => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { messages, isTyping } = useChatContext();
   const { mode } = useChatMode();
-  const { chatHelpers, messages: supportMessages } = useChatContext();
 
-  // Get messages from the appropriate service
-  //const messages = useChatContext().messages;
+  useEffect(() => {
+    console.log('🔵 Typing status changed:', isTyping);
+  }, [isTyping]);
   
   useEffect(() => {
     const scrollToBottom = () => {
@@ -33,6 +29,10 @@ export const ChatBody: React.FC = () => {
     console.log("Current messages:", messages);
   }, [messages]);
 
+  useEffect(() => {
+    console.log('Typing status changed:', isTyping);
+  }, [isTyping]);
+
   if (!messages) {
     return null; // or a loading state
   }
@@ -45,8 +45,8 @@ export const ChatBody: React.FC = () => {
       <div ref={messagesEndRef} />
       
       {isTyping && (
-        <div className="flex items-center space-x-2 text-sm text-gray-500">
-          <span>Support is typing</span>
+        <div className="flex items-center space-x-2 text-sm text-gray-500 p-3 bg-gray-100 rounded-lg">
+          <span>{mode === 'support' ? 'Support' : 'Agent'} is typing</span>
           <span className="animate-pulse">...</span>
         </div>
       )}
