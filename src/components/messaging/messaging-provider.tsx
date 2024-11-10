@@ -4,8 +4,7 @@ import { useCallback, useMemo } from "react";
 import { useChat } from "ai/react";
 import { useChatMode } from "@/hooks/messaging/useChatMode";
 import { ChatContext } from "@/hooks/messaging/useChatContext";
-import { useWebSocket } from "@/hooks/generics/useWebSocket";
-import { AgentMessageService, SupportMessageService, WebSocketMessage, ChatContextType } from "@/types/messaging";
+import { AgentMessageService, SupportMessageService, ChatContextType } from "@/types/messaging";
 
 import { useSupportService } from "@/hooks/messaging/useSupportService";
 import { useAgentService } from "@/hooks/messaging/useAgentService";
@@ -39,67 +38,37 @@ export const ChatProvider = ({ children, userId }: ChatProviderProps) => {
 
   const service = mode === 'support' ? supportService : agentService;
 
-  useWebSocket((message: WebSocketMessage) => {
-    console.log('🔌 ChatProvider received WebSocket message:', message);
-    if (mode === 'support') {
-      const supportService = service as SupportMessageService;
-      if (supportService.handleWebSocketMessage) {
-        supportService.handleWebSocketMessage(message);
-      }
-    }
-  });
-
-  console.group("🔄 ChatProvider Render");
-  console.log("Current Mode:", mode);
-  console.log("Chat Helpers State:", {
-    messages: chatHelpers.messages.length,
-    isLoading: chatHelpers.isLoading,
-    hasInput: !!chatHelpers.input,
-  });
-  console.groupEnd();
-
-  const handleWebSocketMessage = useCallback((message: WebSocketMessage) => {
-    console.log('📥 Received WebSocket message:', message);
-    
-    if (mode === 'support') {
-      if ('handleWebSocketMessage' in service) {
-        (service as SupportMessageService).handleWebSocketMessage(message);
-      }
-    }
-  }, [mode, service]);
-
-  useWebSocket(handleWebSocketMessage);
-
-  const contextValue = useMemo<ChatContextType>(() => {
-    const baseContext = {
-      messages: service.messages,
-      inputValue: service.inputValue,
-      setInputValue: service.setInputValue,
-      sendMessage: service.sendMessage,
-      handleSubmit: service.handleSubmit,
-      userId,
-    };
-
+  const contextValue = useMemo(() => {
     if (mode === 'agent') {
       return {
-        ...baseContext,
-        mode: 'agent',
+        messages: service.messages,
+        inputValue: service.inputValue,
+        setInputValue: service.setInputValue,
+        sendMessage: service.sendMessage,
+        handleSubmit: service.handleSubmit,
+        userId,
+        mode: 'agent' as const,
         service: service as AgentMessageService,
         chatHelpers,
         isTyping: false,
-      };
+      } satisfies ChatContextType;
+    } else {
+      return {
+        messages: service.messages,
+        inputValue: service.inputValue,
+        setInputValue: service.setInputValue,
+        sendMessage: service.sendMessage,
+        handleSubmit: service.handleSubmit,
+        userId,
+        mode: 'support' as const,
+        service: service as SupportMessageService,
+        isTyping: service.isTyping || false,
+      } satisfies ChatContextType;
     }
-
-    return {
-      ...baseContext,
-      mode: 'support',
-      service: service as SupportMessageService,
-      isTyping: service.isTyping || false,
-    };
   }, [mode, service, chatHelpers, userId]);
 
   return (
-    <ChatContext.Provider value={contextValue as ChatContextType}>
+    <ChatContext.Provider value={contextValue}>
       {children}
     </ChatContext.Provider>
   );

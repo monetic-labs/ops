@@ -1,6 +1,20 @@
 import { create } from 'zustand';
-import { broadcastMessage } from '../websocket';
-import type { Message, UserMessage, WebSocketMessage } from '@/types/messaging';
+import type { Message, WebSocketMessage } from '@/types/messaging';
+
+// Mock initial messages
+const MOCK_MESSAGES: Message[] = [
+  {
+    id: '1',
+    text: 'Hello! How can I help you today?',
+    type: 'support',
+    timestamp: Date.now() - 50000,
+    status: 'sent',
+    metadata: {
+      userId: 'support-1'
+    }
+  },
+  // Add more mock messages as needed
+];
 
 interface SupportState {
   messages: Message[];
@@ -15,7 +29,7 @@ interface SupportState {
 }
 
 export const useSupportStore = create<SupportState>((set, get) => ({
-  messages: [],
+  messages: MOCK_MESSAGES,
   isLoading: false,
   isTyping: false,
   inputValue: '',
@@ -24,15 +38,7 @@ export const useSupportStore = create<SupportState>((set, get) => ({
 
   addMessage: (message) => {
     const messages = get().messages;
-    const exists = messages.some(m => 
-      m.id === message.id || 
-      (m.text === message.text && 
-       Math.abs(m.timestamp - message.timestamp) < 1000)
-    );
-
-    if (!exists) {
-      set({ messages: [...messages, message] });
-    }
+    set({ messages: [...messages, message] });
   },
 
   setInputValue: (value) => set({ inputValue: value }),
@@ -40,66 +46,41 @@ export const useSupportStore = create<SupportState>((set, get) => ({
   sendMessage: async (text) => {
     set({ isLoading: true });
     try {
-      const timestamp = Date.now();
       const message: Message = {
-        id: `msg-${timestamp}`,
+        id: `msg-${Date.now()}`,
         text,
         type: "user",
-        status: "sending",
-        timestamp,
+        status: "sent", // Auto-set to sent for mock
+        timestamp: Date.now(),
         metadata: {
-          telegramMessageId: undefined,
-          chatId: undefined,
-          userId: 'default-user'
+          userId: 'mock-user'
         }
       };
 
-      // Add message to local state
       get().addMessage(message);
 
-      // Send via WebSocket
-      await broadcastMessage(message as WebSocketMessage);
-
-      // Update message status
-      const messages = get().messages;
-      const messageIndex = messages.findIndex(m => m.id === message.id);
-      if (messageIndex !== -1) {
-        const updatedMessages = [...messages];
-        updatedMessages[messageIndex] = {
-          ...message,
+      // Simulate support response
+      setTimeout(() => {
+        const responseMessage: Message = {
+          id: `msg-${Date.now()}`,
+          text: `Mock response to: ${text}`,
+          type: "support",
           status: "sent",
+          timestamp: Date.now(),
+          metadata: {
+            userId: 'support-1'
+          }
         };
-        set({ messages: updatedMessages });
-      }
-    } catch (error) {
-      console.error("Failed to send message:", error);
-      throw error;
+        get().addMessage(responseMessage);
+      }, 1000);
+
     } finally {
       set({ isLoading: false });
     }
   },
 
   handleWebSocketMessage: (message) => {
-    console.log('📨 Handling WebSocket message:', message);
-
-    if (message.type === 'typing') {
-      set({ isTyping: true });
-      setTimeout(() => set({ isTyping: false }), 3000);
-      return;
-    }
-
-  // Handle both user and support messages
-    if (message.type === 'support' || message.type === 'user') {
-      const newMessage: Message = {
-        id: message.id,
-        text: message.text,
-        type: message.type,
-        timestamp: message.timestamp,
-        status: message.status,
-        metadata: message.metadata
-      };
-
-      get().addMessage(newMessage);
-    } 
+    // No-op for mock implementation
+    console.log('Mock WebSocket message received:', message);
   },
 }));
