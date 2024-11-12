@@ -1,5 +1,6 @@
-import { test, expect } from '@playwright/test';
+import { test, expect, Page } from '@playwright/test';
 import { mockConversations } from '@/tests/helpers/mock-data';
+import { Message } from '@/types/messaging';
 
 test.describe('Message Bubble Component', () => {
   test.beforeEach(async ({ page }) => {
@@ -7,59 +8,102 @@ test.describe('Message Bubble Component', () => {
     await page.waitForSelector('[data-testid="chat-body"]');
   });
 
-  test('renders user message correctly', async ({ page }) => {
-    const userMessage = mockConversations.agent[0]; // First message is user
-    const messageId = `chat-message-${userMessage.id}`;
-    
+  // Helper function to reduce repetition
+  async function addMessageAndGetBubble(page: Page, message: Message) {
+    const messageId = `chat-message-${message.id}`;
     await page.evaluate((msg) => {
       window.dispatchEvent(new CustomEvent('add-messages', { detail: [msg] }));
-    }, userMessage);
+    }, message);
+    return { messageId, bubble: page.getByTestId(messageId) };
+  }
 
-    const messageBubble = page.getByTestId(messageId);
-    await expect(messageBubble).toBeVisible();
-    await expect(messageBubble).toHaveClass(/message-user/);
-    await expect(messageBubble).toHaveClass(/justify-end/);
+  test('renders user message correctly', async ({ page }) => {
+    const userMessage = mockConversations.agent[0];
+    const { messageId, bubble } = await addMessageAndGetBubble(page, userMessage);
+
+    // Group related expectations
+    await expect(bubble).toBeVisible();
+    await expect(bubble).toHaveClass(/message-user/);
+    await expect(bubble).toHaveClass(/justify-end/);
     await expect(page.getByTestId(`${messageId}-content`)).toContainText(userMessage.text);
   });
 
   test('renders bot message correctly', async ({ page }) => {
-    const botMessage = mockConversations.agent[1]; // Second message is bot
-    const messageId = `chat-message-${botMessage.id}`;
-    
-    await page.evaluate((msg) => {
-      window.dispatchEvent(new CustomEvent('add-messages', { detail: [msg] }));
-    }, botMessage);
+    const botMessage = mockConversations.agent[1];
+    const { messageId, bubble } = await addMessageAndGetBubble(page, botMessage);
 
-    const messageBubble = page.getByTestId(messageId);
-    await expect(messageBubble).toBeVisible();
-    await expect(messageBubble).toHaveClass(/message-bot/);
-    await expect(messageBubble).toHaveClass(/justify-start/);
+    await expect(bubble).toBeVisible();
+    await expect(bubble).toHaveClass(/message-bot/);
+    await expect(bubble).toHaveClass(/justify-start/);
     await expect(page.getByTestId(`${messageId}-content`)).toContainText(botMessage.text);
   });
 
   test('renders system message correctly', async ({ page }) => {
-    const systemMessage = mockConversations.mixed[0]; // First message is system
-    const messageId = `chat-message-${systemMessage.id}`;
-    
-    await page.evaluate((msg) => {
-      window.dispatchEvent(new CustomEvent('add-messages', { detail: [msg] }));
-    }, systemMessage);
+    const systemMessage = mockConversations.mixed[0];
+    const { messageId, bubble } = await addMessageAndGetBubble(page, systemMessage);
 
-    const messageBubble = page.getByTestId(messageId);
-    await expect(messageBubble).toBeVisible();
-    await expect(messageBubble).toHaveClass(/message-system/);
+    await expect(bubble).toBeVisible();
+    await expect(bubble).toHaveClass(/message-system/);
     await expect(page.getByTestId(`${messageId}-content`)).toContainText(systemMessage.text);
   });
 
   test('shows status indicator for user messages', async ({ page }) => {
     const userMessage = mockConversations.agent[0];
-    const messageId = `chat-message-${userMessage.id}`;
-    
-    await page.evaluate((msg) => {
-      window.dispatchEvent(new CustomEvent('add-messages', { detail: [msg] }));
-    }, userMessage);
+    const { messageId } = await addMessageAndGetBubble(page, userMessage);
+    const statusIndicator = page.getByTestId(`${messageId}-status`);
 
-    await expect(page.getByTestId(`${messageId}-status`)).toBeVisible();
-    await expect(page.getByTestId(`${messageId}-status`)).toContainText('✓'); // sent status
+    await expect(statusIndicator).toBeVisible();
+    await expect(statusIndicator).toContainText('✓'); // sent status
+  });
+
+  // New test to verify message ordering
+  test('maintains correct message order', async ({ page }) => {
+    const messages = mockConversations.agent.slice(0, 2);
+    
+    // Add messages and wait for them to be rendered
+    await page.evaluate((msgs) => {
+      window.dispatchEvent(new CustomEvent('add-messages', { detail: msgs }));
+    }, messages);
+  
+    // Wait for messages to be rendered
+    await page.waitForSelector(`[data-testid="chat-message-${messages[0].id}"]`);
+    await page.waitForSelector(`[data-testid="chat-message-${messages[1].id}"]`);
+  
+    // Get only the main message containers by using a more specific selector
+    const messageElements = await page.$$('[data-testid^="chat-message-"]:not([data-testid$="-content"]):not([data-testid$="-status"])');
+  
+    // Verify count
+    expect(messageElements.length).toBe(messages.length);
+  
+    // Verify order
+    for (let i = 0; i < messages.length; i++) {
+      const messageId = `chat-message-${messages[i].id}`;
+      const element = await messageElements[i].getAttribute('data-testid');
+      expect(element).toBe(messageId);
+    }
+  });
+
+  // New test to verify message content sanitization
+  test('sanitizes message content correctly', async ({ page }) => {
+    const messageWithHtml = {
+      ...mockConversations.agent[0],
+      text: '<script>alert("xss")</script>Hello <b>world</b>'
+    };
+    
+    const { messageId } = await addMessageAndGetBubble(page, messageWithHtml);
+    const content = page.getByTestId(`${messageId}-content`);
+    
+    // Wait for content to be rendered
+    await content.waitFor({ state: 'visible' });
+  
+    // Get the actual rendered text content
+    const renderedText = await content.evaluate(element => {
+      // Get the span element that contains the text
+      const textSpan = element.querySelector('span');
+      return textSpan?.textContent || '';
+    });
+  
+    // Verify the sanitized content
+    expect(renderedText.trim()).toBe('Hello world');
   });
 });

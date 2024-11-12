@@ -1,8 +1,11 @@
 "use client";
 
 import React from "react";
+import DOMPurify from 'dompurify'; 
 import { Message as AIMessage } from "ai";
+
 import { Message as CustomMessage } from "@/types/messaging";
+
 
 interface MessageBubbleProps {
   message: AIMessage | CustomMessage;
@@ -29,12 +32,12 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({ message }) => {
     return message.type === "user" ? "justify-end" : "justify-start";
   };
 
-  const getMessageContent = () => {
-    if ("role" in message) {
-      return message.content;
-    }
-    return message.text;
-  };
+  // const getMessageContent = () => {
+  //   if ("role" in message) {
+  //     return message.content;
+  //   }
+  //   return message.text;
+  // };
 
   const getMessageId = () => {
     if ("role" in message) {
@@ -48,6 +51,22 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({ message }) => {
       return message.role;
     }
     return message.type;
+  };
+
+  const sanitizeContent = (content: string) => {
+    // First use DOMPurify to remove any dangerous HTML/scripts
+    const sanitized = DOMPurify.sanitize(content, {
+      ALLOWED_TAGS: [], // Allow no HTML tags
+      ALLOWED_ATTR: [] // Allow no HTML attributes
+    });
+    
+    // Then strip any remaining HTML-like content
+    return sanitized.replace(/<[^>]*>/g, '');
+  };
+
+  const getMessageContent = () => {
+    const content = "role" in message ? message.content : message.text;
+    return sanitizeContent(content);
   };
 
   return (
