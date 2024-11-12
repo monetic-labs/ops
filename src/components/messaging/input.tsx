@@ -147,9 +147,10 @@ const loadingText = isAgentContext(context)
   };
 
   return (
-    <div className="relative flex gap-2">
+    <div className="relative flex gap-2" data-testid="chat-input-container">
       <Input
         ref={inputRef}
+        data-testid="chat-input"
         aria-label="Chat input"
         className="flex-1"
         disabled={isDisabled}
@@ -164,6 +165,7 @@ const loadingText = isAgentContext(context)
         onKeyDown={handleKeyDown}
       />
       <button
+        data-testid="chat-submit-button"
         className="px-4 py-2 bg-ualert-500 text-notpurple-500 rounded-lg 
           hover:bg-ualert-600 focus:outline-none focus:ring-2 focus:ring-ualert-500 
           transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
@@ -174,6 +176,7 @@ const loadingText = isAgentContext(context)
       </button>
       {mentionState.isActive && (
         <MentionList
+          data-testid="mention-list"
           options={options}
           position={getMentionListPosition()}
           searchText={mentionState.searchText}

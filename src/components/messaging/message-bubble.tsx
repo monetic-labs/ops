@@ -36,12 +36,35 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({ message }) => {
     return message.text;
   };
 
+  const getMessageId = () => {
+    if ("role" in message) {
+      return message.id;
+    }
+    return message.id;
+  };
+
+  const getMessageType = () => {
+    if ("role" in message) {
+      return message.role;
+    }
+    return message.type;
+  };
+
   return (
-    <div className={`flex ${getAlignment()}`}>
-      <div className={`max-w-[80%] rounded-lg p-3 ${getBubbleStyle()}`}>
+    <div 
+      data-testid={`chat-message-${getMessageId()}`}
+      className={`flex ${getAlignment()} message-${getMessageType()}`}
+    >
+      <div 
+        data-testid={`chat-message-${getMessageId()}-content`}
+        className={`max-w-[80%] rounded-lg p-3 ${getBubbleStyle()}`}
+      >
         <span className="break-words">{getMessageContent()}</span>
         {"type" in message && message.type === "user" && "status" in message && (
-          <span className="text-xs ml-2 opacity-75">
+          <span 
+          data-testid={`chat-message-${getMessageId()}-status`}
+            className="text-xs ml-2 opacity-75"
+          >
             {message.status === "sending" && "⏳"}
             {message.status === "sent" && "✓"}
             {message.status === "error" && "❌"}

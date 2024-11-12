@@ -43,6 +43,7 @@ export const MentionList: React.FC<MentionListProps> = ({
 
   return (
     <div
+      data-testid="mention-list"
       className="absolute z-[100] bg-charyo-500 rounded-lg shadow-lg max-h-60 overflow-y-auto 
           border border-charyo-600 w-full"
       style={{
@@ -56,6 +57,7 @@ export const MentionList: React.FC<MentionListProps> = ({
       ) : (
         filteredOptions.map((option, index) => (
           <button
+            data-testid="mention-option"
             key={option.id}
             className={`w-full px-4 py-2 text-left flex items-center gap-2
                 focus:outline-none text-notpurple-500
