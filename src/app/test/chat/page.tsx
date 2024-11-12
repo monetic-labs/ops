@@ -7,6 +7,7 @@ import { useSearchParams } from 'next/navigation';
 import { ChatContext } from '@/hooks/messaging/useChatContext';
 import { Message } from '@/types/messaging';
 import { createMockChatContext } from '@/tests/helpers/mock-chat-context';
+import { ModeSwitcher } from '@/components/messaging/mode-switcher';
 
 export default function TestPage() {
   const searchParams = useSearchParams();
@@ -39,6 +40,7 @@ export default function TestPage() {
       <ChatContext.Provider value={chatContextValue}>
         <div className="h-screen flex flex-col">
           <div data-testid="debug-mount">Test Page Mounted</div>
+          <ModeSwitcher />
           <ChatBody />
         </div>
       </ChatContext.Provider>

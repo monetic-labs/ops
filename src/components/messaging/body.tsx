@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useRef, useEffect, useState, ReactNode } from "react";
+import React, { useRef, useEffect, useState } from "react";
 import { useChatMode } from "@/hooks/messaging/useChatMode";
 import { useChatContext } from "@/hooks/messaging/useChatContext";
 
@@ -13,7 +13,8 @@ export const ChatBody: React.FC = () => {
   const context = useChatContext();
   const { mode } = useChatMode();
   const [messages, setMessages] = useState<Message[]>([]);
-  const [messageElements, setMessageElements] = useState<ReactNode[]>([]);
+  const [isTyping, setIsTyping] = useState(false);
+  const [localMode, setMode] = useState(mode);
 
   // Defensive check for context
   if (!context) {
@@ -25,45 +26,37 @@ export const ChatBody: React.FC = () => {
   useEffect(() => {
     return () => {
       setMessages([]);
-      setMessageElements([]);
     };
   }, []);
+
+  // Update typing state when context changes
+  useEffect(() => {
+    if (context) {
+      setIsTyping(context.isTyping);
+    }
+  }, [context?.isTyping]);
+
+  const scrollToBottom = () => {
+    if (messagesEndRef.current) {
+      const chatBody = messagesEndRef.current.parentElement;
+      if (chatBody) {
+        chatBody.scrollTop = chatBody.scrollHeight;
+      }
+    }
+  };
 
   // Update messages and scroll when context changes
   useEffect(() => {
     if (context?.messages) {
       console.log('ChatBody: Updating messages from context:', context.messages);
-      setMessages(context.messages);
-    }
-  }, [context?.messages]);
-
-  useEffect(() => {
-    console.log("Current messages:", messages);
-    const elements = messages.map((message) => (
-      <MessageBubble
-        key={`${message.id}-${message.timestamp || Date.now()}`}
-        message={message}
-        data-testid={`chat-message-msg-${message.id}`}
-      />
-    ));
-    setMessageElements(elements);
-  }, [messages]);
-
-  useEffect(() => {
-    if (messageElements.length > 0) {
+      setMessages([...context.messages]); 
+      // Use RAF to ensure DOM is updated before scrolling
       requestAnimationFrame(() => {
-        const timeoutId = setTimeout(() => {
-          if (messagesEndRef.current) {
-            const chatBody = messagesEndRef.current.parentElement;
-            if (chatBody) {
-              chatBody.scrollTop = chatBody.scrollHeight;
-            }
-          }
-        }, 100);
+        const timeoutId = setTimeout(scrollToBottom, 100);
         return () => clearTimeout(timeoutId);
       });
     }
-  }, [messageElements]);
+  }, [context?.messages]);
 
   // Listen for test events
   useEffect(() => {
@@ -72,13 +65,26 @@ export const ChatBody: React.FC = () => {
       if (event.detail?.messages) {
         setMessages([...event.detail.messages]);
       }
+      // Update both typing status and mode from the event
+      if ('isTyping' in event.detail) {
+        setIsTyping(event.detail.isTyping);
+      }
+      // Store mode from event if provided
+      if ('mode' in event.detail) {
+        setMode(event.detail.mode); // Add this state
+      }
     };
-
+  
     window.addEventListener('update-chat-context', handleContextUpdate as EventListener);
     return () => {
       window.removeEventListener('update-chat-context', handleContextUpdate as EventListener);
     };
   }, []);
+
+
+  useEffect(() => {
+    console.log("Current messages:", messages);
+  }, [messages]);
 
   return (
     <div 
@@ -101,6 +107,16 @@ export const ChatBody: React.FC = () => {
           data-testid={`chat-message-${message.id}`} 
         />
       ))}
+
+      {isTyping && (
+        <div 
+          data-testid="typing-indicator" 
+        className="flex items-center space-x-2 text-sm text-gray-500"
+      >
+        <span>{localMode === 'support' ? 'Support' : 'Agent'} is typing</span>
+        <span className="animate-pulse">...</span>
+        </div>
+      )}
       <div ref={messagesEndRef} data-testid="messages-end" />
     </div>
   );

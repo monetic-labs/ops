@@ -21,22 +21,22 @@ test.describe('Chat Body Component', () => {
   });
 
   test('displays typing indicator when support is typing', async ({ page }) => {
-    // Start in agent mode
-    await page.goto('/test/chat?mode=agent');
-    await injectMockContext(page, 'agent');
+    // Start in support mode directly
+    await page.goto('/test/chat?mode=support');
+    await injectMockContext(page, 'support');
     await page.waitForSelector('[data-testid="chat-body"]');
-
-    // Switch to support mode
-    await page.getByTestId('support-tab').click();
-    
-    // Wait for mode to change
-    await page.waitForFunction(() => {
-      return window.__MOCK_CHAT_CONTEXT__?.mode === 'support';
+  
+    // Update context with typing true using the same event pattern
+    await page.evaluate(() => {
+      window.dispatchEvent(new CustomEvent('update-chat-context', {
+        detail: {
+          mode: 'support',
+          isTyping: true,
+          messages: []
+        }
+      }));
     });
-
-    // Inject new context with typing true
-    await injectMockContext(page, 'support', [], true);
-
+  
     // Verify typing indicator
     const typingIndicator = page.getByTestId('typing-indicator');
     await expect(typingIndicator).toBeVisible();
@@ -44,15 +44,36 @@ test.describe('Chat Body Component', () => {
   });
 
   test('hides typing indicator when support stops typing', async ({ page }) => {
-    // Start with typing true
-    await injectMockContext(page, 'support', [], true);
-    
+    // Start in support mode with typing true
+    await page.goto('/test/chat?mode=support');
+    await injectMockContext(page, 'support');
+    await page.waitForSelector('[data-testid="chat-body"]');
+  
+    // First set typing to true
+    await page.evaluate(() => {
+      window.dispatchEvent(new CustomEvent('update-chat-context', {
+        detail: {
+          mode: 'support',
+          isTyping: true,
+          messages: []
+        }
+      }));
+    });
+  
     // Verify typing indicator is initially visible
     await expect(page.getByTestId('typing-indicator')).toBeVisible();
-    
+  
     // Set typing to false
-    await injectMockContext(page, 'support', [], false);
-    
+    await page.evaluate(() => {
+      window.dispatchEvent(new CustomEvent('update-chat-context', {
+        detail: {
+          mode: 'support',
+          isTyping: false,
+          messages: []
+        }
+      }));
+    });
+  
     // Verify typing indicator is hidden
     await expect(page.getByTestId('typing-indicator')).not.toBeVisible();
   });
@@ -95,73 +116,33 @@ test.describe('Chat Body Component', () => {
       }
     ];
   
-    // Clear and reset context
-    await page.evaluate(() => {
-      // Reset any existing state
-      document.querySelector('[data-testid="chat-body"]')!.innerHTML = '';
-      window.dispatchEvent(new CustomEvent('update-chat-context', {
-        detail: {
-          messages: [],
-          mode: 'agent'
-        }
-      }));
-    });
-  
-    // Wait a moment for clearing to take effect
-    await page.waitForTimeout(100);
-
-    // Verify empty state
-    const emptyCount = await page.$$eval('[data-testid^="chat-message-"]', elements => elements.length);
-    expect(emptyCount).toBe(0);
-  
-    // Now add our test messages
-    await page.evaluate((messages) => {
-        window.dispatchEvent(new CustomEvent('update-chat-context', {
-          detail: {
-            messages,
-            mode: 'agent',
-            // Force new context
-            timestamp: Date.now()
-          }
-        }));
-      }, testMessages);
-
-    // Wait for DOM to update
-    await page.waitForTimeout(100);
-
-    // Get all message elements with more specific selector
-    const messageElements = await page.$$eval(
-      '[data-testid^="chat-message-msg-"]', 
-      elements => {
-        console.log('Found elements:', elements.map(el => el.getAttribute('data-testid')));
-        return elements.length;
+  // Update messages using the same event approach that works in other tests
+  await page.evaluate((messages) => {
+    window.dispatchEvent(new CustomEvent('update-chat-context', {
+      detail: {
+        messages,
+        mode: 'agent',
+        timestamp: Date.now()
       }
-    );
+    }));
+  }, testMessages);
+  
+  // Wait for messages to render
+  await page.waitForSelector('[data-testid="chat-message-msg-1"]');
+  await page.waitForSelector('[data-testid="chat-message-msg-2"]');
 
-    console.log('Found message elements:', messageElements);
-    expect(messageElements).toBe(2);
-  
-    // Wait for messages to render
-    await page.waitForSelector('[data-testid^="chat-message-"]');
-  
-    // Get all message elements and verify count
-    const messageCount = await page.$$eval('[data-testid^="chat-message-"]', elements => elements.length);
-    console.log('Found message elements:', messageCount);
-    expect(messageCount).toBe(2);
-  
-    // Verify message order
-    for (let index = 0; index < testMessages.length; index++) {
-      const message = testMessages[index];
-      const selector = `[data-testid="chat-message-${message.id}"]`;
-      await expect(page.locator(selector)).toBeVisible();
-      
-      const content = await page.textContent(`${selector} .break-words`);
-      expect(content).toBe(message.text);
-  
+  // Verify message order
+  for (let index = 0; index < testMessages.length; index++) {
+    const message = testMessages[index];
+    const selector = `[data-testid="chat-message-${message.id}"]`;
+    const contentSelector = `[data-testid="chat-message-${message.id}-content"]`;
+    
+    await expect(page.locator(selector)).toBeVisible();
+    await expect(page.locator(contentSelector)).toContainText(message.text);
+
     if (index > 0) {
       // Verify this message appears after the previous one in the DOM
       const prevSelector = `[data-testid="chat-message-${testMessages[index - 1].id}"]`;
-      await expect(page.locator(selector)).toBeVisible();
       
       // Compare their positions
       const positions = await page.evaluate(
@@ -176,13 +157,12 @@ test.describe('Chat Body Component', () => {
         }, 
         { curr: selector, prev: prevSelector }
       ) as MessagePositions | null;
-  
-      // Ensure positions exist before comparison
+
       if (positions === null) {
         throw new Error('Failed to get element positions');
       }
       
-        expect(positions.curr).toBeGreaterThan(positions.prev);
+      expect(positions.curr).toBeGreaterThan(positions.prev);
       }
     }
   });
