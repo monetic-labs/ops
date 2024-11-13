@@ -10,7 +10,7 @@ import { PylonProvider } from "@backpack-fux/pylon-sdk";
 import pylonInstance from "@/libs/pylon-sdk";
 import PageWithScrollBackground from "@/styles/framer-motion/scroll-wrapper";
 import { ChatProvider } from "@/components/messaging/messaging-provider";
-
+import { ShortcutsProvider } from "@/components/generics/shortcuts-provider";
 export interface ProvidersProps {
   children: React.ReactNode;
   themeProps?: ThemeProviderProps;
@@ -25,7 +25,9 @@ export function Providers({ children, themeProps, userId }: ProvidersProps) {
       <NextUIProvider navigate={router.push}>
         <NextThemesProvider {...themeProps}>
           <ChatProvider userId={userId || 'default-user'}>
-            <PageWithScrollBackground>{children}</PageWithScrollBackground>
+            <ShortcutsProvider>
+              <PageWithScrollBackground>{children}</PageWithScrollBackground>
+            </ShortcutsProvider>
           </ChatProvider>
         </NextThemesProvider>
       </NextUIProvider>

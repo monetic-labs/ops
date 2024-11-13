@@ -19,6 +19,8 @@ export interface MessagePositions {
 declare global {
   interface Window {
     __MOCK_CHAT_CONTEXT__?: ChatContextType;
+    _initialWidth?: number;
+    _widthChanged?: boolean;
   }
 }
 

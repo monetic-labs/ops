@@ -15,12 +15,12 @@ export const ChatHeader: React.FC<ChatHeaderProps> = ({ onClose }) => {
         <div className="flex items-center gap-2">
           <h2 className="text-xl font-bold">AI Chat</h2>
           <div className="hidden sm:flex items-center gap-1 text-xs text-gray-400">
-            <Kbd className="px-2 py-0.5" keys={["command"]}>
-              k
-            </Kbd>
+            <Kbd className="px-2 py-0.5" keys={["command"]}>k</Kbd>
+            <span className="text-gray-400">(Global shortcut)</span>
           </div>
         </div>
         <button
+          data-testid="chat-close-button"
           aria-label="Close chat"
           className="p-2 rounded-lg hover:bg-charyo-600 transition-colors"
           type="button"

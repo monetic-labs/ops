@@ -1,7 +1,7 @@
-import React, { Dispatch, SetStateAction, useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { ChatContext } from '@/hooks/messaging/useChatContext';
 import { AgentChatContext, SupportChatContext, ChatContextType, Message, SupportMessageService, AgentMessageService } from '@/types/messaging';
-import { convertCustomMessageToAI } from '@/types/messageDTO';
+import { ShortcutsContext } from '@/components/generics/shortcuts-provider';
 
 const agentContext: AgentChatContext = {
   mode: 'agent',
@@ -72,6 +72,7 @@ export function TestWrapper({ children, mode = 'agent' }: TestWrapperProps) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [isTyping, setIsTyping] = useState(false);
   const [inputValue, setInputValue] = useState('');
+  const [isChatOpen, setIsChatOpen] = useState(false);
 
   useEffect(() => {
     const handleSetTyping = (e: CustomEvent<boolean>) => {
@@ -96,21 +97,38 @@ export function TestWrapper({ children, mode = 'agent' }: TestWrapperProps) {
       setInputValue(e.detail);
     };
 
+    const handleChatState = (event: CustomEvent<{ isOpen: boolean }>) => {
+      console.log('TestWrapper: Setting chat state:', event.detail);
+      setIsChatOpen(event.detail.isOpen);
+    };
+
     // Add event listeners
     window.addEventListener('set-typing', handleSetTyping as EventListener);
     window.addEventListener('add-messages', handleAddMessages as EventListener);
     window.addEventListener('set-input', handleSetInput as EventListener);
-
+    window.addEventListener('force-chat-state', handleChatState as EventListener);
     // Debug mount
     console.log('TestWrapper mounted with mode:', mode);
+
+    // Set initial closed state
+    setIsChatOpen(false);
 
     // Cleanup
     return () => {
       window.removeEventListener('set-typing', handleSetTyping as EventListener);
       window.removeEventListener('add-messages', handleAddMessages as EventListener);
       window.removeEventListener('set-input', handleSetInput as EventListener);
+      window.removeEventListener('force-chat-state', handleChatState as EventListener);
     };
   }, []);
+
+  // Create shortcuts context value
+  const shortcutsValue = useMemo(() => ({
+    isChatOpen,
+    openChat: () => setIsChatOpen(true),
+    closeChat: () => setIsChatOpen(false),
+    toggleChat: () => setIsChatOpen(prev => !prev)
+  }), [isChatOpen]);
 
   // Create context value
   const contextValue = useMemo(() => {
@@ -141,8 +159,10 @@ export function TestWrapper({ children, mode = 'agent' }: TestWrapperProps) {
   }, [mode, messages, isTyping, inputValue]);
 
   return (
-    <ChatContext.Provider value={contextValue}>
-      {children}
-    </ChatContext.Provider>
+    <ShortcutsContext.Provider value={shortcutsValue}>
+      <ChatContext.Provider value={contextValue}>
+        {children}
+      </ChatContext.Provider>
+    </ShortcutsContext.Provider>
   );
 }

@@ -1,0 +1,181 @@
+{"version":7,"type":"context-options","origin":"testRunner","browserName":"","options":{},"platform":"darwin","wallTime":1731479697655,"monotonicTime":158.094,"sdkLanguage":"javascript"}
+{"type":"before","callId":"hook@1","startTime":161.863,"class":"Test","method":"step","apiName":"Before Hooks","params":{},"stack":[]}
+{"type":"before","callId":"hook@2","parentId":"hook@1","startTime":162.257,"class":"Test","method":"step","apiName":"beforeEach hook","params":{},"stack":[{"file":"/Users/notdevin/_armory/backpack/services-dashboard/src/tests/messaging/components/pane.spec.ts","line":6,"column":10}]}
+{"type":"stderr","timestamp":164.155,"text":"  \u001b[38;5;45;1mpw:api \u001b[0m=> selectors.setTestIdAttribute started \u001b[38;5;45m+0ms\u001b[0m\n"}
+{"type":"before","callId":"fixture@3","parentId":"hook@2","startTime":165.237,"class":"Test","method":"step","apiName":"fixture: browser","params":{},"stack":[]}
+{"type":"stderr","timestamp":165.631,"text":"  \u001b[38;5;45;1mpw:api \u001b[0m=> browserType.launch started \u001b[38;5;45m+1ms\u001b[0m\n"}
+{"type":"before","callId":"pw:api@4","parentId":"fixture@3","startTime":166.042,"class":"Test","method":"step","apiName":"browserType.launch","params":{"handleSIGINT":"false","headless":"true","tracesDir":"/Users/notdevin/_armory/backpack/services-dashboard/test-results/.playwright-artifacts-78/traces","ignoreDefaultArgs":"undefined","ignoreAllDefaultArgs":"false","env":"undefined"},"stack":[]}
+{"type":"stderr","timestamp":167.282,"text":"  \u001b[38;5;45;1mpw:api \u001b[0m<= selectors.setTestIdAttribute succeeded \u001b[38;5;45m+2ms\u001b[0m\n"}
+{"type":"after","callId":"pw:api@4","endTime":367.598,"attachments":[]}
+{"type":"stderr","timestamp":367.718,"text":"  \u001b[38;5;45;1mpw:api \u001b[0m<= browserType.launch succeeded \u001b[38;5;45m+201ms\u001b[0m\n"}
+{"type":"after","callId":"fixture@3","endTime":367.759,"attachments":[]}
+{"type":"before","callId":"fixture@5","parentId":"hook@2","startTime":368.46,"class":"Test","method":"step","apiName":"fixture: context","params":{},"stack":[]}
+{"type":"stderr","timestamp":369.063,"text":"  \u001b[38;5;45;1mpw:api \u001b[0m=> browser.newContext started \u001b[38;5;45m+1ms\u001b[0m\n"}
+{"type":"before","callId":"pw:api@6","parentId":"fixture@5","startTime":369.245,"class":"Test","method":"step","apiName":"browser.newContext","params":{"acceptDownloads":"accept","bypassCSP":"false","colorScheme":"light","deviceScaleFactor":"1","hasTouch":"false","ignoreHTTPSErrors":"false","isMobile":"false","javaScriptEnabled":"true","locale":"en-US","offline":"false","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.6723.31 Safari/537.36","viewport":"Object","baseURL":"http://localhost:3000","serviceWorkers":"allow","noDefaultViewport":"false","extraHTTPHeaders":"undefined","storageState":"undefined","recordHar":"undefined","reducedMotion":"undefined","forcedColors":"undefined","clientCertificates":"undefined"},"stack":[]}
+{"type":"after","callId":"pw:api@6","endTime":371.904,"attachments":[]}
+{"type":"stderr","timestamp":372.014,"text":"  \u001b[38;5;45;1mpw:api \u001b[0m<= browser.newContext succeeded \u001b[38;5;45m+3ms\u001b[0m\n"}
+{"type":"after","callId":"fixture@5","endTime":374.663,"attachments":[]}
+{"type":"before","callId":"fixture@7","parentId":"hook@2","startTime":374.892,"class":"Test","method":"step","apiName":"fixture: page","params":{},"stack":[]}
+{"type":"stderr","timestamp":375.318,"text":"  \u001b[38;5;45;1mpw:api \u001b[0m=> browserContext.newPage started \u001b[38;5;45m+3ms\u001b[0m\n"}
+{"type":"before","callId":"pw:api@8","parentId":"fixture@7","startTime":376.159,"class":"Test","method":"step","apiName":"browserContext.newPage","params":{},"stack":[]}
+{"type":"after","callId":"pw:api@8","endTime":450.811,"attachments":[]}
+{"type":"stderr","timestamp":450.88,"text":"  \u001b[38;5;45;1mpw:api \u001b[0m<= browserContext.newPage succeeded \u001b[38;5;45m+76ms\u001b[0m\n"}
+{"type":"after","callId":"fixture@7","endTime":450.952,"attachments":[]}
+{"type":"stderr","timestamp":451.807,"text":"  \u001b[38;5;45;1mpw:api \u001b[0m=> page.goto started \u001b[38;5;45m+1ms\u001b[0m\n"}
+{"type":"before","callId":"pw:api@9","parentId":"hook@2","startTime":452.223,"class":"Test","method":"step","apiName":"page.goto","params":{"url":"/test/chat?mode=agent","waitUntil":"load"},"stack":[{"file":"/Users/notdevin/_armory/backpack/services-dashboard/src/tests/messaging/components/pane.spec.ts","line":7,"column":20}]}
+{"type":"stderr","timestamp":453.971,"text":"  \u001b[38;5;45;1mpw:api \u001b[0mnavigating to \"http://localhost:3000/test/chat?mode=agent\", waiting until \"load\" \u001b[38;5;45m+2ms\u001b[0m\n"}
+{"type":"stderr","timestamp":505.094,"text":"  \u001b[38;5;45;1mpw:api \u001b[0m  \"commit\" event fired \u001b[38;5;45m+51ms\u001b[0m\n"}
+{"type":"stderr","timestamp":505.217,"text":"  \u001b[38;5;45;1mpw:api \u001b[0m  navigated to \"http://localhost:3000/test/chat?mode=agent\" \u001b[38;5;45m+0ms\u001b[0m\n"}
+{"type":"stderr","timestamp":539.759,"text":"  \u001b[38;5;45;1mpw:api \u001b[0m  \"domcontentloaded\" event fired \u001b[38;5;45m+35ms\u001b[0m\n"}
+{"type":"stderr","timestamp":1136.624,"text":"  \u001b[38;5;45;1mpw:api \u001b[0m  \"load\" event fired \u001b[38;5;45m+596ms\u001b[0m\n"}
+{"type":"stderr","timestamp":1137.615,"text":"  \u001b[38;5;45;1mpw:api \u001b[0m  navigated to \"http://localhost:3000/test/chat?mode=agent\" \u001b[38;5;45m+1ms\u001b[0m\n"}
+{"type":"after","callId":"pw:api@9","endTime":1145.128,"attachments":[]}
+{"type":"stderr","timestamp":1145.171,"text":"  \u001b[38;5;45;1mpw:api \u001b[0m<= page.goto succeeded \u001b[38;5;45m+8ms\u001b[0m\n"}
+{"type":"stderr","timestamp":1145.563,"text":"  \u001b[38;5;45;1mpw:api \u001b[0m=> page.waitForSelector started \u001b[38;5;45m+0ms\u001b[0m\n"}
+{"type":"before","callId":"pw:api@10","parentId":"hook@2","startTime":1145.9,"class":"Test","method":"step","apiName":"page.waitForSelector","params":{"selector":"[data-testid=\"debug-mount\"]"},"stack":[{"file":"/Users/notdevin/_armory/backpack/services-dashboard/src/tests/messaging/components/pane.spec.ts","line":8,"column":20}]}
+{"type":"stderr","timestamp":1148.381,"text":"  \u001b[38;5;45;1mpw:api \u001b[0mwaiting for locator('[data-testid=\"debug-mount\"]') to be visible \u001b[38;5;45m+3ms\u001b[0m\n"}
+{"type":"stderr","timestamp":1157.286,"text":"  \u001b[38;5;45;1mpw:api \u001b[0m  locator resolved to visible <div data-testid=\"debug-mount\">Test Page Mounted</div> \u001b[38;5;45m+9ms\u001b[0m\n"}
+{"type":"after","callId":"pw:api@10","endTime":1162.902,"attachments":[]}
+{"type":"stderr","timestamp":1162.993,"text":"  \u001b[38;5;45;1mpw:api \u001b[0m<= page.waitForSelector succeeded \u001b[38;5;45m+6ms\u001b[0m\n"}
+{"type":"stdout","timestamp":1164.795,"text":"Injecting context: {\n  messages: [],\n  inputValue: \u001b[32m''\u001b[39m,\n  setInputValue: \u001b[36m[Function: setInputValue]\u001b[39m,\n  sendMessage: \u001b[36m[AsyncFunction: sendMessage]\u001b[39m,\n  handleSubmit: \u001b[36m[AsyncFunction: handleSubmit]\u001b[39m,\n  userId: \u001b[32m'test-user'\u001b[39m,\n  mode: \u001b[32m'agent'\u001b[39m,\n  service: {\n    type: \u001b[32m'openai'\u001b[39m,\n    messages: [],\n    isLoading: \u001b[33mfalse\u001b[39m,\n    model: \u001b[32m'gpt-3.5-turbo'\u001b[39m,\n    inputValue: \u001b[32m''\u001b[39m,\n    setInputValue: \u001b[36m[Function: setInputValue]\u001b[39m,\n    sendMessage: \u001b[36m[AsyncFunction: sendMessage]\u001b[39m,\n    handleSubmit: \u001b[36m[AsyncFunction: handleSubmit]\u001b[39m,\n    getUserId: \u001b[36m[Function: getUserId]\u001b[39m\n  },\n  chatHelpers: {\n    messages: [],\n    input: \u001b[32m''\u001b[39m,\n    handleInputChange: \u001b[36m[Function: handleInputChange]\u001b[39m,\n    handleSubmit: \u001b[36m[Function: handleSubmit]\u001b[39m,\n    setInput: \u001b[36m[Function: setInput]\u001b[39m,\n    isLoading: \u001b[33mfalse\u001b[39m,\n    error: \u001b[90mundefined\u001b[39m,\n    append: \u001b[36m[AsyncFunction: append]\u001b[39m,\n    reload: \u001b[36m[AsyncFunction: reload]\u001b[39m,\n    stop: \u001b[36m[Function: stop]\u001b[39m,\n    setMessages: \u001b[36m[Function: setMessages]\u001b[39m,\n    setData: \u001b[36m[Function: setData]\u001b[39m\n  },\n  isTyping: \u001b[33mfalse\u001b[39m\n}\n"}
+{"type":"stderr","timestamp":1166.252,"text":"  \u001b[38;5;45;1mpw:api \u001b[0m=> page.evaluate started \u001b[38;5;45m+3ms\u001b[0m\n"}
+{"type":"before","callId":"pw:api@11","parentId":"hook@2","startTime":1166.603,"class":"Test","method":"step","apiName":"page.evaluate","params":{"expression":"({\n    context\n  }) => {\n    // Debug: Log the context in the browser\n    console.log('Browser received context:', context);\n    window.__MOCK_CHAT_CONTEXT__ = context;\n  }","isFunction":"true","arg":"Object"},"stack":[{"file":"/Users/notdevin/_armory/backpack/services-dashboard/src/tests/helpers/mock-chat-context.ts","line":98,"column":14,"function":"injectMockContext"}]}
+{"type":"after","callId":"pw:api@11","endTime":1168.817,"attachments":[]}
+{"type":"stderr","timestamp":1168.844,"text":"  \u001b[38;5;45;1mpw:api \u001b[0m<= page.evaluate succeeded \u001b[38;5;45m+3ms\u001b[0m\n"}
+{"type":"stderr","timestamp":1169.261,"text":"  \u001b[38;5;45;1mpw:api \u001b[0m=> page.evaluate started \u001b[38;5;45m+0ms\u001b[0m\n"}
+{"type":"before","callId":"pw:api@12","parentId":"hook@2","startTime":1169.618,"class":"Test","method":"step","apiName":"page.evaluate","params":{"expression":"() => window.__MOCK_CHAT_CONTEXT__","isFunction":"true","arg":"Object"},"stack":[{"file":"/Users/notdevin/_armory/backpack/services-dashboard/src/tests/helpers/mock-chat-context.ts","line":110,"column":21,"function":"getMockContext"}]}
+{"type":"after","callId":"pw:api@12","endTime":1171.747,"attachments":[]}
+{"type":"stderr","timestamp":1171.772,"text":"  \u001b[38;5;45;1mpw:api \u001b[0m<= page.evaluate succeeded \u001b[38;5;45m+3ms\u001b[0m\n"}
+{"type":"stdout","timestamp":1172.019,"text":"Verified context: {\n  messages: [],\n  inputValue: \u001b[32m''\u001b[39m,\n  userId: \u001b[32m'test-user'\u001b[39m,\n  mode: \u001b[32m'agent'\u001b[39m,\n  service: {\n    type: \u001b[32m'openai'\u001b[39m,\n    messages: [],\n    isLoading: \u001b[33mfalse\u001b[39m,\n    model: \u001b[32m'gpt-3.5-turbo'\u001b[39m,\n    inputValue: \u001b[32m''\u001b[39m\n  },\n  chatHelpers: { messages: [], input: \u001b[32m''\u001b[39m, isLoading: \u001b[33mfalse\u001b[39m },\n  isTyping: \u001b[33mfalse\u001b[39m\n}\n"}
+{"type":"stderr","timestamp":1172.312,"text":"  \u001b[38;5;45;1mpw:api \u001b[0m=> page.waitForLoadState started \u001b[38;5;45m+0ms\u001b[0m\n"}
+{"type":"before","callId":"pw:api@13","parentId":"hook@2","startTime":1172.877,"class":"Test","method":"step","apiName":"page.waitForLoadState","params":{"info":"Object"},"stack":[{"file":"/Users/notdevin/_armory/backpack/services-dashboard/src/tests/messaging/components/pane.spec.ts","line":10,"column":20}]}
+{"type":"stderr","timestamp":1472.489,"text":"  \u001b[38;5;45;1mpw:api \u001b[0m  \"networkidle\" event fired \u001b[38;5;45m+300ms\u001b[0m\n"}
+{"type":"after","callId":"pw:api@13","endTime":1474.164,"attachments":[]}
+{"type":"stderr","timestamp":1474.19,"text":"  \u001b[38;5;45;1mpw:api \u001b[0m<= page.waitForLoadState succeeded \u001b[38;5;45m+2ms\u001b[0m\n"}
+{"type":"stderr","timestamp":1474.487,"text":"  \u001b[38;5;45;1mpw:api \u001b[0m=> page.evaluate started \u001b[38;5;45m+0ms\u001b[0m\n"}
+{"type":"before","callId":"pw:api@14","parentId":"hook@2","startTime":1474.838,"class":"Test","method":"step","apiName":"page.evaluate","params":{"expression":"() => {\n      window.dispatchEvent(new CustomEvent('force-chat-state', {\n        detail: {\n          isOpen: false\n        }\n      }));\n    }","isFunction":"true","arg":"Object"},"stack":[{"file":"/Users/notdevin/_armory/backpack/services-dashboard/src/tests/messaging/components/pane.spec.ts","line":13,"column":20}]}
+{"type":"stderr","timestamp":1475.058,"text":"  \u001b[38;5;45;1mpw:api \u001b[0m  \"networkidle\" event fired \u001b[38;5;45m+1ms\u001b[0m\n"}
+{"type":"after","callId":"pw:api@14","endTime":1477.276,"attachments":[]}
+{"type":"stderr","timestamp":1477.305,"text":"  \u001b[38;5;45;1mpw:api \u001b[0m<= page.evaluate succeeded \u001b[38;5;45m+2ms\u001b[0m\n"}
+{"type":"after","callId":"hook@2","endTime":1477.3310000000001,"attachments":[]}
+{"type":"after","callId":"hook@1","endTime":1477.474,"attachments":[]}
+{"type":"stderr","timestamp":1477.777,"text":"  \u001b[38;5;45;1mpw:api \u001b[0m=> page.waitForSelector started \u001b[38;5;45m+1ms\u001b[0m\n"}
+{"type":"before","callId":"pw:api@15","startTime":1478.005,"class":"Test","method":"step","apiName":"page.waitForSelector","params":{"selector":"[data-testid=\"chat-body\"]"},"stack":[{"file":"/Users/notdevin/_armory/backpack/services-dashboard/src/tests/messaging/components/pane.spec.ts","line":111,"column":16}]}
+{"type":"stderr","timestamp":1478.776,"text":"  \u001b[38;5;45;1mpw:api \u001b[0mwaiting for locator('[data-testid=\"chat-body\"]') to be visible \u001b[38;5;45m+1ms\u001b[0m\n"}
+{"type":"stderr","timestamp":1480.6109999999999,"text":"  \u001b[38;5;45;1mpw:api \u001b[0m  locator resolved to 3 elements. Proceeding with the first one: <div data-testid=\"chat-body\" class=\"flex-1 overflow-y-auto p-4 space-y-4\">…</div> \u001b[38;5;45m+1ms\u001b[0m\n"}
+{"type":"after","callId":"pw:api@15","endTime":1482.175,"attachments":[]}
+{"type":"stderr","timestamp":1482.2060000000001,"text":"  \u001b[38;5;45;1mpw:api \u001b[0m<= page.waitForSelector succeeded \u001b[38;5;45m+2ms\u001b[0m\n"}
+{"type":"stderr","timestamp":1482.434,"text":"  \u001b[38;5;45;1mpw:api \u001b[0m=> page.waitForSelector started \u001b[38;5;45m+0ms\u001b[0m\n"}
+{"type":"before","callId":"pw:api@16","startTime":1482.62,"class":"Test","method":"step","apiName":"page.waitForSelector","params":{"selector":"[data-testid=\"chat-pane-container\"][data-state=\"open\"]","state":"visible"},"stack":[{"file":"/Users/notdevin/_armory/backpack/services-dashboard/src/tests/messaging/components/pane.spec.ts","line":115,"column":12}]}
+{"type":"stderr","timestamp":1482.784,"text":"  \u001b[38;5;45;1mpw:api \u001b[0m=> page.evaluate started \u001b[38;5;45m+1ms\u001b[0m\n"}
+{"type":"before","callId":"pw:api@17","startTime":1482.95,"class":"Test","method":"step","apiName":"page.evaluate","params":{"expression":"() => {\n      window.dispatchEvent(new CustomEvent('force-chat-state', {\n        detail: {\n          isOpen: true\n        }\n      }));\n    }","isFunction":"true","arg":"Object"},"stack":[{"file":"/Users/notdevin/_armory/backpack/services-dashboard/src/tests/messaging/components/pane.spec.ts","line":118,"column":12}]}
+{"type":"stderr","timestamp":1484.071,"text":"  \u001b[38;5;45;1mpw:api \u001b[0mwaiting for locator('[data-testid=\"chat-pane-container\"][data-state=\"open\"]') to be visible \u001b[38;5;45m+1ms\u001b[0m\n"}
+{"type":"after","callId":"pw:api@17","endTime":1493.784,"attachments":[]}
+{"type":"stderr","timestamp":1493.82,"text":"  \u001b[38;5;45;1mpw:api \u001b[0m<= page.evaluate succeeded \u001b[38;5;45m+10ms\u001b[0m\n"}
+{"type":"stderr","timestamp":1494.2269999999999,"text":"  \u001b[38;5;45;1mpw:api \u001b[0m  locator resolved to 2 elements. Proceeding with the first one: <div role=\"dialog\" data-state=\"open\" aria-modal=\"true\" aria-label=\"Chat panel\" data-testid=\"chat-pane-container\" class=\"fixed left-0 top-0 h-full bg-charyo-500/80 shadow-lg transform ↵          transition-transform duration-300 z-50 flex flex-col↵          translate-x-0\">…</div> \u001b[38;5;45m+0ms\u001b[0m\n"}
+{"type":"after","callId":"pw:api@16","endTime":1496.743,"attachments":[]}
+{"type":"stderr","timestamp":1496.771,"text":"  \u001b[38;5;45;1mpw:api \u001b[0m<= page.waitForSelector succeeded \u001b[38;5;45m+3ms\u001b[0m\n"}
+{"type":"stderr","timestamp":1497.078,"text":"  \u001b[38;5;45;1mpw:api \u001b[0m=> page.evaluate started \u001b[38;5;45m+0ms\u001b[0m\n"}
+{"type":"before","callId":"pw:api@18","startTime":1497.3020000000001,"class":"Test","method":"step","apiName":"page.evaluate","params":{"expression":"() => {\n      const win = window;\n      const pane = document.querySelector('[data-testid=\"chat-pane-container\"]');\n      win._initialWidth = (pane === null || pane === void 0 ? void 0 : pane.getBoundingClientRect().width) || 0;\n\n      // Add a change detector\n      win._widthChanged = false;\n      const observer = new ResizeObserver(() => {\n        const newWidth = pane === null || pane === void 0 ? void 0 : pane.getBoundingClientRect().width;\n        if (newWidth !== win._initialWidth) {\n          win._widthChanged = true;\n        }\n      });\n      if (pane) observer.observe(pane);\n    }","isFunction":"true","arg":"Object"},"stack":[{"file":"/Users/notdevin/_armory/backpack/services-dashboard/src/tests/messaging/components/pane.spec.ts","line":140,"column":16}]}
+{"type":"after","callId":"pw:api@18","endTime":1500.066,"attachments":[]}
+{"type":"stderr","timestamp":1500.112,"text":"  \u001b[38;5;45;1mpw:api \u001b[0m<= page.evaluate succeeded \u001b[38;5;45m+3ms\u001b[0m\n"}
+{"type":"stderr","timestamp":1500.73,"text":"  \u001b[38;5;45;1mpw:api \u001b[0m=> locator.boundingBox started \u001b[38;5;45m+1ms\u001b[0m\n"}
+{"type":"before","callId":"pw:api@19","startTime":1501.0520000000001,"class":"Test","method":"step","apiName":"locator.boundingBox","params":{"selector":"[data-testid=\"resize-handle\"] >> nth=0","strict":"true","state":"attached","timeout":"0"},"stack":[{"file":"/Users/notdevin/_armory/backpack/services-dashboard/src/tests/messaging/components/pane.spec.ts","line":163,"column":42}]}
+{"type":"stderr","timestamp":1502.518,"text":"  \u001b[38;5;45;1mpw:api \u001b[0mwaiting for locator('[data-testid=\"resize-handle\"]').first() \u001b[38;5;45m+1ms\u001b[0m\n"}
+{"type":"stderr","timestamp":1504.1190000000001,"text":"  \u001b[38;5;45;1mpw:api \u001b[0m  locator resolved to visible <button type=\"button\" data-testid=\"resize-handle\" aria-label=\"Resize chat panel\" class=\"absolute right-0 top-0 bottom-0 w-1 cursor-ew-resize ↵            hover:bg-ualert-500/50 bg-charyo-500↵            appearance-none border-0 p-0 m-0↵            visible\">…</button> \u001b[38;5;45m+2ms\u001b[0m\n"}
+{"type":"after","callId":"pw:api@19","endTime":1508.593,"attachments":[]}
+{"type":"stderr","timestamp":1508.662,"text":"  \u001b[38;5;45;1mpw:api \u001b[0m<= locator.boundingBox succeeded \u001b[38;5;45m+4ms\u001b[0m\n"}
+{"type":"stderr","timestamp":1509.3809999999999,"text":"  \u001b[38;5;45;1mpw:api \u001b[0m=> mouse.move started \u001b[38;5;45m+1ms\u001b[0m\n"}
+{"type":"before","callId":"pw:api@20","startTime":1509.828,"class":"Test","method":"step","apiName":"mouse.move","params":{"x":"34.5277099609375","y":"360"},"stack":[{"file":"/Users/notdevin/_armory/backpack/services-dashboard/src/tests/messaging/components/pane.spec.ts","line":167,"column":22}]}
+{"type":"after","callId":"pw:api@20","endTime":1516.984,"attachments":[]}
+{"type":"stderr","timestamp":1517.021,"text":"  \u001b[38;5;45;1mpw:api \u001b[0m<= mouse.move succeeded \u001b[38;5;45m+8ms\u001b[0m\n"}
+{"type":"stderr","timestamp":1517.5030000000002,"text":"  \u001b[38;5;45;1mpw:api \u001b[0m=> mouse.down started \u001b[38;5;45m+0ms\u001b[0m\n"}
+{"type":"before","callId":"pw:api@21","startTime":1517.77,"class":"Test","method":"step","apiName":"mouse.down","params":{},"stack":[{"file":"/Users/notdevin/_armory/backpack/services-dashboard/src/tests/messaging/components/pane.spec.ts","line":168,"column":22}]}
+{"type":"after","callId":"pw:api@21","endTime":1533.52,"attachments":[]}
+{"type":"stderr","timestamp":1533.566,"text":"  \u001b[38;5;45;1mpw:api \u001b[0m<= mouse.down succeeded \u001b[38;5;45m+16ms\u001b[0m\n"}
+{"type":"stderr","timestamp":1534.046,"text":"  \u001b[38;5;45;1mpw:api \u001b[0m=> mouse.move started \u001b[38;5;45m+1ms\u001b[0m\n"}
+{"type":"before","callId":"pw:api@22","startTime":1534.377,"class":"Test","method":"step","apiName":"mouse.move","params":{"x":"54.5277099609375","y":"360","steps":"5"},"stack":[{"file":"/Users/notdevin/_armory/backpack/services-dashboard/src/tests/messaging/components/pane.spec.ts","line":172,"column":24}]}
+{"type":"after","callId":"pw:api@22","endTime":1616.251,"attachments":[]}
+{"type":"stderr","timestamp":1616.29,"text":"  \u001b[38;5;45;1mpw:api \u001b[0m<= mouse.move succeeded \u001b[38;5;45m+82ms\u001b[0m\n"}
+{"type":"stderr","timestamp":1616.6280000000002,"text":"  \u001b[38;5;45;1mpw:api \u001b[0m=> page.waitForTimeout started \u001b[38;5;45m+0ms\u001b[0m\n"}
+{"type":"before","callId":"pw:api@23","startTime":1616.9850000000001,"class":"Test","method":"step","apiName":"page.waitForTimeout","params":{"timeout":"50"},"stack":[{"file":"/Users/notdevin/_armory/backpack/services-dashboard/src/tests/messaging/components/pane.spec.ts","line":177,"column":18}]}
+{"type":"after","callId":"pw:api@23","endTime":1669.191,"attachments":[]}
+{"type":"stderr","timestamp":1669.222,"text":"  \u001b[38;5;45;1mpw:api \u001b[0m<= page.waitForTimeout succeeded \u001b[38;5;45m+53ms\u001b[0m\n"}
+{"type":"stderr","timestamp":1669.413,"text":"  \u001b[38;5;45;1mpw:api \u001b[0m=> mouse.move started \u001b[38;5;45m+0ms\u001b[0m\n"}
+{"type":"before","callId":"pw:api@24","startTime":1669.6860000000001,"class":"Test","method":"step","apiName":"mouse.move","params":{"x":"74.5277099609375","y":"360","steps":"5"},"stack":[{"file":"/Users/notdevin/_armory/backpack/services-dashboard/src/tests/messaging/components/pane.spec.ts","line":172,"column":24}]}
+{"type":"after","callId":"pw:api@24","endTime":1749.598,"attachments":[]}
+{"type":"stderr","timestamp":1749.641,"text":"  \u001b[38;5;45;1mpw:api \u001b[0m<= mouse.move succeeded \u001b[38;5;45m+80ms\u001b[0m\n"}
+{"type":"stderr","timestamp":1749.885,"text":"  \u001b[38;5;45;1mpw:api \u001b[0m=> page.waitForTimeout started \u001b[38;5;45m+1ms\u001b[0m\n"}
+{"type":"before","callId":"pw:api@25","startTime":1750.315,"class":"Test","method":"step","apiName":"page.waitForTimeout","params":{"timeout":"50"},"stack":[{"file":"/Users/notdevin/_armory/backpack/services-dashboard/src/tests/messaging/components/pane.spec.ts","line":177,"column":18}]}
+{"type":"after","callId":"pw:api@25","endTime":1803.72,"attachments":[]}
+{"type":"stderr","timestamp":1803.781,"text":"  \u001b[38;5;45;1mpw:api \u001b[0m<= page.waitForTimeout succeeded \u001b[38;5;45m+54ms\u001b[0m\n"}
+{"type":"stderr","timestamp":1804.029,"text":"  \u001b[38;5;45;1mpw:api \u001b[0m=> mouse.move started \u001b[38;5;45m+0ms\u001b[0m\n"}
+{"type":"before","callId":"pw:api@26","startTime":1804.391,"class":"Test","method":"step","apiName":"mouse.move","params":{"x":"94.5277099609375","y":"360","steps":"5"},"stack":[{"file":"/Users/notdevin/_armory/backpack/services-dashboard/src/tests/messaging/components/pane.spec.ts","line":172,"column":24}]}
+{"type":"after","callId":"pw:api@26","endTime":1884.54,"attachments":[]}
+{"type":"stderr","timestamp":1884.574,"text":"  \u001b[38;5;45;1mpw:api \u001b[0m<= mouse.move succeeded \u001b[38;5;45m+80ms\u001b[0m\n"}
+{"type":"stderr","timestamp":1884.771,"text":"  \u001b[38;5;45;1mpw:api \u001b[0m=> page.waitForTimeout started \u001b[38;5;45m+1ms\u001b[0m\n"}
+{"type":"before","callId":"pw:api@27","startTime":1885.133,"class":"Test","method":"step","apiName":"page.waitForTimeout","params":{"timeout":"50"},"stack":[{"file":"/Users/notdevin/_armory/backpack/services-dashboard/src/tests/messaging/components/pane.spec.ts","line":177,"column":18}]}
+{"type":"after","callId":"pw:api@27","endTime":1939.594,"attachments":[]}
+{"type":"stderr","timestamp":1939.734,"text":"  \u001b[38;5;45;1mpw:api \u001b[0m<= page.waitForTimeout succeeded \u001b[38;5;45m+55ms\u001b[0m\n"}
+{"type":"stderr","timestamp":1940.665,"text":"  \u001b[38;5;45;1mpw:api \u001b[0m=> mouse.move started \u001b[38;5;45m+0ms\u001b[0m\n"}
+{"type":"before","callId":"pw:api@28","startTime":1941.228,"class":"Test","method":"step","apiName":"mouse.move","params":{"x":"114.5277099609375","y":"360","steps":"5"},"stack":[{"file":"/Users/notdevin/_armory/backpack/services-dashboard/src/tests/messaging/components/pane.spec.ts","line":172,"column":24}]}
+{"type":"after","callId":"pw:api@28","endTime":1999.5810000000001,"attachments":[]}
+{"type":"stderr","timestamp":1999.618,"text":"  \u001b[38;5;45;1mpw:api \u001b[0m<= mouse.move succeeded \u001b[38;5;45m+59ms\u001b[0m\n"}
+{"type":"stderr","timestamp":1999.815,"text":"  \u001b[38;5;45;1mpw:api \u001b[0m=> page.waitForTimeout started \u001b[38;5;45m+1ms\u001b[0m\n"}
+{"type":"before","callId":"pw:api@29","startTime":2000.162,"class":"Test","method":"step","apiName":"page.waitForTimeout","params":{"timeout":"50"},"stack":[{"file":"/Users/notdevin/_armory/backpack/services-dashboard/src/tests/messaging/components/pane.spec.ts","line":177,"column":18}]}
+{"type":"after","callId":"pw:api@29","endTime":2052.971,"attachments":[]}
+{"type":"stderr","timestamp":2053.012,"text":"  \u001b[38;5;45;1mpw:api \u001b[0m<= page.waitForTimeout succeeded \u001b[38;5;45m+53ms\u001b[0m\n"}
+{"type":"stderr","timestamp":2053.239,"text":"  \u001b[38;5;45;1mpw:api \u001b[0m=> mouse.move started \u001b[38;5;45m+0ms\u001b[0m\n"}
+{"type":"before","callId":"pw:api@30","startTime":2053.489,"class":"Test","method":"step","apiName":"mouse.move","params":{"x":"134.5277099609375","y":"360","steps":"5"},"stack":[{"file":"/Users/notdevin/_armory/backpack/services-dashboard/src/tests/messaging/components/pane.spec.ts","line":172,"column":24}]}
+{"type":"after","callId":"pw:api@30","endTime":2115.839,"attachments":[]}
+{"type":"stderr","timestamp":2115.871,"text":"  \u001b[38;5;45;1mpw:api \u001b[0m<= mouse.move succeeded \u001b[38;5;45m+63ms\u001b[0m\n"}
+{"type":"stderr","timestamp":2116.058,"text":"  \u001b[38;5;45;1mpw:api \u001b[0m=> page.waitForTimeout started \u001b[38;5;45m+0ms\u001b[0m\n"}
+{"type":"before","callId":"pw:api@31","startTime":2116.455,"class":"Test","method":"step","apiName":"page.waitForTimeout","params":{"timeout":"50"},"stack":[{"file":"/Users/notdevin/_armory/backpack/services-dashboard/src/tests/messaging/components/pane.spec.ts","line":177,"column":18}]}
+{"type":"after","callId":"pw:api@31","endTime":2172.084,"attachments":[]}
+{"type":"stderr","timestamp":2172.191,"text":"  \u001b[38;5;45;1mpw:api \u001b[0m<= page.waitForTimeout succeeded \u001b[38;5;45m+56ms\u001b[0m\n"}
+{"type":"stderr","timestamp":2172.683,"text":"  \u001b[38;5;45;1mpw:api \u001b[0m=> mouse.move started \u001b[38;5;45m+0ms\u001b[0m\n"}
+{"type":"before","callId":"pw:api@32","startTime":2173.298,"class":"Test","method":"step","apiName":"mouse.move","params":{"x":"154.5277099609375","y":"360","steps":"5"},"stack":[{"file":"/Users/notdevin/_armory/backpack/services-dashboard/src/tests/messaging/components/pane.spec.ts","line":172,"column":24}]}
+{"type":"after","callId":"pw:api@32","endTime":2235.194,"attachments":[]}
+{"type":"stderr","timestamp":2235.295,"text":"  \u001b[38;5;45;1mpw:api \u001b[0m<= mouse.move succeeded \u001b[38;5;45m+63ms\u001b[0m\n"}
+{"type":"stderr","timestamp":2236.365,"text":"  \u001b[38;5;45;1mpw:api \u001b[0m=> page.waitForTimeout started \u001b[38;5;45m+1ms\u001b[0m\n"}
+{"type":"before","callId":"pw:api@33","startTime":2236.964,"class":"Test","method":"step","apiName":"page.waitForTimeout","params":{"timeout":"50"},"stack":[{"file":"/Users/notdevin/_armory/backpack/services-dashboard/src/tests/messaging/components/pane.spec.ts","line":177,"column":18}]}
+{"type":"after","callId":"pw:api@33","endTime":2293.096,"attachments":[]}
+{"type":"stderr","timestamp":2293.2110000000002,"text":"  \u001b[38;5;45;1mpw:api \u001b[0m<= page.waitForTimeout succeeded \u001b[38;5;45m+57ms\u001b[0m\n"}
+{"type":"stderr","timestamp":2294,"text":"  \u001b[38;5;45;1mpw:api \u001b[0m=> mouse.move started \u001b[38;5;45m+1ms\u001b[0m\n"}
+{"type":"before","callId":"pw:api@34","startTime":2295.056,"class":"Test","method":"step","apiName":"mouse.move","params":{"x":"174.5277099609375","y":"360","steps":"5"},"stack":[{"file":"/Users/notdevin/_armory/backpack/services-dashboard/src/tests/messaging/components/pane.spec.ts","line":172,"column":24}]}
+{"type":"after","callId":"pw:api@34","endTime":2368.151,"attachments":[]}
+{"type":"stderr","timestamp":2368.237,"text":"  \u001b[38;5;45;1mpw:api \u001b[0m<= mouse.move succeeded \u001b[38;5;45m+74ms\u001b[0m\n"}
+{"type":"stderr","timestamp":2368.797,"text":"  \u001b[38;5;45;1mpw:api \u001b[0m=> page.waitForTimeout started \u001b[38;5;45m+1ms\u001b[0m\n"}
+{"type":"before","callId":"pw:api@35","startTime":2369.638,"class":"Test","method":"step","apiName":"page.waitForTimeout","params":{"timeout":"50"},"stack":[{"file":"/Users/notdevin/_armory/backpack/services-dashboard/src/tests/messaging/components/pane.spec.ts","line":177,"column":18}]}
+{"type":"after","callId":"pw:api@35","endTime":2426.276,"attachments":[]}
+{"type":"stderr","timestamp":2426.4049999999997,"text":"  \u001b[38;5;45;1mpw:api \u001b[0m<= page.waitForTimeout succeeded \u001b[38;5;45m+57ms\u001b[0m\n"}
+{"type":"stderr","timestamp":2427.319,"text":"  \u001b[38;5;45;1mpw:api \u001b[0m=> mouse.move started \u001b[38;5;45m+1ms\u001b[0m\n"}
+{"type":"before","callId":"pw:api@36","startTime":2428.124,"class":"Test","method":"step","apiName":"mouse.move","params":{"x":"194.5277099609375","y":"360","steps":"5"},"stack":[{"file":"/Users/notdevin/_armory/backpack/services-dashboard/src/tests/messaging/components/pane.spec.ts","line":172,"column":24}]}
+{"type":"after","callId":"pw:api@36","endTime":2499.9610000000002,"attachments":[]}
+{"type":"stderr","timestamp":2499.994,"text":"  \u001b[38;5;45;1mpw:api \u001b[0m<= mouse.move succeeded \u001b[38;5;45m+73ms\u001b[0m\n"}
+{"type":"stderr","timestamp":2500.186,"text":"  \u001b[38;5;45;1mpw:api \u001b[0m=> page.waitForTimeout started \u001b[38;5;45m+0ms\u001b[0m\n"}
+{"type":"before","callId":"pw:api@37","startTime":2500.437,"class":"Test","method":"step","apiName":"page.waitForTimeout","params":{"timeout":"50"},"stack":[{"file":"/Users/notdevin/_armory/backpack/services-dashboard/src/tests/messaging/components/pane.spec.ts","line":177,"column":18}]}
+{"type":"after","callId":"pw:api@37","endTime":2553.4139999999998,"attachments":[]}
+{"type":"stderr","timestamp":2553.453,"text":"  \u001b[38;5;45;1mpw:api \u001b[0m<= page.waitForTimeout succeeded \u001b[38;5;45m+53ms\u001b[0m\n"}
+{"type":"stderr","timestamp":2553.656,"text":"  \u001b[38;5;45;1mpw:api \u001b[0m=> mouse.move started \u001b[38;5;45m+0ms\u001b[0m\n"}
+{"type":"before","callId":"pw:api@38","startTime":2553.95,"class":"Test","method":"step","apiName":"mouse.move","params":{"x":"214.5277099609375","y":"360","steps":"5"},"stack":[{"file":"/Users/notdevin/_armory/backpack/services-dashboard/src/tests/messaging/components/pane.spec.ts","line":172,"column":24}]}
+{"type":"after","callId":"pw:api@38","endTime":2615.1710000000003,"attachments":[]}
+{"type":"stderr","timestamp":2615.206,"text":"  \u001b[38;5;45;1mpw:api \u001b[0m<= mouse.move succeeded \u001b[38;5;45m+62ms\u001b[0m\n"}
+{"type":"stderr","timestamp":2615.39,"text":"  \u001b[38;5;45;1mpw:api \u001b[0m=> page.waitForTimeout started \u001b[38;5;45m+0ms\u001b[0m\n"}
+{"type":"before","callId":"pw:api@39","startTime":2615.7039999999997,"class":"Test","method":"step","apiName":"page.waitForTimeout","params":{"timeout":"50"},"stack":[{"file":"/Users/notdevin/_armory/backpack/services-dashboard/src/tests/messaging/components/pane.spec.ts","line":177,"column":18}]}
+{"type":"after","callId":"pw:api@39","endTime":2668.51,"attachments":[]}
+{"type":"stderr","timestamp":2668.5460000000003,"text":"  \u001b[38;5;45;1mpw:api \u001b[0m<= page.waitForTimeout succeeded \u001b[38;5;45m+53ms\u001b[0m\n"}
+{"type":"stderr","timestamp":2668.7709999999997,"text":"  \u001b[38;5;45;1mpw:api \u001b[0m=> mouse.move started \u001b[38;5;45m+1ms\u001b[0m\n"}
+{"type":"before","callId":"pw:api@40","startTime":2669.193,"class":"Test","method":"step","apiName":"mouse.move","params":{"x":"234.5277099609375","y":"360","steps":"5"},"stack":[{"file":"/Users/notdevin/_armory/backpack/services-dashboard/src/tests/messaging/components/pane.spec.ts","line":172,"column":24}]}
+{"type":"after","callId":"pw:api@40","endTime":2732.198,"attachments":[]}
+{"type":"stderr","timestamp":2732.246,"text":"  \u001b[38;5;45;1mpw:api \u001b[0m<= mouse.move succeeded \u001b[38;5;45m+63ms\u001b[0m\n"}
+{"type":"stderr","timestamp":2732.758,"text":"  \u001b[38;5;45;1mpw:api \u001b[0m=> page.waitForTimeout started \u001b[38;5;45m+1ms\u001b[0m\n"}
+{"type":"before","callId":"pw:api@41","startTime":2733.166,"class":"Test","method":"step","apiName":"page.waitForTimeout","params":{"timeout":"50"},"stack":[{"file":"/Users/notdevin/_armory/backpack/services-dashboard/src/tests/messaging/components/pane.spec.ts","line":177,"column":18}]}
+{"type":"after","callId":"pw:api@41","endTime":2786.592,"attachments":[]}
+{"type":"stderr","timestamp":2786.638,"text":"  \u001b[38;5;45;1mpw:api \u001b[0m<= page.waitForTimeout succeeded \u001b[38;5;45m+53ms\u001b[0m\n"}
+{"type":"stderr","timestamp":2787.0789999999997,"text":"  \u001b[38;5;45;1mpw:api \u001b[0m=> mouse.up started \u001b[38;5;45m+1ms\u001b[0m\n"}
+{"type":"before","callId":"pw:api@42","startTime":2787.286,"class":"Test","method":"step","apiName":"mouse.up","params":{},"stack":[{"file":"/Users/notdevin/_armory/backpack/services-dashboard/src/tests/messaging/components/pane.spec.ts","line":180,"column":22}]}
+{"type":"after","callId":"pw:api@42","endTime":2790.005,"attachments":[]}
+{"type":"stderr","timestamp":2790.041,"text":"  \u001b[38;5;45;1mpw:api \u001b[0m<= mouse.up succeeded \u001b[38;5;45m+3ms\u001b[0m\n"}
+{"type":"stderr","timestamp":2790.511,"text":"  \u001b[38;5;45;1mpw:api \u001b[0m=> page.waitForFunction started \u001b[38;5;45m+0ms\u001b[0m\n"}
+{"type":"before","callId":"pw:api@43","startTime":2790.774,"class":"Test","method":"step","apiName":"page.waitForFunction","params":{"pollingInterval":"undefined","expression":"() => window._widthChanged","isFunction":"true","arg":"Object"},"stack":[{"file":"/Users/notdevin/_armory/backpack/services-dashboard/src/tests/messaging/components/pane.spec.ts","line":183,"column":16}]}

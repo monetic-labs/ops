@@ -58,20 +58,19 @@ export const ChatBody: React.FC = () => {
     }
   }, [context?.messages]);
 
-  // Listen for test events
+  // Single unified event listener for context updates
   useEffect(() => {
     const handleContextUpdate = (event: CustomEvent) => {
       console.log('ChatBody: Received context update:', event.detail);
+      
       if (event.detail?.messages) {
         setMessages([...event.detail.messages]);
       }
-      // Update both typing status and mode from the event
       if ('isTyping' in event.detail) {
         setIsTyping(event.detail.isTyping);
       }
-      // Store mode from event if provided
       if ('mode' in event.detail) {
-        setMode(event.detail.mode); // Add this state
+        setMode(event.detail.mode);
       }
     };
   
@@ -81,10 +80,40 @@ export const ChatBody: React.FC = () => {
     };
   }, []);
 
-
+  // Debug log messages
   useEffect(() => {
     console.log("Current messages:", messages);
   }, [messages]);
+
+  // Single effect to handle typing state
+  // useEffect(() => {
+  //   const handleTypingUpdate = (event: CustomEvent) => {
+  //     console.log('Received typing update:', event.detail);
+  //     if (event.detail?.isTyping !== undefined) {
+  //       setIsTyping(event.detail.isTyping);
+  //     }
+  //   };
+
+  //   // Only listen for WebSocket typing events
+  //   window.addEventListener('chat-typing-update', handleTypingUpdate as EventListener);
+  //   return () => {
+  //     window.removeEventListener('chat-typing-update', handleTypingUpdate as EventListener);
+  //   };
+  // }, []);
+
+  // Remove the context update listener for typing
+  // useEffect(() => {
+  //   const handleContextUpdate = (event: CustomEvent) => {
+  //     if ('isTyping' in event.detail) {
+  //       setIsTyping(event.detail.isTyping);
+  //     }
+  //   };
+
+  //   window.addEventListener('update-chat-context', handleContextUpdate as EventListener);
+  //   return () => {
+  //     window.removeEventListener('update-chat-context', handleContextUpdate as EventListener);
+  //   };
+  // }, []);
 
   return (
     <div 
@@ -111,10 +140,10 @@ export const ChatBody: React.FC = () => {
       {isTyping && (
         <div 
           data-testid="typing-indicator" 
-        className="flex items-center space-x-2 text-sm text-gray-500"
-      >
-        <span>{localMode === 'support' ? 'Support' : 'Agent'} is typing</span>
-        <span className="animate-pulse">...</span>
+          className="flex items-center space-x-2 text-sm text-gray-500"
+        >
+          <span>{localMode === 'support' ? 'Support' : 'Agent'} is typing</span>
+          <span className="animate-pulse">...</span>
         </div>
       )}
       <div ref={messagesEndRef} data-testid="messages-end" />
