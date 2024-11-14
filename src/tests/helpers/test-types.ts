@@ -1,5 +1,13 @@
 import { ChatContextType } from "@/types/messaging";
 
+// Add ShortcutsContextType to the types
+export interface ShortcutsContextType {
+    isChatOpen: boolean;
+    openChat: () => void;
+    closeChat: () => void;
+    toggleChat: () => void;
+  }
+
 // Define the Message type for tests
 export interface TestMessage {
   id: string;
@@ -19,8 +27,12 @@ export interface MessagePositions {
 declare global {
   interface Window {
     __MOCK_CHAT_CONTEXT__?: ChatContextType;
+    __MOCK_SHORTCUTS_CONTEXT__?: ShortcutsContextType; 
     _initialWidth?: number;
     _widthChanged?: boolean;
+    openChat?: () => void;
+    closeChat?: () => void;
+    toggleChat?: () => void;
   }
 }
 

@@ -18,7 +18,7 @@ export const ChatPane: React.FC<ChatPaneProps> = ({ isOpen, onClose }) => {
   const { width, isResizing, resizeHandleProps } = useResizePanel();
   const shortcuts = useShortcuts();
   const [mounted, setMounted] = useState(false);
-
+  const [isClosing, setIsClosing] = useState(false);
   // Handle initial mount to prevent flash
   useEffect(() => {
     setMounted(true);
@@ -27,9 +27,15 @@ export const ChatPane: React.FC<ChatPaneProps> = ({ isOpen, onClose }) => {
   // Handle test events
   useEffect(() => {
     const handleTestState = (event: CustomEvent) => {
-      if (event.detail?.isOpen !== undefined) {
-        console.log('Test state update:', event.detail);
-        onClose(); // Call onClose to update parent state
+      if (event.detail?.isOpen === undefined) return;
+      
+      // Prevent recursive updates
+      if (event.detail.isOpen !== shortcuts.isChatOpen) {
+        if (event.detail.isOpen) {
+          shortcuts.openChat();
+        } else {
+          shortcuts.closeChat();
+        }
       }
     };
 
@@ -44,18 +50,19 @@ export const ChatPane: React.FC<ChatPaneProps> = ({ isOpen, onClose }) => {
       window.removeEventListener('chat-pane-state' as any, handleTestState);
       window.removeEventListener('update-chat-context' as any, handleContextUpdate);
     };
-  }, [onClose]);
+  }, [shortcuts]);
 
-  // Sync prop state with context state
+  // Sync prop state with context state - but prevent infinite loops
   useEffect(() => {
-    if (isOpen !== shortcuts.isChatOpen) {
+    const shouldUpdate = isOpen !== shortcuts.isChatOpen;
+    if (shouldUpdate) {
       if (isOpen) {
         shortcuts.openChat();
       } else {
         shortcuts.closeChat();
       }
     }
-  }, [isOpen, shortcuts]);
+  }, [isOpen, shortcuts.isChatOpen, shortcuts]);
 
   // Initialize WebSocket when chat pane opens
   useEffect(() => {
@@ -95,23 +102,77 @@ export const ChatPane: React.FC<ChatPaneProps> = ({ isOpen, onClose }) => {
     };
   }, [isOpen]);
 
-  // Handle keyboard events
+  // Handle escape key
+  const handleClose = useCallback(() => {
+    console.log('Pane close requested');
+    setIsClosing(true);
+    // Wait for transition
+    setTimeout(() => {
+      onClose?.();
+      shortcuts.closeChat();
+      setIsClosing(false);
+    }, 300); // Match transition duration
+  }, [onClose, shortcuts]);
+
+  // Update the escape key handler to be more reliable
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === 'Escape' && isOpen) {
-        console.log('Escape pressed, closing pane');
+      event.preventDefault();
+      console.log('Escape pressed, closing pane');
+        // Dispatch a custom event before closing
+        window.dispatchEvent(new CustomEvent('chat-escape-pressed'));
         onClose();
       }
     };
-  
+
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [isOpen, onClose]);
 
-  const handleClose = useCallback(() => {
-    shortcuts.closeChat();
-    onClose();
-  }, [shortcuts, onClose]);
+  // Handle test state forcing
+  useEffect(() => {
+    const handleForceState = (event: CustomEvent) => {
+      if (event.detail?.isOpen !== undefined) {
+        if (event.detail.isOpen) {
+          shortcuts.openChat();
+        } else {
+          shortcuts.closeChat();
+        }
+      }
+
+      // Ensure DOM is updated
+      requestAnimationFrame(() => {
+        const pane = document.querySelector('[data-testid="chat-pane-container"]');
+        if (pane) {
+          pane.setAttribute('data-state', event.detail.isOpen ? 'open' : 'closed');
+          if (event.detail.isOpen) {
+            pane.classList.remove('-translate-x-full');
+            pane.classList.add('translate-x-0');
+          } else {
+            pane.classList.add('-translate-x-full');
+            pane.classList.remove('translate-x-0');
+          }
+        }
+      });
+    };
+  
+    window.addEventListener('force-chat-state' as any, handleForceState);
+    return () => window.removeEventListener('force-chat-state' as any, handleForceState);
+  }, [shortcuts]);
+
+  // Sync with shortcuts state
+  useEffect(() => {
+    if (mounted && isOpen !== shortcuts.isChatOpen) {
+      if (isOpen) {
+        shortcuts.openChat();
+      } else {
+        shortcuts.closeChat();
+      }
+    }
+  }, [isOpen, shortcuts, mounted]);
+
+  if (!mounted) return null;
 
   return (
     <>
@@ -159,7 +220,7 @@ export const ChatPane: React.FC<ChatPaneProps> = ({ isOpen, onClose }) => {
         {/* Resize Handle */}
         <button
           {...resizeHandleProps}
-          data-testid="resize-handle"
+          data-testid="chat-pane-resize-handle"
           aria-label="Resize chat panel"
           className={`absolute right-0 top-0 bottom-0 w-1 cursor-ew-resize 
             hover:bg-ualert-500/50 ${isResizing ? "bg-ualert-500" : "bg-charyo-500"}

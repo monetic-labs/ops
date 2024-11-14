@@ -3,7 +3,6 @@
 import React, { useState, useRef } from "react";
 import { Input } from "@nextui-org/input";
 
-import { useChatMode } from "@/hooks/messaging/useChatMode";
 import { useMentions } from "@/hooks/messaging/useMentions";
 import { isAgentContext, MentionOption } from "@/types/messaging";
 import { useChatContext } from "@/hooks/messaging/useChatContext";

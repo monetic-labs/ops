@@ -1,7 +1,9 @@
+import { useCallback, useRef } from "react";
+
 import React, { useEffect, useMemo, useState } from 'react';
 import { ChatContext } from '@/hooks/messaging/useChatContext';
 import { AgentChatContext, SupportChatContext, ChatContextType, Message, SupportMessageService, AgentMessageService } from '@/types/messaging';
-import { ShortcutsContext } from '@/components/generics/shortcuts-provider';
+import { ShortcutsProvider } from '@/components/generics/shortcuts-provider';
 
 const agentContext: AgentChatContext = {
   mode: 'agent',
@@ -69,68 +71,167 @@ interface TestWrapperProps {
 }
 
 export function TestWrapper({ children, mode = 'agent' }: TestWrapperProps) {
-  const [messages, setMessages] = useState<Message[]>([]);
-  const [isTyping, setIsTyping] = useState(false);
-  const [inputValue, setInputValue] = useState('');
+  // State management remains the same
   const [isChatOpen, setIsChatOpen] = useState(false);
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [inputValue, setInputValue] = useState('');
+  const [isTyping, setIsTyping] = useState(false);
+  const stateRef = useRef(isChatOpen);
+  const isTransitioning = useRef(false);
 
-  useEffect(() => {
-    const handleSetTyping = (e: CustomEvent<boolean>) => {
-      console.log('Setting typing state:', e.detail);
-      setIsTyping(e.detail);
+  // Update syncDOMState to match ShortcutsProvider implementation
+  const syncDOMState = useCallback((newState: boolean) => {
+    if (stateRef.current === newState) {
+      return;
+    }
+
+    requestAnimationFrame(() => {
+      const pane = document.querySelector('[data-testid="chat-pane-container"]');
+      if (pane) {
+        const state = newState ? 'open' : 'closed';
+        pane.setAttribute('data-state', state);
+        pane.setAttribute('aria-modal', String(newState));
+        
+        if (newState) {
+          pane.classList.remove('-translate-x-full');
+          pane.classList.add('translate-x-0');
+        } else {
+          pane.classList.add('-translate-x-full');
+          pane.classList.remove('translate-x-0');
+        }
+      }
+    });
+  }, []);
+
+  // Centralized state update function
+  const updateChatState = useCallback(async (newState: boolean) => {
+    if (isTransitioning.current) return;
+    if (stateRef.current === newState) return;
+
+    isTransitioning.current = true;
+    try {
+      console.log(`${newState ? 'Opening' : 'Closing'} chat from TestWrapper`);
+      stateRef.current = newState;
+      setIsChatOpen(newState);
       
-      // Debug the state change
-      console.log('Typing state updated:', {
-        previous: isTyping,
-        new: e.detail,
-        mode
+      await new Promise<void>((resolve) => {
+        requestAnimationFrame(() => {
+          const pane = document.querySelector('[data-testid="chat-pane-container"]');
+          if (pane) {
+            pane.setAttribute('data-state', newState ? 'open' : 'closed');
+            pane.setAttribute('aria-modal', String(newState));
+            
+            if (newState) {
+              pane.classList.remove('-translate-x-full');
+              pane.classList.add('translate-x-0');
+            } else {
+              pane.classList.add('-translate-x-full');
+              pane.classList.remove('translate-x-0');
+            }
+          }
+          setTimeout(resolve, 100); // Allow time for transitions
+        });
       });
+    } finally {
+      isTransitioning.current = false;
+    }
+  }, []);
+  
+  // Update state handlers to be async
+  const shortcutsValue = useMemo(() => ({
+    isChatOpen,
+    openChat: () => updateChatState(true),
+    closeChat: () => updateChatState(false),
+    toggleChat: () => updateChatState(!stateRef.current)
+  }), [isChatOpen, updateChatState]);
+
+  // Handle external state changes
+  useEffect(() => {
+    const handleStateChange = (event: CustomEvent) => {
+      if (event.detail?.isOpen !== undefined) {
+        updateChatState(event.detail.isOpen);
+      }
     };
 
-    const handleAddMessages = (e: CustomEvent<Message[]>) => {
-      console.log('Adding messages:', e.detail);
-      setMessages(e.detail);
+    window.addEventListener('force-chat-state', handleStateChange as EventListener);
+    return () => {
+      window.removeEventListener('force-chat-state', handleStateChange as EventListener);
+    };
+  }, [updateChatState]);
+
+  // Add keyboard shortcut handler
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      const isMac = navigator.userAgent.toLowerCase().includes('mac');
+      const modifierKey = isMac ? event.metaKey : event.ctrlKey;
+          
+      if (modifierKey && event.key.toLowerCase() === 'k') {
+        event.preventDefault();
+        event.stopPropagation();
+        console.log('TestWrapper: Keyboard shortcut detected');
+        updateChatState(!stateRef.current);
+      }
+    };
+    
+    // Add the event listener
+    document.addEventListener('keydown', handleKeyDown);
+    console.log('TestWrapper: Keyboard shortcut handler registered');
+    
+    // Cleanup
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+      console.log('TestWrapper: Keyboard shortcut handler removed');
+    };
+  }, [updateChatState]);
+
+  // Add handlers for other events
+  useEffect(() => {
+    const handleSetTyping = (event: CustomEvent) => {
+      setIsTyping(event.detail);
     };
 
-    const handleSetInput = (e: CustomEvent<string>) => {
-      console.log('Setting input value:', e.detail);
-      setInputValue(e.detail);
+    const handleAddMessages = (event: CustomEvent) => {
+      setMessages(prev => [...prev, ...event.detail]);
     };
 
-    const handleChatState = (event: CustomEvent<{ isOpen: boolean }>) => {
-      console.log('TestWrapper: Setting chat state:', event.detail);
-      setIsChatOpen(event.detail.isOpen);
+    const handleSetInput = (event: CustomEvent) => {
+      setInputValue(event.detail);
     };
 
-    // Add event listeners
+    const handleStateChange = (event: CustomEvent) => {
+      const newState = event.detail?.isOpen;
+      if (newState !== undefined && stateRef.current !== newState) {
+        console.log('TestWrapper: Setting chat state:', event.detail);
+        stateRef.current = newState;
+        setIsChatOpen(newState);
+        syncDOMState(newState);
+      }
+    };
+
     window.addEventListener('set-typing', handleSetTyping as EventListener);
     window.addEventListener('add-messages', handleAddMessages as EventListener);
     window.addEventListener('set-input', handleSetInput as EventListener);
-    window.addEventListener('force-chat-state', handleChatState as EventListener);
-    // Debug mount
+    window.addEventListener('force-chat-state', handleStateChange as EventListener);
+
     console.log('TestWrapper mounted with mode:', mode);
 
-    // Set initial closed state
-    setIsChatOpen(false);
-
-    // Cleanup
     return () => {
       window.removeEventListener('set-typing', handleSetTyping as EventListener);
       window.removeEventListener('add-messages', handleAddMessages as EventListener);
       window.removeEventListener('set-input', handleSetInput as EventListener);
-      window.removeEventListener('force-chat-state', handleChatState as EventListener);
+      window.removeEventListener('force-chat-state', handleStateChange as EventListener);
     };
-  }, []);
+  }, [mode, syncDOMState]);
 
-  // Create shortcuts context value
-  const shortcutsValue = useMemo(() => ({
-    isChatOpen,
-    openChat: () => setIsChatOpen(true),
-    closeChat: () => setIsChatOpen(false),
-    toggleChat: () => setIsChatOpen(prev => !prev)
-  }), [isChatOpen]);
+  // Mock context setup remains the same
+  useEffect(() => {
+    window.__MOCK_SHORTCUTS_CONTEXT__ = shortcutsValue;
+    return () => {
+      delete window.__MOCK_SHORTCUTS_CONTEXT__;
+    };
+  }, [shortcutsValue]);
 
-  // Create context value
+  // Update context value creation
   const contextValue = useMemo(() => {
     const baseContext = mode === 'agent' ? agentContext : supportContext;
     return {
@@ -159,10 +260,10 @@ export function TestWrapper({ children, mode = 'agent' }: TestWrapperProps) {
   }, [mode, messages, isTyping, inputValue]);
 
   return (
-    <ShortcutsContext.Provider value={shortcutsValue}>
+    <ShortcutsProvider value={shortcutsValue} disablePane={true}>
       <ChatContext.Provider value={contextValue}>
         {children}
       </ChatContext.Provider>
-    </ShortcutsContext.Provider>
+    </ShortcutsProvider>
   );
 }

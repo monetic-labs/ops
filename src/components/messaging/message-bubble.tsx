@@ -32,13 +32,6 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({ message }) => {
     return message.type === "user" ? "justify-end" : "justify-start";
   };
 
-  // const getMessageContent = () => {
-  //   if ("role" in message) {
-  //     return message.content;
-  //   }
-  //   return message.text;
-  // };
-
   const getMessageId = () => {
     if ("role" in message) {
       return message.id;

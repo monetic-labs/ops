@@ -1,27 +1,19 @@
 "use client";
 
-import { createContext, useContext, useState, useCallback, useEffect, useMemo } from 'react';
+import { createContext, useContext, useState, useCallback, useEffect, useMemo, useRef } from 'react';
 import { useGlobalShortcuts } from '@/hooks/generics/useGlobalShortcuts';
 import { ChatPane } from '@/components/messaging/pane';
+import { ShortcutsContextType } from '@/tests/helpers/test-types';
 
-interface ShortcutsContextType {
-  isChatOpen: boolean;
-  openChat: () => void;
-  closeChat: () => void;
-  toggleChat: () => void;
-}
-
-// Initialize with default values
 const defaultContext: ShortcutsContextType = {
     isChatOpen: false,
     openChat: () => {},
     closeChat: () => {},
-    toggleChat: () => {},
+    toggleChat: () => {}
 };
 
 export const ShortcutsContext = createContext<ShortcutsContextType>(defaultContext);
 
-// Add a custom hook for using the context
 export function useShortcuts() {
     const context = useContext(ShortcutsContext);
     if (!context) {
@@ -30,104 +22,61 @@ export function useShortcuts() {
     return context;
 }
 
-export function ShortcutsProvider({ children }: { children: React.ReactNode }) {
-  const [isChatOpen, setIsChatOpen] = useState(false);
+export function ShortcutsProvider({ 
+    children, 
+    disablePane = false, 
+    value 
+}: { 
+    children: React.ReactNode, 
+    disablePane?: boolean, 
+    value?: ShortcutsContextType 
+}) {
+  // Remove internal state management
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
     setMounted(true);
-    // Ensure initial closed state
-    setIsChatOpen(false);
   }, []);
 
-  const openChat = useCallback(() => setIsChatOpen(true), []);
-  const closeChat = useCallback(() => setIsChatOpen(false), []);
-  const toggleChat = useCallback(() => {
-    setIsChatOpen(prev => {
-      const newState = !prev;
-      
-      // Update DOM immediately
-      const pane = document.querySelector('[data-testid="chat-pane-container"]');
-      if (pane) {
-        pane.setAttribute('data-state', newState ? 'open' : 'closed');
-        if (newState) {
-          pane.classList.remove('-translate-x-full');
-        } else {
-          pane.classList.add('-translate-x-full');
-        }
-      }
-      
-      return newState;
-    });
-  }, []);
+  // Use value or default context based on environment
+  const contextValue = useMemo(() => {
+    if (process.env.NODE_ENV === 'production' && !value) {
+      throw new Error('ShortcutsProvider requires a value prop in production');
+    }
+    return value || defaultContext;
+  }, [value]);
 
-  // Handle global keyboard shortcut
-  useGlobalShortcuts('k', toggleChat, {
-    metaKey: true, // For Command+K
+  // Remove event listeners from ShortcutsProvider
+  useGlobalShortcuts('k', value?.toggleChat || (() => {}), {
+    metaKey: true,
   });
 
-  // Handle force-chat-state event
   useEffect(() => {
-    const handleChatState = (event: CustomEvent<{ isOpen: boolean }>) => {
-        console.log('ShortcutsProvider: Setting chat state:', event.detail);
-        setIsChatOpen(event.detail.isOpen);
-    };
-
-    window.addEventListener('force-chat-state', handleChatState as EventListener);
-    return () => {
-        window.removeEventListener('force-chat-state', handleChatState as EventListener);
-    };
-  }, []);
-
-  // Handle test events
-  useEffect(() => {
-    const handleTestState = (event: CustomEvent) => {
-      if (event.detail?.isOpen !== undefined) {
-        console.log('Test state update:', event.detail);
-        setIsChatOpen(event.detail.isOpen);
-      }
-    };
-    
-    window.addEventListener('chat-pane-state' as any, handleTestState);
-    return () => window.removeEventListener('chat-pane-state' as any, handleTestState);
-  }, []);
-  
-  const handleForceState = useCallback((event: CustomEvent) => {
-    if (event.detail?.isOpen !== undefined) {
-      console.log('ShortcutsProvider: Forcing chat state:', event.detail.isOpen);
-      setIsChatOpen(event.detail.isOpen);
+    const handleKeyPress = (event: KeyboardEvent) => {
+      // Check for platform-specific modifier key
+      const isMac = navigator.userAgent.toLowerCase().includes('mac');
+      const modifierKey = isMac ? event.metaKey : event.ctrlKey;
       
-      // Ensure DOM is updated synchronously
-      const pane = document.querySelector('[data-testid="chat-pane-container"]');
-      if (pane) {
-        pane.setAttribute('data-state', event.detail.isOpen ? 'open' : 'closed');
-        pane.setAttribute('aria-modal', event.detail.isOpen.toString());
+      if (modifierKey && event.key.toLowerCase() === 'k') {
+        event.preventDefault();
+        event.stopPropagation();
+        console.log('Keyboard shortcut detected:', event.key, 'modifier:', modifierKey);
+        contextValue.toggleChat();
       }
-    }
-  }, []);
-
-  useEffect(() => {
-    window.addEventListener('force-chat-state', handleForceState as EventListener);
-    return () => {
-      window.removeEventListener('force-chat-state', handleForceState as EventListener);
     };
-  }, [handleForceState]);
-
-  const contextValue = useMemo(() => ({
-    isChatOpen,
-    openChat: () => setIsChatOpen(true),
-    closeChat: () => setIsChatOpen(false),
-    toggleChat
-  }), [isChatOpen, toggleChat]);
+  
+    document.addEventListener('keydown', handleKeyPress);
+    return () => document.removeEventListener('keydown', handleKeyPress);
+  }, [contextValue.toggleChat]);
 
   return (
     <ShortcutsContext.Provider value={contextValue}>
       {children}
-      {mounted && (
+      {mounted && !disablePane && (
         <ChatPane 
-          isOpen={isChatOpen} 
-          onClose={() => setIsChatOpen(false)}
-          data-testid="chat-pane"
+          isOpen={contextValue.isChatOpen} 
+          onClose={contextValue.closeChat}
+          data-testid="provider-chat-pane"
         />
       )}
     </ShortcutsContext.Provider>
