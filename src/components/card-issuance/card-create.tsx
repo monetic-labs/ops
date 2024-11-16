@@ -73,7 +73,7 @@ export default function CreateCardModal({ isOpen, onClose }: CreateCardModalProp
       });
       reset();
       resetFirstForm();
-      onClose();
+      window.location.reload();
     } catch (error: any) {
       setError(error.message);
       console.error(error);
@@ -97,7 +97,7 @@ export default function CreateCardModal({ isOpen, onClose }: CreateCardModalProp
             status: CardStatus.ACTIVE,
           });
           resetFirstForm();
-          onClose();
+          window.location.reload();
           break;
         }
         default: {
