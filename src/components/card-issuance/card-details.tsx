@@ -8,7 +8,6 @@ import { useEffect, useState } from "react";
 import {
   CardLimitFrequency,
   CardStatus,
-  Merchant,
   MerchantCardGetOutput,
   UpdateMerchantCardDataInput,
 } from "@backpack-fux/pylon-sdk";
@@ -31,7 +30,7 @@ type HybridCard = MerchantCardGetOutput["cards"][number] & {
 
 interface CardDetailsModalProps {
   isOpen: boolean;
-  onClose: () => void;
+  onClose: (card: HybridCard) => void;
   card: HybridCard;
 }
 
@@ -76,7 +75,7 @@ export default function CardDetailsModal({ isOpen, onClose, card: propsCard }: C
 
     try {
       setLoading(true);
-      await new Merchant(process.env.NEXT_PUBLIC_PYLON_BASE_URL!).updateRainCard({
+      await pylon.updateRainCard({
         cardId: card.id,
         status: finalPayload.status,
         limit: finalPayload.limit,
@@ -103,7 +102,6 @@ export default function CardDetailsModal({ isOpen, onClose, card: propsCard }: C
     control: control,
     formState: { errors },
     handleSubmit: handleSubmit,
-    getValues,
   } = useForm<z.infer<typeof UpateCardSchema>>({
     resolver: zodResolver(UpateCardSchema),
     defaultValues: {
@@ -112,9 +110,14 @@ export default function CardDetailsModal({ isOpen, onClose, card: propsCard }: C
       limitFrequency: card.limitFrequency,
     },
   });
-  console.log(getValues());
   return (
-    <Modal isOpen={isOpen} size="2xl" onClose={onClose}>
+    <Modal
+      isOpen={isOpen}
+      size="2xl"
+      onClose={() => {
+        onClose(card);
+      }}
+    >
       {isEditing ? (
         <ModalContent>
           <ModalHeader className="flex items-center">
@@ -282,7 +285,12 @@ export default function CardDetailsModal({ isOpen, onClose, card: propsCard }: C
             >
               Edit
             </Button>
-            <Button className={`bg-ualert-500 text-notpurple-500 w-full sm:w-auto `} onClick={onClose}>
+            <Button
+              className={`bg-ualert-500 text-notpurple-500 w-full sm:w-auto `}
+              onClick={() => {
+                onClose(card);
+              }}
+            >
               Close
             </Button>
           </div>
