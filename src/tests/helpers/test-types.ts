@@ -1,4 +1,4 @@
-import { ChatContextType } from "@/types/messaging";
+import { AgentChatContext, ChatContextType } from "@/types/messaging";
 
 // Add ShortcutsContextType to the types
 export interface ShortcutsContextType {
@@ -24,15 +24,25 @@ export interface MessagePositions {
   prev: number;
 }
 
+// Define MockWebSocket type
+export interface MockWebSocket extends WebSocket {
+    readyState: number;
+    close: () => void;
+}
+
 declare global {
   interface Window {
     __MOCK_CHAT_CONTEXT__?: ChatContextType;
     __MOCK_SHORTCUTS_CONTEXT__?: ShortcutsContextType; 
+    __MOCK_WS__?: MockWebSocket;
     _initialWidth?: number;
     _widthChanged?: boolean;
     openChat?: () => void;
     closeChat?: () => void;
     toggleChat?: () => void;
+    __TEST_UTILS__?: {
+      createEmptyAgentContext: () => AgentChatContext;
+    };
   }
 }
 

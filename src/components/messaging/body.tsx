@@ -52,6 +52,7 @@ export const ChatBody: React.FC = () => {
       setMessages([...context.messages]); 
       // Use RAF to ensure DOM is updated before scrolling
       requestAnimationFrame(() => {
+        console.log('ChatBody: Messages updated, DOM');
         const timeoutId = setTimeout(scrollToBottom, 100);
         return () => clearTimeout(timeoutId);
       });
@@ -85,36 +86,6 @@ export const ChatBody: React.FC = () => {
     console.log("Current messages:", messages);
   }, [messages]);
 
-  // Single effect to handle typing state
-  // useEffect(() => {
-  //   const handleTypingUpdate = (event: CustomEvent) => {
-  //     console.log('Received typing update:', event.detail);
-  //     if (event.detail?.isTyping !== undefined) {
-  //       setIsTyping(event.detail.isTyping);
-  //     }
-  //   };
-
-  //   // Only listen for WebSocket typing events
-  //   window.addEventListener('chat-typing-update', handleTypingUpdate as EventListener);
-  //   return () => {
-  //     window.removeEventListener('chat-typing-update', handleTypingUpdate as EventListener);
-  //   };
-  // }, []);
-
-  // Remove the context update listener for typing
-  // useEffect(() => {
-  //   const handleContextUpdate = (event: CustomEvent) => {
-  //     if ('isTyping' in event.detail) {
-  //       setIsTyping(event.detail.isTyping);
-  //     }
-  //   };
-
-  //   window.addEventListener('update-chat-context', handleContextUpdate as EventListener);
-  //   return () => {
-  //     window.removeEventListener('update-chat-context', handleContextUpdate as EventListener);
-  //   };
-  // }, []);
-
   return (
     <div 
       data-testid="chat-body" 
@@ -133,7 +104,8 @@ export const ChatBody: React.FC = () => {
         <MessageBubble 
           key={message.id} 
           message={message} 
-          data-testid={`chat-message-${message.id}`} 
+          data-testid={`chat-message-${message.id}`}
+          contentTestId={`chat-message-${message.id}-content`} 
         />
       ))}
 

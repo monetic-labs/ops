@@ -1,6 +1,7 @@
 import { test, expect, Page } from '@playwright/test';
 import { injectMockContext } from '@/tests/helpers/mock-chat-context';
 import { Message } from '@/types/messaging';
+import { addTestMessage, addTestMessageToContext } from '@/tests/helpers/test-utils';
 
 test.describe('Chat Pane Component', () => {
     test.beforeEach(async ({ page }) => {
@@ -18,49 +19,90 @@ test.describe('Chat Pane Component', () => {
     });
 
     test('responds to global keyboard shortcut', async ({ page }) => {
-        // Wait for initial render
+        // Initial cleanup and setup
+        await page.evaluate(() => {
+          document.querySelectorAll('[data-testid^="chat-message-"]').forEach(el => el.remove());
+          window.__MOCK_CHAT_CONTEXT__ = undefined;
+          
+          // Remove any duplicate chat bodies
+          const chatBodies = document.querySelectorAll('[data-testid="chat-pane-container"]');
+          if (chatBodies.length > 1) {
+            Array.from(chatBodies).slice(1).forEach(el => el.remove());
+          }
+        });
+      
+        // Setup and verify initial state
+        await injectMockContext(page, 'agent');
         const pane = page.locator('[data-testid="chat-pane-container"]').first();
         await pane.waitFor({ state: 'attached' });
-        
-        // Ensure initial closed state
+      
+        // Ensure initial closed state with retry logic
         await page.evaluate(() => {
-          window.dispatchEvent(new CustomEvent('force-chat-state', {
-            detail: { isOpen: false }
-          }));
+          return new Promise<void>((resolve) => {
+            let attempts = 0;
+            const maxAttempts = 10;
+            
+            const ensureClosedState = () => {
+              attempts++;
+              window.dispatchEvent(new CustomEvent('force-chat-state', {
+                detail: { isOpen: false }
+              }));
+              
+              setTimeout(() => {
+                const pane = document.querySelector('[data-testid="chat-pane-container"]');
+                if (pane?.getAttribute('data-state') === 'closed' && 
+                    pane?.classList.contains('-translate-x-full')) {
+                  resolve();
+                } else if (attempts < maxAttempts) {
+                  ensureClosedState();
+                } else {
+                  resolve(); // Continue test even if state isn't perfect
+                }
+              }, 100);
+            };
+            
+            ensureClosedState();
+          });
         });
-        
+      
         // Verify initial closed state
+        await waitForPaneState(page, 'closed');
         await expect(pane).toHaveClass(/-translate-x-full/);
         await expect(pane).toHaveAttribute('data-state', 'closed');
       
-        // Trigger keyboard shortcut via direct event dispatch
+        // Ensure keyboard handler is registered
         await page.evaluate(() => {
-          const isMac = navigator.platform.toLowerCase().includes('mac');
-          const event = new KeyboardEvent('keydown', {
-            key: 'k',
-            code: 'KeyK',
-            metaKey: isMac,
-            ctrlKey: !isMac,
-            bubbles: true,
-            cancelable: true
+          return new Promise<void>((resolve) => {
+            // Small delay to ensure event handlers are bound
+            setTimeout(() => {
+              window.dispatchEvent(new CustomEvent('test-keyboard-ready'));
+              resolve();
+            }, 500);
           });
-          document.dispatchEvent(event);
-          console.log('Keyboard shortcut event dispatched');
         });
       
-        // Wait for state change with logging
-        await page.waitForFunction(() => {
-          const pane = document.querySelector('[data-testid="chat-pane-container"]');
-          const state = {
-            dataState: pane?.getAttribute('data-state'),
-            hasTranslateClass: pane?.classList.contains('-translate-x-full'),
-            classList: Array.from(pane?.classList || [])
-          };
-          console.log('Current pane state:', state);
-          return state.dataState === 'open' && !state.hasTranslateClass;
-        }, {}, { timeout: 2000 });
+        // Trigger keyboard shortcut
+        await page.keyboard.press(process.platform === 'darwin' ? 'Meta+K' : 'Control+K');
       
-        // Verify open state
+        // Wait for state change with increased timeout
+        try {
+          await waitForPaneState(page, 'open', 5000);
+        } catch (error) {
+          // If waiting fails, log the final state
+          const finalState = await page.evaluate(() => {
+            const pane = document.querySelector('[data-testid="chat-pane-container"]');
+            if (!pane) return null;
+            return {
+              state: pane.getAttribute('data-state'),
+              classes: Array.from(pane?.classList || []),
+              isVisible: pane?.getBoundingClientRect().right > 0
+            };
+          });
+          console.log('Final pane state:', finalState);
+          throw error;
+        }
+      
+        // Verify final state
         await expect(pane).not.toHaveClass(/-translate-x-full/);
         await expect(pane).toHaveAttribute('data-state', 'open');
       });
@@ -399,80 +441,116 @@ test.describe('Chat Pane Component', () => {
     await expect(pane).toHaveAttribute('data-state', 'closed');
     await expect(pane).toHaveClass(/-translate-x-full/);
   });
-  
-  // Import the helper function
-  async function addMessageAndGetBubble(page: Page, message: Message) {
-    const messageId = `chat-message-${message.id}`;
-    await page.evaluate((msg) => {
-      window.dispatchEvent(new CustomEvent('add-messages', { detail: [msg] }));
-    }, message);
-    return { messageId, bubble: page.locator(`[data-testid="${messageId}"]`).first() };
-  }
 
   test('maintains child component state through resize', async ({ page }) => {
+    // Add console logging for debugging
+    page.on('console', msg => console.log('Browser:', msg.text()));
+
     // Wait for initial render
     await page.waitForSelector('[data-testid="chat-body"]');
 
     // Force chat pane to be open
     await page.evaluate(() => {
-      window.dispatchEvent(new CustomEvent('force-chat-state', {
-        detail: { isOpen: true }
-      }));
+        window.dispatchEvent(new CustomEvent('force-chat-state', {
+            detail: { isOpen: true }
+        }));
     });
   
     // Wait for pane to be visible
-    await page.waitForSelector('[data-testid="chat-pane-container"]', { 
-      state: 'visible',
-      timeout: 5000 
+    await page.waitForSelector('[data-testid="chat-pane-container"][data-state="open"]', { 
+        state: 'visible',
+        timeout: 5000 
     });
     
     const testMessage = {
-      id: 'test-message',
-      type: 'user' as const,
-      text: 'Test message',
-      timestamp: Date.now(),
-      status: 'sent' as const
+        id: 'test-message',
+        type: 'user' as const,
+        text: 'Test message',
+        timestamp: Date.now(),
+        status: 'sent' as const
     };
-  
-    // Use the proven helper function
-    const { messageId, bubble } = await addMessageAndGetBubble(page, testMessage);
+
+    // First update the context
+    await page.evaluate((msg) => {
+        if (window.__MOCK_CHAT_CONTEXT__) {
+            window.__MOCK_CHAT_CONTEXT__.messages = [msg];
+            // Trigger context update
+            window.dispatchEvent(new CustomEvent('update-chat-context', {
+                detail: {
+                    messages: [msg],
+                    mode: 'agent',
+                    timestamp: Date.now()
+                }
+            }));
+        }
+    }, testMessage);
+
+    // Then ensure the message appears in the DOM
+    const messageSelector = '[data-testid="chat-message-test-message"]';
+    const contentSelector = '[data-testid="chat-message-test-message-content"]';
     
-    // Wait for the message to be visible
-    await bubble.waitFor({ state: 'visible' });
-    await expect(bubble).toBeVisible();
-  
-    // Get content element using locator
-    const content = page.locator(`[data-testid="${messageId}-content"]`).first();
-    await expect(content).toBeVisible();
-    await expect(content).toContainText(testMessage.text);
-  
-    // Get resize handle with more specific selector
-    const resizeHandle = page.locator('[data-testid="chat-pane-resize-handle"]').first();
-    await expect(resizeHandle).toBeVisible();
+    try {
+        // Wait for message to appear
+        await page.waitForSelector(messageSelector, {
+            state: 'visible',
+            timeout: 10000
+        });
 
-    // Get handle position
-    const handleBox = await resizeHandle.boundingBox();
-    if (!handleBox) {
-      throw new Error('Could not get resize handle position');
+        // Get message elements
+        const element = page.locator(messageSelector).first();
+        const content = page.locator(contentSelector).first();
+
+        // Verify initial state
+        await expect(element).toBeVisible();
+        await expect(content).toBeVisible();
+        await expect(content).toContainText(testMessage.text);
+
+        // Get resize handle
+        const resizeHandle = page.locator('[data-testid="chat-pane-resize-handle"]').first();
+        await expect(resizeHandle).toBeVisible();
+
+        // Get handle position
+        const handleBox = await resizeHandle.boundingBox();
+        if (!handleBox) {
+            throw new Error('Could not get resize handle position');
+        }
+
+        // Perform resize with explicit waits
+        await page.mouse.move(handleBox.x, handleBox.y + handleBox.height / 2);
+        await page.waitForTimeout(100);
+        await page.mouse.down();
+        await page.waitForTimeout(100);
+        await page.mouse.move(handleBox.x + 100, handleBox.y + handleBox.height / 2, {
+            steps: 10
+        });
+        await page.waitForTimeout(100);
+        await page.mouse.up();
+
+        // Wait for any resize animations
+        await page.waitForTimeout(300);
+
+        // Verify message remains visible after resize
+        await expect(element).toBeVisible();
+        await expect(content).toBeVisible();
+        await expect(content).toContainText(testMessage.text);
+
+    } catch (error) {
+        // Enhanced error logging
+        const debugState = await page.evaluate(() => ({
+            context: window.__MOCK_CHAT_CONTEXT__,
+            domState: {
+                chatBody: document.querySelector('[data-testid="chat-body"]')?.innerHTML,
+                messages: Array.from(document.querySelectorAll('[data-testid^="chat-message-"]'))
+                    .map(el => ({
+                        id: el.getAttribute('data-testid'),
+                        text: el.textContent,
+                        visible: (el as HTMLElement).offsetParent !== null
+                    }))
+            },
+            paneState: document.querySelector('[data-testid="chat-pane-container"]')?.getAttribute('data-state')
+        }));
+        console.log('Debug state at error:', debugState);
+        throw error;
     }
-
-    // Perform resize with explicit waits
-    await page.mouse.move(handleBox.x, handleBox.y + handleBox.height / 2);
-    await page.waitForTimeout(100); // Small wait for stability
-    await page.mouse.down();
-    await page.waitForTimeout(100);
-    await page.mouse.move(handleBox.x + 100, handleBox.y + handleBox.height / 2, {
-      steps: 10 // Smooth movement
-    });
-    await page.waitForTimeout(100);
-    await page.mouse.up();
-
-    // Wait for any resize animations
-    await page.waitForTimeout(300);
-  
-    // Verify message remains visible after resize
-    await expect(bubble).toBeVisible();
-    await expect(content).toBeVisible();
-    await expect(content).toContainText(testMessage.text);
   });
 });

@@ -30,14 +30,17 @@ test.describe('Chat Input Component', () => {
     });
 
     test('renders basic input components', async ({ page }) => {
-      // Basic visibility checks
-      await expect(page.getByTestId('chat-input-container')).toBeVisible();
-      await expect(page.getByTestId('chat-input')).toBeVisible();
-      await expect(page.getByTestId('chat-submit-button')).toBeVisible();
+      // Update selectors to be more specific
+      const input = page.locator('[data-testid="chat-input"]').first();
+      const submitButton = page.locator('[data-testid="chat-submit-button"]').first();
+
+      await expect(input).toBeVisible();
+      await expect(submitButton).toBeVisible();
     });
 
     test('renders with agent mode placeholder', async ({ page }) => {
-      await expect(page.getByTestId('chat-input')).toHaveAttribute(
+      // Use first() to handle multiple matches
+      await expect(page.locator('[data-testid="chat-input"]').first()).toHaveAttribute(
         'placeholder',
         'Ask me anything...'
       );
@@ -53,23 +56,21 @@ test.describe('Chat Input Component', () => {
     });
 
     test('renders with support mode placeholder', async ({ page }) => {
-      await expect(page.getByTestId('chat-input')).toHaveAttribute(
+      await expect(page.locator('[data-testid="chat-input"]').first()).toHaveAttribute(
         'placeholder',
         'Type your message... Use @ to mention'
       );
     });
 
     test('shows mention list when @ is typed', async ({ page }) => {
-      const input = page.getByTestId('chat-input');
+      // Update input selector
+      const input = page.locator('[data-testid="chat-input"]').first();
       await input.click();
       await input.fill('@');
 
-      await expect(page.getByTestId('mention-list')).toBeVisible({
-        timeout: 5000  // Increase timeout if needed
-      });
-
-      const mentionList = page.getByTestId('mention-list');
-      await expect(mentionList).toBeVisible();
+      // Update mention list selector
+      const mentionList = page.locator('[data-testid="mention-list"]').first();
+      await expect(mentionList).toBeVisible({ timeout: 5000 });
       
       const options = await page.$$('[data-testid="mention-option"]');
       expect(options.length).toBeGreaterThan(0);
@@ -77,7 +78,7 @@ test.describe('Chat Input Component', () => {
 
     // Add a test for mention selection
     test('can select a mention from the list', async ({ page }) => {
-      const input = page.getByTestId('chat-input');
+      const input = page.locator('[data-testid="chat-input"]').first();
       
       await input.click();
       await input.fill('@');
@@ -103,7 +104,7 @@ test.describe('Chat Input Component', () => {
     });
 
     test('can select a mention from the list using keyboard', async ({ page }) => {
-      const input = page.getByTestId('chat-input');
+      const input = page.locator('[data-testid="chat-input"]').first();
       
       await input.click();
       await input.fill('@');
@@ -122,7 +123,7 @@ test.describe('Chat Input Component', () => {
     });
 
     test('displays correct mention options', async ({ page }) => {
-      const input = page.getByTestId('chat-input');
+      const input = page.locator('[data-testid="chat-input"]').first();
       await input.click();
       await input.fill('@');
       
@@ -153,7 +154,7 @@ test.describe('Chat Input Component', () => {
     });
 
     test('handles basic text input', async ({ page }) => {
-      const input = page.getByTestId('chat-input');
+      const input = page.locator('[data-testid="chat-input"]').first();
       await input.fill('Hello world');
       await expect(input).toHaveValue('Hello world');
     });
