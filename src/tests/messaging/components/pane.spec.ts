@@ -1,7 +1,7 @@
 import { test, expect, Page } from '@playwright/test';
 import { injectMockContext } from '@/tests/helpers/mock-chat-context';
-import { Message } from '@/types/messaging';
-import { addTestMessage, addTestMessageToContext } from '@/tests/helpers/test-utils';
+import { setupInitialChatState, addAndVerifyMessage, resizeChatPane } from '@/tests/helpers/test-utils';
+
 
 test.describe('Chat Pane Component', () => {
     test.beforeEach(async ({ page }) => {
@@ -18,7 +18,7 @@ test.describe('Chat Pane Component', () => {
         });
     });
 
-    test('responds to global keyboard shortcut', async ({ page }) => {
+  test('responds to global keyboard shortcut', async ({ page }) => {
         // Initial cleanup and setup
         await page.evaluate(() => {
           document.querySelectorAll('[data-testid^="chat-message-"]').forEach(el => el.remove());
@@ -105,7 +105,7 @@ test.describe('Chat Pane Component', () => {
         // Verify final state
         await expect(pane).not.toHaveClass(/-translate-x-full/);
         await expect(pane).toHaveAttribute('data-state', 'open');
-      });
+  });
 
   test('renders when opened', async ({ page }) => {
     // Wait for initial render
@@ -446,111 +446,51 @@ test.describe('Chat Pane Component', () => {
     // Add console logging for debugging
     page.on('console', msg => console.log('Browser:', msg.text()));
 
-    // Wait for initial render
-    await page.waitForSelector('[data-testid="chat-body"]');
+    // Setup initial state
+    await setupInitialChatState(page);
 
-    // Force chat pane to be open
-    await page.evaluate(() => {
-        window.dispatchEvent(new CustomEvent('force-chat-state', {
-            detail: { isOpen: true }
-        }));
-    });
-  
-    // Wait for pane to be visible
-    await page.waitForSelector('[data-testid="chat-pane-container"][data-state="open"]', { 
-        state: 'visible',
-        timeout: 5000 
-    });
-    
     const testMessage = {
-        id: 'test-message',
-        type: 'user' as const,
-        text: 'Test message',
-        timestamp: Date.now(),
-        status: 'sent' as const
+      id: 'test-message',
+      type: 'user' as const,
+      text: 'Test message',
+      timestamp: Date.now(),
+      status: 'sent' as const
     };
 
-    // First update the context
-    await page.evaluate((msg) => {
-        if (window.__MOCK_CHAT_CONTEXT__) {
-            window.__MOCK_CHAT_CONTEXT__.messages = [msg];
-            // Trigger context update
-            window.dispatchEvent(new CustomEvent('update-chat-context', {
-                detail: {
-                    messages: [msg],
-                    mode: 'agent',
-                    timestamp: Date.now()
-                }
-            }));
-        }
-    }, testMessage);
-
-    // Then ensure the message appears in the DOM
-    const messageSelector = '[data-testid="chat-message-test-message"]';
-    const contentSelector = '[data-testid="chat-message-test-message-content"]';
-    
     try {
-        // Wait for message to appear
-        await page.waitForSelector(messageSelector, {
-            state: 'visible',
-            timeout: 10000
-        });
+      // Add and verify message
+      const { element, content } = await addAndVerifyMessage(page, testMessage);
 
-        // Get message elements
-        const element = page.locator(messageSelector).first();
-        const content = page.locator(contentSelector).first();
+      // Verify initial state
+      await expect(element).toBeVisible();
+      await expect(content).toBeVisible();
+      await expect(content).toContainText(testMessage.text);
 
-        // Verify initial state
-        await expect(element).toBeVisible();
-        await expect(content).toBeVisible();
-        await expect(content).toContainText(testMessage.text);
+      // Perform resize
+      await resizeChatPane(page, 100);
 
-        // Get resize handle
-        const resizeHandle = page.locator('[data-testid="chat-pane-resize-handle"]').first();
-        await expect(resizeHandle).toBeVisible();
-
-        // Get handle position
-        const handleBox = await resizeHandle.boundingBox();
-        if (!handleBox) {
-            throw new Error('Could not get resize handle position');
-        }
-
-        // Perform resize with explicit waits
-        await page.mouse.move(handleBox.x, handleBox.y + handleBox.height / 2);
-        await page.waitForTimeout(100);
-        await page.mouse.down();
-        await page.waitForTimeout(100);
-        await page.mouse.move(handleBox.x + 100, handleBox.y + handleBox.height / 2, {
-            steps: 10
-        });
-        await page.waitForTimeout(100);
-        await page.mouse.up();
-
-        // Wait for any resize animations
-        await page.waitForTimeout(300);
-
-        // Verify message remains visible after resize
-        await expect(element).toBeVisible();
-        await expect(content).toBeVisible();
-        await expect(content).toContainText(testMessage.text);
+      // Verify message remains visible after resize
+      await expect(element).toBeVisible();
+      await expect(content).toBeVisible();
+      await expect(content).toContainText(testMessage.text);
 
     } catch (error) {
-        // Enhanced error logging
-        const debugState = await page.evaluate(() => ({
-            context: window.__MOCK_CHAT_CONTEXT__,
-            domState: {
-                chatBody: document.querySelector('[data-testid="chat-body"]')?.innerHTML,
-                messages: Array.from(document.querySelectorAll('[data-testid^="chat-message-"]'))
-                    .map(el => ({
-                        id: el.getAttribute('data-testid'),
-                        text: el.textContent,
-                        visible: (el as HTMLElement).offsetParent !== null
-                    }))
-            },
-            paneState: document.querySelector('[data-testid="chat-pane-container"]')?.getAttribute('data-state')
-        }));
-        console.log('Debug state at error:', debugState);
-        throw error;
+      // Enhanced error logging
+      const debugState = await page.evaluate(() => ({
+        context: window.__MOCK_CHAT_CONTEXT__,
+        domState: {
+          chatBody: document.querySelector('[data-testid="chat-body"]')?.innerHTML,
+          messages: Array.from(document.querySelectorAll('[data-testid^="chat-message-"]'))
+            .map(el => ({
+              id: el.getAttribute('data-testid'),
+              text: el.textContent,
+              visible: (el as HTMLElement).offsetParent !== null
+            }))
+        },
+        paneState: document.querySelector('[data-testid="chat-pane-container"]')?.getAttribute('data-state')
+      }));
+      console.log('Debug state at error:', debugState);
+      throw error;
     }
   });
 });
