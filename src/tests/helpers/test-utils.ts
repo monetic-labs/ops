@@ -1,7 +1,6 @@
 import { AgentChatContext, Message } from "@/types/messaging";
 import { Page, expect } from "@playwright/test";
 import { injectMockContext } from "./mock-chat-context";
-import { createMockWebSocket } from "./mock-services";
 
 interface AddMessageOptions {
   useContext?: boolean;
@@ -18,7 +17,7 @@ interface ChatSetupOptions {
 }
 
 // Add a new helper to manage WebSocket setup
-export async function setupMockWebSocket(page: Page) {
+async function setupMockWebSocket(page: Page) {
   await page.addInitScript(() => {
     class MockWebSocket {
       private static instance: MockWebSocket | null = null;
@@ -32,7 +31,7 @@ export async function setupMockWebSocket(page: Page) {
       onerror: ((ev: Event) => void) | null = null;
       
       constructor(url: string) {
-        // Singleton pattern
+
         if (MockWebSocket.instance) {
           return MockWebSocket.instance;
         }
@@ -396,19 +395,6 @@ async function waitForChatInterface(page: Page) {
       })
     )
   );
-}
-
-// Helper to verify chat setup
-async function verifyChatSetup(page: Page) {
-  const status = await page.evaluate(() => ({
-    ws: !!window.__MOCK_WS__ && window.__MOCK_WS__.readyState === 1,
-    context: !!window.__MOCK_CHAT_CONTEXT__,
-    container: !!document.querySelector('[data-testid="chat-container"]')
-  }));
-
-  if (!status.ws || !status.context || !status.container) {
-    throw new Error(`Chat setup incomplete: ${JSON.stringify(status)}`);
-  }
 }
 
 // Helper to force chat pane open

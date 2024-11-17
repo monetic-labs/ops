@@ -24,23 +24,6 @@ export interface MessagePositions {
   prev: number;
 }
 
-// Redefine MockWebSocket to use Omit for the methods we want to override
-// export interface MockWebSocket extends Omit<WebSocket, 'addEventListener' | 'send' | 'close'> {
-//     readyState: number;
-//     _messages: string[];
-//     // Override these methods with our specific implementations
-//     addEventListener: <K extends keyof WebSocketEventMap>(
-//         type: K,
-//         listener: (this: WebSocket, ev: WebSocketEventMap[K]) => any,
-//         options?: boolean | AddEventListenerOptions
-//     ) => void;
-    
-//     send: (data: string | ArrayBufferLike | Blob | ArrayBufferView) => void;
-//     close: () => void;
-//     getLastSentMessage: () => string;
-//     getAllMessages: () => string[];
-// }
-
 export interface MockWebSocket {
   send: (data: string) => void;
   close: () => void;

@@ -5,27 +5,6 @@ type WebSocketEventTypes = keyof WebSocketEventMap;
 type WebSocketEventListener<K extends WebSocketEventTypes> = 
   (this: WebSocket, ev: WebSocketEventMap[K]) => any;
 
-// Helper function to create typed events
-const createWebSocketEvent = <K extends WebSocketEventTypes>(
-  type: K, 
-  data?: any
-): WebSocketEventMap[K] => {
-  switch (type) {
-    case 'open':
-      return new Event('open') as WebSocketEventMap[K];
-    case 'close':
-      return new CloseEvent('close') as WebSocketEventMap[K];
-    case 'message':
-      return new MessageEvent('message', {
-        data: typeof data === 'string' ? data : JSON.stringify(data)
-      }) as WebSocketEventMap[K];
-    case 'error':
-      return new Event('error') as WebSocketEventMap[K];
-    default:
-      throw new Error(`Unsupported event type: ${type}`);
-  }
-};
-
 export const createMockWebSocket = (): MockWebSocket => {
     const messages: any[] = [];
     const eventListeners: Record<string, Function[]> = {
@@ -79,4 +58,25 @@ export const createMockWebSocket = (): MockWebSocket => {
     }, 0);
 
     return mockWs;
+};
+
+// Helper function to create typed events
+const createWebSocketEvent = <K extends WebSocketEventTypes>(
+  type: K, 
+  data?: any
+): WebSocketEventMap[K] => {
+  switch (type) {
+    case 'open':
+      return new Event('open') as WebSocketEventMap[K];
+    case 'close':
+      return new CloseEvent('close') as WebSocketEventMap[K];
+    case 'message':
+      return new MessageEvent('message', {
+        data: typeof data === 'string' ? data : JSON.stringify(data)
+      }) as WebSocketEventMap[K];
+    case 'error':
+      return new Event('error') as WebSocketEventMap[K];
+    default:
+      throw new Error(`Unsupported event type: ${type}`);
+  }
 };
