@@ -1,7 +1,8 @@
 import path from "path";
 import fs from "fs";
-
 import matter from "gray-matter";
+import { Graph } from "@/prompts/v0/helpers/graph";
+import { UsagePattern } from "@/prompts/v0/usage";
 
 export type ProcessedDocument = {
   content: string;
@@ -10,7 +11,169 @@ export type ProcessedDocument = {
   metadata: Record<string, any>;
 };
 
-function processMarkdownFile(filePath: string): ProcessedDocument | null {
+export interface PromptDocument extends ProcessedDocument {
+  type: 'graph' | 'usage' | 'experience' | 'preference';
+  relationships?: string[];
+  context?: Record<string, any>;
+}
+export async function processUsagePatterns(
+  usageDir: string,
+  graph: Graph
+): Promise<PromptDocument[]> {
+  const documents: PromptDocument[] = [];
+  const files = fs.readdirSync(usageDir).filter(file => file.endsWith('.json'));
+
+  for (const file of files) {
+      const content = fs.readFileSync(path.join(usageDir, file), 'utf-8');
+      const pattern: UsagePattern = JSON.parse(content);
+      
+      // Validate capabilities against graph
+      const validCapabilities = pattern.capabilities.every(cap => 
+          graph.nodes[cap] && graph.nodes[cap].type === 'capability'
+      );
+
+      if (!validCapabilities) {
+          console.warn(`Invalid capabilities in usage pattern: ${file}`);
+          continue;
+      }
+
+      // Create structured content for embedding
+      const structuredContent = {
+          intent: pattern.intent,
+          capabilities: pattern.capabilities.map(cap => ({
+              name: cap,
+              description: graph.nodes[cap].description
+          })),
+          flow: pattern.example_dialogue.map(d => ({
+              user: d.user,
+              system: d.system
+          })),
+          edge_cases: pattern.edge_cases
+      };
+
+      documents.push({
+          type: 'usage',
+          content: JSON.stringify(structuredContent),
+          category: 'usage-patterns',
+          title: pattern.intent,
+          metadata: {
+              capabilities: pattern.capabilities,
+              context_requirements: pattern.context
+          }
+      });
+  }
+
+  return documents;
+}
+
+export async function processExperiencePreferences(
+  experienceDir: string,
+  graph: Graph
+): Promise<PromptDocument[]> {
+  const documents: PromptDocument[] = [];
+  const files = fs.readdirSync(experienceDir).filter(file => file.endsWith('.json'));
+
+  for (const file of files) {
+      const content = fs.readFileSync(path.join(experienceDir, file), 'utf-8');
+      const preference = JSON.parse(content);
+
+      if (file === 'speed-over-cost.json') {
+          // Reference to SpeedOverCostPreference type
+          // Lines 2-23 in types.ts
+          const structuredContent = {
+              goal: preference.goal,
+              user_intent: preference.user_intent,
+              context: {
+                  domains: preference.context.domains.map((domain: string) => ({
+                      name: domain,
+                      description: graph.nodes[domain]?.description
+                  })),
+                  capabilities: preference.context.capabilities
+              },
+              parameters: preference.parameters,
+              decision_rules: preference.decision_rules
+          };
+
+          documents.push({
+              type: 'preference',
+              content: JSON.stringify(structuredContent),
+              category: 'user-preferences',
+              title: preference.goal,
+              metadata: {
+                  preference_type: preference.preference_type,
+                  domains: preference.context.domains,
+                  capabilities: preference.context.capabilities,
+                  priority: preference.context.priority
+              }
+          });
+      } else {
+          // Handle regular experience/goal documents
+          // Reference to UserGoal type
+          // Lines 1-6 in experience/index.ts
+          const structuredContent = {
+              goal: preference.goal,
+              user_intent: preference.user_intent,
+              success_metrics: preference.success_metrics,
+              capabilities: preference.capabilities_needed?.map((cap: string) => ({
+                  name: cap,
+                  description: graph.nodes[cap]?.description
+              }))
+          };
+
+          documents.push({
+              type: 'experience',
+              content: JSON.stringify(structuredContent),
+              category: 'user-goals',
+              title: preference.goal,
+              metadata: {
+                  capabilities_needed: preference.capabilities_needed,
+                  success_criteria: preference.success_metrics
+              }
+          });
+      }
+  }
+
+  return documents;
+}
+
+export async function processPromptStructure(
+  graph: Graph,
+  docsDir: string
+): Promise<PromptDocument[]> {
+  const documents: PromptDocument[] = [];
+
+  // Process graph structure
+  const graphDoc = processGraphStructure(graph);
+  documents.push(graphDoc);
+
+  // Process usage patterns
+  const usagePatterns = await processUsagePatterns(docsDir + '/usage', graph);
+  documents.push(...usagePatterns);
+
+  // Process experience preferences
+  const experiences = await processExperiencePreferences(docsDir + '/experience', graph);
+  documents.push(...experiences);
+
+  return documents;
+}
+
+export function processGraphStructure(graph: Graph): PromptDocument {
+  return {
+    type: 'graph',
+    content: JSON.stringify(graph),
+    category: 'structure',
+    title: 'Product Graph Structure',
+    metadata: {
+      nodeCount: Object.keys(graph.nodes).length,
+      edgeCount: graph.edges.length,
+      domains: Object.values(graph.nodes)
+        .filter(node => node.type === 'domain')
+        .map(node => node.description)
+    }
+  };
+}
+
+export function processMarkdownFile(filePath: string): ProcessedDocument | null {
   try {
     const fileContent = fs.readFileSync(filePath, "utf-8");
     const { data, content } = matter(fileContent);
@@ -31,7 +194,7 @@ function processMarkdownFile(filePath: string): ProcessedDocument | null {
   }
 }
 
-function getAllMarkdownFiles(dir: string): string[] {
+export function getAllMarkdownFiles(dir: string): string[] {
   let results: string[] = [];
   const items = fs.readdirSync(dir);
 
@@ -76,3 +239,5 @@ export async function processDocuments(docsDir: string): Promise<ProcessedDocume
 
   return documents;
 }
+
+

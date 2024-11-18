@@ -1,7 +1,6 @@
 import { AgentChatContext, Message } from "@/types/messaging";
 import { Page, expect } from "@playwright/test";
 import { injectMockContext } from "./mock-chat-context";
-import { createMockWebSocket } from "./mock-services";
 
 interface AddMessageOptions {
   useContext?: boolean;
@@ -9,12 +8,6 @@ interface AddMessageOptions {
   idPrefix?: 'message-' | 'chat-message-' | ''; // Allow different prefixes
   useRawId?: boolean; // Skip ID modification completely
   timeout?: number;
-}
-
-interface ChatSetupOptions {
-  mode?: 'agent' | 'support';
-  timeout?: number;
-  waitForMount?: boolean;
 }
 
 // Add a new helper to manage WebSocket setup
@@ -398,59 +391,6 @@ async function waitForChatInterface(page: Page) {
   );
 }
 
-// Helper to verify chat setup
-async function verifyChatSetup(page: Page) {
-  const status = await page.evaluate(() => ({
-    ws: !!window.__MOCK_WS__ && window.__MOCK_WS__.readyState === 1,
-    context: !!window.__MOCK_CHAT_CONTEXT__,
-    container: !!document.querySelector('[data-testid="chat-container"]')
-  }));
-
-  if (!status.ws || !status.context || !status.container) {
-    throw new Error(`Chat setup incomplete: ${JSON.stringify(status)}`);
-  }
-}
-
-// Helper to force chat pane open
-export async function forceChatOpen(page: Page) {
-  console.log('Starting forceChatOpen...');
-  
-  // First verify chat container exists
-  await page.waitForSelector('[data-testid="chat-container"]', {
-    state: 'visible',
-    timeout: 5000
-  });
-  console.log('Chat container found');
-
-  // Dispatch event to force open
-  await page.evaluate(() => {
-    console.log('Dispatching force-chat-state event');
-    window.dispatchEvent(new CustomEvent('force-chat-state', {
-      detail: { isOpen: true }
-    }));
-  });
-  
-  // Wait for and verify open state
-  try {
-    await page.waitForSelector('[data-testid="chat-pane-container"][data-state="open"]', {
-      state: 'visible',
-      timeout: 5000
-    });
-    console.log('Chat pane opened successfully');
-  } catch (error) {
-    console.log('Failed to open chat pane:', error);
-    
-    // Get current state for debugging
-    const state = await page.evaluate(() => ({
-      paneElement: document.querySelector('[data-testid="chat-pane-container"]')?.outerHTML,
-      paneState: document.querySelector('[data-testid="chat-pane-container"]')?.getAttribute('data-state'),
-      isVisible: (document.querySelector('[data-testid="chat-pane-container"]') as HTMLElement)?.offsetParent !== null
-    }));
-    console.log('Chat pane state:', state);
-    throw error;
-  }
-}
-
 // Test: Sends message and displays in chat // 
 export async function sendAndVerifyMessage(page: Page, message: string) {
   // Type the message
@@ -513,9 +453,7 @@ export async function sendAndVerifyMessage(page: Page, message: string) {
 }
 
 export async function sendMessage(page: Page, message: string) {
-  //await page.getByTestId('chat-input').fill(message);
-  //await page.getByTestId('send-button').click();
-  // Wait for input to be ready
+
   await page.waitForSelector('[data-testid="chat-input"]', {
     state: 'visible',
     timeout: 5000

@@ -1,0 +1,174 @@
+{
+    "nodes": {
+        "bill-pay": {
+            "type": "domain",
+            "description": "Bill payment and transfer management system",
+            "ui_component": "bill-pay.tsx"
+        },
+        "back-office": {
+            "type": "domain",
+            "description": "Administrative and operational management system",
+            "ui_component": "back-office.tsx"
+        },
+        "card-services": {
+            "type": "domain",
+            "description": "Card issuance and management system",
+            "ui_component": "card-issuance/index.tsx"
+        },
+        "user-management": {
+            "type": "domain",
+            "description": "User administration system",
+            "ui_component": "users.tsx"
+        },
+
+        "transfers": {
+            "type": "capability",
+            "description": "Money transfer functionality",
+            "requires": ["user-auth"],
+            "ui_component": "transfers-tab"
+        },
+        "contacts": {
+            "type": "capability",
+            "description": "Payment recipient management",
+            "requires": ["user-auth"],
+            "ui_component": "contacts-tab"
+        },
+
+        "payments": {
+            "type": "capability",
+            "description": "Payment processing and management",
+            "requires": ["user-auth", "admin-access"],
+            "ui_component": "payments-tab"
+        },
+        "orders": {
+            "type": "capability",
+            "description": "Order creation and management",
+            "requires": ["user-auth", "admin-access"],
+            "ui_component": "orders-tab"
+        },
+        "widgets": {
+            "type": "capability",
+            "description": "Widget configuration and management",
+            "requires": ["user-auth", "admin-access"],
+            "ui_component": "widget-tab"
+        },
+
+        "card-issuance": {
+            "type": "capability",
+            "description": "Card creation and issuance",
+            "requires": ["user-auth"],
+            "ui_component": "card-create"
+        },
+        "card-management": {
+            "type": "capability",
+            "description": "Card listing and management",
+            "requires": ["user-auth"],
+            "ui_component": "card-list"
+        },
+        "transaction-viewing": {
+            "type": "capability",
+            "description": "Transaction history viewing",
+            "requires": ["user-auth"],
+            "ui_component": "transactions"
+        },
+
+        "user-administration": {
+            "type": "capability",
+            "description": "User account management",
+            "requires": ["admin-access"],
+            "ui_component": "user-create"
+        },
+        "role-management": {
+            "type": "capability",
+            "description": "User role assignment and management",
+            "requires": ["admin-access"],
+            "ui_component": "user-edit"
+        },
+
+        "user-auth": {
+            "type": "system",
+            "description": "User authentication system"
+        },
+        "admin-access": {
+            "type": "permission",
+            "description": "Administrative access control",
+            "roles": ["ADMIN", "SUPER_ADMIN"]
+        }
+    },
+    "edges": [
+        {
+            "from": "bill-pay",
+            "to": "transfers",
+            "relationship": "provides"
+        },
+        {
+            "from": "bill-pay",
+            "to": "contacts",
+            "relationship": "provides"
+        },
+        {
+            "from": "transfers",
+            "to": "contacts",
+            "relationship": "uses"
+        },
+
+        {
+            "from": "back-office",
+            "to": "payments",
+            "relationship": "provides"
+        },
+        {
+            "from": "back-office",
+            "to": "orders",
+            "relationship": "provides"
+        },
+        {
+            "from": "back-office",
+            "to": "widgets",
+            "relationship": "provides"
+        },
+
+        {
+            "from": "card-services",
+            "to": "card-issuance",
+            "relationship": "provides"
+        },
+        {
+            "from": "card-services",
+            "to": "card-management",
+            "relationship": "provides"
+        },
+        {
+            "from": "card-services",
+            "to": "transaction-viewing",
+            "relationship": "provides"
+        },
+        {
+            "from": "card-management",
+            "to": "transaction-viewing",
+            "relationship": "uses"
+        },
+
+        {
+            "from": "user-management",
+            "to": "user-administration",
+            "relationship": "provides"
+        },
+        {
+            "from": "user-management",
+            "to": "role-management",
+            "relationship": "provides"
+        },
+        {
+            "from": "role-management",
+            "to": "admin-access",
+            "relationship": "manages"
+        },
+
+        {
+            "from": "user-administration",
+            "to": "user-auth",
+            "relationship": "manages"
+        }
+    ]
+}

@@ -1,3 +1,6 @@
+import { Graph } from "@/prompts/v0/helpers/graph";
+import { SpeedOverCostPreference } from "@/prompts/v0/helpers/types";
+import { UsagePattern } from "@/prompts/v0/usage";
 import { AgentChatContext, ChatContextType } from "@/types/messaging";
 
 // Add ShortcutsContextType to the types
@@ -23,23 +26,6 @@ export interface MessagePositions {
   curr: number;
   prev: number;
 }
-
-// Redefine MockWebSocket to use Omit for the methods we want to override
-// export interface MockWebSocket extends Omit<WebSocket, 'addEventListener' | 'send' | 'close'> {
-//     readyState: number;
-//     _messages: string[];
-//     // Override these methods with our specific implementations
-//     addEventListener: <K extends keyof WebSocketEventMap>(
-//         type: K,
-//         listener: (this: WebSocket, ev: WebSocketEventMap[K]) => any,
-//         options?: boolean | AddEventListenerOptions
-//     ) => void;
-    
-//     send: (data: string | ArrayBufferLike | Blob | ArrayBufferView) => void;
-//     close: () => void;
-//     getLastSentMessage: () => string;
-//     getAllMessages: () => string[];
-// }
 
 export interface MockWebSocket {
   send: (data: string) => void;
@@ -67,6 +53,9 @@ declare global {
     __TEST_UTILS__?: {
       createEmptyAgentContext: () => AgentChatContext;
     };
+    __TEST_GRAPH__?: Graph;
+    __TEST_PREFERENCE__?: SpeedOverCostPreference;
+    __TEST_USAGE__?: UsagePattern;
   }
 }
 

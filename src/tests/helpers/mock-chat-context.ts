@@ -1,6 +1,6 @@
 import { ChatContextType, Message as CustomMessage, AgentMessageService, SupportMessageService } from "@/types/messaging";
 import { Page } from "@playwright/test";
-import { Message as AIMessage, CreateMessage, ChatRequestOptions, JSONValue } from "ai";
+import { Message as AIMessage} from "ai";
 import { convertCustomMessageToAI, convertAIMessageToCustom } from "@/types/messageDTO";
 
 // Mock Agent Service

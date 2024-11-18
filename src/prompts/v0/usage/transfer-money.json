@@ -1,0 +1,11 @@
+{
+    "intent": "transfer_money",
+    "required_capabilities": ["transfers", "contacts"],
+    "context_requirements": ["user-auth"],
+    "flow": [
+        "verify_user_auth",
+        "check_contact_exists",
+        "validate_transfer_amount",
+        "confirm_transfer"
+    ]
+}
