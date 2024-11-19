@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import pylon from "@/libs/pylon-sdk";
-import { CardLimitFrequency, CardStatus, Merchant } from "@backpack-fux/pylon-sdk";
+import { CardLimitFrequency, CardStatus } from "@backpack-fux/pylon-sdk";
 import CardDetailsModal from "@/components/card-issuance/card-details";
 
 vi.mock("@/libs/pylon-sdk", () => ({
@@ -12,13 +12,13 @@ vi.mock("@/libs/pylon-sdk", () => ({
       then() {},
       catch() {},
     }),
+    updateRainCard: vi.fn((d) => {
+      return d;
+    }),
   },
 }));
 
 vi.mock("@backpack-fux/pylon-sdk", () => ({
-  Merchant: vi.fn(() => ({
-    updateRainCard: vi.fn(),
-  })),
   CardStatus: {
     ACTIVE: "ACTIVE",
     INACTIVE: "INACTIVE",
@@ -34,49 +34,54 @@ vi.mock("@backpack-fux/pylon-sdk", () => ({
   },
 }));
 
+const createMockCard = () => ({
+  id: "card-123",
+  displayName: "Test Card",
+  status: CardStatus.ACTIVE,
+  limit: 1000,
+  limitFrequency: CardLimitFrequency.MONTH,
+  lastFour: "4242",
+  expirationMonth: "12",
+  expirationYear: "2025",
+  cardOwner: {
+    firstName: "John",
+    lastName: "Doe",
+    email: "john@example.com",
+  },
+  type: "VIRTUAL",
+  createdAt: new Date().toISOString(),
+  updatedAt: new Date().toISOString(),
+  merchantId: "merchant-123",
+  cardType: "VIRTUAL",
+  cardBin: "424242",
+  brand: "VISA",
+  fundingType: "DEBIT",
+  cardProduct: "VIRTUAL_DEBIT",
+  memo: "",
+  metadata: {},
+  statusReason: null,
+  webhookUrl: null,
+  cardDesignId: null,
+  cardDesignUrl: null,
+  avatar: undefined,
+  holder: "John Doe",
+});
+
 describe("CardDetailsModal", () => {
   const mockOnClose = vi.fn();
-  const mockCard: any = {
-    id: "card-123",
-    displayName: "Test Card",
-    status: CardStatus.ACTIVE,
-    limit: 1000,
-    limitFrequency: CardLimitFrequency.MONTH,
-    lastFour: "4242",
-    expirationMonth: "12",
-    expirationYear: "2025",
-    cardOwner: {
-      firstName: "John",
-      lastName: "Doe",
-      email: "john@example.com",
-    },
-    type: "VIRTUAL",
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-    merchantId: "merchant-123",
-    cardType: "VIRTUAL",
-    cardBin: "424242",
-    brand: "VISA",
-    fundingType: "DEBIT",
-    cardProduct: "VIRTUAL_DEBIT",
-    memo: "",
-    metadata: {},
-    statusReason: null,
-    webhookUrl: null,
-    cardDesignId: null,
-    cardDesignUrl: null,
-    avatar: undefined,
-    holder: "John Doe",
-  };
-
-  const defaultProps = {
-    isOpen: true,
-    onClose: mockOnClose,
-    card: mockCard,
+  let defaultProps: {
+    isOpen: boolean;
+    onClose: typeof mockOnClose;
+    card: ReturnType<any>;
   };
 
   beforeEach(() => {
     vi.clearAllMocks();
+    defaultProps = {
+      isOpen: true,
+      onClose: mockOnClose,
+      card: createMockCard(),
+    };
   });
 
   describe("Initial Render", () => {
@@ -126,15 +131,15 @@ describe("CardDetailsModal", () => {
     });
 
     it("should handle successful card update", async () => {
-      const mockUpdateRainCard = vi
-        .fn((d) => {
-          return d;
-        })
-        .mockResolvedValueOnce({});
-      //   @ts-ignore
-      vi.mocked(Merchant).mockImplementation(() => ({
-        updateRainCard: mockUpdateRainCard,
-      }));
+      const cardMockData = {
+        cardId: "card-123",
+        limit: {
+          amount: 2000,
+          frequency: "MONTH",
+        },
+        status: undefined,
+      };
+      vi.mocked(pylon.updateRainCard).mockResolvedValueOnce(cardMockData as any);
 
       render(<CardDetailsModal {...defaultProps} />);
 
@@ -147,24 +152,13 @@ describe("CardDetailsModal", () => {
       fireEvent.click(screen.getByText("Save"));
 
       await waitFor(() => {
-        expect(mockUpdateRainCard).toHaveBeenCalledWith({
-          cardId: "card-123",
-          limit: {
-            amount: 2000,
-            frequency: "MONTH",
-          },
-          status: undefined,
-        });
+        expect(pylon.updateRainCard).toHaveBeenCalledWith(cardMockData);
       });
     });
 
     it("should handle update error", async () => {
       const mockError = new Error("Update failed");
-      const mockUpdateRainCard = vi.fn().mockRejectedValueOnce(mockError);
-      //   @ts-ignore
-      vi.mocked(Merchant).mockImplementation(() => ({
-        updateRainCard: mockUpdateRainCard,
-      })) as any;
+      vi.mocked(pylon.updateRainCard).mockRejectedValueOnce(mockError);
 
       render(<CardDetailsModal {...defaultProps} />);
 
@@ -182,7 +176,7 @@ describe("CardDetailsModal", () => {
 
   describe("Physical Card Details", () => {
     const physicalCard = {
-      ...mockCard,
+      ...createMockCard(),
       cardShippingDetails: {
         street1: "123 Main St",
         city: "New York",
@@ -194,7 +188,7 @@ describe("CardDetailsModal", () => {
     };
 
     it("should render physical card shipping details", () => {
-      render(<CardDetailsModal {...defaultProps} card={physicalCard} />);
+      render(<CardDetailsModal {...defaultProps} card={physicalCard as any} />);
 
       expect(screen.getByText("PHYSICAL")).toBeInTheDocument();
       expect(screen.getByDisplayValue(/123 Main St/)).toBeInTheDocument();

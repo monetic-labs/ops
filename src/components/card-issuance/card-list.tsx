@@ -3,9 +3,10 @@ import { User } from "@nextui-org/user";
 import React, { useCallback, useState } from "react";
 import CardDetailsModal from "@/components/card-issuance/card-details";
 import { formatNumber, getOpepenAvatar } from "@/utils/helpers";
-import InfiniteTable from "../generics/table-infinite";
+import { InfiniteTableWithExternalList } from "../generics/table-infinite";
 import { MerchantCardGetOutput } from "@backpack-fux/pylon-sdk";
 import pylon from "@/libs/pylon-sdk";
+import { AsyncListData, useAsyncList } from "@react-stately/data";
 
 type HybridCard = MerchantCardGetOutput["cards"][number] & {
   avatar?: string;
@@ -14,8 +15,6 @@ type HybridCard = MerchantCardGetOutput["cards"][number] & {
   limit: number;
   limitFrequency: string;
 };
-
-const cards: HybridCard[] = [];
 
 const statusColorMap: Record<string, "success" | "danger" | "primary" | "default"> = {
   ACTIVE: "success",
@@ -26,10 +25,7 @@ const statusColorMap: Record<string, "success" | "danger" | "primary" | "default
 
 export default function CardListTable() {
   const [selectedCard, setSelectedCard] = useState<HybridCard | null>(null);
-
-  const handleCloseModal = () => {
-    setSelectedCard(null);
-  };
+  const [hasMore, setHasMore] = React.useState(true);
 
   const renderCell = useCallback((card: HybridCard, columnKey: keyof HybridCard) => {
     switch (columnKey) {
@@ -63,26 +59,38 @@ export default function CardListTable() {
     }
   }, []);
 
-  const loadMore = async (cursor: string | undefined) => {
-    try {
-      const { cards, meta } = await (cursor && cursor?.length > 1
-        ? pylon.getCards({ after: cursor })
-        : pylon.getCards({}));
-      return {
-        items: cards.map((t) => ({
-          ...t,
-          avatar: getOpepenAvatar(t.id, 20),
-          type: t.cardShippingDetails ? "Physical" : "Virtual",
-          holder: t?.cardOwner?.firstName + " " + t?.cardOwner?.lastName,
-          limit: t.limit,
-          limitFrequency: t.limitFrequency,
-        })),
-        cursor: meta.endCursor,
-      };
-    } catch (error) {
-      console.log(error);
-      return { items: [], cursor: "" };
-    }
+  const list = useAsyncList({
+    async load({ cursor }) {
+      try {
+        const { cards, meta } = await (cursor && cursor?.length > 1
+          ? pylon.getCards({ after: cursor })
+          : pylon.getCards({}));
+        if (meta.endCursor) {
+          setHasMore(true);
+        } else {
+          setHasMore(false);
+        }
+        return {
+          items: cards.map((t) => ({
+            ...t,
+            avatar: getOpepenAvatar(t.id, 20),
+            type: t.cardShippingDetails ? "Physical" : "Virtual",
+            holder: t?.cardOwner?.firstName + " " + t?.cardOwner?.lastName,
+            limit: t.limit,
+            limitFrequency: t.limitFrequency,
+          })),
+          cursor: meta.endCursor,
+        };
+      } catch (error) {
+        console.log(error);
+        setHasMore(false);
+        return { items: [], cursor: "" };
+      }
+    },
+  });
+  const handleCloseModal = (card: HybridCard) => {
+    list.update(card.id, card);
+    setSelectedCard(null);
   };
 
   const handleRowSelect = useCallback((card: HybridCard) => {
@@ -91,7 +99,10 @@ export default function CardListTable() {
 
   return (
     <>
-      <InfiniteTable
+      <InfiniteTableWithExternalList
+        hasMore={hasMore}
+        setHasMore={setHasMore}
+        list={list as AsyncListData<HybridCard>}
         columns={[
           { name: "CARD NAME", uid: "displayName" },
           { name: "HOLDER", uid: "holder" },
@@ -99,14 +110,12 @@ export default function CardListTable() {
           { name: "LIMIT", uid: "limit" },
           { name: "STATUS", uid: "status" },
         ]}
-        initialData={cards}
         renderCell={renderCell}
-        loadMore={loadMore as any}
         onRowSelect={handleRowSelect}
       />
 
       {selectedCard && (
-        <CardDetailsModal card={selectedCard} isOpen={Boolean(selectedCard)} onClose={() => setSelectedCard(null)} />
+        <CardDetailsModal card={selectedCard} isOpen={Boolean(selectedCard)} onClose={handleCloseModal} />
       )}
     </>
   );

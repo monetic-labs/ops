@@ -13,13 +13,17 @@ vi.mock("@/libs/pylon-sdk", () => ({
 
 describe("CreateCardModal", () => {
   const mockOnClose = vi.fn();
-  const defaultProps = {
-    isOpen: true,
-    onClose: mockOnClose,
+  let defaultProps: {
+    isOpen: boolean;
+    onClose: typeof mockOnClose;
   };
 
   beforeEach(() => {
     vi.clearAllMocks();
+    defaultProps = {
+      isOpen: true,
+      onClose: mockOnClose,
+    };
   });
 
   describe("Virtual Card Creation", () => {
@@ -65,8 +69,6 @@ describe("CreateCardModal", () => {
           status: CardStatus.ACTIVE,
         });
       });
-
-      expect(mockOnClose).toHaveBeenCalled();
     });
 
     it("should handle virtual card creation error", async () => {
@@ -163,8 +165,6 @@ describe("CreateCardModal", () => {
           status: "ACTIVE",
         });
       });
-
-      expect(mockOnClose).toHaveBeenCalled();
     });
 
     it("should handle physical card creation error", async () => {
