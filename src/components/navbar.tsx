@@ -14,10 +14,9 @@ export const Navbar = () => {
   const router = useRouter();
 
   const handleSignOut = async () => {
-    //TODO implment this in pylon
     await pylon.logout();
-
-    router.push("/");
+    // TODO: validate statusCode
+    router.refresh();
   };
 
   return (
