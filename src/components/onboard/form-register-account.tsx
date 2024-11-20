@@ -21,15 +21,15 @@ interface AccountRegistrationProps {
   email: string;
 }
 
-export const AccountRegistration: React.FC<AccountRegistrationProps> = ({ 
-  tosBridgeLink: tosLink, 
-  kybBridgeLink: kybLink, 
-  onCancel, 
+export const AccountRegistration: React.FC<AccountRegistrationProps> = ({
+  tosBridgeLink: tosLink,
+  kybBridgeLink: kybLink,
+  onCancel,
   onKYCDone,
   isRainToSAccepted,
   handleRainToSAccepted,
   rainToSError,
-  email
+  email,
 }) => {
   const [isOTPModalOpen, setIsOTPModalOpen] = useState(false);
   const [bridgeToSAccepted, setBridgeToSAccepted] = useState(false);
@@ -113,9 +113,11 @@ export const AccountRegistration: React.FC<AccountRegistrationProps> = ({
   };
 
   const accordionItems = [
-    <AccordionItem key="1" aria-label="Bill Pay Agreement" title="Bill Pay Agreement">
+    <AccordionItem key="1" aria-label="Bill Pay Agreement" data-testid="bill-pay-agreement" title="Bill Pay Agreement">
       <p className="mb-4">
-        At Bridge, we are advancing the accessibility of stablecoins and stablecoin-based applications. &quot;Stablecoins&quot; are a special type of cryptographic digital asset that can be redeemed at face value for government-issued money (“Fiat Currency”). By clicking &apos;Accept&apos;, you agree to Bridge&apos;s{" "}
+        At Bridge, we are advancing the accessibility of stablecoins and stablecoin-based applications.
+        &quot;Stablecoins&quot; are a special type of cryptographic digital asset that can be redeemed at face value for
+        government-issued money (“Fiat Currency”). By clicking &apos;Accept&apos;, you agree to Bridge&apos;s{" "}
         <Link href="https://www.bridge.xyz/legal" target="_blank">
           Terms of Service
         </Link>{" "}
@@ -125,6 +127,7 @@ export const AccountRegistration: React.FC<AccountRegistrationProps> = ({
         </Link>
       </p>
       <Button
+        data-testid="bill-pay-agreement-button"
         className="w-full bg-ualert-500 text-notpurple-100"
         isDisabled={bridgeToSAccepted || !tosLink}
         onClick={handleBridgeAcceptToS}
@@ -133,10 +136,16 @@ export const AccountRegistration: React.FC<AccountRegistrationProps> = ({
       </Button>
     </AccordionItem>,
 
-    <AccordionItem key="2" aria-label="Card Program Agreement" title="Card Program Agreement">
+    <AccordionItem
+      key="2"
+      aria-label="Card Program Agreement"
+      data-testid="card-program-agreement"
+      title="Card Program Agreement"
+    >
       <p className="mb-4">
-        The Rain Corporate Card (&quot;Rain Card&quot;) is a business card issued to the Account holder under the Rain Platform
-        Agreement and the Rain Corporate Card Agreement. The Rain Corporate Card is issued by Third National (&quot;Issuer&quot;).
+        The Rain Corporate Card (&quot;Rain Card&quot;) is a business card issued to the Account holder under the Rain
+        Platform Agreement and the Rain Corporate Card Agreement. The Rain Corporate Card is issued by Third National
+        (&quot;Issuer&quot;).
         <Link href="https://www.raincards.xyz/legal/docs/corporate-card-user-agreement" target="_blank">
           Terms of Service
         </Link>{" "}
@@ -146,84 +155,101 @@ export const AccountRegistration: React.FC<AccountRegistrationProps> = ({
         </Link>
       </p>
       <Button
+        data-testid="card-program-agreement-button"
         className="w-full bg-ualert-500 text-notpurple-100"
         isDisabled={isRainToSAccepted}
         onClick={handleRainAcceptToS}
       >
         {isRainToSAccepted ? "Terms Accepted" : "Accept Terms"}
       </Button>
-      {rainToSError && (
-        <p className="text-ualert-500 mt-2">{rainToSError}</p>
-      )}
+      {rainToSError && <p className="text-ualert-500 mt-2">{rainToSError}</p>}
     </AccordionItem>,
 
-    <AccordionItem key="3" aria-label="Company Docs" title="Company Documents">
+    <AccordionItem key="3" aria-label="Company Docs" data-testid="company-docs" title="Company Documents">
       <p className="mb-4">Upload the following company documents:</p>
       <div className="space-y-4">
         <div className="flex items-center space-x-4">
-          <label htmlFor="formationDocs" className="w-1/3 text-right font-medium">Formation Docs:</label>
-          <input 
+          <label htmlFor="formationDocs" className="w-1/3 text-right font-medium">
+            Formation Docs:
+          </label>
+          <input
+            data-testid="formation-docs-input"
             id="formationDocs"
-            type="file" 
-            className="file-input" 
-            onChange={(e) => handleFileChange(e, 'formationDocs', true)} 
+            type="file"
+            className="file-input"
+            onChange={(e) => handleFileChange(e, "formationDocs", true)}
           />
         </div>
         <div className="flex items-center space-x-4">
-          <label htmlFor="entityOwnership" className="w-1/3 text-right font-medium">Entity Ownership:</label>
-          <input 
+          <label htmlFor="entityOwnership" className="w-1/3 text-right font-medium">
+            Entity Ownership:
+          </label>
+          <input
+            data-testid="entity-ownership-input"
             id="entityOwnership"
-            type="file" 
-            className="file-input" 
-            onChange={(e) => handleFileChange(e, 'entityOwnership', true)} 
+            type="file"
+            className="file-input"
+            onChange={(e) => handleFileChange(e, "entityOwnership", true)}
           />
         </div>
         <div className="flex items-center space-x-4">
-          <label htmlFor="proofOfFunds" className="w-1/3 text-right font-medium">Proof of Funds:</label>
-          <input 
+          <label htmlFor="proofOfFunds" className="w-1/3 text-right font-medium">
+            Proof of Funds:
+          </label>
+          <input
+            data-testid="proof-of-funds-input"
             id="proofOfFunds"
-            type="file" 
-            className="file-input" 
-            onChange={(e) => handleFileChange(e, 'proofOfFunds', true)} 
+            type="file"
+            className="file-input"
+            onChange={(e) => handleFileChange(e, "proofOfFunds", true)}
           />
         </div>
       </div>
     </AccordionItem>,
 
-    <AccordionItem key="4" aria-label="Personal Docs" title="Personal Documents">
+    <AccordionItem key="4" aria-label="Personal Docs" data-testid="personal-docs" title="Personal Documents">
       <p className="mb-4">Upload the following personal documents:</p>
       <div className="space-y-4">
         <div className="flex items-center space-x-4">
-          <label htmlFor="photoId" className="w-1/3 text-right font-medium">Photo ID:</label>
-          <input 
+          <label htmlFor="photoId" className="w-1/3 text-right font-medium">
+            Photo ID:
+          </label>
+          <input
+            data-testid="photo-id-input"
             id="photoId"
-            type="file" 
-            className="file-input" 
-            onChange={(e) => handleFileChange(e, 'photoId', false)} 
+            type="file"
+            className="file-input"
+            onChange={(e) => handleFileChange(e, "photoId", false)}
           />
         </div>
         <div className="flex items-center space-x-4">
-          <label htmlFor="proofOfFunds" className="w-1/3 text-right font-medium">Proof of Funds:</label>
-          <input 
+          <label htmlFor="proofOfFunds" className="w-1/3 text-right font-medium">
+            Proof of Funds:
+          </label>
+          <input
+            data-testid="proof-of-funds-input"
             id="proofOfFunds"
-            type="file" 
-            className="file-input" 
-            onChange={(e) => handleFileChange(e, 'proofOfFunds', false)} 
+            type="file"
+            className="file-input"
+            onChange={(e) => handleFileChange(e, "proofOfFunds", false)}
           />
         </div>
         <div className="flex items-center space-x-4">
-          <label htmlFor="proofOfResidence" className="w-1/3 text-right font-medium">Proof of Residence:</label>
-            <input 
+          <label htmlFor="proofOfResidence" className="w-1/3 text-right font-medium">
+            Proof of Residence:
+          </label>
+          <input
+            data-testid="proof-of-residence-input"
             id="proofOfResidence"
-            type="file" 
-            className="file-input" 
-            onChange={(e) => handleFileChange(e, 'proofOfResidence', false)} 
+            type="file"
+            className="file-input"
+            onChange={(e) => handleFileChange(e, "proofOfResidence", false)}
           />
         </div>
       </div>
     </AccordionItem>,
   ];
-  
+
   if (bridgeToSAccepted) {
     accordionItems.push(
       <AccordionItem key="5" aria-label="KYB Verification" title="KYB Verification">
@@ -237,30 +263,30 @@ export const AccountRegistration: React.FC<AccountRegistrationProps> = ({
 
   return (
     <>
-    <FormCard title="Register Account">
-      <Accordion
-        showDivider={false}
-        className="p-2 flex flex-col gap-1 w-full"
-        variant="shadow"
-        itemClasses={itemClasses}
-      >
-        {accordionItems}
-      </Accordion>
-      <div className="flex justify-between mt-4">
-        <Button className="text-notpurple-500" variant="light" onClick={onCancel}>
-          Cancel
-        </Button>
-        <Button className="text-notpurple-500" variant="light" onClick={handleTestRedirect}>
-          Test Redirect
-        </Button>
-      </div>
-    </FormCard>
-    {isOTPModalOpen && (
-      <OTPVerificationModal
-        isOpen={isOTPModalOpen}
-        onClose={() => setIsOTPModalOpen(false)}
-        onVerified={handleOTPVerified}
-        email={email}
+      <FormCard title="Register Account">
+        <Accordion
+          showDivider={false}
+          className="p-2 flex flex-col gap-1 w-full"
+          variant="shadow"
+          itemClasses={itemClasses}
+        >
+          {accordionItems}
+        </Accordion>
+        <div className="flex justify-between mt-4">
+          <Button className="text-notpurple-500" variant="light" onClick={onCancel}>
+            Cancel
+          </Button>
+          <Button className="text-notpurple-500" variant="light" onClick={handleTestRedirect}>
+            Test Redirect
+          </Button>
+        </div>
+      </FormCard>
+      {isOTPModalOpen && (
+        <OTPVerificationModal
+          isOpen={isOTPModalOpen}
+          onClose={() => setIsOTPModalOpen(false)}
+          onVerified={handleOTPVerified}
+          email={email}
         />
       )}
     </>

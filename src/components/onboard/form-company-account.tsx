@@ -144,6 +144,7 @@ export const FormCompanyInfo: React.FC<{
           showAddressInputs={showAddressInputs}
           onLookupComplete={onPostcodeLookup}
           watchPostcode={watchPostcode}
+          testId="company-account-postcode-input"
         />
         <div className={`fade-in ${showAddressInputs ? "show" : ""}`}>
           <FormInput

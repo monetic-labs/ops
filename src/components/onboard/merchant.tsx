@@ -131,7 +131,11 @@ export const MerchantOnboard: React.FC<{ onCancel: () => void; initialEmail: str
       {rainError && <p className="text-ualert-500">Rain Error: {rainError}</p>}
       {isCreatingRainMerchant && <p>Creating Rain merchant...</p>}
       {createRainMerchantError && <p className="text-ualert-500">Error: {createRainMerchantError}</p>}
-      {createRainMerchantData && <p className="text-green-500">Rain merchant created successfully!</p>}
+      {createRainMerchantData && (
+        <p className="text-green-500" data-testid="rain-merchant-created">
+          Rain merchant created successfully!
+        </p>
+      )}
     </FormCard>
   );
 };

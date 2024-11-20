@@ -39,6 +39,7 @@ export const FormCardTabs = <T,>({
       <Tabs
         aria-label="Dynamic Tabs"
         className="max-w-md"
+        data-testid="form-card-tabs"
         selectedKey={selectedTab.toString()}
         onSelectionChange={(key) => setSelectedTab(parseInt(key.toString()))}
       >

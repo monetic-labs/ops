@@ -96,3 +96,13 @@ export const VALID_ONBOARDING_DATA = {
     description: "Test company description",
   },
 } as const;
+
+export const mockMerchantCreateResponse = {
+  statusCode: 200,
+  data: {
+    kycLink: "https://bridge.withpersona.com/verify",
+    tosLink: "https://dashboard.bridge.xyz/accept-terms-of-service",
+    kycStatus: "approved", // TODO: This is pending in prod
+    tosStatus: "pending",
+  },
+};

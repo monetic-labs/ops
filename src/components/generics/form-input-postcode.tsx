@@ -17,6 +17,7 @@ interface PostcodeInputProps<T extends FieldValues> {
   about?: string;
   watchPostcode?: string;
   onLookupComplete?: (result: any) => void;
+  testId?: string;
 }
 
 export const PostcodeInput = <T extends FieldValues>({
@@ -27,6 +28,7 @@ export const PostcodeInput = <T extends FieldValues>({
   errorMessage,
   onLookupComplete,
   watchPostcode,
+  testId,
   ...props
 }: PostcodeInputProps<T>) => {
   const { lookup, isLoading, error, result } = usePostcodeLookup();
@@ -59,7 +61,7 @@ export const PostcodeInput = <T extends FieldValues>({
         <div className="w-1/4">
           <FormInput
             className="text-notpurple-500"
-            data-testid="company-account-postcode-input"
+            data-testid={testId}
             control={control}
             label="Postcode"
             maxLength={5}
@@ -77,19 +79,19 @@ export const PostcodeInput = <T extends FieldValues>({
         <div className="w-3/4 flex space-x-4 mb-1 ">
           <div className="w-1/3">
             <p className="text-sm text-notpurple-100 mb-1">City</p>
-            <p className="text-sm text-notpurple-300" data-testid="company-account-city">
+            <p className="text-sm text-notpurple-300" data-testid={`${testId}-city`}>
               {result?.city || "-"}
             </p>
           </div>
           <div className="w-1/3">
             <p className="text-sm text-notpurple-100 mb-1">State</p>
-            <p className="text-sm text-notpurple-300" data-testid="company-account-state">
+            <p className="text-sm text-notpurple-300" data-testid={`${testId}-state`}>
               {result?.state || "-"}
             </p>
           </div>
           <div className="w-1/3">
             <p className="text-sm text-notpurple-100 mb-1">Country</p>
-            <p className="text-sm text-notpurple-300" data-testid="company-account-country">
+            <p className="text-sm text-notpurple-300" data-testid={`${testId}-country`}>
               {result?.country || "-"}
             </p>
           </div>
@@ -97,7 +99,7 @@ export const PostcodeInput = <T extends FieldValues>({
       </div>
       <div className="h-4">
         {isLoading && (
-          <p className="text-sm text-notpurple-300" data-testid="company-account-postcode-loading">
+          <p className="text-sm text-notpurple-300" data-testid={`${testId}-loading`}>
             Loading...
           </p>
         )}
