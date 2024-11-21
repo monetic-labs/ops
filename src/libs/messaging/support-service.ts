@@ -1,17 +1,18 @@
-import { create } from 'zustand';
-import type { Message, WebSocketMessage } from '@/types/messaging';
+import type { Message, WebSocketMessage } from "@/types/messaging";
+
+import { create } from "zustand";
 
 // Mock initial messages
 const MOCK_MESSAGES: Message[] = [
   {
-    id: '1',
-    text: 'Hello! How can I help you today?',
-    type: 'support',
+    id: "1",
+    text: "Hello! How can I help you today?",
+    type: "support",
     timestamp: Date.now() - 50000,
-    status: 'sent',
+    status: "sent",
     metadata: {
-      userId: 'support-1'
-    }
+      userId: "support-1",
+    },
   },
   // Add more mock messages as needed
 ];
@@ -32,12 +33,13 @@ export const useSupportStore = create<SupportState>((set, get) => ({
   messages: MOCK_MESSAGES,
   isLoading: false,
   isTyping: false,
-  inputValue: '',
+  inputValue: "",
 
   setIsTyping: (value) => set({ isTyping: value }),
 
   addMessage: (message) => {
     const messages = get().messages;
+
     set({ messages: [...messages, message] });
   },
 
@@ -53,8 +55,8 @@ export const useSupportStore = create<SupportState>((set, get) => ({
         status: "sent", // Auto-set to sent for mock
         timestamp: Date.now(),
         metadata: {
-          userId: 'mock-user'
-        }
+          userId: "mock-user",
+        },
       };
 
       get().addMessage(message);
@@ -68,12 +70,12 @@ export const useSupportStore = create<SupportState>((set, get) => ({
           status: "sent",
           timestamp: Date.now(),
           metadata: {
-            userId: 'support-1'
-          }
+            userId: "support-1",
+          },
         };
+
         get().addMessage(responseMessage);
       }, 1000);
-
     } finally {
       set({ isLoading: false });
     }
@@ -81,6 +83,6 @@ export const useSupportStore = create<SupportState>((set, get) => ({
 
   handleWebSocketMessage: (message) => {
     // No-op for mock implementation
-    console.log('Mock WebSocket message received:', message);
+    console.log("Mock WebSocket message received:", message);
   },
 }));

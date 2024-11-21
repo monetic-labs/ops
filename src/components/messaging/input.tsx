@@ -25,14 +25,15 @@ export const ChatInput: React.FC = () => {
     startPosition: 0,
   });
 
-  const isDisabled = isAgentContext(context) 
-  ? context.chatHelpers.isLoading 
-  : service.isLoading;
+  const isDisabled = isAgentContext(context) ? context.chatHelpers.isLoading : service.isLoading;
 
-const loadingText = isAgentContext(context)
-  ? context.chatHelpers.isLoading ? "Sending..." : "Send"
-  : service.isLoading ? "Sending..." : "Send";
-
+  const loadingText = isAgentContext(context)
+    ? context.chatHelpers.isLoading
+      ? "Sending..."
+      : "Send"
+    : service.isLoading
+      ? "Sending..."
+      : "Send";
 
   const handleMentionSelect = (option: MentionOption) => {
     const beforeMention = localInputValue.slice(0, mentionState.startPosition - 1);
@@ -48,6 +49,7 @@ const loadingText = isAgentContext(context)
 
     inputRef.current?.focus();
     const newCursorPosition = beforeMention.length + mentionText.length;
+
     setTimeout(() => {
       inputRef.current?.setSelectionRange(newCursorPosition, newCursorPosition);
     }, 0);
@@ -74,6 +76,7 @@ const loadingText = isAgentContext(context)
             searchText,
             startPosition: lastAtSymbol + 1,
           });
+
           return;
         }
       }
@@ -113,7 +116,7 @@ const loadingText = isAgentContext(context)
       const filteredOptions = options.filter((option) =>
         option.label.toLowerCase().includes(mentionState.searchText.toLowerCase())
       );
-  
+
       switch (e.key) {
         case "Escape":
           e.preventDefault();
@@ -123,14 +126,12 @@ const loadingText = isAgentContext(context)
         case "Enter":
           e.preventDefault();
           if (filteredOptions.length > 0) {
-            handleMentionSelect(filteredOptions[selectedIndex]); 
+            handleMentionSelect(filteredOptions[selectedIndex]);
           }
           break;
         case "ArrowUp":
           e.preventDefault();
-          setSelectedIndex((prev) => 
-            prev - 1 < 0 ? filteredOptions.length - 1 : prev - 1
-          );
+          setSelectedIndex((prev) => (prev - 1 < 0 ? filteredOptions.length - 1 : prev - 1));
           break;
         case "ArrowDown":
           e.preventDefault();
@@ -149,13 +150,11 @@ const loadingText = isAgentContext(context)
     <div className="relative flex gap-2" data-testid="chat-input-container">
       <Input
         ref={inputRef}
-        data-testid="chat-input"
         aria-label="Chat input"
         className="flex-1"
+        data-testid="chat-input"
         disabled={isDisabled}
-        placeholder={isAgentContext(context) 
-          ? "Ask me anything..." 
-          : "Type your message... Use @ to mention"}
+        placeholder={isAgentContext(context) ? "Ask me anything..." : "Type your message... Use @ to mention"}
         size="lg"
         type="text"
         value={localInputValue}
@@ -164,10 +163,10 @@ const loadingText = isAgentContext(context)
         onKeyDown={handleKeyDown}
       />
       <button
-        data-testid="chat-submit-button"
         className="px-4 py-2 bg-ualert-500 text-notpurple-500 rounded-lg 
           hover:bg-ualert-600 focus:outline-none focus:ring-2 focus:ring-ualert-500 
           transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+        data-testid="chat-submit-button"
         disabled={isDisabled}
         onClick={handleSubmit}
       >
@@ -179,10 +178,10 @@ const loadingText = isAgentContext(context)
           options={options}
           position={getMentionListPosition()}
           searchText={mentionState.searchText}
-          visible={true}
-          onSelect={handleMentionSelect}
           selectedIndex={selectedIndex}
           setSelectedIndex={setSelectedIndex}
+          visible={true}
+          onSelect={handleMentionSelect}
         />
       )}
     </div>

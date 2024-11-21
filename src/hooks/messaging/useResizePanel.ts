@@ -21,12 +21,13 @@ export const useResizePanel = (initialWidth = DEFAULT_WIDTH) => {
     (e: MouseEvent) => {
       if (isResizing) {
         const newWidth = e.clientX;
-        console.log('Resize event:', {
+
+        console.log("Resize event:", {
           clientX: e.clientX,
           currentWidth: width,
-          willUpdate: newWidth >= MIN_WIDTH && newWidth <= MAX_WIDTH
+          willUpdate: newWidth >= MIN_WIDTH && newWidth <= MAX_WIDTH,
         });
-  
+
         if (newWidth >= MIN_WIDTH && newWidth <= MAX_WIDTH) {
           setWidth(newWidth);
         }

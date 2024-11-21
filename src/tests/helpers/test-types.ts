@@ -1,23 +1,24 @@
-import { Graph } from "@/prompts/v0/helpers/graph";
-import { SpeedOverCostPreference } from "@/prompts/v0/helpers/types";
+import { SpeedOverCostPreference } from "@/prompts/v0/types";
 import { UsagePattern } from "@/prompts/v0/usage";
 import { AgentChatContext, ChatContextType } from "@/types/messaging";
 
+import { Graph } from "@/prompts/v0/functions/graph";
+
 // Add ShortcutsContextType to the types
 export interface ShortcutsContextType {
-    isChatOpen: boolean;
-    openChat: () => void;
-    closeChat: () => void;
-    toggleChat: () => void;
-  }
+  isChatOpen: boolean;
+  openChat: () => void;
+  closeChat: () => void;
+  toggleChat: () => void;
+}
 
 // Define the Message type for tests
 export interface TestMessage {
   id: string;
-  type: 'user' | 'bot';
+  type: "user" | "bot";
   text: string;
   timestamp: number;
-  status: 'sent' | 'sending' | 'error';
+  status: "sent" | "sending" | "error";
   source?: string;
 }
 
@@ -43,7 +44,7 @@ export interface MockWebSocket {
 declare global {
   interface Window {
     __MOCK_CHAT_CONTEXT__?: ChatContextType;
-    __MOCK_SHORTCUTS_CONTEXT__?: ShortcutsContextType; 
+    __MOCK_SHORTCUTS_CONTEXT__?: ShortcutsContextType;
     __MOCK_WS__?: MockWebSocket;
     _initialWidth?: number;
     _widthChanged?: boolean;

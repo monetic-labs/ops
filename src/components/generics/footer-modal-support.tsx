@@ -7,6 +7,7 @@ import html2canvas from "html2canvas";
 import { Tooltip } from "@nextui-org/tooltip";
 
 import { ChatPane } from "../messaging/pane";
+import { useShortcuts } from "./shortcuts-provider";
 
 interface ActionButton {
   label: string;
@@ -31,13 +32,13 @@ export default function ModalFooterWithSupport({
   actions,
   captureElementId = "root",
 }: ModalFooterWithSupportProps) {
-  const [isChatOpen, setIsChatOpen] = useState(false);
+  const shortcuts = useShortcuts();
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
       if ((event.metaKey || event.ctrlKey) && event.key === "k") {
         event.preventDefault();
-        setIsChatOpen((prev) => !prev);
+        shortcuts.toggleChat();
       }
     };
 
@@ -83,11 +84,11 @@ export default function ModalFooterWithSupport({
       }
 
       //setShowSupportChat(true);
-      setIsChatOpen(true);
+      shortcuts.openChat();
       onSupportClick();
     } catch (error) {
       console.error("Error capturing screenshot:", error);
-      setIsChatOpen(true);
+      shortcuts.openChat();
       onSupportClick();
     }
   };
@@ -135,8 +136,8 @@ export default function ModalFooterWithSupport({
           ))}
         </div>
       </ModalFooter>
-      {/* {showSupportChat && <SupportChat /> } */}
-      {isChatOpen && <ChatPane isOpen={isChatOpen} onClose={() => setIsChatOpen(false)} />}
+      {/* {Handled by global state - remove this when pane works correctly /> } */}
+      {/* {shortcuts.isChatOpen && <ChatPane isOpen={shortcuts.isChatOpen} onClose={shortcuts.closeChat} />} */}
     </>
   );
 }

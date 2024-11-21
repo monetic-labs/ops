@@ -3,7 +3,7 @@ import { SupportMessageService } from "@/types/messaging";
 
 export const useSupportService = (): SupportMessageService => {
   const store = useSupportStore();
-  
+
   return {
     type: "telegram",
     channel: "default",
@@ -16,10 +16,11 @@ export const useSupportService = (): SupportMessageService => {
     handleSubmit: async (e) => {
       e.preventDefault();
       const text = store.inputValue;
+
       if (!text.trim()) return;
       await store.sendMessage(text);
     },
     handleWebSocketMessage: store.handleWebSocketMessage,
-    getUserId: () => 'default-user'
+    getUserId: () => "default-user",
   };
 };

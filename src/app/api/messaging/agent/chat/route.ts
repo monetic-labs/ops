@@ -1,10 +1,10 @@
 import { openai } from "@ai-sdk/openai";
 import { convertToCoreMessages, streamText } from "ai";
+import { PineconeNotFoundError } from "@pinecone-database/pinecone/dist/errors";
+import { PineconeConnectionError } from "@pinecone-database/pinecone/dist/errors";
 
 import { getEmbedding } from "@/libs/openai/embedding";
 import { pinecone } from "@/libs/pinecone/pinecone";
-import { PineconeNotFoundError } from "@pinecone-database/pinecone/dist/errors";
-import { PineconeConnectionError } from "@pinecone-database/pinecone/dist/errors";
 
 export const runtime = "edge";
 
@@ -15,9 +15,8 @@ export async function POST(req: Request) {
 
     // Get embedding for the query
     const queryEmbedding = await getEmbedding(lastMessage.content);
-   
-    try {
 
+    try {
       const index = pinecone.index("fintech-knowledge");
       const queryResponse = await index.query({
         vector: queryEmbedding,
@@ -32,8 +31,7 @@ export async function POST(req: Request) {
         .join("\n\n");
 
       // Fallback context if no relevant results found
-      const defaultContext =
-        "Default context for you bitches!";
+      const defaultContext = "Default context for you bitches!";
 
       const context = vectorContext || defaultContext;
 
@@ -55,6 +53,7 @@ export async function POST(req: Request) {
           model: openai("gpt-4-turbo"),
           system: "I am a helpful assistant focused on financial technology support...",
         });
+
         return result.toDataStreamResponse();
       }
       throw error; // Re-throw other errors

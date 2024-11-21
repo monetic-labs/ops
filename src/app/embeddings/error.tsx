@@ -1,17 +1,11 @@
-'use client';
+"use client";
 
-import { useEffect } from 'react';
-import { Button } from '@nextui-org/button';
+import { useEffect } from "react";
+import { Button } from "@nextui-org/button";
 
-export default function Error({
-  error,
-  reset,
-}: {
-  error: Error & { digest?: string };
-  reset: () => void;
-}) {
+export default function Error({ error, reset }: { error: Error & { digest?: string }; reset: () => void }) {
   useEffect(() => {
-    console.error('Embeddings page error:', error);
+    console.error("Embeddings page error:", error);
   }, [error]);
 
   return (
@@ -19,11 +13,7 @@ export default function Error({
       <div className="text-center">
         <h2 className="text-xl font-bold text-red-600">Something went wrong!</h2>
         <p className="mt-4 text-gray-600">{error.message}</p>
-        <Button
-          color="primary"
-          onClick={reset}
-          className="mt-4"
-        >
+        <Button className="mt-4" color="primary" onClick={reset}>
           Try again
         </Button>
       </div>

@@ -1,10 +1,11 @@
-import { NextResponse } from 'next/server';
-import { pinecone } from '@/libs/server/pinecone';
+import { NextResponse } from "next/server";
+
+import { pinecone } from "@/libs/pinecone/pinecone";
 
 export async function DELETE(req: Request) {
   try {
     const { id, ids, filter, namespace } = await req.json();
-    const index = pinecone.index('fintech-knowledge');
+    const index = pinecone.index("fintech-knowledge");
 
     if (id) {
       if (namespace) {
@@ -12,7 +13,8 @@ export async function DELETE(req: Request) {
       } else {
         await index.deleteOne(id);
       }
-      return NextResponse.json({ message: 'Document deleted successfully' });
+
+      return NextResponse.json({ message: "Document deleted successfully" });
     }
 
     if (ids) {
@@ -21,6 +23,7 @@ export async function DELETE(req: Request) {
       } else {
         await index.deleteMany(ids);
       }
+
       return NextResponse.json({ message: `${ids.length} documents deleted successfully` });
     }
 
@@ -30,18 +33,14 @@ export async function DELETE(req: Request) {
       } else {
         await index.deleteMany({ filter });
       }
-      return NextResponse.json({ message: 'Documents matching filter deleted successfully' });
+
+      return NextResponse.json({ message: "Documents matching filter deleted successfully" });
     }
 
-    return NextResponse.json(
-      { error: 'No delete criteria provided' },
-      { status: 400 }
-    );
+    return NextResponse.json({ error: "No delete criteria provided" }, { status: 400 });
   } catch (error) {
-    console.error('Delete error:', error);
-    return NextResponse.json(
-      { error: error instanceof Error ? error.message : 'Delete failed' },
-      { status: 500 }
-    );
+    console.error("Delete error:", error);
+
+    return NextResponse.json({ error: error instanceof Error ? error.message : "Delete failed" }, { status: 500 });
   }
 }

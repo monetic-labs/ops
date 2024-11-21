@@ -1,15 +1,12 @@
 import type { NextRequest } from "next/server";
+
 import { NextResponse } from "next/server";
 
 import { MERCHANT_COOKIE_NAME } from "./utils/constants";
 
 export function middleware(request: NextRequest) {
-
   // Bypass auth for test routes
-  if (
-    process.env.NODE_ENV !== "production" &&
-    request.nextUrl.pathname.startsWith("/test/")
-  ) {
+  if (process.env.NODE_ENV !== "production" && request.nextUrl.pathname.startsWith("/test/")) {
     return NextResponse.next();
   }
 

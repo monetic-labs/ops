@@ -93,6 +93,36 @@
             "type": "permission",
             "description": "Administrative access control",
             "roles": ["ADMIN", "SUPER_ADMIN"]
+        },
+        "energy-type-manifestor": {
+            "type": "experience",
+            "description": "Manifestor financial interaction patterns",
+            "traits": ["visionary", "independent", "initiator"],
+            "financial_strengths": ["opportunity_spotting", "venture_initiation"],
+            "financial_challenges": ["follow_through", "resource_management"],
+            "decision_style": {
+                "speed_multiplier": 1.5,
+                "risk_tolerance": "high",
+                "waiting_period": "minimal",
+                "confirmation_threshold": "low"
+            },
+            "optimal_capabilities": ["transfers", "card-issuance"],
+            "requires": ["user-auth"]
+        },
+        "energy-type-generator": {
+            "type": "experience",
+            "description": "Generator financial interaction patterns",
+            "traits": ["consistent", "methodical", "building"],
+            "financial_strengths": ["steady_growth", "sustainable_patterns"],
+            "financial_challenges": ["quick_decisions", "opportunity_cost"],
+            "decision_style": {
+                "speed_multiplier": 0.8,
+                "risk_tolerance": "medium",
+                "waiting_period": "response-based",
+                "confirmation_threshold": "medium"
+            },
+            "optimal_capabilities": ["automated-savings", "recurring-transfers"],
+            "requires": ["user-auth"]
         }
     },
     "edges": [
@@ -169,6 +199,25 @@
             "from": "user-administration",
             "to": "user-auth",
             "relationship": "manages"
+        },
+
+        {
+            "from": "energy-type-manifestor",
+            "to": "transfers",
+            "relationship": "modifies",
+            "parameters": {
+                "speed_priority": "high",
+                "confirmation_required": "minimal"
+            }
+        },
+        {
+            "from": "energy-type-generator",
+            "to": "transfers",
+            "relationship": "modifies",
+            "parameters": {
+                "speed_priority": "medium",
+                "confirmation_required": "response-based"
+            }
         }
     ]
 }

@@ -1,27 +1,27 @@
-import { useState } from 'react';
+import { useState } from "react";
 
 export interface ProcessingStatus {
-    type: 'success' | 'error' | null;
-    message: string;
-  }
-  
-  export interface ProcessingResult {
-    document: {
-      id: string;
-      title: string;
-      category: string;
-      size: number;
-      metadata: Record<string, any>;
-    };
-    indexStats: {
-      totalDocuments: number;
-      namespaces: Record<string, { recordCount: number }>;
-    };
-  }
+  type: "success" | "error" | null;
+  message: string;
+}
+
+export interface ProcessingResult {
+  document: {
+    id: string;
+    title: string;
+    category: string;
+    size: number;
+    metadata: Record<string, any>;
+  };
+  indexStats: {
+    totalDocuments: number;
+    namespaces: Record<string, { recordCount: number }>;
+  };
+}
 
 export function useDocumentProcessor() {
   const [processing, setProcessing] = useState(false);
-  const [status, setStatus] = useState<ProcessingStatus>({ type: null, message: '' });
+  const [status, setStatus] = useState<ProcessingStatus>({ type: null, message: "" });
   const [result, setResult] = useState<ProcessingResult | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -29,26 +29,29 @@ export function useDocumentProcessor() {
     try {
       setProcessing(true);
       setError(null);
-      
-      const formData = new FormData();
-      formData.append('file', file);
-      if (category) formData.append('category', category);
 
-      const response = await fetch('/api/embeddings/docs', {
-        method: 'POST',
+      const formData = new FormData();
+
+      formData.append("file", file);
+      if (category) formData.append("category", category);
+
+      const response = await fetch("/api/embeddings/docs", {
+        method: "POST",
         body: formData,
       });
 
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error || 'Upload failed');
+        throw new Error(data.error || "Upload failed");
       }
 
       setResult(data);
+
       return data;
     } catch (error) {
-      const message = error instanceof Error ? error.message : 'Processing failed';
+      const message = error instanceof Error ? error.message : "Processing failed";
+
       setError(message);
       throw error;
     } finally {

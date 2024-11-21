@@ -58,7 +58,6 @@ export function mapToRainMerchantCreateDto(
   // We use role to map which user object but the service doesn't want it, we use this to manage that
   type RainPersonWithRole = RainPersonDto & {
     role: "owner" | "representative" | "beneficial-owner";
-    //role: string;
   };
 
   // Map representatives to RainPersonDto[]

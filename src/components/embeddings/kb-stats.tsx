@@ -1,9 +1,9 @@
-'use client';
+"use client";
 
-import { useEffect, useState } from 'react';
-import { Card } from '@nextui-org/card';
-import { Button } from '@nextui-org/button';
-import { Spinner } from '@nextui-org/spinner';
+import { useEffect, useState } from "react";
+import { Card } from "@nextui-org/card";
+import { Button } from "@nextui-org/button";
+import { Spinner } from "@nextui-org/spinner";
 
 type IndexStats = {
   totalDocuments: number;
@@ -11,7 +11,7 @@ type IndexStats = {
   namespaces: Record<string, { recordCount: number }>;
   indexFullness: number;
   refresh: () => Promise<void>;
-}
+};
 
 const KnowledgeBaseStats = () => {
   const [stats, setStats] = useState<IndexStats | null>(null);
@@ -22,15 +22,17 @@ const KnowledgeBaseStats = () => {
     try {
       setLoading(true);
       setError(null);
-      const response = await fetch('/api/embeddings/stats');
+      const response = await fetch("/api/embeddings/stats");
+
       if (!response.ok) {
-        throw new Error('Failed to fetch stats');
+        throw new Error("Failed to fetch stats");
       }
       const data = await response.json();
+
       setStats(data);
     } catch (error) {
-      console.error('Error fetching stats:', error);
-      setError(error instanceof Error ? error.message : 'Failed to fetch stats');
+      console.error("Error fetching stats:", error);
+      setError(error instanceof Error ? error.message : "Failed to fetch stats");
     } finally {
       setLoading(false);
     }
@@ -53,7 +55,7 @@ const KnowledgeBaseStats = () => {
     return (
       <div className="p-4 bg-ualert-500/20 rounded">
         <div className="text-ualert-500">{error}</div>
-        <Button size="sm" color="primary" onClick={fetchStats} className="mt-2">
+        <Button className="mt-2" color="primary" size="sm" onClick={fetchStats}>
           Retry
         </Button>
       </div>
@@ -76,15 +78,11 @@ const KnowledgeBaseStats = () => {
       </Card>
       <Card className="bg-charyo-700/60 p-4">
         <h3 className="text-sm font-semibold text-notpurple-500/60">Index Fullness</h3>
-        <p className="text-2xl font-bold text-notpurple-500">
-          {(stats.indexFullness * 100).toFixed(2)}%
-        </p>
+        <p className="text-2xl font-bold text-notpurple-500">{(stats.indexFullness * 100).toFixed(2)}%</p>
       </Card>
       <Card className="bg-charyo-700/60 p-4">
         <h3 className="text-sm font-semibold text-notpurple-500/60">Namespaces</h3>
-        <p className="text-2xl font-bold text-notpurple-500">
-          {Object.keys(stats.namespaces).length}
-        </p>
+        <p className="text-2xl font-bold text-notpurple-500">{Object.keys(stats.namespaces).length}</p>
       </Card>
     </div>
   );

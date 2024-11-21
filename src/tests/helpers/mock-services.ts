@@ -2,81 +2,80 @@ import { MockWebSocket } from "./test-types";
 
 // Helper types for events
 type WebSocketEventTypes = keyof WebSocketEventMap;
-type WebSocketEventListener<K extends WebSocketEventTypes> = 
-  (this: WebSocket, ev: WebSocketEventMap[K]) => any;
+type WebSocketEventListener<K extends WebSocketEventTypes> = (this: WebSocket, ev: WebSocketEventMap[K]) => any;
 
 // Helper function to create typed events
-const createWebSocketEvent = <K extends WebSocketEventTypes>(
-  type: K, 
-  data?: any
-): WebSocketEventMap[K] => {
+const createWebSocketEvent = <K extends WebSocketEventTypes>(type: K, data?: any): WebSocketEventMap[K] => {
   switch (type) {
-    case 'open':
-      return new Event('open') as WebSocketEventMap[K];
-    case 'close':
-      return new CloseEvent('close') as WebSocketEventMap[K];
-    case 'message':
-      return new MessageEvent('message', {
-        data: typeof data === 'string' ? data : JSON.stringify(data)
+    case "open":
+      return new Event("open") as WebSocketEventMap[K];
+    case "close":
+      return new CloseEvent("close") as WebSocketEventMap[K];
+    case "message":
+      return new MessageEvent("message", {
+        data: typeof data === "string" ? data : JSON.stringify(data),
       }) as WebSocketEventMap[K];
-    case 'error':
-      return new Event('error') as WebSocketEventMap[K];
+    case "error":
+      return new Event("error") as WebSocketEventMap[K];
     default:
       throw new Error(`Unsupported event type: ${type}`);
   }
 };
 
 export const createMockWebSocket = (): MockWebSocket => {
-    const messages: any[] = [];
-    const eventListeners: Record<string, Function[]> = {
-        message: [],
-        close: [],
-        open: [],
-        error: []
-    };
+  const messages: any[] = [];
+  const eventListeners: Record<string, Function[]> = {
+    message: [],
+    close: [],
+    open: [],
+    error: [],
+  };
 
-    const mockWs: MockWebSocket = {
-        readyState: 1, // OPEN
-        
-        send: (data: string) => {
-            const parsed = JSON.parse(data);
-            messages.push(parsed);
-            
-            // Trigger message handlers
-            const event = new MessageEvent('message', { data });
-            eventListeners.message.forEach(handler => handler(event));
-            if (mockWs.onmessage) mockWs.onmessage(event);
-        },
+  const mockWs: MockWebSocket = {
+    readyState: 1, // OPEN
 
-        close: () => {
-            mockWs.readyState = 3; // CLOSED
-            eventListeners.close.forEach(handler => handler());
-            if (mockWs.onclose) mockWs.onclose();
-        },
+    send: (data: string) => {
+      const parsed = JSON.parse(data);
 
-        addEventListener: (event: string, handler: Function) => {
-            if (eventListeners[event]) {
-                eventListeners[event].push(handler);
-            }
-        },
+      messages.push(parsed);
 
-        removeEventListener: (event: string, handler: Function) => {
-            if (eventListeners[event]) {
-                const idx = eventListeners[event].indexOf(handler);
-                if (idx !== -1) {
-                    eventListeners[event].splice(idx, 1);
-                }
-            }
-        },
+      // Trigger message handlers
+      const event = new MessageEvent("message", { data });
 
-        getAllMessages: () => [...messages],
-    };
+      eventListeners.message.forEach((handler) => handler(event));
+      if (mockWs.onmessage) mockWs.onmessage(event);
+    },
 
-    // Simulate immediate open
-    setTimeout(() => {
-        eventListeners.open.forEach(handler => handler());
-        if (mockWs.onopen) mockWs.onopen();
-    }, 0);
+    close: () => {
+      mockWs.readyState = 3; // CLOSED
+      eventListeners.close.forEach((handler) => handler());
+      if (mockWs.onclose) mockWs.onclose();
+    },
 
-    return mockWs;
+    addEventListener: (event: string, handler: Function) => {
+      if (eventListeners[event]) {
+        eventListeners[event].push(handler);
+      }
+    },
+
+    removeEventListener: (event: string, handler: Function) => {
+      if (eventListeners[event]) {
+        const idx = eventListeners[event].indexOf(handler);
+
+        if (idx !== -1) {
+          eventListeners[event].splice(idx, 1);
+        }
+      }
+    },
+
+    getAllMessages: () => [...messages],
+  };
+
+  // Simulate immediate open
+  setTimeout(() => {
+    eventListeners.open.forEach((handler) => handler());
+    if (mockWs.onopen) mockWs.onopen();
+  }, 0);
+
+  return mockWs;
 };

@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useCallback, useEffect } from "react";
 
 interface ShortcutOptions {
   isEnabled?: boolean;
@@ -7,29 +7,30 @@ interface ShortcutOptions {
   shiftKey?: boolean;
 }
 
-export function useGlobalShortcuts(
-  key: string,
-  callback: () => void,
-  options: ShortcutOptions = {}
-) {
+export function useGlobalShortcuts(key: string, callback: () => void, options: ShortcutOptions = {}) {
+  const { 
+    isEnabled = true, 
+    metaKey = false, 
+    altKey = false, 
+    shiftKey = false 
+  } = options;
+
+  const handleKeyDown = useCallback((event: KeyboardEvent) => {
+    if (
+      event.key.toLowerCase() === key.toLowerCase() &&
+      event.metaKey === metaKey &&
+      event.altKey === altKey &&
+      event.shiftKey === shiftKey
+    ) {
+      event.preventDefault();
+      callback();
+    }
+  }, [key, callback, metaKey, altKey, shiftKey]);
+
   useEffect(() => {
-    const { isEnabled = true, metaKey = false, altKey = false, shiftKey = false } = options;
+    if (typeof window === "undefined" || !isEnabled) return;
 
-    if (!isEnabled) return;
-
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (
-        event.key.toLowerCase() === key.toLowerCase() &&
-        event.metaKey === metaKey &&
-        event.altKey === altKey &&
-        event.shiftKey === shiftKey
-      ) {
-        event.preventDefault();
-        callback();
-      }
-    };
-
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [key, callback, options]);
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [handleKeyDown, isEnabled]);
 }

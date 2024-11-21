@@ -137,7 +137,7 @@ interface BaseChatContext {
 
 // Agent-specific context
 export interface AgentChatContext extends BaseChatContext {
-  mode: 'agent';
+  mode: "agent";
   service: AgentMessageService;
   chatHelpers: UseChatHelpers;
   isTyping: false; // Agent mode doesn't use typing indicators
@@ -145,7 +145,7 @@ export interface AgentChatContext extends BaseChatContext {
 
 // Support-specific context
 export interface SupportChatContext extends BaseChatContext {
-  mode: 'support';
+  mode: "support";
   service: SupportMessageService;
   chatHelpers?: never; // Support mode doesn't use chat helpers
   isTyping: boolean;
@@ -156,9 +156,9 @@ export type ChatContextType = AgentChatContext | SupportChatContext;
 
 // Type guard functions
 export function isAgentContext(context: ChatContextType): context is AgentChatContext {
-  return context.mode === 'agent';
+  return context.mode === "agent";
 }
 
 export function isSupportContext(context: ChatContextType): context is SupportChatContext {
-  return context.mode === 'support';
+  return context.mode === "support";
 }

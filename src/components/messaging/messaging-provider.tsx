@@ -1,11 +1,11 @@
 "use client";
 
-import { useCallback, useMemo } from "react";
+import { useMemo } from "react";
 import { useChat } from "ai/react";
+
 import { useChatMode } from "@/hooks/messaging/useChatMode";
 import { ChatContext } from "@/hooks/messaging/useChatContext";
 import { AgentMessageService, SupportMessageService, ChatContextType } from "@/types/messaging";
-
 import { useSupportService } from "@/hooks/messaging/useSupportService";
 import { useAgentService } from "@/hooks/messaging/useAgentService";
 
@@ -34,12 +34,12 @@ export const ChatProvider = ({ children, userId }: ChatProviderProps) => {
   });
 
   const supportService = useSupportService();
-  const agentService = useAgentService(mode === 'agent' ? chatHelpers : undefined);
+  const agentService = useAgentService(mode === "agent" ? chatHelpers : undefined);
 
-  const service = mode === 'support' ? supportService : agentService;
+  const service = mode === "support" ? supportService : agentService;
 
   const contextValue = useMemo(() => {
-    if (mode === 'agent') {
+    if (mode === "agent") {
       return {
         messages: service.messages,
         inputValue: service.inputValue,
@@ -47,7 +47,7 @@ export const ChatProvider = ({ children, userId }: ChatProviderProps) => {
         sendMessage: service.sendMessage,
         handleSubmit: service.handleSubmit,
         userId,
-        mode: 'agent' as const,
+        mode: "agent" as const,
         service: service as AgentMessageService,
         chatHelpers,
         isTyping: false,
@@ -60,16 +60,12 @@ export const ChatProvider = ({ children, userId }: ChatProviderProps) => {
         sendMessage: service.sendMessage,
         handleSubmit: service.handleSubmit,
         userId,
-        mode: 'support' as const,
+        mode: "support" as const,
         service: service as SupportMessageService,
         isTyping: service.isTyping || false,
       } satisfies ChatContextType;
     }
   }, [mode, service, chatHelpers, userId]);
 
-  return (
-    <ChatContext.Provider value={contextValue}>
-      {children}
-    </ChatContext.Provider>
-  );
+  return <ChatContext.Provider value={contextValue}>{children}</ChatContext.Provider>;
 };

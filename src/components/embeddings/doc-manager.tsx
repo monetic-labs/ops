@@ -1,16 +1,17 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import { Card, CardBody, CardHeader } from '@nextui-org/card';
-import { Button } from '@nextui-org/button';
-import { Select, SelectItem } from '@nextui-org/select';
-import { Spinner } from '@nextui-org/spinner';
-import { Accordion, AccordionItem } from '@nextui-org/accordion';
-import { Chip } from '@nextui-org/chip';
-import { Divider } from '@nextui-org/divider';
-import { useDocumentManager } from '@/hooks/embeddings/useDocumentManager';
-import CardFooterWithActions from '@/components/generics/card-footer-actions';
-import IDSnippet from '../generics/snippet-id';
+import { useState, useEffect } from "react";
+import { Card, CardBody, CardHeader } from "@nextui-org/card";
+import { Select, SelectItem } from "@nextui-org/select";
+import { Spinner } from "@nextui-org/spinner";
+import { Accordion, AccordionItem } from "@nextui-org/accordion";
+import { Chip } from "@nextui-org/chip";
+import { Divider } from "@nextui-org/divider";
+
+import { useDocumentManager } from "@/hooks/embeddings/useDocumentManager";
+import CardFooterWithActions from "@/components/generics/card-footer-actions";
+
+import IDSnippet from "../generics/snippet-id";
 
 interface DocumentList {
   id: string;
@@ -30,39 +31,41 @@ interface NamespaceOption {
 }
 
 const DocumentManager = () => {
-  const [namespace, setNamespace] = useState('');
+  const [namespace, setNamespace] = useState("");
   const [documents, setDocuments] = useState<DocumentList[]>([]);
   const [namespaces, setNamespaces] = useState<Record<string, { recordCount: number }>>({});
   const [loading, setLoading] = useState(true);
   const { deleteDocument, deleteManyDocuments, deleting, error } = useDocumentManager();
 
   const namespaceOptions: NamespaceOption[] = [
-    { 
-      label: 'Default namespace', 
-      value: 'default', // Changed from empty string to 'default'
-      description: `${namespaces['']?.recordCount || 0} documents` 
+    {
+      label: "Default namespace",
+      value: "default", // Changed from empty string to 'default'
+      description: `${namespaces[""]?.recordCount || 0} documents`,
     },
     ...Object.entries(namespaces)
-      .filter(([ns]) => ns !== '') // Filter out empty string namespace
+      .filter(([ns]) => ns !== "") // Filter out empty string namespace
       .map(([ns, { recordCount }]) => ({
         label: ns,
         value: ns,
-        description: `${recordCount} documents`
-      }))
+        description: `${recordCount} documents`,
+      })),
   ];
 
   const fetchDocuments = async () => {
     try {
       setLoading(true);
-      const response = await fetch(`/api/embeddings/docs${
-        namespace === 'default' ? '' : namespace ? `?namespace=${namespace}` : ''
-      }`);
-      if (!response.ok) throw new Error('Failed to fetch documents');
+      const response = await fetch(
+        `/api/embeddings/docs${namespace === "default" ? "" : namespace ? `?namespace=${namespace}` : ""}`
+      );
+
+      if (!response.ok) throw new Error("Failed to fetch documents");
       const data = await response.json();
+
       setDocuments(data.documents);
       setNamespaces(data.namespaces);
     } catch (error) {
-      console.error('Failed to fetch documents:', error);
+      console.error("Failed to fetch documents:", error);
     } finally {
       setLoading(false);
     }
@@ -75,36 +78,40 @@ const DocumentManager = () => {
   const handleDeleteOne = async (id: string) => {
     if (window.confirm(`Are you sure you want to delete document ${id}?`)) {
       try {
-        await deleteDocument({ 
-          id, 
-          namespace: namespace || undefined 
+        await deleteDocument({
+          id,
+          namespace: namespace || undefined,
         });
         await fetchDocuments();
       } catch (error) {
-        console.error('Delete failed:', error);
+        console.error("Delete failed:", error);
       }
     }
   };
 
   const handleDeleteAll = async () => {
-    if (window.confirm(`Are you sure you want to delete all documents${namespace ? ` in namespace ${namespace}` : ''}? This cannot be undone.`)) {
+    if (
+      window.confirm(
+        `Are you sure you want to delete all documents${namespace ? ` in namespace ${namespace}` : ""}? This cannot be undone.`
+      )
+    ) {
       try {
-        await deleteManyDocuments({ 
+        await deleteManyDocuments({
           deleteAll: true,
-          namespace: namespace || undefined 
+          namespace: namespace || undefined,
         });
         await fetchDocuments();
       } catch (error) {
-        console.error('Delete all failed:', error);
+        console.error("Delete all failed:", error);
       }
     }
   };
 
   const renderDocumentCard = (doc: DocumentList) => {
-    const preview = doc.metadata.text || 'No content available';
-    const category = doc.metadata.category || 'Uncategorized';
-    const section = doc.metadata.section || 'No section';
-  
+    const preview = doc.metadata.text || "No content available";
+    const category = doc.metadata.category || "Uncategorized";
+    const section = doc.metadata.section || "No section";
+
     return (
       <AccordionItem
         key={doc.id}
@@ -113,36 +120,28 @@ const DocumentManager = () => {
         title={
           <div className="flex justify-between items-center w-full px-2">
             <div className="flex items-center gap-2">
-              <Chip 
-                size="sm" 
-                variant="flat"
-                className="bg-charyo-500/60 text-notpurple-500"
-              >
+              <Chip className="bg-charyo-500/60 text-notpurple-500" size="sm" variant="flat">
                 {category}
               </Chip>
-              <Chip 
-                size="sm" 
-                variant="flat"
-                className="bg-charyo-700/60 text-notpurple-500/80"
-              >
+              <Chip className="bg-charyo-700/60 text-notpurple-500/80" size="sm" variant="flat">
                 {section}
               </Chip>
             </div>
             <span
+              aria-label={`Delete document ${doc.id}`}
+              className="text-ualert-500 hover:text-ualert-600 cursor-pointer px-2"
               role="button"
               tabIndex={0}
-              className="text-ualert-500 hover:text-ualert-600 cursor-pointer px-2"
               onClick={(e) => {
                 e.stopPropagation();
                 handleDeleteOne(doc.id);
               }}
               onKeyDown={(e) => {
-                if (e.key === 'Enter' || e.key === ' ') {
+                if (e.key === "Enter" || e.key === " ") {
                   e.preventDefault();
                   handleDeleteOne(doc.id);
                 }
               }}
-              aria-label={`Delete document ${doc.id}`}
             >
               Delete
             </span>
@@ -159,16 +158,14 @@ const DocumentManager = () => {
               </span>
             </div>
           </div>
-          
+
           <div className="space-y-2">
             <h4 className="text-sm font-medium text-notpurple-500/60">Content Preview</h4>
             <div className="bg-charyo-800/40 rounded-lg p-3">
-              <p className="text-sm text-notpurple-500 whitespace-pre-wrap font-mono">
-                {preview}
-              </p>
+              <p className="text-sm text-notpurple-500 whitespace-pre-wrap font-mono">{preview}</p>
             </div>
           </div>
-  
+
           {doc.metadata.source && (
             <div className="space-y-2">
               <h4 className="text-sm font-medium text-notpurple-500/60">Source</h4>
@@ -182,11 +179,11 @@ const DocumentManager = () => {
 
   const actions = [
     {
-      label: deleting ? 'Deleting...' : 'Delete All Documents',
+      label: deleting ? "Deleting..." : "Delete All Documents",
       onClick: handleDeleteAll,
       isDisabled: deleting,
-      className: 'bg-ualert-500'
-    }
+      className: "bg-ualert-500",
+    },
   ];
 
   return (
@@ -199,10 +196,6 @@ const DocumentManager = () => {
       <CardBody className="space-y-4">
         <div className="flex flex-col md:flex-row gap-4 mb-4">
           <Select
-            label="Namespace"
-            placeholder="Select namespace"
-            selectedKeys={[namespace || 'default']}
-            onChange={(e) => setNamespace(e.target.value)}
             className="md:max-w-xs"
             classNames={{
               trigger: "bg-charyo-700/60",
@@ -210,12 +203,16 @@ const DocumentManager = () => {
               label: "text-notpurple-500",
               listbox: "bg-charyo-700/60",
             }}
+            label="Namespace"
+            placeholder="Select namespace"
+            selectedKeys={[namespace || "default"]}
+            onChange={(e) => setNamespace(e.target.value)}
           >
             {namespaceOptions.map((option) => (
-              <SelectItem 
-                key={option.value} 
-                value={option.value}
+              <SelectItem
+                key={option.value}
                 className="text-notpurple-500 data-[hover=true]:bg-charyo-600/60"
+                value={option.value}
               >
                 {option.label} ({option.description})
               </SelectItem>
@@ -228,23 +225,14 @@ const DocumentManager = () => {
             <Spinner color="secondary" />
           </div>
         ) : documents.length > 0 ? (
-          <Accordion 
-            variant="bordered"
-            className="max-h-[600px] overflow-y-auto bg-charyo-600/60"
-          >
+          <Accordion className="max-h-[600px] overflow-y-auto bg-charyo-600/60" variant="bordered">
             {documents.map(renderDocumentCard)}
           </Accordion>
         ) : (
-          <div className="text-center p-4 text-notpurple-500/60">
-            No documents found in this namespace
-          </div>
+          <div className="text-center p-4 text-notpurple-500/60">No documents found in this namespace</div>
         )}
 
-        {error && (
-          <div className="p-4 rounded bg-ualert-500/20 text-ualert-500">
-            {error}
-          </div>
-        )}
+        {error && <div className="p-4 rounded bg-ualert-500/20 text-ualert-500">{error}</div>}
 
         <CardFooterWithActions actions={actions} />
       </CardBody>

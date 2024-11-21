@@ -11,6 +11,7 @@ import pylonInstance from "@/libs/pylon-sdk";
 import PageWithScrollBackground from "@/styles/framer-motion/scroll-wrapper";
 import { ChatProvider } from "@/components/messaging/messaging-provider";
 import { ShortcutsProvider } from "@/components/generics/shortcuts-provider";
+
 export interface ProvidersProps {
   children: React.ReactNode;
   themeProps?: ThemeProviderProps;
@@ -20,12 +21,19 @@ export interface ProvidersProps {
 export function Providers({ children, themeProps, userId }: ProvidersProps) {
   const router = useRouter();
 
+  const shortcutsInitialValue = {
+    isChatOpen: false,
+    openChat: () => {},
+    closeChat: () => {},
+    toggleChat: () => {}
+  };
+
   return (
     <PylonProvider pylon={pylonInstance}>
       <NextUIProvider navigate={router.push}>
         <NextThemesProvider {...themeProps}>
-          <ChatProvider userId={userId || 'default-user'}>
-            <ShortcutsProvider>
+          <ChatProvider userId={userId || "default-user"}>
+            <ShortcutsProvider initialValue={shortcutsInitialValue}>
               <PageWithScrollBackground>{children}</PageWithScrollBackground>
             </ShortcutsProvider>
           </ChatProvider>

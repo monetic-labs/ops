@@ -1,5 +1,6 @@
-import { WebSocketMessage } from "@/types/messaging";
 import { useEffect } from "react";
+
+import { WebSocketMessage } from "@/types/messaging";
 
 export function useWebSocket(onMessage: (message: WebSocketMessage) => void) {
   useEffect(() => {

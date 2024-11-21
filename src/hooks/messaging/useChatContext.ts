@@ -1,6 +1,6 @@
 import { createContext, useContext } from "react";
 
-import { Message, MessageService, ChatContextType } from "@/types/messaging";
+import { ChatContextType } from "@/types/messaging";
 
 export const ChatContext = createContext<ChatContextType | undefined>(undefined);
 

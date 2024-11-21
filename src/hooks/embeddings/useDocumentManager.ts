@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState } from "react";
 
 interface DeleteOptions {
   id: string;
@@ -21,10 +21,10 @@ export function useDocumentManager() {
       setDeleting(true);
       setError(null);
 
-      const response = await fetch('/api/embeddings/delete', {
-        method: 'DELETE',
+      const response = await fetch("/api/embeddings/delete", {
+        method: "DELETE",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({ id, namespace }),
       });
@@ -32,12 +32,13 @@ export function useDocumentManager() {
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error || 'Failed to delete document');
+        throw new Error(data.error || "Failed to delete document");
       }
 
       return data;
     } catch (error) {
-      const message = error instanceof Error ? error.message : 'Failed to delete document';
+      const message = error instanceof Error ? error.message : "Failed to delete document";
+
       setError(message);
       throw error;
     } finally {
@@ -50,11 +51,11 @@ export function useDocumentManager() {
       setDeleting(true);
       setError(null);
 
-      const endpoint = options.deleteAll ? '/api/embeddings/delete-all' : '/api/embeddings/delete';
+      const endpoint = options.deleteAll ? "/api/embeddings/delete-all" : "/api/embeddings/delete";
       const response = await fetch(endpoint, {
-        method: 'DELETE',
+        method: "DELETE",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify(options),
       });
@@ -62,12 +63,13 @@ export function useDocumentManager() {
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error || 'Failed to delete documents');
+        throw new Error(data.error || "Failed to delete documents");
       }
 
       return data;
     } catch (error) {
-      const message = error instanceof Error ? error.message : 'Failed to delete documents';
+      const message = error instanceof Error ? error.message : "Failed to delete documents";
+
       setError(message);
       throw error;
     } finally {
@@ -79,6 +81,6 @@ export function useDocumentManager() {
     deleteDocument,
     deleteManyDocuments,
     deleting,
-    error
+    error,
   };
 }

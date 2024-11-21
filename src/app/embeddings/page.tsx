@@ -1,56 +1,49 @@
-'use client';
+"use client";
 
-import { useCallback, useState } from 'react';
-import { Button } from '@nextui-org/button';
-import { Input } from '@nextui-org/input';
-import { Card, CardBody, CardHeader } from '@nextui-org/card';
-import { Spinner } from '@nextui-org/spinner';
+import { useCallback, useState } from "react";
+import { Input } from "@nextui-org/input";
+import { Card, CardBody, CardHeader } from "@nextui-org/card";
+import { Spinner } from "@nextui-org/spinner";
 import { Tabs, Tab } from "@nextui-org/tabs";
-import dynamic from 'next/dynamic';
+import dynamic from "next/dynamic";
+import { Divider } from "@nextui-org/divider";
 
-import { useDocumentProcessor } from '@/hooks/embeddings/useDocumentProcessor';
-import { FormButton } from '@/components/generics/form-button';
-import { FormCard } from '@/components/generics/form-card';
-import { Divider } from '@nextui-org/divider';
+import { useDocumentProcessor } from "@/hooks/embeddings/useDocumentProcessor";
+import { FormButton } from "@/components/generics/form-button";
+import { FormCard } from "@/components/generics/form-card";
 
-const KnowledgeBaseStats = dynamic(
-  () => import('@/components/embeddings/kb-stats'),
-  {
-    ssr: false,
-    loading: () => (
-      <Card className="bg-charyo-500/60 backdrop-blur-sm p-4">
-        <div className="flex items-center justify-center">
-          <Spinner size="sm" />
-          <span className="ml-2 text-notpurple-500">Loading stats...</span>
-        </div>
-      </Card>
-    ),
-  }
-);
+const KnowledgeBaseStats = dynamic(() => import("@/components/embeddings/kb-stats"), {
+  ssr: false,
+  loading: () => (
+    <Card className="bg-charyo-500/60 backdrop-blur-sm p-4">
+      <div className="flex items-center justify-center">
+        <Spinner size="sm" />
+        <span className="ml-2 text-notpurple-500">Loading stats...</span>
+      </div>
+    </Card>
+  ),
+});
 
-const DocumentManager = dynamic(
-  () => import('@/components/embeddings/doc-manager'),
-  {
-    ssr: false,
-    loading: () => (
-      <Card className="bg-charyo-500/60 backdrop-blur-sm p-4">
-        <div className="flex items-center justify-center">
-          <Spinner size="sm" />
-          <span className="ml-2 text-notpurple-500">Loading documents...</span>
-        </div>
-      </Card>
-    ),
-  }
-);
+const DocumentManager = dynamic(() => import("@/components/embeddings/doc-manager"), {
+  ssr: false,
+  loading: () => (
+    <Card className="bg-charyo-500/60 backdrop-blur-sm p-4">
+      <div className="flex items-center justify-center">
+        <Spinner size="sm" />
+        <span className="ml-2 text-notpurple-500">Loading documents...</span>
+      </div>
+    </Card>
+  ),
+});
 
-const UploadForm = ({ 
-  file, 
-  setFile, 
-  category, 
-  setCategory, 
-  processing, 
-  status, 
-  handleUpload 
+const UploadForm = ({
+  file,
+  setFile,
+  category,
+  setCategory,
+  processing,
+  status,
+  handleUpload,
 }: {
   file: File | null;
   setFile: (file: File | null) => void;
@@ -61,48 +54,40 @@ const UploadForm = ({
   handleUpload: (e: React.FormEvent) => Promise<void>;
 }) => (
   <FormCard title="Upload Document">
-    <form onSubmit={handleUpload} className="space-y-4">
+    <form className="space-y-4" onSubmit={handleUpload}>
       <Input
-        type="file"
         accept=".md,.txt"
-        onChange={(e) => setFile(e.target.files?.[0] || null)}
         className="w-full"
         classNames={{
           input: "text-notpurple-500",
           label: "text-notpurple-500",
-          description: "text-notpurple-500/60"
+          description: "text-notpurple-500/60",
         }}
-        label="Upload Document"
         description="Supported formats: Markdown (.md), Text (.txt)"
+        label="Upload Document"
+        type="file"
+        onChange={(e) => setFile(e.target.files?.[0] || null)}
       />
       <Input
+        classNames={{
+          input: "text-notpurple-500",
+          label: "text-notpurple-500",
+        }}
+        label="Category"
+        placeholder="Enter category (optional)"
         type="text"
         value={category}
         onChange={(e) => setCategory(e.target.value)}
-        placeholder="Enter category (optional)"
-        label="Category"
-        classNames={{
-          input: "text-notpurple-500",
-          label: "text-notpurple-500"
-        }}
       />
-      <FormButton
-        type="submit"
-        disabled={!file || processing}
-        className="w-full"
-      >
-        {processing ? (
-          <Spinner size="sm" color="current" />
-        ) : (
-          'Upload and Generate Embedding'
-        )}
+      <FormButton className="w-full" disabled={!file || processing} type="submit">
+        {processing ? <Spinner color="current" size="sm" /> : "Upload and Generate Embedding"}
       </FormButton>
       {status?.type && (
-        <div className={`p-4 rounded ${
-          status.type === 'success'
-            ? 'bg-green-100/10 text-green-500'
-            : 'bg-red-100/10 text-red-500'
-        }`}>
+        <div
+          className={`p-4 rounded ${
+            status.type === "success" ? "bg-green-100/10 text-green-500" : "bg-red-100/10 text-red-500"
+          }`}
+        >
           {status.message}
         </div>
       )}
@@ -128,41 +113,39 @@ const Guidelines = () => (
 
 const EmbeddingsPage = () => {
   const [file, setFile] = useState<File | null>(null);
-  const [category, setCategory] = useState('');
+  const [category, setCategory] = useState("");
   const [selectedTab, setSelectedTab] = useState<string>("manage");
 
-  const {
-    processDocument,
-    processing,
-    status,
-    error
-  } = useDocumentProcessor();
+  const { processDocument, processing, status, error } = useDocumentProcessor();
 
   const handleTabChange = (key: React.Key) => {
     setSelectedTab(key.toString());
   };
 
-  const handleUpload = useCallback(async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!file) return;
+  const handleUpload = useCallback(
+    async (e: React.FormEvent) => {
+      e.preventDefault();
+      if (!file) return;
 
-    try {
-      await processDocument(file, category);
-      setFile(null);
-      setCategory('');
-      
-      // Reset to manage tab after upload - delete if annoying
-      setSelectedTab("manage");
-    } catch (error) {
-      console.error('Upload failed:', error);
-    }
-  }, [file, category, processDocument]);
+      try {
+        await processDocument(file, category);
+        setFile(null);
+        setCategory("");
+
+        // Reset to manage tab after upload - delete if annoying
+        setSelectedTab("manage");
+      } catch (error) {
+        console.error("Upload failed:", error);
+      }
+    },
+    [file, category, processDocument]
+  );
 
   return (
     <div className="container mx-auto px-4 py-8 space-y-6">
       <h1 className="text-2xl font-bold text-notpurple-500">Document Embeddings Management</h1>
-      
-      <Tabs 
+
+      <Tabs
         aria-label="Document Management"
         classNames={{
           base: "w-full",
@@ -183,7 +166,7 @@ const EmbeddingsPage = () => {
         >
           <div className="flex flex-col space-y-6">
             <KnowledgeBaseStats />
-            
+
             <Card className="bg-charyo-500/60 backdrop-blur-sm p-4">
               <CardHeader>
                 <h3 className="text-lg font-semibold text-notpurple-500">Upload Guidelines</h3>
@@ -201,7 +184,7 @@ const EmbeddingsPage = () => {
             <DocumentManager />
           </div>
         </Tab>
-        
+
         <Tab
           key="upload"
           title={
@@ -219,13 +202,13 @@ const EmbeddingsPage = () => {
             <CardBody>
               <div className="grid gap-6 grid-cols-1 lg:grid-cols-2">
                 <UploadForm
-                  file={file}
-                  setFile={setFile}
                   category={category}
-                  setCategory={setCategory}
-                  processing={processing}
-                  status={status}
+                  file={file}
                   handleUpload={handleUpload}
+                  processing={processing}
+                  setCategory={setCategory}
+                  setFile={setFile}
+                  status={status}
                 />
                 <Guidelines />
               </div>

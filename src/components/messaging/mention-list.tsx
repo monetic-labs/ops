@@ -12,16 +12,15 @@ interface MentionListProps {
   setSelectedIndex: (index: number) => void;
 }
 
-export const MentionList: React.FC<MentionListProps> = ({ 
-  options, 
-  searchText, 
-  onSelect, 
-  position, 
-  visible, 
-  selectedIndex, 
-  setSelectedIndex 
+export const MentionList: React.FC<MentionListProps> = ({
+  options,
+  searchText,
+  onSelect,
+  position,
+  visible,
+  selectedIndex,
+  setSelectedIndex,
 }) => {
-
   // Filter options based on search text
   const filteredOptions = options.filter((option) => option.label.toLowerCase().includes(searchText.toLowerCase()));
 
@@ -43,9 +42,9 @@ export const MentionList: React.FC<MentionListProps> = ({
 
   return (
     <div
-      data-testid="mention-list"
       className="absolute z-[100] bg-charyo-500 rounded-lg shadow-lg max-h-60 overflow-y-auto 
           border border-charyo-600 w-full"
+      data-testid="mention-list"
       style={{
         bottom: "100%",
         marginBottom: "8px",
@@ -57,11 +56,11 @@ export const MentionList: React.FC<MentionListProps> = ({
       ) : (
         filteredOptions.map((option, index) => (
           <button
-            data-testid="mention-option"
             key={option.id}
             className={`w-full px-4 py-2 text-left flex items-center gap-2
                 focus:outline-none text-notpurple-500
                 ${index === selectedIndex ? "bg-charyo-600" : "hover:bg-charyo-600"}`}
+            data-testid="mention-option"
             onClick={() => onSelect(option)}
             onMouseEnter={() => setSelectedIndex(index)}
           >

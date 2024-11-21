@@ -1,33 +1,33 @@
-import { TransactionHistory } from "@/prompts/v0/helpers/types";
+import { TransactionHistory } from "@/prompts/v0/types";
 
 export const mockTransactionHistory: TransactionHistory = {
-    averageTransaction: 500,
-    recentTransactions: [
-        {
-            amount: 500,
-            method: "instant_transfer",
-            timestamp: "2024-03-20T10:00:00Z",
-            speed: 1,
-            fee: 5.00
-        },
-        {
-            amount: 1000,
-            method: "standard_transfer",
-            timestamp: "2024-03-19T15:00:00Z",
-            speed: 30,
-            fee: 2.50
-        }
-    ],
-    patterns: {
-        preferredMethod: "instant_transfer",
-        typicalTimeOfDay: "morning",
-        averageFrequency: 3,
-        commonRecipients: ["recipient1", "recipient2"]
+  averageTransaction: 500,
+  recentTransactions: [
+    {
+      amount: 500,
+      method: "instant_transfer",
+      timestamp: "2024-03-20T10:00:00Z",
+      speed: 1,
+      fee: 5.0,
     },
-    stats: {
-        totalTransactions: 50,
-        totalVolume: 25000,
-        averageFee: 3.75,
-        averageSpeed: 15
-    }
+    {
+      amount: 1000,
+      method: "standard_transfer",
+      timestamp: "2024-03-19T15:00:00Z",
+      speed: 30,
+      fee: 2.5,
+    },
+  ],
+  patterns: {
+    preferredMethod: "instant_transfer",
+    typicalTimeOfDay: "morning",
+    averageFrequency: 3,
+    commonRecipients: ["recipient1", "recipient2"],
+  },
+  stats: {
+    totalTransactions: 50,
+    totalVolume: 25000,
+    averageFee: 3.75,
+    averageSpeed: 15,
+  },
 };
