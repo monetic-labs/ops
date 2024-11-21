@@ -1,73 +1,43 @@
-import { Button } from "@nextui-org/button";
 import { Chip } from "@nextui-org/chip";
-import { Table, TableBody, TableCell, TableColumn, TableHeader, TableRow } from "@nextui-org/table";
-import { Tooltip } from "@nextui-org/tooltip";
 import { User } from "@nextui-org/user";
-import React, { useCallback, useEffect, useState } from "react";
-
-import { issuedCardData, issuedCardColumns } from "@/data";
-import CardLimitModal from "@/components/card-issuance/card-limit";
+import React, { useCallback, useState } from "react";
 import CardDetailsModal from "@/components/card-issuance/card-details";
-import { getOpepenAvatar } from "@/utils/helpers";
-import InfiniteTable from "../generics/table-infinite";
+import { formatNumber, getOpepenAvatar } from "@/utils/helpers";
+import { InfiniteTableWithExternalList } from "../generics/table-infinite";
+import { MerchantCardGetOutput } from "@backpack-fux/pylon-sdk";
+import pylon from "@/libs/pylon-sdk";
+import { AsyncListData, useAsyncList } from "@react-stately/data";
 
-const statusColorMap: Record<string, "success" | "danger"> = {
-  Active: "success",
-  Inactive: "danger",
+type HybridCard = MerchantCardGetOutput["cards"][number] & {
+  avatar?: string;
+  type: string;
+  holder: string;
+  limit: number;
+  limitFrequency: string;
 };
 
-type Card = (typeof issuedCardData)[0];
-type ColumnKey = keyof Card | "actions";
+const statusColorMap: Record<string, "success" | "danger" | "primary" | "default"> = {
+  ACTIVE: "success",
+  CANCELED: "danger",
+  NOT_ACTIVATED: "default",
+  LOCKED: "primary",
+};
 
 export default function CardListTable() {
-  const [openModal, setOpenModal] = useState<"details" | "limit" | null>(null);
-  const [selectedCard, setSelectedCard] = useState<Card | null>(null);
-  const [avatars, setAvatars] = useState<Record<string, string>>({});
-  const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
+  const [selectedCard, setSelectedCard] = useState<HybridCard | null>(null);
+  const [hasMore, setHasMore] = React.useState(true);
 
-  useEffect(() => {
-    const newAvatars: Record<string, string> = {};
-    issuedCardData.forEach((card) => {
-      newAvatars[card.holder] = getOpepenAvatar(card.holder, 32);
-    });
-    setAvatars(newAvatars);
-  }, []);
-
-  const handleOpenDetailsModal = (card: Card) => {
-    setSelectedCard(card);
-    setOpenModal("details");
-  };
-
-  const handleOpenLimitModal = (card: Card) => {
-    setSelectedCard(card);
-    setOpenModal("limit");
-  };
-
-  const handleCloseModal = () => {
-    setOpenModal(null);
-    setSelectedCard(null);
-  };
-
-  const handleSaveLimit = (amount: string, cycle: string) => {
-    if (selectedCard) {
-      console.log(`New limit for ${selectedCard.cardName}: ${amount} per ${cycle}`);
-    }
-    handleCloseModal();
-  };
-
-  const renderCell = useCallback((card: Card, columnKey: keyof Card) => {
-    const cellValue = card[columnKey];
-
+  const renderCell = useCallback((card: HybridCard, columnKey: keyof HybridCard) => {
     switch (columnKey) {
-      case "cardName":
+      case "displayName":
         return (
           <User
             avatarProps={{
               radius: "lg",
-              src: avatars[card.holder],
+              src: card.avatar,
             }}
-            description={card.holder}
-            name={card.cardName}
+            description={""}
+            name={card.displayName}
           />
         );
       case "status":
@@ -76,46 +46,76 @@ export default function CardListTable() {
             {card.status}
           </Chip>
         );
+      case "type": {
+        return <p>{card.type}</p>;
+      }
+      case "holder": {
+        return <p>{card.holder}</p>;
+      }
       case "limit":
-        return `$${card.limit.amount} per ${card.limit.cycle}`;
+        return `$${formatNumber(card.limit)} per ${card.limitFrequency.toLowerCase()}`;
       default:
-        return cellValue as React.ReactNode;
+        return <></>;
     }
-  }, [avatars]);
+  }, []);
 
-  const loadMore = async (cursor: string | undefined) => {
-    const pageSize = 10;
-    const startIndex = cursor ? parseInt(cursor) : 0;
-    const endIndex = startIndex + pageSize;
-    const newItems = issuedCardData.slice(startIndex, endIndex);
-    const newCursor = endIndex < issuedCardData.length ? endIndex.toString() : undefined;
-    
-    return { items: newItems, cursor: newCursor };
+  const list = useAsyncList({
+    async load({ cursor }) {
+      try {
+        const { cards, meta } = await (cursor && cursor?.length > 1
+          ? pylon.getCards({ after: cursor })
+          : pylon.getCards({}));
+        if (meta.endCursor) {
+          setHasMore(true);
+        } else {
+          setHasMore(false);
+        }
+        return {
+          items: cards.map((t) => ({
+            ...t,
+            avatar: getOpepenAvatar(t.id, 20),
+            type: t.cardShippingDetails ? "Physical" : "Virtual",
+            holder: t?.cardOwner?.firstName + " " + t?.cardOwner?.lastName,
+            limit: t.limit,
+            limitFrequency: t.limitFrequency,
+          })),
+          cursor: meta.endCursor,
+        };
+      } catch (error) {
+        console.log(error);
+        setHasMore(false);
+        return { items: [], cursor: "" };
+      }
+    },
+  });
+  const handleCloseModal = (card: HybridCard) => {
+    list.update(card.id, card);
+    setSelectedCard(null);
   };
 
-  const handleRowSelect = useCallback((card: Card) => {
+  const handleRowSelect = useCallback((card: HybridCard) => {
     setSelectedCard(card);
-    setIsDetailsModalOpen(true);
   }, []);
 
   return (
     <>
-      <InfiniteTable
-        columns={issuedCardColumns}
-        initialData={issuedCardData}
+      <InfiniteTableWithExternalList
+        hasMore={hasMore}
+        setHasMore={setHasMore}
+        list={list as AsyncListData<HybridCard>}
+        columns={[
+          { name: "CARD NAME", uid: "displayName" },
+          { name: "HOLDER", uid: "holder" },
+          { name: "TYPE", uid: "type" },
+          { name: "LIMIT", uid: "limit" },
+          { name: "STATUS", uid: "status" },
+        ]}
         renderCell={renderCell}
-        loadMore={loadMore}
         onRowSelect={handleRowSelect}
       />
-      <CardLimitModal
-        cardName={selectedCard?.cardName || ""}
-        currentLimit={selectedCard?.limit ? `${selectedCard.limit.amount} per ${selectedCard.limit.cycle}` : ""}
-        isOpen={openModal === "limit"}
-        onClose={handleCloseModal}
-        onSave={handleSaveLimit}
-      />
+
       {selectedCard && (
-        <CardDetailsModal card={selectedCard} isOpen={isDetailsModalOpen} onClose={() => setIsDetailsModalOpen(false)} />
+        <CardDetailsModal card={selectedCard} isOpen={Boolean(selectedCard)} onClose={handleCloseModal} />
       )}
     </>
   );

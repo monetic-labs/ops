@@ -2,20 +2,17 @@
 
 import { useState } from "react";
 import { Card, CardBody, CardHeader } from "@nextui-org/card";
-import { Button } from "@nextui-org/button";
 
 import useAccountContracts from "@/hooks/account-contracts/useAccountContracts";
-import AddFundsModal from "@/components/account-contract/add-funds";
-import WithdrawFundsModal from "@/components/account-contract/withdraw-funds";
+import AddFundsModal from "@/components/account-contract/modal-add-funds";
+import WithdrawFundsModal from "@/components/account-contract/modal-withdraw-funds";
 import { FundCard } from "@/components/generics/card-account";
-import PortfolioModal from "./portfolio";
-import LogicModal from "./logic";
+import PortfolioModal from "@/components/account-contract/modal-portfolio";
 
 export default function AccountOverview() {
   const [isAddFundsOpen, setIsAddFundsOpen] = useState(false);
   const [isWithdrawFundsOpen, setIsWithdrawFundsOpen] = useState(false);
   const [isPortfolioOpen, setIsPortfolioOpen] = useState(false);
-  const [isRulesOpen, setIsRulesOpen] = useState(false);
 
   const { available, pending, spent, isLoading } = useAccountContracts();
 
@@ -25,8 +22,7 @@ export default function AccountOverview() {
 
   return (
     <Card className="w-full max-w-7xl mx-auto bg-charyo-500/0">
-      <CardHeader className="flex flex-col sm:flex-row justify-between sm:items-center">
-      </CardHeader>
+      <CardHeader className="flex flex-col sm:flex-row justify-between sm:items-center"></CardHeader>
       <CardBody>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           <FundCard
@@ -37,13 +33,13 @@ export default function AccountOverview() {
             isLoading={isLoading}
             actions={[
               {
-                label: "Portfolio",
+                label: "Summary",
                 onClick: () => setIsPortfolioOpen(true),
                 color: "success",
-              }
+              },
             ]}
           />
-          <FundCard       
+          <FundCard
             title="Available"
             amount={available}
             description="The funds available to you on demand."

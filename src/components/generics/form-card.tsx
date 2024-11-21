@@ -2,7 +2,7 @@ import { Card, CardBody, CardHeader } from "@nextui-org/card";
 import { ReactNode } from "react";
 
 interface FormCardProps {
-  title: string;
+  title?: string;
   className?: string;
   children: ReactNode;
 }

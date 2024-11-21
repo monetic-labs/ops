@@ -53,8 +53,8 @@ export const backOfficeConfig = [
 ];
 
 export enum BillPayId {
-  TRANSFERS = "bill-pay-list",
-  CONTACTS = "bill-pay-contacts",
+  TRANSFERS = "transfers",
+  CONTACTS = "contacts",
 }
 
 export const billPayConfig: { id: BillPayId; label: string }[] = [

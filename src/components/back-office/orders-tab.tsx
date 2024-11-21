@@ -2,9 +2,9 @@ import React, { useEffect, useState } from "react";
 import { Input } from "@nextui-org/input";
 import { Button } from "@nextui-org/button";
 import { Snippet } from "@nextui-org/snippet";
-import { DeleteIcon } from "@nextui-org/shared-icons";
-import { GetOrderLinksOutput, usePylon } from "@backpack-fux/pylon-sdk";
-import { Card, CardHeader, CardBody, CardFooter } from "@nextui-org/card";
+
+import { GetOrderLinksOutput, ISO4217Currency } from "@backpack-fux/pylon-sdk";
+import { Card, CardHeader, CardBody } from "@nextui-org/card";
 import Countdown from "@/components/generics/countdown";
 import pylon from "@/libs/pylon-sdk";
 import { Accordion, AccordionItem } from "@nextui-org/accordion";
@@ -97,23 +97,19 @@ export default function CreateOrders() {
         },
         order: {
           subtotal: parseFloat(order.amount),
-          currency: "USD",
+          currency: ISO4217Currency.USD,
         },
       });
 
-      // Extract order ID from the order link
-      const orderId = response.orderLink.substring(response.orderLink.lastIndexOf("/") + 1);
-
-      // TODO: append newOrder to currentOrders
       const newOrder: GetOrderLinksOutput = {
-        id: orderId,
+        id: response.orderLink,
         customer: {
           email: order.email,
           phone: order.phone,
         },
         order: {
           subtotal: parseFloat(order.amount),
-          currency: "USD",
+          currency: ISO4217Currency.USD,
         },
         expiresAt: response.expiresAt,
       };
@@ -139,7 +135,7 @@ export default function CreateOrders() {
     const orderId = orderLink.substring(orderLink.lastIndexOf("/") + 1);
     try {
       await pylon.deleteOrderLink(orderId);
-      setCurrentOrders(currentOrders.filter((order) => order.id !== orderId));
+      setCurrentOrders(currentOrders.filter((order) => order.id !== orderLink));
     } catch (err) {
       console.error("Failed to delete order:", err);
     }

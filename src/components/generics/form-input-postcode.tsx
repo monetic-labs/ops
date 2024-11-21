@@ -1,43 +1,60 @@
 "use client";
 
-import React from "react";
-import { Control, FieldValues, Path } from "react-hook-form";
+import React, { useEffect } from "react";
+import { Control, FieldValues, Path, useController } from "react-hook-form";
 
 import { usePostcodeLookup } from "@/hooks/generics/usePostcodeLookup";
 import { FormInput } from "@/components/generics/form-input";
-import { postcodeRegex } from "@/validations/onboard";
+import { postcodeRegex } from "@/types/validations/onboard";
+import { Tooltip } from "@nextui-org/tooltip";
 
 interface PostcodeInputProps<T extends FieldValues> {
   name: Path<T>;
   control: Control<T>;
   errorMessage?: string;
   helperText?: string;
-  onLookupComplete?: (result: any) => void;
   showAddressInputs?: boolean;
+  about?: string;
+  watchPostcode?: string;
+  onLookupComplete?: (result: any) => void;
 }
 
 export const PostcodeInput = <T extends FieldValues>({
+  about,
   name,
   control,
-  onLookupComplete,
   showAddressInputs,
+  errorMessage,
+  onLookupComplete,
+  watchPostcode,
   ...props
 }: PostcodeInputProps<T>) => {
+  
   const { lookup, isLoading, error, result } = usePostcodeLookup();
+  const { field } = useController({ name, control });
 
   const handlePostcodeChange = async (value: string) => {
-    if (value.length === 5) {
-      const lookupResult = await lookup(value); // Capture the result directly
+    const numericValue = value.replace(/\D/g, '');
+    field.onChange(numericValue);
+
+    if (numericValue.length === 5) {
+      const lookupResult = await lookup(numericValue);
 
       if (lookupResult && onLookupComplete) {
-        onLookupComplete(lookupResult); // Pass the result to the parent
+        onLookupComplete(lookupResult);
       }
     } else if (onLookupComplete) {
-      onLookupComplete(null); // Pass null to indicate no lookup result
+      onLookupComplete(null);
     }
   };
 
-  return (
+  useEffect(() => {
+    if (watchPostcode && watchPostcode.length === 5) {
+      handlePostcodeChange(watchPostcode);
+    }
+  }, [watchPostcode]);
+
+  const postcodeInput = (
     <div className="flex flex-col">
       <div className="flex items-center space-x-4 p-1 bg-charyo-800/30 rounded-lg">
         <div className="w-1/4">
@@ -47,10 +64,13 @@ export const PostcodeInput = <T extends FieldValues>({
             label="Postcode"
             maxLength={5}
             minLength={5}
+            type="text"
+            inputMode="numeric"
             name={name}
             pattern={postcodeRegex.source}
             placeholder="12345"
             onChange={(e) => handlePostcodeChange(e.target.value)}
+            value={watchPostcode}
             {...props}
           />
         </div>
@@ -65,7 +85,7 @@ export const PostcodeInput = <T extends FieldValues>({
           </div>
           <div className="w-1/3">
             <p className="text-sm text-notpurple-100 mb-1">Country</p>
-            <p className="text-sm text-notpurple-300">{result ? "US" : "-"}</p>
+            <p className="text-sm text-notpurple-300">{result?.country || "-"}</p>
           </div>
         </div>
       </div>
@@ -75,4 +95,6 @@ export const PostcodeInput = <T extends FieldValues>({
       </div>
     </div>
   );
+
+  return about ? <Tooltip content={about}>{postcodeInput}</Tooltip> : postcodeInput;
 };

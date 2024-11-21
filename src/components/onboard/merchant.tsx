@@ -2,20 +2,64 @@
 
 import { Accordion, AccordionItem } from "@nextui-org/accordion";
 import { Circle, CheckCircle } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Input } from "@nextui-org/input";
 import { Button } from "@nextui-org/button";
 import { User } from "@/data";
 import { Select, SelectItem } from "@nextui-org/select";
 import { AccountUsers } from "./account-users";
 import { Divider } from "@nextui-org/divider";
+import { z } from "zod";
+import { useForm, SubmitHandler } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+
+// Define your validation schema using Zod
+const schema = z.object({
+  companyName: z.string().min(1, "Company name is required").max(2, "Company name must be 2 characters or less"),
+  companyEmail: z.string().email("Invalid email address"),
+  companyWebsite: z.string().transform((value) => {
+    switch (true) {
+      case value.startsWith("https://"):
+        return value.slice(8);
+      case value.startsWith("http://"):
+        return value.slice(7);
+      case value.startsWith("www."):
+        return value.slice(4);
+      default:
+        return value;
+    }
+  }),
+  postcode: z.string().min(1, "Postcode is required"),
+  city: z.string().min(1, "City is required"),
+  state: z.string().min(1, "State is required"),
+  streetAddress1: z.string().min(1, "Street address is required"),
+  streetAddress2: z.string().optional(),
+
+  settlementAddress: z.string().min(1, "Settlement address is required"),
+  companyEIN: z.string().min(1, "Company EIN is required"),
+  companyType: z.string().min(1, "Company type is required"),
+  companyDescription: z.string().min(1, "Company description is required"),
+});
+
+type FormData = z.infer<typeof schema>;
 
 export const KYBMerchantForm = ({ initialEmail }: { initialEmail: string }) => {
   const [currentStep, setCurrentStep] = useState(1);
   const [users, setUsers] = useState<User[]>([]);
 
-  const defaultContent =
-    "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.";
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isValid, isValidating },
+    trigger,
+  } = useForm<FormData>({
+    resolver: zodResolver(schema),
+  });
+
+  const onSubmit: SubmitHandler<FormData> = (data) => {
+    // Handle form submission
+    console.log(data);
+  };
 
   const steps = [
     {
@@ -23,18 +67,103 @@ export const KYBMerchantForm = ({ initialEmail }: { initialEmail: string }) => {
       title: "Company Details",
       content: (
         <div className="space-y-4">
-          <Input label="Company Name" placeholder="Enter company name" fullWidth />
-          <Input label="Company Email" placeholder="Enter company email" fullWidth />
-          <Input label="Company Website" placeholder="Enter company website" fullWidth />
+          <Input
+            label="Company Name"
+            placeholder="Algersoft"
+            fullWidth
+            {...register("companyName", {
+              onChange: () => trigger("companyName"),
+            })}
+            isInvalid={!!errors.companyName}
+            errorMessage={errors.companyName?.message}
+          />
+          <Input
+            label="Company Email"
+            placeholder="hello@algersoft.com"
+            fullWidth
+            {...register("companyEmail", {
+              onChange: () => trigger("companyEmail"),
+            })}
+            isInvalid={!!errors.companyEmail}
+            errorMessage={errors.companyEmail?.message}
+          />
+          <Input
+            label="Company Website"
+            placeholder="algersoft.com"
+            type="url"
+            fullWidth
+            startContent={
+              <div className="pointer-events-none flex items-center">
+                <span className="text-default-400 text-small">https://</span>
+              </div>
+            }
+            {...register("companyWebsite", {
+              onChange: () => trigger("companyWebsite"),
+            })}
+            isInvalid={!!errors.companyWebsite}
+            errorMessage={errors.companyWebsite?.message}
+          />
           <div className="flex space-x-4">
-            <Input label="Postcode" placeholder="Enter postcode" fullWidth />
-            <Input label="City" placeholder="Enter city" fullWidth />
-            <Input label="State" placeholder="Enter state" fullWidth />
+            <Input
+              label="Postcode"
+              placeholder="10001"
+              fullWidth
+              {...register("postcode", {
+                onChange: () => trigger("postcode"),
+              })}
+              isInvalid={!!errors.postcode}
+              errorMessage={errors.postcode?.message}
+            />
+            <Input
+              label="City"
+              placeholder="New York"
+              fullWidth
+              {...register("city", {
+                onChange: () => trigger("city"),
+              })}
+              isInvalid={!!errors.city}
+              errorMessage={errors.city?.message}
+            />
+            <Input
+              label="State"
+              placeholder="NY"
+              fullWidth
+              {...register("state", {
+                onChange: () => trigger("state"),
+              })}
+              isInvalid={!!errors.state}
+              errorMessage={errors.state?.message}
+            />
           </div>
-          <Input label="Street Address 1" placeholder="Enter street address 1" fullWidth />
-          <Input label="Street Address 2" placeholder="Enter street address 2" fullWidth />
+          <Input
+            label="Street Address 1"
+            placeholder="123 Main St"
+            fullWidth
+            {...register("streetAddress1", {
+              onChange: () => trigger("streetAddress1"),
+            })}
+            isInvalid={!!errors.streetAddress1}
+            errorMessage={errors.streetAddress1?.message}
+          />
+          <Input
+            label="Street Address 2"
+            placeholder="Apt 4B"
+            fullWidth
+            {...register("streetAddress2", {
+              onChange: () => trigger("streetAddress2"),
+            })}
+            isInvalid={!!errors.streetAddress2}
+            errorMessage={errors.streetAddress2?.message}
+          />
           <div className="flex justify-end space-x-4">
-            <Button onClick={() => setCurrentStep(currentStep + 1)}>Next</Button>
+            <Button
+              onClick={async () => {
+                const isValid = await trigger();
+                return isValid && setCurrentStep(currentStep + 1);
+              }}
+            >
+              Next
+            </Button>
           </div>
         </div>
       ),
@@ -44,10 +173,40 @@ export const KYBMerchantForm = ({ initialEmail }: { initialEmail: string }) => {
       title: "Company Details",
       content: (
         <div className="space-y-4">
-          <Input label="Settlement Address" placeholder="Enter settlement address" fullWidth />
-          <Input label="Company EIN" placeholder="Enter company EIN" fullWidth />
-          <Input label="Company Type" placeholder="Enter company type" fullWidth />
-          <Input label="Company Description" placeholder="Enter company description" fullWidth />
+          <Input
+            label="Settlement Address"
+            placeholder="Enter settlement address"
+            fullWidth
+            {...register("settlementAddress", {
+              onChange: () => trigger("settlementAddress"),
+            })}
+            isInvalid={!!errors.settlementAddress}
+            errorMessage={errors.settlementAddress?.message}
+          />
+          <Input
+            label="Company EIN"
+            placeholder="Enter company EIN"
+            fullWidth
+            {...register("companyEIN", {
+              onChange: () => trigger("companyEIN"),
+            })}
+            isInvalid={!!errors.companyEIN}
+            errorMessage={errors.companyEIN?.message}
+          />
+          <Input
+            label="Company Type"
+            placeholder="Enter company type"
+            fullWidth
+            {...register("companyType")}
+            errorMessage={errors.companyType?.message}
+          />
+          <Input
+            label="Company Description"
+            placeholder="Enter company description"
+            fullWidth
+            {...register("companyDescription")}
+            errorMessage={errors.companyDescription?.message}
+          />
           <div className="flex justify-end space-x-4">
             <Button onClick={() => setCurrentStep(currentStep - 1)}>Previous</Button>
             <Button onClick={() => setCurrentStep(currentStep + 1)}>Next</Button>
@@ -151,7 +310,7 @@ export const KYBMerchantForm = ({ initialEmail }: { initialEmail: string }) => {
           ))}
           <div className="flex justify-end space-x-4">
             <Button onClick={() => setCurrentStep(currentStep - 1)}>Previous</Button>
-            <Button onClick={() => setCurrentStep(currentStep + 1)}>Next</Button>
+            <Button type="submit">Submit</Button>
           </div>
         </div>
       ),
@@ -266,27 +425,33 @@ export const KYBMerchantForm = ({ initialEmail }: { initialEmail: string }) => {
   );
 
   return (
-    <Accordion
-      variant="shadow"
-      className="bg-charyo-500"
-      selectedKeys={[currentStep.toString()]}
-      onSelectionChange={(keys) => setCurrentStep(Number(keys))}
-    >
-      {steps.map((step) => (
-        <AccordionItem
-          key={step.number}
-          startContent={
-            currentStep > Number(step.number) ? <CheckCircleIcon /> : <CircleWithNumber number={step.number} />
+    <form onSubmit={handleSubmit(onSubmit)}>
+      <Accordion
+        variant="shadow"
+        className="bg-charyo-500"
+        selectedKeys={[currentStep.toString()]}
+        onSelectionChange={(keys) => {
+          if (keys.size > 0) {
+            setCurrentStep(Number(Array.from(keys)[0]));
           }
-          aria-label={step.title}
-          title={step.title}
-          classNames={{
-            title: "text-lg font-bold",
-          }}
-        >
-          {step.content}
-        </AccordionItem>
-      ))}
-    </Accordion>
+        }}
+      >
+        {steps.map((step) => (
+          <AccordionItem
+            key={step.number}
+            startContent={
+              currentStep > Number(step.number) ? <CheckCircleIcon /> : <CircleWithNumber number={step.number} />
+            }
+            aria-label={step.title}
+            title={step.title}
+            classNames={{
+              title: "text-lg font-bold",
+            }}
+          >
+            {step.content}
+          </AccordionItem>
+        ))}
+      </Accordion>
+    </form>
   );
 };
