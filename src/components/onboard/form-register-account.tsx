@@ -176,6 +176,7 @@ export const AccountRegistration: React.FC<AccountRegistrationProps> = ({
             data-testid="formation-docs-input"
             id="formationDocs"
             type="file"
+            accept=".pdf"
             className="file-input"
             onChange={(e) => handleFileChange(e, "formationDocs", true)}
           />
@@ -188,6 +189,7 @@ export const AccountRegistration: React.FC<AccountRegistrationProps> = ({
             data-testid="entity-ownership-input"
             id="entityOwnership"
             type="file"
+            accept=".pdf"
             className="file-input"
             onChange={(e) => handleFileChange(e, "entityOwnership", true)}
           />
@@ -200,6 +202,7 @@ export const AccountRegistration: React.FC<AccountRegistrationProps> = ({
             data-testid="proof-of-funds-input"
             id="proofOfFunds"
             type="file"
+            accept=".pdf"
             className="file-input"
             onChange={(e) => handleFileChange(e, "proofOfFunds", true)}
           />
@@ -218,6 +221,7 @@ export const AccountRegistration: React.FC<AccountRegistrationProps> = ({
             data-testid="photo-id-input"
             id="photoId"
             type="file"
+            accept=".jpg, .jpeg, .png, .pdf"
             className="file-input"
             onChange={(e) => handleFileChange(e, "photoId", false)}
           />
@@ -230,6 +234,7 @@ export const AccountRegistration: React.FC<AccountRegistrationProps> = ({
             data-testid="proof-of-funds-input"
             id="proofOfFunds"
             type="file"
+            accept=".pdf, .jpg, .jpeg, .png"
             className="file-input"
             onChange={(e) => handleFileChange(e, "proofOfFunds", false)}
           />
@@ -242,6 +247,7 @@ export const AccountRegistration: React.FC<AccountRegistrationProps> = ({
             data-testid="proof-of-residence-input"
             id="proofOfResidence"
             type="file"
+            accept=".pdf"
             className="file-input"
             onChange={(e) => handleFileChange(e, "proofOfResidence", false)}
           />
@@ -252,7 +258,7 @@ export const AccountRegistration: React.FC<AccountRegistrationProps> = ({
 
   if (bridgeToSAccepted) {
     accordionItems.push(
-      <AccordionItem key="5" aria-label="KYB Verification" title="KYB Verification">
+      <AccordionItem key="5" aria-label="KYB Verification" data-testid="kyb-verification" title="KYB Verification">
         <p className="mb-4">Please complete your KYB verification by clicking the button below:</p>
         <Button className="w-full bg-ualert-500 text-notpurple-100" onClick={handleBridgeKYB}>
           Start KYB Verification

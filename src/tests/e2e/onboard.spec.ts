@@ -2,6 +2,7 @@ import { test, expect, Page } from "@playwright/test";
 import { setupAuthCookie, setupAuthMocks, setupMerchantApi } from "./fixtures/api/auth";
 import path from "path";
 import { setupRainCardCompany } from "./fixtures/api/rain";
+import { readFile } from "fs";
 
 test.describe("Onboarding Flow", () => {
   test.beforeEach(async ({ page }) => {
@@ -178,7 +179,7 @@ test.describe("Onboarding Flow", () => {
     expect(await page.getByTestId("company-docs").isVisible()).toBe(true);
     expect(await page.getByTestId("personal-docs").isVisible()).toBe(true);
 
-    // Click Bill Pay Agreement
+    // Click dropdown for Bill Pay Agreement
     await page.getByTestId("bill-pay-agreement").click();
     await page.waitForTimeout(500); // Wait for accordion to open
     await page.getByTestId("bill-pay-agreement").waitFor({ state: "visible" });
@@ -201,7 +202,7 @@ test.describe("Onboarding Flow", () => {
     // Check Bill Pay agreement is accepted
     await expect(page.getByTestId("bill-pay-agreement-button")).toHaveText("Terms Accepted");
 
-    // Click Card Program Agreement
+    // Click dropdown for Card Program Agreement
     await page.getByTestId("card-program-agreement").click();
     await page.waitForTimeout(500); // Wait for accordion to open
     await page.getByTestId("card-program-agreement").waitFor({ state: "visible" });
@@ -211,12 +212,46 @@ test.describe("Onboarding Flow", () => {
     // Check Rain card company was created
     await expect(page.getByTestId("rain-merchant-created")).toBeVisible();
 
-    // Click Company Docs
+    // Click dropdown for Company Docs
     await page.getByTestId("company-docs").click();
     await page.waitForTimeout(500); // Wait for accordion to open
     await page.getByTestId("company-docs").waitFor({ state: "visible" });
 
-    // TODO: File upload
+    // File upload formation docs
+    await page.getByTestId("formation-docs-input").setInputFiles(path.join(__dirname, "./fixtures/data/sample.pdf"));
+    await expect(page.getByTestId("formation-docs-input")).toHaveValue(/sample\.pdf$/);
+
+    // File upload entity docs
+    await page.getByTestId("entity-ownership-input").setInputFiles(path.join(__dirname, "./fixtures/data/sample.pdf"));
+    await expect(page.getByTestId("entity-ownership-input")).toHaveValue(/sample\.pdf$/);
+
+    // File upload personal docs
+    await page.getByTestId("proof-of-funds-input").setInputFiles(path.join(__dirname, "./fixtures/data/sample.pdf"));
+    await expect(page.getByTestId("proof-of-funds-input")).toHaveValue(/sample\.pdf$/);
+
+    // Click dropdown for Personal Docs
+    await page.getByTestId("personal-docs").click();
+    await page.waitForTimeout(500); // Wait for accordion to open
+    await page.getByTestId("personal-docs").waitFor({ state: "visible" });
+
+    // File upload photo id
+    await page.getByTestId("photo-id-input").setInputFiles(path.join(__dirname, "./fixtures/data/sample.pdf"));
+    await expect(page.getByTestId("photo-id-input")).toHaveValue(/sample\.pdf$/);
+
+    // File upload proof of funds
+    await page.getByTestId("proof-of-funds-input").setInputFiles(path.join(__dirname, "./fixtures/data/sample.pdf"));
+    await expect(page.getByTestId("proof-of-funds-input")).toHaveValue(/sample\.pdf$/);
+
+    // File upload proof of residence
+    await page
+      .getByTestId("proof-of-residence-input")
+      .setInputFiles(path.join(__dirname, "./fixtures/data/sample.pdf"));
+    await expect(page.getByTestId("proof-of-residence-input")).toHaveValue(/sample\.pdf$/);
+
+    // Click dropdown for KYB Verification
+    await page.getByTestId("kyb-verification").click();
+    await page.waitForTimeout(500); // Wait for KYB verification to load
+    await page.getByTestId("kyb-verification").waitFor({ state: "visible" });
   });
 });
 
