@@ -70,6 +70,8 @@ export const MerchantOnboard: React.FC<{ onCancel: () => void; initialEmail: str
   const mainTabs = tabs.filter((tab) => !tab.key.startsWith("user-details-"));
   const userDetailTabs = tabs.filter((tab) => tab.key.startsWith("user-details-"));
 
+  console.log(formData.accountUsers.representatives);
+
   return (
     <FormCard className="overflow-y-auto max-h-screen" title="Know Your Business">
       <Tabs selectedKey={activeTab} onSelectionChange={(key) => setActiveTab(key as string)}>
@@ -123,6 +125,8 @@ export const MerchantOnboard: React.FC<{ onCancel: () => void; initialEmail: str
                 rainToSError={rainToSError}
                 handleRainToSAccepted={handleRainToSAccepted}
                 email={formData.accountUsers.representatives[0].email}
+                accountUsers={formData.accountUsers.representatives.filter((user) => user.role !== "representative")}
+                userDetails={formData.userDetails}
               />
             )}
           </Tab>

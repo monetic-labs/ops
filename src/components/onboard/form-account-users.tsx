@@ -91,7 +91,7 @@ export const FormAccountUsers: React.FC<{
       lastName: "",
       email: "",
       phoneNumber: "",
-      role: "representative",
+      role: fields.length === 0 ? "owner" : "representative",
       bridgeUserRole: PersonRole.SUPER_ADMIN,
     });
     addTab({
@@ -186,7 +186,7 @@ export const FormAccountUsers: React.FC<{
           control={control}
           label="Role"
           name={`representatives.${index}.role`}
-          value="Owner"
+          value={fields[0].role}
           disabled
         />
       ) : (
