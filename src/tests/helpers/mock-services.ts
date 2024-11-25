@@ -5,7 +5,7 @@ type WebSocketEventTypes = keyof WebSocketEventMap;
 type WebSocketEventListener<K extends WebSocketEventTypes> = (this: WebSocket, ev: WebSocketEventMap[K]) => any;
 
 // Helper function to create typed events
-const createWebSocketEvent = <K extends WebSocketEventTypes>(type: K, data?: any): WebSocketEventMap[K] => {
+export const createWebSocketEvent = <K extends WebSocketEventTypes>(type: K, data?: any): WebSocketEventMap[K] => {
   switch (type) {
     case "open":
       return new Event("open") as WebSocketEventMap[K];

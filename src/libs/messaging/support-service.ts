@@ -43,7 +43,10 @@ export const useSupportStore = create<SupportState>((set, get) => ({
     set({ messages: [...messages, message] });
   },
 
-  setInputValue: (value) => set({ inputValue: value }),
+  setInputValue: async (value: string) => {
+    set({ inputValue: value });
+    return Promise.resolve();
+  },
 
   sendMessage: async (text) => {
     set({ isLoading: true });

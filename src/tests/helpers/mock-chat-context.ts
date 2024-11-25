@@ -2,7 +2,7 @@ import { Page } from "@playwright/test";
 import { Message as AIMessage } from "ai";
 
 import {
-  ChatContextType,
+  MessagingContextType,
   Message as CustomMessage,
   AgentMessageService,
   SupportMessageService,
@@ -41,7 +41,7 @@ export const createMockChatContext = (
   mode: "agent" | "support",
   messages: CustomMessage[] = [],
   isTyping: boolean = false
-): ChatContextType => {
+): MessagingContextType => {
   const baseContext = {
     messages,
     inputValue: "",
@@ -122,6 +122,6 @@ export const injectMockContext = async (
   console.log("Verified context:", verifyContext);
 };
 
-export const getMockContext = async (page: Page): Promise<ChatContextType | undefined> => {
+export const getMockContext = async (page: Page): Promise<MessagingContextType | undefined> => {
   return await page.evaluate(() => window.__MOCK_CHAT_CONTEXT__);
 };

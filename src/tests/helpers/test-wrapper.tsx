@@ -5,7 +5,7 @@ import { ChatContext } from "@/hooks/messaging/useChatContext";
 import {
   AgentChatContext,
   SupportChatContext,
-  ChatContextType,
+  MessagingContextType,
   Message,
   SupportMessageService,
   AgentMessageService,
@@ -274,7 +274,7 @@ export function TestWrapper({ children, mode = "agent" }: TestWrapperProps) {
               inputValue,
               channel: "default",
             } as SupportMessageService),
-    } as ChatContextType;
+    } as MessagingContextType;
   }, [mode, messages, isTyping, inputValue]);
 
   return (

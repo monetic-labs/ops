@@ -5,7 +5,7 @@ import { useChat } from "ai/react";
 
 import { useChatMode } from "@/hooks/messaging/useChatMode";
 import { ChatContext } from "@/hooks/messaging/useChatContext";
-import { AgentMessageService, SupportMessageService, ChatContextType } from "@/types/messaging";
+import { AgentMessageService, SupportMessageService, MessagingContextType } from "@/types/messaging";
 import { useSupportService } from "@/hooks/messaging/useSupportService";
 import { useAgentService } from "@/hooks/messaging/useAgentService";
 
@@ -51,7 +51,7 @@ export const ChatProvider = ({ children, userId }: ChatProviderProps) => {
         service: service as AgentMessageService,
         chatHelpers,
         isTyping: false,
-      } satisfies ChatContextType;
+      } satisfies MessagingContextType;
     } else {
       return {
         messages: service.messages,
@@ -63,7 +63,7 @@ export const ChatProvider = ({ children, userId }: ChatProviderProps) => {
         mode: "support" as const,
         service: service as SupportMessageService,
         isTyping: service.isTyping || false,
-      } satisfies ChatContextType;
+      } satisfies MessagingContextType;
     }
   }, [mode, service, chatHelpers, userId]);
 

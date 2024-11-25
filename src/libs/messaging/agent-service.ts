@@ -128,13 +128,14 @@ export const useAgentStore = create<AgentState>((set, get) => ({
     return get().chatHelpers?.input || "";
   },
 
-  setInputValue: (value: string) => {
+  setInputValue: async (value: string) => {
     const helpers = get().chatHelpers;
 
     if (helpers) {
       helpers.setInput(value);
     }
     set({ inputValue: value });
+    return Promise.resolve();
   },
 
   handleSubmit: async (e: React.FormEvent) => {

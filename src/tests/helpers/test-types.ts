@@ -1,8 +1,9 @@
 import { SpeedOverCostPreference } from "@/prompts/v0/types";
 import { UsagePattern } from "@/prompts/v0/usage";
-import { AgentChatContext, ChatContextType } from "@/types/messaging";
+import { AgentChatContext, MessagingContextType } from "@/types/messaging";
 
 import { Graph } from "@/prompts/v0/functions/graph";
+import { IntegrationContextType } from "./pane/types";
 
 // Add ShortcutsContextType to the types
 export interface ShortcutsContextType {
@@ -43,7 +44,7 @@ export interface MockWebSocket {
 
 declare global {
   interface Window {
-    __MOCK_CHAT_CONTEXT__?: ChatContextType;
+    __MOCK_CHAT_CONTEXT__?: MessagingContextType;
     __MOCK_SHORTCUTS_CONTEXT__?: ShortcutsContextType;
     __MOCK_WS__?: MockWebSocket;
     _initialWidth?: number;
@@ -57,11 +58,16 @@ declare global {
     __TEST_GRAPH__?: Graph;
     __TEST_PREFERENCE__?: SpeedOverCostPreference;
     __TEST_USAGE__?: UsagePattern;
-  }
-}
+    __CONTEXT_LOADED__?: boolean;
 
-// Add custom matcher types for Playwright
-declare global {
+    __TEST_WS_READY__?: boolean;
+    __TEST_CONTEXT__?: {
+      wsReady?: boolean;
+      initialized?: boolean;
+      width?: number;
+      messages?: {};
+    } & Partial<IntegrationContextType>;
+  }
   namespace PlaywrightTest {
     interface Matchers<R> {
       toBeGreaterThan(expected: number): R;
@@ -70,3 +76,14 @@ declare global {
     }
   }
 }
+
+// // Add custom matcher types for Playwright
+// declare global {
+//   namespace PlaywrightTest {
+//     interface Matchers<R> {
+//       toBeGreaterThan(expected: number): R;
+//       toBe(expected: any): R;
+//       toBeVisible(): Promise<void>;
+//     }
+//   }
+// }

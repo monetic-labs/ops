@@ -9,28 +9,38 @@ interface ChatHeaderProps {
 }
 
 export const ChatHeader: React.FC<ChatHeaderProps> = ({ onClose }) => {
+  const shortcutText = process.platform === 'darwin' ? '⌘K' : 'Ctrl+K';
+
   return (
-    <div className="p-4 border-b border-charyo-600">
-      <div className="flex justify-between items-center">
-        <div className="flex items-center gap-2">
-          <h2 className="text-xl font-bold">AI Chat</h2>
-          <div className="hidden sm:flex items-center gap-1 text-xs text-gray-400">
-            <Kbd className="px-2 py-0.5" keys={["command"]}>
-              k
-            </Kbd>
-            <span className="text-gray-400">(Global shortcut)</span>
-          </div>
-        </div>
-        <button
-          aria-label="Close chat"
-          className="p-2 rounded-lg hover:bg-charyo-600 transition-colors"
-          data-testid="chat-close-button"
-          type="button"
-          onClick={onClose}
+    <header 
+      className="flex items-center justify-between p-4 border-b border-charyo-400"
+      data-testid="chat-header"
+    >
+      <div className="flex items-center gap-2">
+        <h2 
+          className="text-lg font-semibold text-white"
+          data-testid="chat-title"
         >
-          <XIcon className="h-5 w-5" />
-        </button>
+          Atlas
+        </h2>
+        <kbd 
+          className="text-sm text-gray-400 px-2 py-1 rounded border border-gray-600"
+          data-testid="chat-shortcut"
+        >
+          {shortcutText}
+        </kbd>
       </div>
-    </div>
+
+      <button
+        aria-label="Close chat"
+        className="p-2 text-gray-400 hover:text-white transition-colors rounded-full
+          hover:bg-charyo-400/20"
+        data-testid="chat-close"
+        onClick={onClose}
+        type="button"
+      >
+        <XIcon className="w-5 h-5" />
+      </button>
+    </header>
   );
 };

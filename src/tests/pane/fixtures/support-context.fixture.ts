@@ -5,7 +5,7 @@ export const mockSupportContext: SupportChatContext = {
   mode: "support",
   messages: mockMessages.support,
   inputValue: "",
-  setInputValue: (value: string) => {},
+  setInputValue: async (value: string) => Promise.resolve(),
   sendMessage: async (text: string) => Promise.resolve(),
   handleSubmit: async (e: any) => Promise.resolve(),
   userId: "test-user",

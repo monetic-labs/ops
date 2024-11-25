@@ -97,7 +97,7 @@ export interface MessageService {
   isTyping?: boolean;
   isLoading: boolean;
   inputValue: string;
-  setInputValue: (value: string) => void;
+  setInputValue: (value: string) => Promise<void>;
   sendMessage: (text: string) => Promise<void>;
   handleSubmit: (e: React.FormEvent) => Promise<void>;
   handleWebSocketMessage?: (message: WebSocketMessage) => void;
@@ -129,7 +129,7 @@ export interface SupportMessageService extends MessageService {
 interface BaseChatContext {
   messages: Message[];
   inputValue: string;
-  setInputValue: (value: string) => void;
+  setInputValue: (value: string) => Promise<void>;
   sendMessage: (text: string) => Promise<void>;
   handleSubmit: (e: React.FormEvent) => Promise<void>;
   userId: string;
@@ -152,13 +152,13 @@ export interface SupportChatContext extends BaseChatContext {
 }
 
 // Union type for the context
-export type ChatContextType = AgentChatContext | SupportChatContext;
+export type MessagingContextType = AgentChatContext | SupportChatContext;
 
 // Type guard functions
-export function isAgentContext(context: ChatContextType): context is AgentChatContext {
+export function isAgentContext(context: MessagingContextType): context is AgentChatContext {
   return context.mode === "agent";
 }
 
-export function isSupportContext(context: ChatContextType): context is SupportChatContext {
+export function isSupportContext(context: MessagingContextType): context is SupportChatContext {
   return context.mode === "support";
 }
