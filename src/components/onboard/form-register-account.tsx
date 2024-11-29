@@ -43,14 +43,6 @@ export const AccountRegistration: React.FC<AccountRegistrationProps> = ({
   const [isOTPModalOpen, setIsOTPModalOpen] = useState(false);
   const [bridgeToSAccepted, setBridgeToSAccepted] = useState(false);
   const [rainToSAccepted, setRainToSAccepted] = useState(false);
-  const [companyDocsUploaded, setCompanyDocsUploaded] = useState(false);
-  const [userDocsUploaded, setUserDocsUploaded] = useState(false);
-  const [companyDocs, setCompanyDocs] = useState<{ [key: string]: File | null }>({
-    formationDocs: null,
-    entityOwnership: null,
-    proofOfFunds: null,
-  });
-  const [uboDocs, setUboDocs] = useState<{ [key: string]: { [key: string]: File | null } }>({});
 
   const handleBridgeAcceptToS = async () => {
     if (tosLink) {
@@ -77,35 +69,6 @@ export const AccountRegistration: React.FC<AccountRegistrationProps> = ({
 
   const handleRainAcceptToS = async () => {
     await handleRainToSAccepted();
-  };
-
-  const handleFileChange = (
-    event: React.ChangeEvent<HTMLInputElement>,
-    type: string,
-    isCompany: boolean,
-    index?: number
-  ) => {
-    const file = event.target.files ? event.target.files[0] : null;
-    if (isCompany) {
-      setCompanyDocs((prevDocs) => ({ ...prevDocs, [type]: file }));
-    } else {
-      setUboDocs((prevDocs) => {
-        const newUserDocs = { ...prevDocs };
-        newUserDocs[index!] = {
-          ...newUserDocs[index!],
-          [type]: file,
-        };
-        return newUserDocs;
-      });
-    }
-  };
-
-  const handleCompanyDocsUpload = () => {
-    setCompanyDocsUploaded(true);
-  };
-
-  const handlePersonalDocsUpload = () => {
-    setUserDocsUploaded(true);
   };
 
   const handleBridgeKYB = () => {
@@ -174,94 +137,6 @@ export const AccountRegistration: React.FC<AccountRegistrationProps> = ({
       </Button>
       {rainToSError && <p className="text-ualert-500 mt-2">{rainToSError}</p>}
     </AccordionItem>,
-
-    <AccordionItem key="3" aria-label="Company Docs" title="Company Documents">
-      <p className="mb-4">Upload the following company documents:</p>
-      <div className="space-y-4">
-        <div className="flex items-center space-x-4">
-          <label htmlFor="formationDocs" className="w-1/3 text-right font-medium">
-            Formation Docs:
-          </label>
-          <input
-            id="formationDocs"
-            type="file"
-            className="file-input"
-            onChange={(e) => handleFileChange(e, "formationDocs", true)}
-          />
-        </div>
-        <div className="flex items-center space-x-4">
-          <label htmlFor="entityOwnership" className="w-1/3 text-right font-medium">
-            Entity Ownership:
-          </label>
-          <input
-            id="entityOwnership"
-            type="file"
-            className="file-input"
-            onChange={(e) => handleFileChange(e, "entityOwnership", true)}
-          />
-        </div>
-        <div className="flex items-center space-x-4">
-          <label htmlFor="proofOfFunds" className="w-1/3 text-right font-medium">
-            Proof of Funds:
-          </label>
-          <input
-            id="proofOfFunds"
-            type="file"
-            className="file-input"
-            onChange={(e) => handleFileChange(e, "proofOfFunds", true)}
-          />
-        </div>
-      </div>
-    </AccordionItem>,
-
-    ...accountUsers.map((user, index) => (
-      <AccordionItem
-        key={`personal-docs-${index}`}
-        aria-label="Personal Docs"
-        title={
-          `${accountUsers[index].firstName || ""} ${accountUsers[index].lastName || ""}`.trim()
-            ? `${accountUsers[index].firstName} ${accountUsers[index].lastName}'s Documents`
-            : `User ${index + 1}'s Documents`
-        }
-      >
-        <p className="mb-4">Upload the following Ultimate Beneficial Owner documents:</p>
-        <div className="space-y-4">
-          <div className="flex items-center space-x-4">
-            <label htmlFor={`photoId-${index}`} className="w-1/3 text-right font-medium">
-              Photo ID:
-            </label>
-            <input
-              id={`photoId-${index}`}
-              type="file"
-              className="file-input"
-              onChange={(e) => handleFileChange(e, "photoId", false, index)}
-            />
-          </div>
-          <div className="flex items-center space-x-4">
-            <label htmlFor={`proofOfFunds-${index}`} className="w-1/3 text-right font-medium">
-              Proof of Funds:
-            </label>
-            <input
-              id={`proofOfFunds-${index}`}
-              type="file"
-              className="file-input"
-              onChange={(e) => handleFileChange(e, "proofOfFunds", false, index)}
-            />
-          </div>
-          <div className="flex items-center space-x-4">
-            <label htmlFor={`proofOfResidence-${index}`} className="w-1/3 text-right font-medium">
-              Proof of Residence:
-            </label>
-            <input
-              id={`proofOfResidence-${index}`}
-              type="file"
-              className="file-input"
-              onChange={(e) => handleFileChange(e, "proofOfResidence", false, index)}
-            />
-          </div>
-        </div>
-      </AccordionItem>
-    )),
   ];
 
   // TODO: refresh page to show /unapproved-kyb page since the approval should be handled by middleware
@@ -291,8 +166,8 @@ export const AccountRegistration: React.FC<AccountRegistrationProps> = ({
           <Button className="text-notpurple-500" variant="light" onClick={onCancel}>
             Cancel
           </Button>
-          <Button className="text-notpurple-500" variant="light" onClick={handleTestRedirect}>
-            Test Redirect
+          <Button className="text-notpurple-500" variant="solid" onClick={handleTestRedirect}>
+            Check KYB Status
           </Button>
         </div>
       </FormCard>
