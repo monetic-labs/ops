@@ -1,20 +1,25 @@
 import React from "react";
 import { ExternalLink, CheckCircle, AlertCircle, Clock } from "lucide-react";
-import { BridgeComplianceKycStatus } from "@backpack-fux/pylon-sdk";
+import {
+  BridgeComplianceKycStatus as BridgeKybStatus,
+  CardCompanyStatus as RainKybStatus,
+} from "@backpack-fux/pylon-sdk";
+
+export type ComplianceStatus = BridgeKybStatus | RainKybStatus | undefined;
 
 interface StatusCardProps {
   provider: "BRIDGE" | "RAIN"; // TODO: Get providers from SDK
-  status: string;
+  status: ComplianceStatus;
   onVerify: () => void;
 }
 
 // TODO: Add icons for each status
 export function StatusCard({ provider, status, onVerify }: StatusCardProps) {
-  const getStatusColor = (status: string) => {
-    switch (status.toLowerCase()) {
-      case BridgeComplianceKycStatus.APPROVED:
+  const getStatusColor = (status: ComplianceStatus) => {
+    switch (status) {
+      case BridgeKybStatus.APPROVED || RainKybStatus.APPROVED:
         return "text-green-500";
-      case BridgeComplianceKycStatus.PENDING:
+      case BridgeKybStatus.PENDING || RainKybStatus.PENDING:
         return "text-yellow-500";
       // TODO: Add remaining statuses
       default:
@@ -23,11 +28,11 @@ export function StatusCard({ provider, status, onVerify }: StatusCardProps) {
   };
 
   // TODO: Add icons for each status
-  const getStatusIcon = (status: string) => {
-    switch (status.toLowerCase()) {
-      case BridgeComplianceKycStatus.APPROVED:
+  const getStatusIcon = (status: ComplianceStatus) => {
+    switch (status) {
+      case BridgeKybStatus.APPROVED || RainKybStatus.APPROVED:
         return <CheckCircle className="w-6 h-6 text-green-500" />;
-      case BridgeComplianceKycStatus.PENDING:
+      case BridgeKybStatus.PENDING || RainKybStatus.PENDING:
         return <Clock className="w-6 h-6 text-yellow-500" />;
       // TODO: Add remaining statuses
       default:
@@ -44,7 +49,7 @@ export function StatusCard({ provider, status, onVerify }: StatusCardProps) {
 
       <div className="mb-4">
         <span className="text-sm text-gray-500">Status</span>
-        <p className={`text-lg font-medium ${getStatusColor(status)}`}>{status}</p>
+        <p className={`text-lg font-medium ${getStatusColor(status)}`}>{status === undefined ? "Unknown" : status}</p>
       </div>
 
       <button

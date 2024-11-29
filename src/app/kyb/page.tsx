@@ -16,8 +16,8 @@ export default function KYB() {
   };
 
   const handleRainKYB = () => {
-    if (complianceStatus?.applicationExternalVerificationLink.url) {
-      window.open(complianceStatus.applicationExternalVerificationLink.url, "_blank");
+    if (complianceStatus?.link) {
+      window.open(complianceStatus.link, "_blank");
     }
   };
 
@@ -31,20 +31,20 @@ export default function KYB() {
       </div>
 
       <div className="grid md:grid-cols-2 gap-6 w-full">
-        <StatusCard provider="BRIDGE" status={complianceStatus?.kycStatus || "Unknown"} onVerify={handleBridgeKYB} />
-        <StatusCard
-          provider="RAIN"
-          status={complianceStatus?.applicationStatus || "Unknown"}
-          onVerify={handleRainKYB}
-        />
+        <StatusCard provider="BRIDGE" status={complianceStatus?.kycStatus} onVerify={handleBridgeKYB} />
+        <StatusCard provider="RAIN" status={complianceStatus?.status} onVerify={handleRainKYB} />
       </div>
 
       <div className="mt-6 text-center text-sm text-white/80 backdrop-blur-sm bg-background/40 px-6 py-3 rounded-full">
         Need help?{" "}
-        <a href="#" className="underline hover:text-white">
-          {/* TODO: Add support link */}
+        <button
+          className="underline hover:text-white"
+          onClick={() => {
+            // TODO: Add support link
+          }}
+        >
           Contact our support team
-        </a>{" "}
+        </button>{" "}
         for assistance with your verification process.
       </div>
     </section>
