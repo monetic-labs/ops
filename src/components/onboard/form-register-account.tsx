@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Accordion, AccordionItem } from "@nextui-org/accordion";
 import { Button } from "@nextui-org/button";
 import { Link } from "@nextui-org/link";
+import { useRouter } from "next/navigation";
 
 import { FormCard } from "@/components/generics/form-card";
 
@@ -41,8 +42,9 @@ export const AccountRegistration: React.FC<AccountRegistrationProps> = ({
   userDetails,
 }) => {
   const [isOTPModalOpen, setIsOTPModalOpen] = useState(false);
-  const [bridgeToSAccepted, setBridgeToSAccepted] = useState(false);
-  const [rainToSAccepted, setRainToSAccepted] = useState(false);
+  const [isBridgeToSAccepted, setBridgeToSAccepted] = useState(false);
+  const router = useRouter();
+  let isOTPVerified = false;
 
   const handleBridgeAcceptToS = async () => {
     if (tosLink) {
@@ -63,6 +65,7 @@ export const AccountRegistration: React.FC<AccountRegistrationProps> = ({
   const handleOTPVerified = () => {
     setIsOTPModalOpen(false);
     console.log("OTP verification success");
+    isOTPVerified = true;
     //onKYCDone();
     return null;
   };
@@ -71,17 +74,8 @@ export const AccountRegistration: React.FC<AccountRegistrationProps> = ({
     await handleRainToSAccepted();
   };
 
-  const handleBridgeKYB = () => {
-    if (kybLink) {
-      onKYCDone();
-      window.open(kybLink, "_blank");
-      onKYCDone();
-      console.log("KYB done");
-    }
-  };
-
-  const handleTestRedirect = () => {
-    onKYCDone();
+  const handleKYB = () => {
+    router.push("/kyb");
   };
 
   const itemClasses = {
@@ -108,10 +102,10 @@ export const AccountRegistration: React.FC<AccountRegistrationProps> = ({
       </p>
       <Button
         className="w-full bg-ualert-500 text-notpurple-100"
-        isDisabled={bridgeToSAccepted || !tosLink}
+        isDisabled={!isBridgeToSAccepted}
         onClick={handleBridgeAcceptToS}
       >
-        {bridgeToSAccepted ? "Terms Accepted" : "Accept Terms"}
+        {isBridgeToSAccepted ? "Terms Accepted" : "Accept Terms"}
       </Button>
     </AccordionItem>,
 
@@ -130,7 +124,7 @@ export const AccountRegistration: React.FC<AccountRegistrationProps> = ({
       </p>
       <Button
         className="w-full bg-ualert-500 text-notpurple-100"
-        isDisabled={isRainToSAccepted}
+        isDisabled={!isRainToSAccepted}
         onClick={handleRainAcceptToS}
       >
         {isRainToSAccepted ? "Terms Accepted" : "Accept Terms"}
@@ -138,18 +132,6 @@ export const AccountRegistration: React.FC<AccountRegistrationProps> = ({
       {rainToSError && <p className="text-ualert-500 mt-2">{rainToSError}</p>}
     </AccordionItem>,
   ];
-
-  // TODO: refresh page to show /unapproved-kyb page since the approval should be handled by middleware
-  if (bridgeToSAccepted) {
-    accordionItems.push(
-      <AccordionItem key="5" aria-label="KYB Verification" title="KYB Verification">
-        <p className="mb-4">Please complete your KYB verification by clicking the button below:</p>
-        <Button className="w-full bg-ualert-500 text-notpurple-100" onClick={handleBridgeKYB}>
-          Start KYB Verification
-        </Button>
-      </AccordionItem>
-    );
-  }
 
   return (
     <>
@@ -166,19 +148,22 @@ export const AccountRegistration: React.FC<AccountRegistrationProps> = ({
           <Button className="text-notpurple-500" variant="light" onClick={onCancel}>
             Cancel
           </Button>
-          <Button className="text-notpurple-500" variant="solid" onClick={handleTestRedirect}>
-            Check KYB Status
+          <Button
+            isDisabled={!isBridgeToSAccepted && !isRainToSAccepted && !isOTPVerified}
+            className="text-notpurple-500"
+            variant="solid"
+            onClick={handleKYB}
+          >
+            Finish KYB
           </Button>
         </div>
       </FormCard>
-      {isOTPModalOpen && (
-        <OTPVerificationModal
-          isOpen={isOTPModalOpen}
-          onClose={() => setIsOTPModalOpen(false)}
-          onVerified={handleOTPVerified}
-          email={email}
-        />
-      )}
+      <OTPVerificationModal
+        isOpen={isOTPModalOpen}
+        onClose={() => setIsOTPModalOpen(false)}
+        onVerified={handleOTPVerified}
+        email={email}
+      />
     </>
   );
 };

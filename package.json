@@ -16,7 +16,6 @@
     "map:postcode": "node scripts/preprocess-postcodes.js"
   },
   "dependencies": {
-    "@backpack-fux/pylon-sdk": "0.2.963",
     "@hookform/resolvers": "^3.9.0",
     "@nextui-org/accordion": "^2.0.40",
     "@nextui-org/autocomplete": "^2.1.7",
