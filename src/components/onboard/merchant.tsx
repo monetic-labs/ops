@@ -123,6 +123,8 @@ export const MerchantOnboard: React.FC<{ onCancel: () => void; initialEmail: str
                 rainToSError={rainToSError}
                 handleRainToSAccepted={handleRainToSAccepted}
                 email={formData.accountUsers.representatives[0].email}
+                accountUsers={formData.accountUsers.representatives.filter((user) => user.role !== "representative")}
+                userDetails={formData.userDetails}
               />
             )}
           </Tab>

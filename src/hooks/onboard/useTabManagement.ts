@@ -9,15 +9,8 @@ export const useTabManagement = () => {
     { key: "register-account", title: "Register Account", isCompleted: false },
   ];
 
-  const {
-    tabs,
-    activeTab,
-    setActiveTab,
-    updateTabCompletion,
-    updateTabTitle,
-    addTab,
-    removeTabs,
-  } = useDynamicTabs(initialTabs);
+  const { tabs, activeTab, setActiveTab, updateTabCompletion, updateTabTitle, addTab, removeTabs } =
+    useDynamicTabs(initialTabs);
 
   return {
     tabs,

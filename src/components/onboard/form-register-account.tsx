@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Accordion, AccordionItem } from "@nextui-org/accordion";
 import { Button } from "@nextui-org/button";
 import { Link } from "@nextui-org/link";
+import { useRouter } from "next/navigation";
 
 import { FormCard } from "@/components/generics/form-card";
 
@@ -9,6 +10,7 @@ import { signBridgeTermsOfService } from "@/utils/merchant/signBridgeTOS";
 import { signRainTermsOfService } from "@/utils/merchant/signRainToS";
 import { OTPVerificationModal } from "../generics/otp-modal";
 import { VerifyOTP } from "@backpack-fux/pylon-sdk";
+import { CompanyUserDetailsSchema } from "@/types/validations/onboard";
 
 interface AccountRegistrationProps {
   tosBridgeLink: string | null;
@@ -19,6 +21,12 @@ interface AccountRegistrationProps {
   handleRainToSAccepted: () => Promise<void>;
   rainToSError: string | null;
   email: string;
+  accountUsers: {
+    firstName: string;
+    lastName: string;
+    role: "owner" | "beneficial-owner" | "representative";
+  }[];
+  userDetails: CompanyUserDetailsSchema["userDetails"];
 }
 
 export const AccountRegistration: React.FC<AccountRegistrationProps> = ({
@@ -30,22 +38,13 @@ export const AccountRegistration: React.FC<AccountRegistrationProps> = ({
   handleRainToSAccepted,
   rainToSError,
   email,
+  accountUsers,
+  userDetails,
 }) => {
   const [isOTPModalOpen, setIsOTPModalOpen] = useState(false);
-  const [bridgeToSAccepted, setBridgeToSAccepted] = useState(false);
-  const [rainToSAccepted, setRainToSAccepted] = useState(false);
-  const [companyDocsUploaded, setCompanyDocsUploaded] = useState(false);
-  const [userDocsUploaded, setUserDocsUploaded] = useState(false);
-  const [companyDocs, setCompanyDocs] = useState<{ [key: string]: File | null }>({
-    formationDocs: null,
-    entityOwnership: null,
-    proofOfFunds: null,
-  });
-  const [userDocs, setUserDocs] = useState<{ [key: string]: File | null }>({
-    photoId: null,
-    proofOfFunds: null,
-    proofOfResidence: null,
-  });
+  const [isBridgeToSAccepted, setBridgeToSAccepted] = useState(false);
+  const router = useRouter();
+  let isOTPVerified = false;
 
   const handleBridgeAcceptToS = async () => {
     if (tosLink) {
@@ -66,6 +65,7 @@ export const AccountRegistration: React.FC<AccountRegistrationProps> = ({
   const handleOTPVerified = () => {
     setIsOTPModalOpen(false);
     console.log("OTP verification success");
+    isOTPVerified = true;
     //onKYCDone();
     return null;
   };
@@ -74,34 +74,8 @@ export const AccountRegistration: React.FC<AccountRegistrationProps> = ({
     await handleRainToSAccepted();
   };
 
-  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>, type: string, isCompany: boolean) => {
-    const file = event.target.files ? event.target.files[0] : null;
-    if (isCompany) {
-      setCompanyDocs((prevDocs) => ({ ...prevDocs, [type]: file }));
-    } else {
-      setUserDocs((prevDocs) => ({ ...prevDocs, [type]: file }));
-    }
-  };
-
-  const handleCompanyDocsUpload = () => {
-    setCompanyDocsUploaded(true);
-  };
-
-  const handlePersonalDocsUpload = () => {
-    setUserDocsUploaded(true);
-  };
-
-  const handleBridgeKYB = () => {
-    if (kybLink) {
-      onKYCDone();
-      window.open(kybLink, "_blank");
-      onKYCDone();
-      console.log("KYB done");
-    }
-  };
-
-  const handleTestRedirect = () => {
-    onKYCDone();
+  const handleKYB = () => {
+    router.push("/kyb");
   };
 
   const itemClasses = {
@@ -129,10 +103,10 @@ export const AccountRegistration: React.FC<AccountRegistrationProps> = ({
       <Button
         data-testid="bill-pay-agreement-button"
         className="w-full bg-ualert-500 text-notpurple-100"
-        isDisabled={bridgeToSAccepted || !tosLink}
+        isDisabled={!isBridgeToSAccepted}
         onClick={handleBridgeAcceptToS}
       >
-        {bridgeToSAccepted ? "Terms Accepted" : "Accept Terms"}
+        {isBridgeToSAccepted ? "Terms Accepted" : "Accept Terms"}
       </Button>
     </AccordionItem>,
 
@@ -157,115 +131,14 @@ export const AccountRegistration: React.FC<AccountRegistrationProps> = ({
       <Button
         data-testid="card-program-agreement-button"
         className="w-full bg-ualert-500 text-notpurple-100"
-        isDisabled={isRainToSAccepted}
+        isDisabled={!isRainToSAccepted}
         onClick={handleRainAcceptToS}
       >
         {isRainToSAccepted ? "Terms Accepted" : "Accept Terms"}
       </Button>
       {rainToSError && <p className="text-ualert-500 mt-2">{rainToSError}</p>}
     </AccordionItem>,
-
-    <AccordionItem key="3" aria-label="Company Docs" data-testid="company-docs" title="Company Documents">
-      <p className="mb-4">Upload the following company documents:</p>
-      <div className="space-y-4">
-        <div className="flex items-center space-x-4">
-          <label htmlFor="formationDocs" className="w-1/3 text-right font-medium">
-            Formation Docs:
-          </label>
-          <input
-            data-testid="formation-docs-input"
-            id="formationDocs"
-            type="file"
-            accept=".pdf"
-            className="file-input"
-            onChange={(e) => handleFileChange(e, "formationDocs", true)}
-          />
-        </div>
-        <div className="flex items-center space-x-4">
-          <label htmlFor="entityOwnership" className="w-1/3 text-right font-medium">
-            Entity Ownership:
-          </label>
-          <input
-            data-testid="entity-ownership-input"
-            id="entityOwnership"
-            type="file"
-            accept=".pdf"
-            className="file-input"
-            onChange={(e) => handleFileChange(e, "entityOwnership", true)}
-          />
-        </div>
-        <div className="flex items-center space-x-4">
-          <label htmlFor="proofOfFunds" className="w-1/3 text-right font-medium">
-            Proof of Funds:
-          </label>
-          <input
-            data-testid="proof-of-funds-input"
-            id="proofOfFunds"
-            type="file"
-            accept=".pdf"
-            className="file-input"
-            onChange={(e) => handleFileChange(e, "proofOfFunds", true)}
-          />
-        </div>
-      </div>
-    </AccordionItem>,
-
-    <AccordionItem key="4" aria-label="Personal Docs" data-testid="personal-docs" title="Personal Documents">
-      <p className="mb-4">Upload the following personal documents:</p>
-      <div className="space-y-4">
-        <div className="flex items-center space-x-4">
-          <label htmlFor="photoId" className="w-1/3 text-right font-medium">
-            Photo ID:
-          </label>
-          <input
-            data-testid="photo-id-input"
-            id="photoId"
-            type="file"
-            accept=".jpg, .jpeg, .png, .pdf"
-            className="file-input"
-            onChange={(e) => handleFileChange(e, "photoId", false)}
-          />
-        </div>
-        <div className="flex items-center space-x-4">
-          <label htmlFor="proofOfFunds" className="w-1/3 text-right font-medium">
-            Proof of Funds:
-          </label>
-          <input
-            data-testid="proof-of-funds-input"
-            id="proofOfFunds"
-            type="file"
-            accept=".pdf, .jpg, .jpeg, .png"
-            className="file-input"
-            onChange={(e) => handleFileChange(e, "proofOfFunds", false)}
-          />
-        </div>
-        <div className="flex items-center space-x-4">
-          <label htmlFor="proofOfResidence" className="w-1/3 text-right font-medium">
-            Proof of Residence:
-          </label>
-          <input
-            data-testid="proof-of-residence-input"
-            id="proofOfResidence"
-            type="file"
-            accept=".pdf"
-            className="file-input"
-            onChange={(e) => handleFileChange(e, "proofOfResidence", false)}
-          />
-        </div>
-      </div>
-    </AccordionItem>,
   ];
-
-  if (bridgeToSAccepted) {
-    accordionItems.push(
-      <AccordionItem key="5" aria-label="KYB Verification" data-testid="kyb-verification" title="KYB Verification">
-        <p className="mb-4">Please complete your KYB verification by clicking the button below:</p>
-        <Button className="w-full bg-ualert-500 text-notpurple-100" onClick={handleBridgeKYB}>
-          Start KYB Verification
-        </Button>
-      </AccordionItem>
-    );
-  }
 
   return (
     <>
@@ -282,19 +155,22 @@ export const AccountRegistration: React.FC<AccountRegistrationProps> = ({
           <Button className="text-notpurple-500" variant="light" onClick={onCancel}>
             Cancel
           </Button>
-          <Button className="text-notpurple-500" variant="light" onClick={handleTestRedirect}>
-            Test Redirect
+          <Button
+            isDisabled={!isBridgeToSAccepted && !isRainToSAccepted && !isOTPVerified}
+            className="text-notpurple-500"
+            variant="solid"
+            onClick={handleKYB}
+          >
+            Finish KYB
           </Button>
         </div>
       </FormCard>
-      {isOTPModalOpen && (
-        <OTPVerificationModal
-          isOpen={isOTPModalOpen}
-          onClose={() => setIsOTPModalOpen(false)}
-          onVerified={handleOTPVerified}
-          email={email}
-        />
-      )}
+      <OTPVerificationModal
+        isOpen={isOTPModalOpen}
+        onClose={() => setIsOTPModalOpen(false)}
+        onVerified={handleOTPVerified}
+        email={email}
+      />
     </>
   );
 };

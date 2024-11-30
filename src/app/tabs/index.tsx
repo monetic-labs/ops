@@ -5,6 +5,11 @@ import { Card, CardBody, CardHeader } from "@nextui-org/card";
 import { Divider } from "@nextui-org/divider";
 import { Tab, Tabs } from "@nextui-org/tabs";
 import { useRouter, useSearchParams } from "next/navigation";
+import {
+  BridgeComplianceKycStatus as BridgeKybStatus,
+  BridgeComplianceTosStatus as BridgeTosStatus,
+  CardCompanyStatus as RainKybStatus,
+} from "@backpack-fux/pylon-sdk";
 
 import WidgetManagement from "@/components/back-office/widget-tab";
 import BackOfficeTabs from "@/components/back-office/back-office";
@@ -43,11 +48,11 @@ export default function MerchantServicesTabs({ userId }: { userId: string }) {
   useEffect(() => {
     if (
       complianceStatus &&
-      complianceStatus.tosStatus !== "approved" &&
-      complianceStatus.kycStatus !== "approved" &&
-      complianceStatus.applicationStatus !== "approved"
+      complianceStatus.tosStatus !== BridgeTosStatus.ACCEPTED &&
+      complianceStatus.kycStatus !== BridgeKybStatus.APPROVED &&
+      complianceStatus.status !== RainKybStatus.APPROVED
     ) {
-      router.push("/unapproved-kyb");
+      router.push("/kyb");
     }
   }, [complianceStatus]);
 
