@@ -82,3 +82,4 @@ export const useWebSocket = create<WebSocketStore>((set, get) => ({
 
   clearError: () => set({ error: null })
 }));
+

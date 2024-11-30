@@ -1,9 +1,9 @@
 import { NextResponse } from "next/server";
+import { useWebSocket } from "@/libs/websocket";
+import { MessageStatus, WebSocketMessage, SupportMessage, Message } from "@/types/messaging";
 
-import { broadcastMessage } from "@/libs/websocket";
-import { MessageStatus, WebSocketMessage } from "@/types/messaging";
-
-interface TelegramMessage {
+// Service-specific interface lives only in the route handler
+interface TelegramWebhookMessage {
   message_id: number;
   from?: {
     id: number;
@@ -23,21 +23,36 @@ interface TelegramMessage {
 
 interface TelegramUpdate {
   update_id: number;
-  message: TelegramMessage;
+  message: TelegramWebhookMessage;
+}
+
+// Convert external service message to our internal SupportMessage type
+function convertToSupportMessage(telegramMsg: TelegramWebhookMessage): SupportMessage {
+  return {
+    id: `msg-${telegramMsg.message_id || Date.now()}`,
+    type: "support",
+    text: telegramMsg.text || "",
+    timestamp: (telegramMsg.date || Math.floor(Date.now() / 1000)) * 1000,
+    status: "received",
+    metadata: {
+      telegramMessageId: telegramMsg.message_id,
+      chatId: telegramMsg.chat.id.toString(),
+      userId: telegramMsg.from?.id?.toString(),
+      timestamp: Date.now()
+    }
+  };
 }
 
 export async function POST(request: Request) {
   console.log("📥 Telegram webhook received request");
+  const wsStore = useWebSocket.getState();
 
   try {
     const body: TelegramUpdate = await request.json();
-
     console.log("📦 Webhook body:", JSON.stringify(body, null, 2));
 
-    // Early return if no message
     if (!body.message) {
       console.log("⚠️ No message in webhook body");
-
       return NextResponse.json({ success: false, error: "No message found" }, { status: 400 });
     }
 
@@ -46,7 +61,7 @@ export async function POST(request: Request) {
     // Handle typing indicators
     if (message.chat_action === "typing") {
       console.log("🔵 Received typing indicator");
-      const typingMessage: WebSocketMessage = {
+      const wsMessage: WebSocketMessage = {
         id: `typing-${Date.now()}`,
         type: "typing",
         text: "",
@@ -59,32 +74,18 @@ export async function POST(request: Request) {
         },
       };
 
-      await broadcastMessage(typingMessage);
-
+      await wsStore.send(wsMessage as Message);
       return NextResponse.json({ success: true });
     }
 
     // Handle text messages
     if (message.text) {
       console.log("📝 Received text message");
-      const messageToSend: WebSocketMessage = {
-        id: `msg-${message.message_id || Date.now()}`,
-        text: message.text || "",
-        type: "support",
-        timestamp: (message.date || Math.floor(Date.now() / 1000)) * 1000,
-        metadata: {
-          telegramMessageId: message.message_id,
-          chatId: message.chat.id.toString(),
-          userId: message.from?.id?.toString(),
-          timestamp: Date.now(),
-        },
-        status: "received" as MessageStatus,
-      };
+      const supportMessage = convertToSupportMessage(message);
+      
+      await wsStore.send(supportMessage);
 
-      console.log("📢 Broadcasting message:", messageToSend);
-      await broadcastMessage(messageToSend);
-
-      // Only send auto-reply for new conversations or specific triggers
+      // Only send auto-reply for new conversations
       if (message.text.toLowerCase() === "/start") {
         const chatId = message.chat.id;
         const responseText = "Thank you for contacting support. An agent will be with you shortly.";
@@ -110,17 +111,11 @@ export async function POST(request: Request) {
       }
     }
 
-    console.log("✅ Successfully processed webhook request");
-
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error("❌ Error in webhook handler:", error);
-
     return NextResponse.json(
-      {
-        success: false,
-        error: error instanceof Error ? error.message : "Failed to process message",
-      },
+      { success: false, error: error instanceof Error ? error.message : "Failed to process message" },
       { status: 500 }
     );
   }
