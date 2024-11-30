@@ -28,6 +28,7 @@ export default function TestPage() {
       }
     };
 
+
     window.addEventListener("add-messages", handleAddMessages as EventListener);
     window.addEventListener("update-chat-context", handleAddMessages as EventListener);
 
