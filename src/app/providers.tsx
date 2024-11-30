@@ -9,7 +9,7 @@ import { PylonProvider } from "@backpack-fux/pylon-sdk";
 
 import pylonInstance from "@/libs/pylon-sdk";
 import PageWithScrollBackground from "@/styles/framer-motion/scroll-wrapper";
-import { ChatProvider } from "@/components/messaging/messaging-provider";
+import { MessagingProvider } from "@/components/messaging/messaging-provider";
 import { ShortcutsProvider } from "@/components/generics/shortcuts-provider";
 
 export interface ProvidersProps {
@@ -32,11 +32,11 @@ export function Providers({ children, themeProps, userId }: ProvidersProps) {
     <PylonProvider pylon={pylonInstance}>
       <NextUIProvider navigate={router.push}>
         <NextThemesProvider {...themeProps}>
-          <ChatProvider userId={userId || "default-user"}>
+          <MessagingProvider userId={userId || "default-user"}>
             <ShortcutsProvider initialValue={shortcutsInitialValue}>
               <PageWithScrollBackground>{children}</PageWithScrollBackground>
             </ShortcutsProvider>
-          </ChatProvider>
+          </MessagingProvider>
         </NextThemesProvider>
       </NextUIProvider>
     </PylonProvider>

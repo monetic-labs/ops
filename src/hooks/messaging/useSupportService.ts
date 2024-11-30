@@ -1,26 +1,37 @@
-import { useSupportStore } from "@/libs/messaging/support-service";
-import { SupportMessageService } from "@/types/messaging";
+import { useMessagingStore, useMessagingActions } from "@/libs/messaging/store";
+import { WebSocketMessage } from "@/types/messaging";
+import { useCallback } from "react";
 
-export const useSupportService = (): SupportMessageService => {
-  const store = useSupportStore();
+export const useSupportService = () => {
+  const { message: messageActions } = useMessagingActions();
+  const state = useMessagingStore(state => state.message);
+
+  const handleWebSocketMessage = useCallback((message: WebSocketMessage) => {
+    messageActions.appendMessage({
+      id: message.id,
+      text: message.text,
+      type: 'support',
+      timestamp: message.metadata.timestamp,
+      status: 'received'
+    });
+  }, [messageActions]);
 
   return {
-    type: "telegram",
+    type: "telegram" as const,
     channel: "default",
-    messages: store.messages,
-    isTyping: store.isTyping,
-    isLoading: store.isLoading,
-    inputValue: store.inputValue,
-    setInputValue: store.setInputValue,
-    sendMessage: store.sendMessage,
-    handleSubmit: async (e) => {
+    messages: state.messages,
+    isTyping: state.isTyping,
+    isLoading: false,
+    inputValue: state.inputValue,
+    setInputValue: messageActions.setInputValue,
+    sendMessage: messageActions.sendMessage,
+    handleSubmit: async (e: React.FormEvent) => {
       e.preventDefault();
-      const text = store.inputValue;
-
+      const text = state.inputValue;
       if (!text.trim()) return;
-      await store.sendMessage(text);
+      await messageActions.sendMessage(text);
     },
-    handleWebSocketMessage: store.handleWebSocketMessage,
-    getUserId: () => "default-user",
+    handleWebSocketMessage,
+    getUserId: () => state.userId || 'default-user'
   };
 };

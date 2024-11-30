@@ -1,6 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { triggerShortcut } from '@/tests/messaging/helpers/utils';
-import { PaneFixture } from '../fixtures/pane.fixture';
+import { PaneFixture } from '@/tests/container/fixtures/msg-pane.fixture';
 
 test.describe('Chat Header', () => {
   let pane: PaneFixture;

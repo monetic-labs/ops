@@ -1,48 +1,67 @@
+import { useMessagingStore, useMessagingActions } from "@/libs/messaging/store";
+import { Message as AIMessage } from 'ai';
 import { UseChatHelpers } from "ai/react";
-import { useEffect, useRef } from "react";
+import { useEffect } from "react";
 
-import { useAgentStore } from "@/libs/messaging/agent-service";
-import { AgentMessageService } from "@/types/messaging";
+interface ChatHelperUpdate {
+  messages: AIMessage[];
+  input?: string;
+  isLoading?: boolean;
+}
 
-export const useAgentService = (chatHelpers?: UseChatHelpers): AgentMessageService => {
-  const store = useAgentStore();
-  const helpersRef = useRef(chatHelpers);
+export const useAgentService = (chatHelpers?: UseChatHelpers) => {
+  const { message: messageActions } = useMessagingActions();
+  const state = useMessagingStore(state => state.message);
 
   useEffect(() => {
-    // Skip the initial mount if chatHelpers is undefined
-    if (typeof chatHelpers === "undefined") return;
-
-    // Only update if the helpers have meaningfully changed
-    if (chatHelpers !== helpersRef.current) {
-      helpersRef.current = chatHelpers;
-      store.setChatHelpers(chatHelpers);
-    }
-
-    // Clean up only if we actually set helpers
-    return () => {
-      if (helpersRef.current) {
-        helpersRef.current = undefined;
-        // Don't set to null during cleanup if we're just updating
-        if (!chatHelpers) {
-          store.setChatHelpers(null as unknown as UseChatHelpers);
+    if (chatHelpers) {
+      // Watch for changes in chatHelpers messages
+      const handleUpdate = () => {
+        const lastMessage = chatHelpers.messages[chatHelpers.messages.length - 1];
+        if (lastMessage && lastMessage.role === 'assistant') {
+          messageActions.appendMessage({
+            id: crypto.randomUUID(),
+            text: lastMessage.content,
+            type: 'bot',
+            timestamp: Date.now(),
+            status: 'received'
+          });
         }
+      };
+
+      // Set up message monitoring
+      const messageObserver = new MutationObserver(handleUpdate);
+      const target = document.querySelector('[data-chat-messages]');
+      if (target) {
+        messageObserver.observe(target, { 
+          childList: true, 
+          subtree: true 
+        });
       }
-    };
-  }, [chatHelpers]);
+
+      return () => messageObserver.disconnect();
+    }
+  }, [chatHelpers, messageActions]);
 
   return {
-    type: "openai",
-    model: "gpt-4o",
-    messages: store.messages,
-    isLoading: store.isLoading,
-    inputValue: store.inputValue,
-    setInputValue: store.setInputValue,
-    sendMessage: store.sendMessage,
-    handleSubmit: store.handleSubmit,
-    getUserId: store.getUserId,
+    type: "openai" as const,
+    model: "gpt-4",
+    messages: state.messages,
+    isLoading: chatHelpers?.isLoading || false,
+    inputValue: state.inputValue,
+    setInputValue: messageActions.setInputValue,
+    sendMessage: messageActions.sendMessage,
+    handleSubmit: async (e: React.FormEvent) => {
+      e.preventDefault();
+      const text = state.inputValue;
+      if (!text.trim()) return;
+      await messageActions.sendMessage(text);
+      
+      // If we have chatHelpers, also send through AI SDK
+      if (chatHelpers) {
+        await chatHelpers.handleSubmit(e);
+      }
+    },
+    getUserId: () => state.userId || 'default-user'
   };
 };
-
-export function useAgent(chatHelpers: UseChatHelpers) {
-  return useAgentService(chatHelpers);
-}

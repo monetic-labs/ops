@@ -72,14 +72,7 @@ export interface SystemMessage extends BaseMessage {
 export type Message = UserMessage | BotMessage | SupportMessage | SystemMessage;
 
 // Chat Mode Types
-export type ChatMode = "bot" | "support";
-
-// Message Service Configuration
-export interface MessageServiceConfig {
-  service: MessageService;
-  enabled: boolean;
-  config?: Record<string, unknown>;
-}
+export type MessageMode = "bot" | "support";
 
 // Mention Option Interface
 export interface MentionOption {
@@ -126,7 +119,7 @@ export interface SupportMessageService extends MessageService {
 }
 
 // Base context interface that both modes share
-interface BaseChatContext {
+interface BaseMessagingContext {
   messages: Message[];
   inputValue: string;
   setInputValue: (value: string) => Promise<void>;
@@ -136,29 +129,17 @@ interface BaseChatContext {
 }
 
 // Agent-specific context
-export interface AgentChatContext extends BaseChatContext {
+export interface AgentMessageContext extends BaseMessagingContext {
   mode: "agent";
   service: AgentMessageService;
   chatHelpers: UseChatHelpers;
-  isTyping: false; // Agent mode doesn't use typing indicators
+  isTyping: boolean; // Agent mode doesn't use typing indicators
 }
 
 // Support-specific context
-export interface SupportChatContext extends BaseChatContext {
+export interface SupportMessageContext extends BaseMessagingContext {
   mode: "support";
   service: SupportMessageService;
   chatHelpers?: never; // Support mode doesn't use chat helpers
   isTyping: boolean;
-}
-
-// Union type for the context
-export type MessagingContextType = AgentChatContext | SupportChatContext;
-
-// Type guard functions
-export function isAgentContext(context: MessagingContextType): context is AgentChatContext {
-  return context.mode === "agent";
-}
-
-export function isSupportContext(context: MessagingContextType): context is SupportChatContext {
-  return context.mode === "support";
 }

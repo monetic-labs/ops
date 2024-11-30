@@ -1,42 +1,46 @@
-import { useState, useCallback, useEffect } from "react";
+import { useCallback, useEffect } from "react";
+import { useMessagingStore, useMessagingActions } from "@/libs/messaging/store";
 
 const MIN_WIDTH = 320;
 const MAX_WIDTH = 1200;
-const DEFAULT_WIDTH = 1000;
 const STORAGE_KEY = 'chat-pane-width';
-const TRANSITION_DURATION = 300;
 
-export const useResizePanel = (initialWidth = DEFAULT_WIDTH) => {
-  const [isResizing, setIsResizing] = useState(false);
-  const [width, setWidth] = useState(() => {
-    if (typeof window === 'undefined') return initialWidth;
-    const stored = localStorage.getItem(STORAGE_KEY);
-    return stored ? parseInt(stored, 10) : initialWidth;
-  });
+export const useResizePanel = () => {
+  const { ui: uiActions } = useMessagingActions();
+  const { width, isResizing } = useMessagingStore(state => state.ui);
+
+  // Initialize width from localStorage on mount
+  useEffect(() => {
+    const storedWidth = localStorage.getItem(STORAGE_KEY);
+    if (storedWidth) {
+      const parsedWidth = parseInt(storedWidth, 10);
+      if (!isNaN(parsedWidth) && parsedWidth >= MIN_WIDTH && parsedWidth <= MAX_WIDTH) {
+        uiActions.setWidth(parsedWidth);
+      }
+    }
+  }, [uiActions]);
 
   const startResizing = useCallback((e: React.MouseEvent) => {
     e.preventDefault();
-    setIsResizing(true);
-  }, []);
+    uiActions.setResizing(true);
+  }, [uiActions]);
 
   const stopResizing = useCallback(() => {
     if (!isResizing) return;
-    setIsResizing(false);
+    uiActions.setResizing(false);
     localStorage.setItem(STORAGE_KEY, width.toString());
-  }, [isResizing, width]);
+  }, [isResizing, width, uiActions]);
 
   const resize = useCallback((e: MouseEvent) => {
     if (!isResizing) return;
     const newWidth = Math.min(Math.max(e.clientX, MIN_WIDTH), MAX_WIDTH);
-    setWidth(newWidth);
-  }, [isResizing]);
+    uiActions.setWidth(newWidth);
+  }, [isResizing, uiActions]);
 
   useEffect(() => {
     if (!isResizing) return;
-
     window.addEventListener("mousemove", resize);
     window.addEventListener("mouseup", stopResizing);
-
     return () => {
       window.removeEventListener("mousemove", resize);
       window.removeEventListener("mouseup", stopResizing);
@@ -48,6 +52,7 @@ export const useResizePanel = (initialWidth = DEFAULT_WIDTH) => {
     isResizing,
     resizeHandleProps: {
       onMouseDown: startResizing,
+      "data-testid": "chat-pane-resize-handle"
     },
   };
 };

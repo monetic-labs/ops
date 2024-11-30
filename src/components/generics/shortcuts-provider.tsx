@@ -1,7 +1,7 @@
 "use client";
 
 import { useGlobalShortcuts } from "@/hooks/generics/useGlobalShortcuts";
-import React, { createContext, useContext, useEffect, useMemo } from "react";
+import React, { createContext, useContext, useEffect, useMemo, useState } from "react";
 import { ChatPane } from "../messaging/pane";
 
 interface ShortcutsContextType {
@@ -9,6 +9,7 @@ interface ShortcutsContextType {
   openChat: () => void;
   closeChat: () => void;
   toggleChat: () => void;
+  shortcutKey: string;
 }
 
 const ShortcutsContext = createContext<ShortcutsContextType | null>(null);
@@ -24,16 +25,25 @@ const DEFAULT_VALUES: ShortcutsContextType = {
   openChat: () => {},
   closeChat: () => {},
   toggleChat: () => {},
+  shortcutKey: 'k',
 };
 
-export function ShortcutsProvider({ 
+export const ShortcutsProvider: React.FC<ShortcutsProviderProps> = ({ 
   children, 
-  disablePane = false,
-  initialValue = {}
-}: ShortcutsProviderProps) {
-  const [state, setState] = React.useState({
-    isChatOpen: initialValue.isChatOpen ?? DEFAULT_VALUES.isChatOpen
-  });
+  disablePane, 
+  initialValue 
+}) => {
+  const [state, setState] = useState({ isChatOpen: false });
+  const [mounted, setMounted] = useState(false);
+  const [shortcutDisplay, setShortcutDisplay] = useState('');
+
+  // Handle hydration and OS detection
+  useEffect(() => {
+    setMounted(true);
+    const isMac = typeof window !== 'undefined' && 
+      window.navigator.platform.toUpperCase().indexOf('MAC') >= 0;
+    setShortcutDisplay(isMac ? '⌘K' : 'Ctrl+K');
+  }, []);
 
   // Emit state changes for testing
   useEffect(() => {
@@ -67,13 +77,14 @@ export function ShortcutsProvider({
   // Register global shortcut
   useGlobalShortcuts("k", toggleChat, {
     isEnabled: !disablePane,
-    metaKey: true // This makes it Cmd+K on Mac and Ctrl+K on Windows
+    metaKey: true
   });
 
   const contextValue = useMemo(() => ({
     ...DEFAULT_VALUES,
     ...initialValue,
     isChatOpen: state.isChatOpen,
+    shortcutKey: shortcutDisplay, // Use the OS-specific display
     openChat: () => {
       if (disablePane) return;
       setState(prev => ({ ...prev, isChatOpen: true }));
@@ -82,11 +93,13 @@ export function ShortcutsProvider({
       if (disablePane) return;
       setState(prev => ({ ...prev, isChatOpen: false }));
     },
-    toggleChat: () => {
-      if (disablePane) return;
-      setState(prev => ({ ...prev, isChatOpen: !prev.isChatOpen }));
-    }
-  }), [disablePane, state.isChatOpen, initialValue, toggleChat]);
+    toggleChat
+  }), [disablePane, state.isChatOpen, initialValue, toggleChat, shortcutDisplay]);
+
+  // Don't render until after hydration
+  if (!mounted) {
+    return null;
+  }
 
   return (
     <ShortcutsContext.Provider value={contextValue}>
@@ -99,7 +112,7 @@ export function ShortcutsProvider({
       )}
     </ShortcutsContext.Provider>
   );
-}
+};
 
 export function useShortcuts() {
   const context = useContext(ShortcutsContext);

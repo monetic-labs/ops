@@ -1,71 +1,47 @@
 "use client";
 
-import { useMemo } from "react";
-import { useChat } from "ai/react";
+import { useEffect } from "react";
+import { useMessagingStore, useMessagingActions } from "@/libs/messaging/store";
+import { MessageMode } from "@/types/messaging";
 
-import { useChatMode } from "@/hooks/messaging/useChatMode";
-import { ChatContext } from "@/hooks/messaging/useChatContext";
-import { AgentMessageService, SupportMessageService, MessagingContextType } from "@/types/messaging";
-import { useSupportService } from "@/hooks/messaging/useSupportService";
-import { useAgentService } from "@/hooks/messaging/useAgentService";
-
-interface ChatProviderProps {
+interface MessagingProviderProps {
   children: React.ReactNode;
   userId: string;
+  initialMode?: MessageMode;
 }
 
-export const ChatProvider = ({ children, userId }: ChatProviderProps) => {
-  console.log("👤 User ID:", userId);
-  const { mode } = useChatMode();
+export const MessagingProvider = ({ children, userId, initialMode = 'bot' }: MessagingProviderProps) => {
+  const { 
+    message: { setMode }, 
+    connection: { connect },
+    ui: { setWidth },
+  } = useMessagingActions();
 
-  const chatHelpers = useChat({
-    api: mode === "agent" ? "/api/messaging/agent/chat" : undefined,
-    initialMessages: [],
-    id: "agent-chat",
-    onError: (error) => {
-      console.error("Chat Helper Error:", error);
-    },
-    onFinish: () => {
-      console.log("Chat Helper: Message Stream Finished");
-    },
-    onResponse: (response) => {
-      console.log("Chat Helper: Got Response", response);
-    },
-  });
+  useEffect(() => {
+    // Set initial values
+    setMode(initialMode);
+    setWidth(400); // Default width
+    
+    // Initialize websocket connection
+    connect().catch(error => {
+      console.error('Failed to establish WebSocket connection:', error);
+    });
 
-  const supportService = useSupportService();
-  const agentService = useAgentService(mode === "agent" ? chatHelpers : undefined);
+    // Cleanup on unmount
+    return () => {
+      const { disconnect } = useMessagingStore.getState().actions.connection;
+      disconnect();
+    };
+  }, [connect, setMode, setWidth, initialMode]);
 
-  const service = mode === "support" ? supportService : agentService;
+  useEffect(() => {
+    const unsubscribe = useMessagingStore.subscribe(
+      (state) => state.connection.status
+    );
+    const connectionStatus = useMessagingStore.getState().connection.status;
+    console.log('Connection status:', connectionStatus );
+    return () => unsubscribe();
+  }, []);
 
-  const contextValue = useMemo(() => {
-    if (mode === "agent") {
-      return {
-        messages: service.messages,
-        inputValue: service.inputValue,
-        setInputValue: service.setInputValue,
-        sendMessage: service.sendMessage,
-        handleSubmit: service.handleSubmit,
-        userId,
-        mode: "agent" as const,
-        service: service as AgentMessageService,
-        chatHelpers,
-        isTyping: false,
-      } satisfies MessagingContextType;
-    } else {
-      return {
-        messages: service.messages,
-        inputValue: service.inputValue,
-        setInputValue: service.setInputValue,
-        sendMessage: service.sendMessage,
-        handleSubmit: service.handleSubmit,
-        userId,
-        mode: "support" as const,
-        service: service as SupportMessageService,
-        isTyping: service.isTyping || false,
-      } satisfies MessagingContextType;
-    }
-  }, [mode, service, chatHelpers, userId]);
-
-  return <ChatContext.Provider value={contextValue}>{children}</ChatContext.Provider>;
+  return <>{children}</>;
 };

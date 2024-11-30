@@ -1,3 +1,4 @@
+import { Message } from "@/types/messaging";
 import { Page, expect } from "@playwright/test";
 
 export interface PaneState {
@@ -5,6 +6,16 @@ export interface PaneState {
     width: number;
     position: { x: number; y: number };
     hasTranslateClass: boolean;
+}
+
+export async function triggerShortcut(page: Page) {
+  await page.keyboard.press(process.platform === "darwin" ? "Meta+K" : "Control+K");
+}
+
+export async function setupPane(page: Page) {
+    const pane = page.locator('[data-testid="chat-pane-container"]').first();
+    await pane.waitFor({ state: "attached" });
+    return pane;
 }
   
 export async function getPaneState(page: Page): Promise<PaneState> {
@@ -21,19 +32,9 @@ export async function getPaneState(page: Page): Promise<PaneState> {
         };
     });
 }
-
-export async function setupChatPane(page: Page) {
-    const pane = page.locator('[data-testid="chat-pane-container"]').first();
-    await pane.waitFor({ state: "attached" });
-    return pane;
-}
-  
-export async function triggerShortcut(page: Page) {
-    await page.keyboard.press(process.platform === "darwin" ? "Meta+K" : "Control+K");
-}
   
 export async function verifyPaneState(page: Page, expectedState: "open" | "closed", timeout = 5000) {
-    const pane = await setupChatPane(page);
+    const pane = await setupPane(page);
     
     try {
       await Promise.all([
@@ -93,4 +94,33 @@ export async function resizeChatPane(
       initialWidth: initialState.width,
       finalWidth: finalState.width
     };
+}
+
+// Helper to initialize store with test data
+export const initializeStore = async (page: Page, config: {
+  mode: 'bot' | 'support',
+  messages?: Message[],
+  isTyping?: boolean,
+  userId?: string
+}) => {
+  await page.evaluate(({ config }) => {
+    const store = window.__MESSAGING_STORE__;
+    if (!store) throw new Error('Store not initialized');
+    
+    store.setState({
+      message: {
+        ...store.getState().message,
+        ...config
+      }
+    });
+  }, { config });
+
+  // Wait for store update if messages are being set
+  if (config.messages?.length) {
+    await page.waitForFunction(() => {
+      const store = window.__MESSAGING_STORE__;
+      if (!store) return false;
+      return store.getState().message.messages.length > 0;
+    });
   }
+};

@@ -1,13 +1,33 @@
 import type { Page } from '@playwright/test';
 import { expect } from '@playwright/test';
 
-type PaneState = {
+export interface PaneState {
   isOpen: boolean;
   width: number;
-};
+  position?: { x: number; y: number };
+  hasTranslateClass?: boolean;
+}
 
 export class PaneFixture {
   constructor(private page: Page) {}
+
+  async triggerShortcut() {
+    const shortcut = process.platform === 'darwin' ? 'Meta+K' : 'Control+K';
+    
+    await this.page.keyboard.press(shortcut);
+    
+    await this.page.waitForSelector('[data-testid="chat-pane-container"][data-state="open"]', {
+      state: 'attached',
+      timeout: 5000
+    });
+
+    await this.page.evaluate(() => {
+      const panes = Array.from(document.querySelectorAll('[data-testid="chat-pane-container"]'));
+      if (panes.length > 1) {
+        panes.slice(0, -1).forEach(pane => pane.remove());
+      }
+    });
+  }
 
   // Core selectors
   getPane() {
@@ -27,24 +47,6 @@ export class PaneFixture {
 
   private getResizeHandle() {
     return this.page.getByTestId('chat-pane-resize-handle');
-  }
-
-  async triggerShortcut() {
-    const shortcut = process.platform === 'darwin' ? 'Meta+K' : 'Control+K';
-    
-    await this.page.keyboard.press(shortcut);
-    
-    await this.page.waitForSelector('[data-testid="chat-pane-container"][data-state="open"]', {
-      state: 'attached',
-      timeout: 5000
-    });
-
-    await this.page.evaluate(() => {
-      const panes = Array.from(document.querySelectorAll('[data-testid="chat-pane-container"]'));
-      if (panes.length > 1) {
-        panes.slice(0, -1).forEach(pane => pane.remove());
-      }
-    });
   }
 
   async closeWithEscape() {

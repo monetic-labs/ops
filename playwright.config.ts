@@ -1,4 +1,6 @@
 import { PlaywrightTestConfig, devices } from '@playwright/test';
+import dotenv from 'dotenv';
+dotenv.config();
 
 const config: PlaywrightTestConfig = {
   testDir: './src/tests',
@@ -19,6 +21,12 @@ const config: PlaywrightTestConfig = {
     trace: 'on-first-retry',
     video: 'on-first-retry',
     screenshot: 'only-on-failure',
+    launchOptions: {
+      env: {
+        ...process.env,
+        PLAYWRIGHT_TEST: 'true'
+      }
+    }
   },
   projects: [
     {

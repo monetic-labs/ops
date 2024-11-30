@@ -1,3 +1,4 @@
+
 interface RateLimitConfig {
   interval: number; // Time window in milliseconds
   uniqueTokenPerInterval: number; // Maximum number of unique tokens per interval

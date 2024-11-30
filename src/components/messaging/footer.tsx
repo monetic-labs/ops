@@ -2,16 +2,20 @@
 
 import React from "react";
 
-import { ChatInput } from "./input";
+import { MessageInput } from "./input";
 import { ChatActions } from "./actions";
 import { ModeSwitcher } from "./mode-switcher";
 
-export const ChatFooter: React.FC = () => {
+interface ChatFooterProps {
+  inputRef?: React.RefObject<HTMLInputElement>;
+}
+
+export const ChatFooter: React.FC<ChatFooterProps> = ({ inputRef }) => {
   return (
-    <div className="border-t border-charyo-600 p-4 space-y-4">
+    <div className="border-t border-charyo-600 p-4 space-y-4" data-testid="pane-footer">
       <ModeSwitcher />
       <ChatActions />
-      <ChatInput />
+      <MessageInput ref={inputRef} />
     </div>
   );
 };

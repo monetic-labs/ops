@@ -1,69 +1,84 @@
-import { WebSocketMessage } from "@/types/messaging";
+import { Message, WebSocketMessage } from "@/types/messaging";
+import { create } from 'zustand';
 
-const WS_URL = process.env.NEXT_PUBLIC_WS_URL || "ws://localhost:3001";
+interface WebSocketState {
+  connection: WebSocket | null;
+  status: 'connecting' | 'connected' | 'disconnected';
+  messageQueue: Message[];
+  error: Error | null;
+}
 
-let wsInstance: globalThis.WebSocket | null = null;
-let reconnectInterval: NodeJS.Timeout | null = null;
+interface WebSocketStore extends WebSocketState {
+  connect: () => Promise<void>;
+  disconnect: () => void;
+  send: (message: Message) => Promise<void>;
+  clearError: () => void;
+  processQueue: () => void;
+}
 
-export function getWebSocketInstance(): globalThis.WebSocket | null {
-  if (typeof window === "undefined") return null;
+export const useWebSocket = create<WebSocketStore>((set, get) => ({
+  connection: null,
+  status: 'disconnected',
+  messageQueue: [],
+  error: null,
 
-  if (!wsInstance || wsInstance.readyState === WebSocket.CLOSED) {
+  connect: async () => {
+    if (get().status === 'connecting' || get().status === 'connected') return;
+
+    set({ status: 'connecting' });
+    
     try {
-      wsInstance = new window.WebSocket(WS_URL);
+      const ws = new WebSocket(process.env.NEXT_PUBLIC_WS_URL || "ws://localhost:3001");
 
-      wsInstance.onclose = () => {
-        console.log("WebSocket closed");
-
-        if (!reconnectInterval) {
-          reconnectInterval = setInterval(() => {
-            reconnectInterval = null;
-            getWebSocketInstance();
-          }, 5000);
-        }
+      ws.onopen = () => {
+        set({ connection: ws, status: 'connected' });
+        get().processQueue();
       };
+
+      ws.onclose = () => {
+        set({ connection: null, status: 'disconnected' });
+        // Attempt reconnect after delay
+        setTimeout(() => get().connect(), 5000);
+      };
+
+      ws.onerror = (event) => {
+        set({ error: new Error('WebSocket connection error') });
+      };
+
     } catch (error) {
-      console.error("Failed to create WebSocket instance:", error);
-
-      return null;
+      set({ error: error as Error, status: 'disconnected' });
     }
-  }
+  },
 
-  return wsInstance;
-}
-
-export async function broadcastMessage(message: WebSocketMessage) {
-  console.log("📢 Broadcasting message:", message);
-
-  if (typeof window === "undefined") return;
-
-  return new Promise((resolve, reject) => {
-    try {
-      const ws = getWebSocketInstance();
-
-      if (!ws || ws.readyState !== WebSocket.OPEN) {
-        const newWs = new window.WebSocket(WS_URL);
-
-        newWs.onopen = () => {
-          try {
-            newWs.send(JSON.stringify(message));
-            resolve(true);
-          } catch (error) {
-            reject(error);
-          }
-        };
-
-        newWs.onerror = (error) => {
-          console.error("❌ WebSocket error:", error);
-          reject(error);
-        };
-      } else {
-        ws.send(JSON.stringify(message));
-        resolve(true);
-      }
-    } catch (error) {
-      console.error("Failed to broadcast message:", error);
-      reject(error);
+  disconnect: () => {
+    const { connection } = get();
+    if (connection) {
+      connection.close();
+      set({ connection: null, status: 'disconnected' });
     }
-  });
-}
+  },
+
+  send: async (message: Message) => {
+    const { connection, status, messageQueue } = get();
+
+    if (status !== 'connected' || !connection) {
+      set({ messageQueue: [...messageQueue, message] });
+      await get().connect();
+      return;
+    }
+
+    connection.send(JSON.stringify(message));
+  },
+
+  processQueue: () => {
+    const { messageQueue, connection } = get();
+    if (!connection || messageQueue.length === 0) return;
+
+    messageQueue.forEach(message => {
+      connection.send(JSON.stringify(message));
+    });
+    set({ messageQueue: [] });
+  },
+
+  clearError: () => set({ error: null })
+}));

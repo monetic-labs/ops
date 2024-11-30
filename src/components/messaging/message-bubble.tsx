@@ -63,9 +63,9 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({ message, contentTe
   };
 
   const messageId = getMessageId();
-  const bubbleTestId = testId || `message-${messageId}`; // This is correct
-  const contentBubbleTestId = `${bubbleTestId}-content`; // Update to match parent ID pattern
-  const statusTestId = `${bubbleTestId}-status`; // Update status ID to match pattern
+  const bubbleTestId = testId || `message-${messageId}`; 
+  const contentBubbleTestId = `${bubbleTestId}-content`; 
+  const statusTestId = `${bubbleTestId}-status`; 
 
   return (
     <div className={`flex ${getAlignment()} message-${getMessageType()}`} data-testid={bubbleTestId}>

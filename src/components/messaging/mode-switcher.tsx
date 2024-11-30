@@ -5,38 +5,38 @@ import { Tab, Tabs } from "@nextui-org/tabs";
 import { Bot, MessageCircle } from "lucide-react";
 import { useSearchParams, useRouter } from "next/navigation";
 
-import { useChatMode } from "@/hooks/messaging/useChatMode";
+import { useMessagingActions, useMessagingState } from "@/libs/messaging/store";
+import { MessageMode } from "@/types/messaging";
+import { TEST_CONFIG } from "@/tests/container/test-env";
+import { isTestEnvironment } from "@/tests/container/test-env";
 
 export const ModeSwitcher: React.FC = () => {
-  const { mode, setMode } = useChatMode();
+  const { mode } = useMessagingState();
+  const { setMode } = useMessagingActions().message;
   const searchParams = useSearchParams();
   const router = useRouter();
 
   // Handle mode changes
   const handleModeChange = useCallback(
     (newMode: string | number) => {
-      const modeValue = newMode as "agent" | "support";
-
-      console.log("Mode change requested:", modeValue);
-
-      // Update state
-      setMode(modeValue);
-
-      // Update URL without triggering a navigation
-      const params = new URLSearchParams(searchParams.toString());
-
-      params.set("mode", modeValue);
-      router.replace(`/test/chat?${params.toString()}`, { scroll: false });
+      const modeValue = newMode as "bot" | "support";
+      setMode(modeValue as MessageMode);
+  
+      if (isTestEnvironment()) {
+        const params = new URLSearchParams(searchParams.toString());
+        params.set("mode", modeValue);
+        router.replace(`${TEST_CONFIG.routes.pane}?${params.toString()}`, { scroll: false });
+      }
     },
     [setMode, searchParams, router]
   );
 
   useEffect(() => {
-    const urlMode = searchParams.get("mode") as "agent" | "support";
+    const urlMode = searchParams.get("mode") as "bot" | "support";
 
     if (urlMode && urlMode !== mode) {
       console.log("Syncing mode with URL:", urlMode);
-      setMode(urlMode);
+      setMode(urlMode as MessageMode);
     }
   }, [searchParams, mode, setMode]);
 
@@ -52,12 +52,12 @@ export const ModeSwitcher: React.FC = () => {
           onSelectionChange={handleModeChange}
         >
           <Tab
-            key="agent"
-            data-testid="agent-tab"
+            key="bot"
+            data-testid="bot-tab"
             title={
-              <div className="flex items-center gap-2" data-testid="agent-tab-content">
+              <div className="flex items-center gap-2" data-testid="bot-tab-content">
                 <Bot size={18} />
-                <span data-testid="agent-tab-text">PACKS</span>
+                <span data-testid="bot-tab-text">PACKS</span>
               </div>
             }
           />

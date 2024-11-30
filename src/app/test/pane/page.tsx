@@ -1,71 +1,69 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useSearchParams } from "next/navigation";
-
-import { ChatBody } from "@/components/messaging/body";
-import { TestWrapper } from "@/tests/helpers/test-wrapper";
-import { ChatContext } from "@/hooks/messaging/useChatContext";
-import { Message } from "@/types/messaging";
-import { createMockChatContext } from "@/tests/helpers/mock-chat-context";
-import { ModeSwitcher } from "@/components/messaging/mode-switcher";
+import { TestWrapper } from "@/tests/container/test-wrapper";
 import { ChatPane } from "@/components/messaging/pane";
+import { useMessagingStore, useMessagingActions, resetMessagingStore } from "@/libs/messaging/store";
+import { MessageMode } from "@/types/messaging";
 
 export default function TestPage() {
   const searchParams = useSearchParams();
-  const mode = (searchParams.get("mode") as "agent" | "support") || "agent";
-  const [messages, setMessages] = useState<Message[]>([]);
-  const [isTyping, setIsTyping] = useState(false);
-  const [isPaneOpen, setIsPaneOpen] = useState(true);
-
-  const chatContextValue = createMockChatContext(mode, messages);
+  const mode = (searchParams.get("mode") as MessageMode) || "agent";
+  const { message: messageActions } = useMessagingActions();
 
   useEffect(() => {
-    const handleSetTyping = (e: CustomEvent) => {
-      setIsTyping(e.detail);
-    };
+    // Reset store on mount
+    resetMessagingStore();
 
+    // Initialize store with test values
+    messageActions.setMode(mode);
+    
+    // Handle message updates from test events
     const handleAddMessages = (e: CustomEvent) => {
-      setMessages(e.detail);
+      if (Array.isArray(e.detail)) {
+        e.detail.forEach(message => {
+          messageActions.appendMessage(message);
+        });
+      }
     };
 
-    const handlePaneState = (e: CustomEvent) => {
-      setIsPaneOpen(e.detail.isOpen);
-    };
-
-    window.addEventListener("set-typing", handleSetTyping as EventListener);
     window.addEventListener("add-messages", handleAddMessages as EventListener);
-    window.addEventListener("chat-pane-state", handlePaneState as EventListener);
+    window.addEventListener("update-chat-context", handleAddMessages as EventListener);
 
     return () => {
-      window.removeEventListener("set-typing", handleSetTyping as EventListener);
       window.removeEventListener("add-messages", handleAddMessages as EventListener);
-      window.removeEventListener("chat-pane-state", handlePaneState as EventListener);
+      window.removeEventListener("update-chat-context", handleAddMessages as EventListener);
+      resetMessagingStore();
     };
-  }, []);
+  }, [mode, messageActions]);
 
-  const handlePaneClose = () => {
-    console.log("Pane close requested");
-    setIsPaneOpen(false);
-
-    // Dispatch event for test visibility
-    window.dispatchEvent(
-      new CustomEvent("chat-pane-state", {
-        detail: { isOpen: false },
-      })
+  // Debug: Log store state changes
+  useEffect(() => {
+    const unsubscribe = useMessagingStore.subscribe(
+      state => state.message.messages,
     );
-  };
+    console.log(useMessagingStore.getState().message.messages);
+
+    return () => unsubscribe();
+  }, []);
 
   return (
     <TestWrapper mode={mode}>
-      <ChatContext.Provider value={chatContextValue}>
-        <div className="h-screen flex flex-col">
-          <div data-testid="debug-mount">Test Page Mounted</div>
-          <ModeSwitcher />
-          <ChatBody />
-          <ChatPane isOpen={isPaneOpen} onClose={handlePaneClose} />
+      <div className="h-screen flex flex-col">
+        <div data-testid="debug-mount">Test Page Mounted</div>
+        <ChatPane 
+          isOpen={useMessagingStore.getState().ui.isOpen} 
+          onClose={() => useMessagingStore.getState().actions.ui.togglePane()} 
+        />
+        {/* Debug elements */}
+        <div data-testid="debug-messages" style={{ display: 'none' }}>
+          {JSON.stringify(useMessagingStore.getState().message.messages)}
         </div>
-      </ChatContext.Provider>
+        <div data-testid="debug-mode" style={{ display: 'none' }}>
+          {useMessagingStore.getState().message.mode}
+        </div>
+      </div>
     </TestWrapper>
   );
 }

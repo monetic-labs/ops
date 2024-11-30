@@ -2,7 +2,6 @@
 
 import React from "react";
 import { XIcon } from "lucide-react";
-import { Kbd } from "@nextui-org/kbd";
 
 interface ChatHeaderProps {
   onClose: () => void;
