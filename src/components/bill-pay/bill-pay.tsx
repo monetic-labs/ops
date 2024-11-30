@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { Tabs, Tab } from "@nextui-org/tabs";
 import { Button } from "@nextui-org/button";
 
@@ -7,10 +7,25 @@ import { billPayConfig, BillPayId } from "@/config/tabs";
 import Contacts from "./contacts-tab";
 import Transfers from "./transfers-tab";
 import CreateBillPayModal from "./bill-actions/create";
+import { useAppKitAccount } from "@reown/appkit/react";
+import { DEFAULT_NEW_BILL_PAY } from "@/types/bill-pay";
+import { NewBillPay, ExistingBillPay } from "@/types/bill-pay";
+import { Address } from "viem";
+import { isTesting } from "@/utils/helpers";
+import { MOCK_SETTLEMENT_ADDRESS } from "@/utils/constants";
 
-export default function BillPayTabs() {
+type BillPayTabsProps = {
+  handleSubTabChange: (key: string) => void;
+};
+
+export default function BillPayTabs({ handleSubTabChange }: BillPayTabsProps) {
+  const [billPay, setBillPay] = useState<NewBillPay | ExistingBillPay>(DEFAULT_NEW_BILL_PAY);
   const [selectedService, setSelectedService] = useState<string>(billPayConfig[0].id);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+
+  const appKitAccount = useAppKitAccount();
+  const isConnected = isTesting ? true : appKitAccount.isConnected;
+  const settlementAddress = isTesting ? MOCK_SETTLEMENT_ADDRESS : appKitAccount.address;
 
   const renderTabContent = (tabId: string) => {
     switch (tabId) {
@@ -29,7 +44,7 @@ export default function BillPayTabs() {
         <Tabs
           aria-label="Bill Pay options"
           classNames={{
-            base: "w-full overflow-x-auto sm:overflow-x-visible",
+            base: "w-full overflow-x-auto sm:overflow-x-viseible",
             tabList: "bg-charyo-500/60 backdrop-blur-sm border-none",
             tab: "flex-grow sm:flex-grow-0",
             tabContent: "text-notpurple-500/60",
@@ -41,17 +56,23 @@ export default function BillPayTabs() {
             <Tab key={tab.id} title={tab.label} />
           ))}
         </Tabs>
-        <Button color="default" onPress={() => setIsCreateModalOpen(true)}>
+        <Button data-testid="create-transfer-button" color="default" onPress={() => setIsCreateModalOpen(true)}>
           Create Transfer
         </Button>
       </div>
       <div className="mt-4">{renderTabContent(selectedService)}</div>
       <CreateBillPayModal
         isOpen={isCreateModalOpen}
-        onClose={() => setIsCreateModalOpen(false)}
-        onSave={(newBillPay) => {
-          console.log("Creating bill pay:", newBillPay);
+        onClose={() => {
           setIsCreateModalOpen(false);
+          setBillPay(DEFAULT_NEW_BILL_PAY);
+        }}
+        billPay={billPay}
+        setBillPay={setBillPay}
+        isWalletConnected={isConnected}
+        settlementAddress={settlementAddress as Address}
+        onSave={(newBillPay) => {
+          console.log("Creating transfer:", newBillPay);
         }}
       />
     </div>

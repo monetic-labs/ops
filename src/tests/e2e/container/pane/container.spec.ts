@@ -1,4 +1,4 @@
-import { test } from '@/tests/container/fixtures/context-websocket.fixture';
+import { test } from '@/tests/e2e/container/fixtures/context-websocket.fixture';
 import { expect } from '@playwright/test';
 import { initMockWebSocket } from '../mock-services';
 

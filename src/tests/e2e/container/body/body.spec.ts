@@ -1,5 +1,5 @@
-import { test, expect } from '@/tests/container/fixtures/context-messaging.fixture';
-import { initMockWebSocket } from '@/tests/container/mock-services';
+import { test, expect } from '@/tests/e2e/container/fixtures/context-messaging.fixture';
+import { initMockWebSocket } from '@/tests/e2e/container/mock-services';
 import { mockBotMessage, mockSupportMessage, mockSystemMessage } from '../mock-data';
 import { initializeStore } from '../utils';
 

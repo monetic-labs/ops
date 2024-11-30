@@ -17,6 +17,7 @@ interface PostcodeInputProps<T extends FieldValues> {
   about?: string;
   watchPostcode?: string;
   onLookupComplete?: (result: any) => void;
+  testId?: string;
 }
 
 export const PostcodeInput = <T extends FieldValues>({
@@ -27,6 +28,7 @@ export const PostcodeInput = <T extends FieldValues>({
   errorMessage,
   onLookupComplete,
   watchPostcode,
+  testId,
   ...props
 }: PostcodeInputProps<T>) => {
   const { lookup, isLoading, error, result } = usePostcodeLookup();
@@ -34,7 +36,6 @@ export const PostcodeInput = <T extends FieldValues>({
 
   const handlePostcodeChange = async (value: string) => {
     const numericValue = value.replace(/\D/g, "");
-
     field.onChange(numericValue);
 
     if (numericValue.length === 5) {
@@ -60,6 +61,7 @@ export const PostcodeInput = <T extends FieldValues>({
         <div className="w-1/4">
           <FormInput
             className="text-notpurple-500"
+            data-testid={testId}
             control={control}
             inputMode="numeric"
             label="Postcode"
@@ -77,20 +79,30 @@ export const PostcodeInput = <T extends FieldValues>({
         <div className="w-3/4 flex space-x-4 mb-1 ">
           <div className="w-1/3">
             <p className="text-sm text-notpurple-100 mb-1">City</p>
-            <p className="text-sm text-notpurple-300">{result?.city || "-"}</p>
+            <p className="text-sm text-notpurple-300" data-testid={`${testId}-city`}>
+              {result?.city || "-"}
+            </p>
           </div>
           <div className="w-1/3">
             <p className="text-sm text-notpurple-100 mb-1">State</p>
-            <p className="text-sm text-notpurple-300">{result?.state || "-"}</p>
+            <p className="text-sm text-notpurple-300" data-testid={`${testId}-state`}>
+              {result?.state || "-"}
+            </p>
           </div>
           <div className="w-1/3">
             <p className="text-sm text-notpurple-100 mb-1">Country</p>
-            <p className="text-sm text-notpurple-300">{result?.country || "-"}</p>
+            <p className="text-sm text-notpurple-300" data-testid={`${testId}-country`}>
+              {result?.country || "-"}
+            </p>
           </div>
         </div>
       </div>
       <div className="h-4">
-        {isLoading && <p className="text-sm text-notpurple-300">Loading...</p>}
+        {isLoading && (
+          <p className="text-sm text-notpurple-300" data-testid={`${testId}-loading`}>
+            Loading...
+          </p>
+        )}
         {error && <p className="text-sm text-ualert-500">{error}</p>}
       </div>
     </div>

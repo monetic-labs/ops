@@ -116,8 +116,9 @@ export default function ModalFooterWithSupport({
               <span className="items-center font-mono">New Sender?</span>
               <Switch
                 defaultSelected
-                aria-label="New Customer"
+                data-testid="new-sender-toggle"
                 color="secondary"
+                aria-label="New Customer"
                 isSelected={isNewSender}
                 onValueChange={onNewSenderChange}
               />
@@ -126,10 +127,10 @@ export default function ModalFooterWithSupport({
           {actions.map((action, index) => (
             <Button
               key={index}
+              data-testid={`${action.label.toLowerCase()}-modal-button`}
               className={`bg-ualert-500 text-notpurple-500 w-full sm:w-auto ${action.className || ""}`}
               isDisabled={action.isDisabled}
-              isLoading={action.isLoading}
-              onPress={action.onClick}
+              aria-label={action.label}
             >
               {action.label}
             </Button>

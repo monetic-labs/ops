@@ -72,7 +72,7 @@ export const MerchantOnboard: React.FC<{ onCancel: () => void; initialEmail: str
   const userDetailTabs = tabs.filter((tab) => tab.key.startsWith("user-details-"));
 
   return (
-    <FormCard className="overflow-y-auto max-h-screen" title="Know Your Business">
+    <FormCard className="overflow-y-auto max-h-screen" title="Know Your Business" data-testid="onboarding-form">
       <Tabs selectedKey={activeTab} onSelectionChange={(key) => setActiveTab(key as string)}>
         {mainTabs.map((tab) => (
           <Tab key={tab.key} title={tab.title}>
@@ -124,6 +124,12 @@ export const MerchantOnboard: React.FC<{ onCancel: () => void; initialEmail: str
                 tosBridgeLink={createMerchantData?.data.tosLink || null}
                 onCancel={handleCancel}
                 onKYCDone={handleKYCDone}
+                isRainToSAccepted={isRainToSAccepted}
+                rainToSError={rainToSError}
+                handleRainToSAccepted={handleRainToSAccepted}
+                email={formData.accountUsers.representatives[0].email}
+                accountUsers={formData.accountUsers.representatives.filter((user) => user.role !== "representative")}
+                userDetails={formData.userDetails}
               />
             )}
           </Tab>
@@ -132,7 +138,11 @@ export const MerchantOnboard: React.FC<{ onCancel: () => void; initialEmail: str
       {rainError && <p className="text-ualert-500">Rain Error: {rainError}</p>}
       {isCreatingRainMerchant && <p>Creating Rain merchant...</p>}
       {createRainMerchantError && <p className="text-ualert-500">Error: {createRainMerchantError}</p>}
-      {createRainMerchantData && <p className="text-green-500">Rain merchant created successfully!</p>}
+      {createRainMerchantData && (
+        <p className="text-green-500" data-testid="rain-merchant-created">
+          Rain merchant created successfully!
+        </p>
+      )}
     </FormCard>
   );
 };

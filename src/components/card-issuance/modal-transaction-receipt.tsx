@@ -1,23 +1,14 @@
+
+import { MerchantCardTransactionGetOutput } from "@backpack-fux/pylon-sdk";
 import { Divider } from "@nextui-org/divider";
 import { Modal, ModalBody, ModalContent, ModalHeader } from "@nextui-org/modal";
-
-import { formattedDate } from "@/utils/helpers";
 
 import ModalFooterWithSupport from "../generics/footer-modal-support";
 
 interface TransactionReceiptModalProps {
   isOpen: boolean;
   onClose: () => void;
-  transaction: {
-    amount: string;
-    date: string;
-    category: string;
-    cardName: string;
-    cardLastFour: string;
-    spender: string;
-    status: string;
-    merchantId: string;
-  };
+  transaction: MerchantCardTransactionGetOutput["transactions"][number] & { avatar?: string };
 }
 
 export default function TransactionReceiptModal({ isOpen, onClose, transaction }: TransactionReceiptModalProps) {
@@ -28,36 +19,59 @@ export default function TransactionReceiptModal({ isOpen, onClose, transaction }
           <>
             <ModalHeader className="flex flex-col items-center">
               <h2 className="text-2xl font-bold">Transaction Receipt</h2>
-              <p className="text-sm text-gray-500">Merchant ID: {transaction.merchantId}</p>
+              <p className="text-sm text-gray-500">Transaction ID: {transaction.id}</p>
             </ModalHeader>
             <Divider />
             <ModalBody>
               <div className="space-y-4 font-mono text-sm">
                 <div className="grid grid-cols-2 gap-2">
                   <span>Date:</span>
-                  <span className="text-right">{formattedDate(transaction.date)}</span>
+                  <span>
+                    {" "}
+                    {new Date(transaction.createdAt).toLocaleDateString(undefined, {
+                      weekday: "long",
+                      year: "numeric",
+                      month: "short",
+                      day: "numeric",
+                      hour12: true,
+                      hour: "numeric",
+                      minute: "numeric",
+                      second: "2-digit",
+                    })}
+                  </span>
+                </div>
+                <div className="flex justify-between">
                   <span>Spender:</span>
-                  <span className="text-right">{transaction.spender}</span>
+
+                  <span>
+                    {transaction.merchantCard.cardOwner.firstName + " " + transaction.merchantCard.cardOwner.lastName}
+                  </span>
+                </div>
+                <div className="flex justify-between">
                   <span>Card:</span>
-                  <span className="text-right">
-                    {transaction.cardName} (**** {transaction.cardLastFour})
+
+                  <span>
+                    {transaction.merchantCard.displayName} (**** {transaction.merchantCard.lastFour})
                   </span>
                   <span>Category:</span>
-                  <span className="text-right">{transaction.category}</span>
+                  <span>{transaction.merchantCategory}</span>
                 </div>
                 <Divider />
-                <div className="grid grid-cols-2 gap-2">
-                  <span className="font-bold">Total Amount:</span>
-                  <span className="text-right font-bold">{transaction.amount}</span>
+                <div className="flex justify-between text-lg font-bold">
+                  <span>Total Amount:</span>
+                  <span>
+                    {" "}
+                    {(transaction.amount / 100).toPrecision(4)} {transaction.currency}
+                  </span>
                 </div>
                 <Divider />
                 <div className="grid grid-cols-2 gap-2">
                   <span>Status:</span>
                   <span
-                    className={`text-right font-bold ${
-                      transaction.status === "Completed"
+                    className={`font-bold ${
+                      transaction.status === "COMPLETED"
                         ? "text-ugh-400"
-                        : transaction.status === "Pending"
+                        : transaction.status === "PENDING"
                           ? "text-yellow-500"
                           : "text-red-500"
                     }`}

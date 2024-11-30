@@ -7,8 +7,8 @@ import { useSearchParams, useRouter } from "next/navigation";
 
 import { useMessagingActions, useMessagingState } from "@/libs/messaging/store";
 import { MessageMode } from "@/types/messaging";
-import { TEST_CONFIG } from "@/tests/container/test-env";
-import { isTestEnvironment } from "@/tests/container/test-env";
+import { TEST_CONFIG } from "@/tests/e2e/container/test-env";
+import { isTestEnvironment } from "@/tests/e2e/container/test-env";
 
 export const ModeSwitcher: React.FC = () => {
   const { mode } = useMessagingState();

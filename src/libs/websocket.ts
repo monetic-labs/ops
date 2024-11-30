@@ -28,7 +28,7 @@ export const useWebSocket = create<WebSocketStore>((set, get) => ({
     set({ status: 'connecting' });
     
     try {
-      const ws = new WebSocket(process.env.NEXT_PUBLIC_WS_URL || "ws://localhost:3001");
+      const ws = new WebSocket(process.env.NEXT_PUBLIC_WS_URL || "ws://localhost:3000");
 
       ws.onopen = () => {
         set({ connection: ws, status: 'connected' });

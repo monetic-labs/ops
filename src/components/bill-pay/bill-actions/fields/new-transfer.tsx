@@ -1,120 +1,298 @@
-import { DisbursementMethod } from "@backpack-fux/pylon-sdk";
+import {
+  DisbursementMethod,
+  FiatCurrency,
+  ISO3166Alpha2State as States,
+  ISO3166Alpha2State,
+} from "@backpack-fux/pylon-sdk";
+import { NewBillPay } from "@/types/bill-pay";
 import { Autocomplete, AutocompleteItem } from "@nextui-org/autocomplete";
 import { Input } from "@nextui-org/input";
 import { Avatar } from "@nextui-org/avatar";
-import { Alpha3 } from "convert-iso-codes";
+import { getRegion } from "iso3166-helper";
+import { getValidationProps } from "@/types/validations/bill-pay";
+import { FieldLabel } from "@/types/validations/bill-pay";
+import { useCountries } from "@/hooks/bill-pay/useCountries";
 
-import { Countries, NewBillPay, States, vendorCurrencies, vendorMethods } from "../create";
+type NewTransferFieldsProps = {
+  billPay: NewBillPay;
+  setBillPay: (billPay: NewBillPay) => void;
+  settlementBalance?: string;
+};
 
-export default function NewTransferFields({
-  newBillPay,
-  setNewBillPay,
-  showMemo,
-}: {
-  newBillPay: NewBillPay;
-  setNewBillPay: (newBillPay: NewBillPay) => void;
-  showMemo: boolean;
-}) {
+function getValidationResults(billPay: NewBillPay, settlementBalance?: string) {
+  return {
+    accountHolder: getValidationProps({
+      label: FieldLabel.ACCOUNT_HOLDER,
+      value: billPay.vendorName,
+      currency: billPay.currency,
+    }),
+    bankName: getValidationProps({
+      label: FieldLabel.BANK_NAME,
+      value: billPay.vendorBankName,
+      currency: billPay.currency,
+    }),
+    accountNumber: getValidationProps({
+      label: FieldLabel.ACCOUNT_NUMBER,
+      value: billPay.accountNumber,
+      currency: billPay.currency,
+    }),
+    routingNumber: getValidationProps({
+      label: FieldLabel.ROUTING_NUMBER,
+      value: billPay.routingNumber || "",
+      currency: billPay.currency,
+    }),
+    paymentMethod: getValidationProps({
+      label: FieldLabel.PAYMENT_METHOD,
+      value: billPay.vendorMethod || "",
+      currency: billPay.currency,
+    }),
+    amount: getValidationProps({
+      label: FieldLabel.AMOUNT,
+      value: billPay.amount,
+      currency: billPay.currency,
+      balance: settlementBalance,
+      method: billPay.vendorMethod,
+    }),
+    // Add address validations
+    streetLine1: getValidationProps({
+      label: FieldLabel.STREET_LINE_1,
+      value: billPay.address.street1,
+      currency: billPay.currency,
+      method: billPay.vendorMethod,
+    }),
+    streetLine2: getValidationProps({
+      label: FieldLabel.STREET_LINE_2,
+      value: billPay.address.street2,
+      currency: billPay.currency,
+    }),
+    city: getValidationProps({
+      label: FieldLabel.CITY,
+      value: billPay.address.city,
+      currency: billPay.currency,
+    }),
+    state: getValidationProps({
+      label: FieldLabel.STATE,
+      value: billPay.address.state || "",
+      currency: billPay.currency,
+    }),
+    zipCode: getValidationProps({
+      label: FieldLabel.ZIP,
+      value: billPay.address.postcode || "",
+      currency: billPay.currency,
+    }),
+    country: getValidationProps({
+      label: FieldLabel.COUNTRY,
+      value: billPay.address.country,
+      currency: billPay.currency,
+    }),
+  };
+}
+
+export default function NewTransferFields({ billPay, setBillPay, settlementBalance }: NewTransferFieldsProps) {
+  const countries = useCountries();
+  const validationResults = getValidationResults(billPay, settlementBalance);
+
   return (
     <>
-      <Input isRequired label="Account Holder Name" placeholder="e.g. John Felix Anthony Cena" />
+      <Input
+        data-testid="account-holder"
+        label={FieldLabel.ACCOUNT_HOLDER}
+        placeholder="e.g. John Felix Anthony Cena"
+        isRequired
+        value={billPay.vendorName}
+        onChange={(e) => setBillPay({ ...billPay, vendorName: e.target.value })}
+        {...validationResults.accountHolder}
+      />
       <div className="flex space-x-4">
         <Autocomplete
+          data-testid="payment-method"
           isRequired
-          defaultInputValue={DisbursementMethod.ACH_SAME_DAY}
           isClearable={false}
-          label="Method"
-          value={newBillPay.vendorMethod}
+          label={FieldLabel.PAYMENT_METHOD}
+          value={billPay.vendorMethod}
+          {...validationResults.paymentMethod}
           onSelectionChange={(value) => {
-            console.log("Selected Method:", value);
-            setNewBillPay({ ...newBillPay, vendorMethod: value as DisbursementMethod });
+            setBillPay({ ...billPay, vendorMethod: value as DisbursementMethod });
           }}
         >
-          {vendorMethods.map((method) => (
+          {Object.values(DisbursementMethod).map((method) => (
             <AutocompleteItem key={method} textValue={method}>
               {method}
             </AutocompleteItem>
           ))}
         </Autocomplete>
       </div>
-      <Input isRequired label="Bank Name" placeholder="e.g. Bank of America" />
+      <Input
+        data-testid="bank-name"
+        label={FieldLabel.BANK_NAME}
+        placeholder="e.g. Bank of America"
+        isRequired
+        value={billPay.vendorBankName}
+        onChange={(e) => setBillPay({ ...billPay, vendorBankName: e.target.value })}
+        {...validationResults.bankName}
+      />
       <div className="flex space-x-4">
         <Input
-          isRequired
-          errorMessage="Routing number must be 9 digits"
-          inputMode="numeric"
-          label="Routing Number"
-          maxLength={9}
-          minLength={9}
+          data-testid="routing-number"
+          label={FieldLabel.ROUTING_NUMBER}
           placeholder="e.g. 123000848"
           type="number"
-          value={newBillPay.routingNumber}
-          onChange={(e) => setNewBillPay({ ...newBillPay, routingNumber: e.target.value })}
+          inputMode="numeric"
+          isRequired
+          value={billPay.routingNumber}
+          onChange={(e) => setBillPay({ ...billPay, routingNumber: e.target.value })}
+          {...validationResults.routingNumber}
         />
         <Input
-          isRequired
-          errorMessage="Account number must be between 10 and 17 digits"
-          inputMode="numeric"
-          label="Account Number"
-          maxLength={17}
-          minLength={10}
+          data-testid="account-number"
+          label={FieldLabel.ACCOUNT_NUMBER}
           placeholder="e.g. 10987654321"
           type="number"
-          value={newBillPay.accountNumber}
-          onChange={(e) => setNewBillPay({ ...newBillPay, accountNumber: e.target.value })}
+          inputMode="numeric"
+          isRequired
+          value={billPay.accountNumber}
+          onChange={(e) => setBillPay({ ...billPay, accountNumber: e.target.value })}
+          {...validationResults.accountNumber}
         />
       </div>
-      <Input isRequired label="Street Line 1" placeholder="1234 Main St" />
-      <Input label="Street Line 2" placeholder="Apt 4B" />
+      <Input
+        data-testid="street-line-1"
+        label={FieldLabel.STREET_LINE_1}
+        isRequired
+        placeholder="1234 Main St"
+        value={billPay.address.street1}
+        onChange={(e) =>
+          setBillPay({
+            ...billPay,
+            address: { ...billPay.address, street1: e.target.value },
+          })
+        }
+        {...validationResults.streetLine1}
+      />
+      <Input
+        data-testid="street-line-2"
+        label={FieldLabel.STREET_LINE_2}
+        placeholder="Apt 4B"
+        value={billPay.address.street2}
+        onChange={(e) =>
+          setBillPay({
+            ...billPay,
+            address: { ...billPay.address, street2: e.target.value || undefined },
+          })
+        }
+        {...validationResults.streetLine2}
+      />
       <div className="flex space-x-4">
-        <Input isRequired label="City" placeholder="New York" />
-        <Autocomplete isClearable={false} label="State">
-          {Object.entries(States).map(([key, value]) => (
-            <AutocompleteItem key={key} textValue={key}>
-              {key}
+        <Input
+          data-testid="city"
+          label={FieldLabel.CITY}
+          isRequired
+          placeholder="New York"
+          value={billPay.address.city}
+          onChange={(e) =>
+            setBillPay({
+              ...billPay,
+              address: { ...billPay.address, city: e.target.value },
+            })
+          }
+          {...validationResults.city}
+        />
+        <Autocomplete
+          data-testid="state"
+          label={FieldLabel.STATE}
+          isRequired
+          isClearable={false}
+          value={billPay.address.state}
+          {...validationResults.state}
+          defaultItems={Object.entries(States).map(([key, value]) => {
+            const state = getRegion(`US-${value}`);
+            return {
+              key: key, // The state code (e.g., "NY")
+              value: value, // The state code we want to save
+              label: state || key, // The full state name (e.g., "New York")
+            };
+          })}
+          onSelectionChange={(value) => {
+            setBillPay({
+              ...billPay,
+              address: {
+                ...billPay.address,
+                state: value as ISO3166Alpha2State,
+              },
+            });
+          }}
+        >
+          {(item) => (
+            <AutocompleteItem key={item.key} value={item.value} textValue={`${item.label} (${item.key})`}>
+              {item.label}
             </AutocompleteItem>
-          ))}
+          )}
         </Autocomplete>
-        <Input label="Zip" placeholder="10001" />
+        <Input
+          data-testid="zip-code"
+          label={FieldLabel.ZIP}
+          isRequired
+          placeholder="10001"
+          value={billPay.address.postcode}
+          onChange={(e) =>
+            setBillPay({
+              ...billPay,
+              address: { ...billPay.address, postcode: e.target.value },
+            })
+          }
+          {...validationResults.zipCode}
+        />
       </div>
-      <Autocomplete className="flex-1" isClearable={false} label="Country">
-        {Object.entries(Countries).map(([key, value]) => (
+      <Autocomplete data-testid="country" isClearable={false} isRequired label={FieldLabel.COUNTRY} className="flex-1">
+        {countries.map((country) => (
           <AutocompleteItem
-            key={key}
-            startContent={
-              <Avatar
-                alt={value}
-                className="w-6 h-6"
-                src={`https://flagcdn.com/${Alpha3.toAlpha2(key).toLowerCase()}.svg`}
-              />
-            }
-            textValue={value}
+            key={country.key}
+            textValue={`${country.label} (${country.key})`}
+            startContent={<Avatar alt={country.value} className="w-6 h-6" src={country.flagUrl} />}
           >
-            {value}
+            {country.label}
           </AutocompleteItem>
         ))}
       </Autocomplete>
       <Input
-        description={`${
-          newBillPay.vendorMethod === DisbursementMethod.WIRE
-            ? "This cannot be changed after the sender is created."
-            : ""
-        }`}
-        label={`${newBillPay.vendorMethod === DisbursementMethod.WIRE ? "Wire Message" : "ACH Reference"}`}
-        maxLength={newBillPay.vendorMethod === DisbursementMethod.WIRE ? 35 : 10}
+        data-testid="memo"
+        label={`${billPay.vendorMethod === DisbursementMethod.WIRE ? "Wire Message" : "ACH Reference"}`}
         placeholder="e.g. Payment for invoice #123456"
+        description={`${
+          billPay.vendorMethod === DisbursementMethod.WIRE ? "This cannot be changed after the sender is created." : ""
+        }`}
+        maxLength={billPay.vendorMethod === DisbursementMethod.WIRE ? 35 : 10}
         validate={(value: string) => {
-          if (newBillPay.vendorMethod === DisbursementMethod.WIRE) {
+          if (billPay.vendorMethod === DisbursementMethod.WIRE) {
             return /^[A-Za-z0-9 ]{0,35}$/.test(value) || "Cannot contain special characters";
           }
-
           return /^[A-Za-z0-9 ]{0,10}$/.test(value) || "Cannot contain special characters";
         }}
-        value={newBillPay.memo}
-        onChange={(e) => setNewBillPay({ ...newBillPay, memo: e.target.value })}
+        value={billPay.memo}
+        onChange={(e) => setBillPay({ ...billPay, memo: e.target.value || undefined })}
       />
       <Input
+        data-testid="amount"
+        label={FieldLabel.AMOUNT}
+        type="number"
+        inputMode="decimal"
         isRequired
+        isDisabled={!billPay.vendorMethod}
+        value={billPay.amount}
+        onChange={(e) => {
+          const value = e.target.value;
+          // Only allow 2 decimal places
+          const regex = /^\d*\.?\d{0,2}$/;
+          if (regex.test(value) || value === "") {
+            setBillPay({ ...billPay, amount: value });
+          }
+        }}
+        {...validationResults.amount}
+        startContent={
+          <div className="pointer-events-none flex items-center">
+            <span className="text-default-400 text-small">$</span>
+          </div>
+        }
         endContent={
           <div className="flex items-center py-2">
             <label className="sr-only" htmlFor="currency">
@@ -124,10 +302,10 @@ export default function NewTransferFields({
               className="outline-none border-0 bg-transparent text-default-400 text-small"
               id="currency"
               name="currency"
-              value={newBillPay.currency}
-              onChange={(e) => setNewBillPay({ ...newBillPay, currency: e.target.value })}
+              value={billPay.currency}
+              onChange={(e) => setBillPay({ ...billPay, currency: e.target.value as FiatCurrency })}
             >
-              {vendorCurrencies.map((currency) => (
+              {Object.values(FiatCurrency).map((currency) => (
                 <option key={currency} value={currency}>
                   {currency}
                 </option>
@@ -135,20 +313,6 @@ export default function NewTransferFields({
             </select>
           </div>
         }
-        errorMessage={`Amount must be greater than 1 ${newBillPay.currency}`}
-        inputMode="decimal"
-        isInvalid={parseFloat(newBillPay.amount) < 1}
-        label="Amount"
-        min={1}
-        startContent={
-          <div className="pointer-events-none flex items-center">
-            <span className="text-default-400 text-small">$</span>
-          </div>
-        }
-        step={0.01}
-        type="number"
-        value={newBillPay.amount}
-        onChange={(e) => setNewBillPay({ ...newBillPay, amount: e.target.value })}
       />
     </>
   );

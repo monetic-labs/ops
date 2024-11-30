@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { IssueOTP, VerifyOTP } from "@backpack-fux/pylon-sdk";
+import { VerifyOTP } from "@backpack-fux/pylon-sdk";
 
 import pylon from "@/libs/pylon-sdk";
 
@@ -7,12 +7,11 @@ export function useIssueOTP() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const issueOTP = async (email: string): Promise<IssueOTP | null> => {
+  const issueOTP = async (email: string): Promise<number | null> => {
     setIsLoading(true);
     try {
       const response = await pylon.initiateLoginOTP({ email });
-
-      return response;
+      return response.statusCode;
     } catch (err: any) {
       if (err.response && err.response.status === 404) {
         throw { statusCode: 404, message: "User not found" };
@@ -30,12 +29,11 @@ export function useVerifyOTP() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | boolean>(false);
 
-  const verifyOTP = async (data: VerifyOTP): Promise<VerifyOTP | null> => {
+  const verifyOTP = async (data: VerifyOTP): Promise<number | null> => {
     setIsLoading(true);
     try {
       const resp = await pylon.verifyLoginOTP(data);
-
-      return resp;
+      return resp.statusCode;
     } catch (err) {
       setError(err instanceof Error ? err.message : "An error occurred");
 

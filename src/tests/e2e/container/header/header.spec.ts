@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { PaneFixture } from '@/tests/container/fixtures/msg-pane.fixture';
+import { PaneFixture } from '@/tests/e2e/container/fixtures/msg-pane.fixture';
 
 test.describe('Chat Header', () => {
   let pane: PaneFixture;

@@ -91,7 +91,7 @@ export const FormAccountUsers: React.FC<{
       lastName: "",
       email: "",
       phoneNumber: "",
-      role: "representative",
+      role: fields.length === 0 ? "owner" : "representative",
       bridgeUserRole: PersonRole.SUPER_ADMIN,
     });
     addTab({
@@ -127,6 +127,7 @@ export const FormAccountUsers: React.FC<{
         maxLength={25}
         name={`representatives.${index}.firstName`}
         placeholder="Rick"
+        data-testid={`account-users-first-name-input-${index}`}
       />
       <FormInput
         control={control}
@@ -135,6 +136,7 @@ export const FormAccountUsers: React.FC<{
         maxLength={25}
         name={`representatives.${index}.lastName`}
         placeholder="Sanchez"
+        data-testid={`account-users-last-name-input-${index}`}
       />
       <FormInput
         about="Use the email for the primary contact for this company."
@@ -158,6 +160,7 @@ export const FormAccountUsers: React.FC<{
             `representatives.${index}.email` as const
           )
         }
+        data-testid={`account-users-email-input-${index}`}
       />
       <FormInput
         control={control}
@@ -181,6 +184,7 @@ export const FormAccountUsers: React.FC<{
             `representatives.${index}.phoneNumber` as const
           )
         }
+        data-testid={`account-users-phone-number-input-${index}`}
       />
       {index === 0 ? (
         <FormInput
@@ -189,7 +193,8 @@ export const FormAccountUsers: React.FC<{
           control={control}
           label="Role"
           name={`representatives.${index}.role`}
-          value="Owner"
+          value={fields[0].role}
+          data-testid={`account-users-role-input-${index}`}
         />
       ) : (
         <AutocompleteInput
@@ -201,6 +206,7 @@ export const FormAccountUsers: React.FC<{
           label="Role"
           name={`representatives.${index}.role`}
           placeholder="Select user role"
+          testid={`account-users-role-input-${index}`}
         />
       )}
     </div>

@@ -1,16 +1,15 @@
 import { useState } from "react";
 import { MerchantRainCompanyCreateOutput, MerchantRainCompanyCreateInput } from "@backpack-fux/pylon-sdk";
-
 import pylon from "@/libs/pylon-sdk";
-import { RainMerchantCreateDto } from "@/types/dtos/rainDTO";
-import { merchantConfig } from "@/config/merchant";
 
 export const useRainCreateMerchant = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [data, setData] = useState<MerchantRainCompanyCreateOutput | null>(null);
 
-  const createRainMerchant = async (data: RainMerchantCreateDto): Promise<MerchantRainCompanyCreateOutput | null> => {
+  const createRainMerchant = async (
+    data: MerchantRainCompanyCreateInput
+  ): Promise<MerchantRainCompanyCreateOutput | null> => {
     setIsLoading(true);
     setError(null);
     setData(null);
@@ -19,9 +18,6 @@ export const useRainCreateMerchant = () => {
       const createRainMerchant: MerchantRainCompanyCreateInput = {
         initialUser: {
           ...data.initialUser,
-          //id: merchantConfig.id,
-          // @ts-ignore
-          iovationBlackbox: merchantConfig.iovationBlackbox,
         },
         name: data.name,
         entity: data.entity,

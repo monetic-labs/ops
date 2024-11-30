@@ -96,6 +96,7 @@ export const FormUserDetails: React.FC<{
         items={countries.map((country) => ({ label: country.label, value: country.value }))}
         label="Country of Issue"
         name={`userDetails.${index}.countryOfIssue`}
+        testid={`user-details-country-of-issue-input-${index}`}
         placeholder="Select a country"
       />
       <FormInput
@@ -106,6 +107,7 @@ export const FormUserDetails: React.FC<{
         name={`userDetails.${index}.birthday`}
         pattern={birthdayRegex.source}
         placeholder="YYYY-MM-DD"
+        data-testid={`user-details-birthday-input-${index}`}
         value={birthdayInputs[index]}
         onChange={(e) =>
           handleBirthdayChange(
@@ -129,6 +131,7 @@ export const FormUserDetails: React.FC<{
         name={`userDetails.${index}.ssn`}
         pattern={ssnRegex.source}
         placeholder="123-45-6789"
+        data-testid={`user-details-ssn-input-${index}`}
         value={ssnInputs[index]}
         onChange={(e) =>
           handleSSNChange(
@@ -152,6 +155,7 @@ export const FormUserDetails: React.FC<{
         showAddressInputs={showAddressInputs[index]}
         watchPostcode={watch(`userDetails.${index}.registeredAddress.postcode`)}
         onLookupComplete={(result) => onPostcodeLookup(result, index)}
+        testId={`user-details-postcode-input-${index}`}
       />
       {showAddressInputs[index] && (
         <>
@@ -161,6 +165,7 @@ export const FormUserDetails: React.FC<{
             label="Street Address 1"
             name={`userDetails.${index}.registeredAddress.street1`}
             placeholder="123 Main St"
+            data-testid={`user-details-street-address-1-input-${index}`}
           />
           <FormInput
             control={control}
@@ -168,6 +173,7 @@ export const FormUserDetails: React.FC<{
             label="Street Address 2"
             name={`userDetails.${index}.registeredAddress.street2`}
             placeholder="Apt 4B"
+            data-testid={`user-details-street-address-2-input-${index}`}
           />
         </>
       )}

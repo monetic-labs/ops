@@ -89,7 +89,7 @@ export const OTPVerificationModal: React.FC<OTPVerificationModalProps> = ({ isOp
   };
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose}>
+    <Modal isOpen={isOpen} onClose={onClose} data-testid="otp-modal">
       <ModalContent>
         <ModalHeader>Verify Email</ModalHeader>
         <ModalBody>
@@ -101,9 +101,10 @@ export const OTPVerificationModal: React.FC<OTPVerificationModalProps> = ({ isOp
                 ref={(el) => {
                   otpInputs.current[index] = el;
                 }}
+                data-testid={`otp-input-${index}`}
                 className={`w-10 h-12 text-center text-xl border-2 rounded-md bg-charyo-500 text-white 
-                  ${isOtpComplete ? "animate-flash border-ualert-500" : "border-gray-300"}
-                  focus:border-ualert-500 focus:outline-none`}
+                ${isOtpComplete ? "animate-flash border-ualert-500" : "border-gray-300"}
+                focus:border-ualert-500 focus:outline-none`}
                 maxLength={1}
                 type="text"
                 value={otp[index] || ""}

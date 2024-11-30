@@ -7,12 +7,12 @@ import {
   CompanyUserDetailsSchema,
 } from "@/types/validations/onboard";
 import {
-  RainPersonDto,
-  RainMerchantCreateDto,
-  RainInitialUserDto,
-  RainEntityDto,
-  RainAddressDto,
-} from "@/types/dtos/rainDTO";
+  RainAddress,
+  RainPerson,
+  RainEntity,
+  RainInitialUser,
+  MerchantRainCompanyCreateInput,
+} from "@backpack-fux/pylon-sdk";
 
 function formatSSN(ssn: string): string {
   return ssn.replace(/-/g, "");
@@ -28,25 +28,25 @@ export function mapToRainMerchantCreateDto(
     expectedSpend: string;
     id: string;
   }
-): RainMerchantCreateDto {
+): MerchantRainCompanyCreateInput {
   const { company } = accountData;
   const { walletAddress, companyEIN, companyType, companyDescription } = detailsData;
   const { representatives } = usersData;
   const { userDetails } = userDetailsData;
 
   // Map company registered address to RainAddressDto
-  const companyAddress: RainAddressDto = {
-    street1: company.registeredAddress.street1,
-    street2: company.registeredAddress.street2,
+  const companyAddress: RainAddress = {
+    line1: company.registeredAddress.street1,
+    line2: company.registeredAddress.street2,
     city: company.registeredAddress.city,
-    region: company.registeredAddress.state || "",
+    region: company.registeredAddress.state,
     postalCode: company.registeredAddress.postcode,
     countryCode: company.registeredAddress.country,
     country: company.registeredAddress.country,
   };
 
   // Map entity data to RainEntityDto
-  const entity: RainEntityDto = {
+  const entity: RainEntity = {
     name: company.name,
     type: companyType,
     description: companyDescription,
@@ -56,7 +56,7 @@ export function mapToRainMerchantCreateDto(
   };
 
   // We use role to map which user object but the service doesn't want it, we use this to manage that
-  type RainPersonWithRole = RainPersonDto & {
+  type RainPersonWithRole = RainPerson & {
     role: "owner" | "representative" | "beneficial-owner";
   };
 
@@ -73,10 +73,10 @@ export function mapToRainMerchantCreateDto(
       countryOfIssue: userDetail.countryOfIssue,
       email: rep.email,
       address: {
-        street1: userDetail.registeredAddress.street1,
-        street2: userDetail.registeredAddress.street2,
+        line1: userDetail.registeredAddress.street1,
+        line2: userDetail.registeredAddress.street2,
         city: userDetail.registeredAddress.city,
-        region: userDetail.registeredAddress.state || "",
+        region: userDetail.registeredAddress.state,
         postalCode: userDetail.registeredAddress.postcode,
         countryCode: userDetail.registeredAddress.country,
         country: userDetail.registeredAddress.country,
@@ -86,18 +86,18 @@ export function mapToRainMerchantCreateDto(
   });
 
   // Map the initial user (first representative)
-  const initialUser: RainInitialUserDto = {
+  const initialUser: RainInitialUser = {
     ...rainRepresentatives[0], // Use the first representative's data
     isTermsOfServiceAccepted: additionalData.isTermsOfServiceAccepted,
     role: representatives[0].role,
     walletAddress: walletAddress,
   };
 
-  const ultimateBeneficialOwners: RainPersonDto[] = rainRepresentatives
+  const ultimateBeneficialOwners: RainPerson[] = rainRepresentatives
     .filter((rep) => rep.role === "beneficial-owner")
     .map(({ role, ...rest }) => rest); // Exclude 'role' from the final DTOs
 
-  let representativesWithoutRole: RainPersonDto[] = rainRepresentatives
+  let representativesWithoutRole: RainPerson[] = rainRepresentatives
     .filter((rep) => rep.role === "representative" || rep.role === "owner")
     .map(({ role, ...rest }) => rest);
 
@@ -108,7 +108,7 @@ export function mapToRainMerchantCreateDto(
     representativesWithoutRole = [initialUserWithoutExtra];
   }
   // Construct the final RainMerchantCreateDto object
-  const rainMerchantCreateDto: RainMerchantCreateDto = {
+  const rainMerchantCreateDto: MerchantRainCompanyCreateInput = {
     initialUser,
     address: companyAddress,
     entity,

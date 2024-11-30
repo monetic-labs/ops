@@ -32,7 +32,7 @@ export const useFormState = (initialEmail: string) => {
           lastName: "",
           email: "",
           phoneNumber: "",
-          role: "representative" as "owner" | "representative" | "beneficial-owner",
+          role: "owner" as "owner" | "representative" | "beneficial-owner",
         },
       ],
     },

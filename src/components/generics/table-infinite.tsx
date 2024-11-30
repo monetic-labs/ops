@@ -2,7 +2,7 @@ import React, { ReactNode } from "react";
 import { Table, TableHeader, TableColumn, TableBody, TableRow, TableCell } from "@nextui-org/table";
 import { Spinner } from "@nextui-org/spinner";
 import { useInfiniteScroll } from "@nextui-org/use-infinite-scroll";
-import { useAsyncList } from "@react-stately/data";
+import { AsyncListData, useAsyncList } from "@react-stately/data";
 
 interface Column<T> {
   readonly name: string;
@@ -15,6 +15,15 @@ interface InfiniteTableProps<T> {
   renderCell: (item: T, columnKey: keyof T) => ReactNode;
   loadMore: (cursor: string | undefined) => Promise<{ items: T[]; cursor: string | undefined }>;
   onRowSelect?: (item: T) => void;
+}
+
+interface InfiniteTableWithExternalListProps<T> {
+  columns: readonly Column<T>[];
+  renderCell: (item: T, columnKey: keyof T) => ReactNode;
+  onRowSelect?: (item: T) => void;
+  list: AsyncListData<T>;
+  hasMore: boolean;
+  setHasMore: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
 export default function InfiniteTable<T extends { id: string }>({
@@ -70,6 +79,50 @@ export default function InfiniteTable<T extends { id: string }>({
       }}
       selectionMode="single"
       onRowAction={(key) => onRowSelect && onRowSelect(list.items.find((item) => item.id === key) as T)}
+    >
+      <TableHeader columns={columns as Column<T>[]}>
+        {(column) => <TableColumn key={column.uid.toString()}>{column.name}</TableColumn>}
+      </TableHeader>
+      <TableBody items={list.items} loadingContent={<Spinner color="primary" />}>
+        {(item) => (
+          <TableRow key={item.id}>
+            {(columnKey) => <TableCell>{renderCell(item, columnKey as keyof T)}</TableCell>}
+          </TableRow>
+        )}
+      </TableBody>
+    </Table>
+  );
+}
+
+export function InfiniteTableWithExternalList<T extends { id: string }>({
+  columns,
+  renderCell,
+  onRowSelect,
+  list,
+  hasMore,
+}: InfiniteTableWithExternalListProps<T>) {
+  const [loaderRef, scrollerRef] = useInfiniteScroll({
+    hasMore,
+    onLoadMore: list.loadMore,
+  });
+
+  return (
+    <Table
+      isHeaderSticky
+      aria-label="Generic table with infinite scroll"
+      baseRef={scrollerRef}
+      selectionMode="single"
+      onRowAction={(key) => onRowSelect && onRowSelect(list.items.find((item) => item.id === key) as T)}
+      bottomContent={
+        hasMore ? (
+          <div className="flex justify-center items-center py-4">
+            <Spinner ref={loaderRef} color="primary" />
+          </div>
+        ) : null
+      }
+      classNames={{
+        wrapper: "max-h-[400px]",
+      }}
     >
       <TableHeader columns={columns as Column<T>[]}>
         {(column) => <TableColumn key={column.uid.toString()}>{column.name}</TableColumn>}

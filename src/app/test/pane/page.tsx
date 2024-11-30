@@ -2,7 +2,7 @@
 
 import { useEffect } from "react";
 import { useSearchParams } from "next/navigation";
-import { TestWrapper } from "@/tests/container/test-wrapper";
+import { TestWrapper } from "@/tests/e2e/container/test-wrapper";
 import { ChatPane } from "@/components/messaging/pane";
 import { useMessagingStore, useMessagingActions, resetMessagingStore } from "@/libs/messaging/store";
 import { MessageMode } from "@/types/messaging";

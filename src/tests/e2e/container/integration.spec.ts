@@ -1,7 +1,7 @@
-import { test, expect } from '@/tests/container/fixtures/context-messaging.fixture';
-import { initMockWebSocket } from '@/tests/container/mock-services';
-import { TEST_CONFIG } from '@/tests/container/test-env';
-import { mockUserMessage, mockResponses } from '@/tests/container/mock-data';
+import { test, expect } from '@/tests/e2e/container/fixtures/context-messaging.fixture';
+import { initMockWebSocket } from '@/tests/e2e/container/mock-services';
+import { TEST_CONFIG } from '@/tests/e2e/container/test-env';
+import { mockUserMessage, mockResponses } from '@/tests/e2e/container/mock-data';
 
 test.describe('Full Messaging Integration', () => {
   test.beforeEach(async ({ page, pane }) => {
