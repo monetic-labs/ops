@@ -18,10 +18,11 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v2
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v2
-        with:
-          node-version: "20"
+      - name: Set up Bun
+        run: |
+          curl -fsSL https://bun.sh/install | bash
+          export BUN_INSTALL="$HOME/.bun"
+          export PATH="$BUN_INSTALL/bin:$PATH"
 
       - name: Set up env
         run: |
@@ -34,14 +35,13 @@ jobs:
       - name: Install dependencies
         run: |
           export BACKPACK_GITHUB_TOKEN=${{ secrets.BACKPACK_GITHUB_TOKEN }}
-          npm install
-          npx playwright install --with-deps
+          bun install
 
       - name: Run tests
-        run: npm test
+        run: bun test
 
       - name: Run e2e tests
-        run: npm run test:e2e
+        run: bun run test:e2e
 
       - name: Setup LCOV
         uses: hrishikesh-kadam/setup-lcov@v1
@@ -56,4 +56,4 @@ jobs:
           update-comment: true
 
       - name: Build application
-        run: npm run build
+        run: bun run build
