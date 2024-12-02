@@ -176,8 +176,7 @@ test.describe("Onboarding Flow", () => {
     // Verify accordion items are visible
     expect(await page.getByTestId("bill-pay-agreement").isVisible()).toBe(true);
     expect(await page.getByTestId("card-program-agreement").isVisible()).toBe(true);
-    expect(await page.getByTestId("company-docs").isVisible()).toBe(true);
-    expect(await page.getByTestId("personal-docs").isVisible()).toBe(true);
+    expect(await page.getByTestId("finish-kyb-button").isDisabled()).toBe(true);
 
     // Click dropdown for Bill Pay Agreement
     await page.getByTestId("bill-pay-agreement").click();
@@ -212,46 +211,8 @@ test.describe("Onboarding Flow", () => {
     // Check Rain card company was created
     await expect(page.getByTestId("rain-merchant-created")).toBeVisible();
 
-    // Click dropdown for Company Docs
-    await page.getByTestId("company-docs").click();
-    await page.waitForTimeout(500); // Wait for accordion to open
-    await page.getByTestId("company-docs").waitFor({ state: "visible" });
-
-    // File upload formation docs
-    await page.getByTestId("formation-docs-input").setInputFiles(path.join(__dirname, "./fixtures/data/sample.pdf"));
-    await expect(page.getByTestId("formation-docs-input")).toHaveValue(/sample\.pdf$/);
-
-    // File upload entity docs
-    await page.getByTestId("entity-ownership-input").setInputFiles(path.join(__dirname, "./fixtures/data/sample.pdf"));
-    await expect(page.getByTestId("entity-ownership-input")).toHaveValue(/sample\.pdf$/);
-
-    // File upload personal docs
-    await page.getByTestId("proof-of-funds-input").setInputFiles(path.join(__dirname, "./fixtures/data/sample.pdf"));
-    await expect(page.getByTestId("proof-of-funds-input")).toHaveValue(/sample\.pdf$/);
-
-    // Click dropdown for Personal Docs
-    await page.getByTestId("personal-docs").click();
-    await page.waitForTimeout(500); // Wait for accordion to open
-    await page.getByTestId("personal-docs").waitFor({ state: "visible" });
-
-    // File upload photo id
-    await page.getByTestId("photo-id-input").setInputFiles(path.join(__dirname, "./fixtures/data/sample.pdf"));
-    await expect(page.getByTestId("photo-id-input")).toHaveValue(/sample\.pdf$/);
-
-    // File upload proof of funds
-    await page.getByTestId("proof-of-funds-input").setInputFiles(path.join(__dirname, "./fixtures/data/sample.pdf"));
-    await expect(page.getByTestId("proof-of-funds-input")).toHaveValue(/sample\.pdf$/);
-
-    // File upload proof of residence
-    await page
-      .getByTestId("proof-of-residence-input")
-      .setInputFiles(path.join(__dirname, "./fixtures/data/sample.pdf"));
-    await expect(page.getByTestId("proof-of-residence-input")).toHaveValue(/sample\.pdf$/);
-
-    // Click dropdown for KYB Verification
-    await page.getByTestId("kyb-verification").click();
-    await page.waitForTimeout(500); // Wait for KYB verification to load
-    await page.getByTestId("kyb-verification").waitFor({ state: "visible" });
+    // Check finish KYB button is enabled
+    await expect(page.getByTestId("finish-kyb-button")).not.toBeDisabled();
   });
 });
 

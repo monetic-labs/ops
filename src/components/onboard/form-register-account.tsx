@@ -42,8 +42,8 @@ export const AccountRegistration: React.FC<AccountRegistrationProps> = ({
 }) => {
   const [isOTPModalOpen, setIsOTPModalOpen] = useState(false);
   const [isBridgeToSAccepted, setBridgeToSAccepted] = useState(false);
+  const [isOTPVerified, setIsOTPVerified] = useState(false);
   const router = useRouter();
-  let isOTPVerified = false;
 
   const handleBridgeAcceptToS = async () => {
     if (tosLink) {
@@ -65,7 +65,7 @@ export const AccountRegistration: React.FC<AccountRegistrationProps> = ({
   const handleOTPVerified = () => {
     setIsOTPModalOpen(false);
     console.log("OTP verification success");
-    isOTPVerified = true;
+    setIsOTPVerified(true);
     //onKYCDone();
     return null;
   };
@@ -103,7 +103,7 @@ export const AccountRegistration: React.FC<AccountRegistrationProps> = ({
       <Button
         data-testid="bill-pay-agreement-button"
         className="w-full bg-ualert-500 text-notpurple-100"
-        isDisabled={!isBridgeToSAccepted}
+        isDisabled={isBridgeToSAccepted}
         onClick={handleBridgeAcceptToS}
       >
         {isBridgeToSAccepted ? "Terms Accepted" : "Accept Terms"}
@@ -131,7 +131,7 @@ export const AccountRegistration: React.FC<AccountRegistrationProps> = ({
       <Button
         data-testid="card-program-agreement-button"
         className="w-full bg-ualert-500 text-notpurple-100"
-        isDisabled={!isRainToSAccepted}
+        isDisabled={isRainToSAccepted}
         onClick={handleRainAcceptToS}
       >
         {isRainToSAccepted ? "Terms Accepted" : "Accept Terms"}
@@ -156,10 +156,11 @@ export const AccountRegistration: React.FC<AccountRegistrationProps> = ({
             Cancel
           </Button>
           <Button
-            isDisabled={!isBridgeToSAccepted && !isRainToSAccepted && !isOTPVerified}
+            isDisabled={!isBridgeToSAccepted || !isRainToSAccepted || !isOTPVerified}
             className="text-notpurple-500"
             variant="solid"
             onClick={handleKYB}
+            data-testid="finish-kyb-button"
           >
             Finish KYB
           </Button>

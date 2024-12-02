@@ -193,7 +193,7 @@ export const FormAccountUsers: React.FC<{
           control={control}
           label="Role"
           name={`representatives.${index}.role`}
-          value={fields[0].role}
+          value="Owner"
           data-testid={`account-users-role-input-${index}`}
         />
       ) : (
