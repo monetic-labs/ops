@@ -124,10 +124,6 @@ export const MerchantOnboard: React.FC<{ onCancel: () => void; initialEmail: str
                 tosBridgeLink={createMerchantData?.data.tosLink || null}
                 onCancel={handleCancel}
                 onKYCDone={handleKYCDone}
-                isRainToSAccepted={isRainToSAccepted}
-                rainToSError={rainToSError}
-                handleRainToSAccepted={handleRainToSAccepted}
-                email={formData.accountUsers.representatives[0].email}
                 accountUsers={formData.accountUsers.representatives.filter((user) => user.role !== "representative")}
                 userDetails={formData.userDetails}
               />
