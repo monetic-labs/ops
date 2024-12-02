@@ -15,7 +15,7 @@ export default defineConfig({
   forbidOnly: !!process.env.CI,
   // Keep the more robust retry logic
   retries: process.env.CI ? 2 : 0,
-  workers: process.env.CI ? 4 : undefined,
+  workers: process.env.CI ? 10 : undefined,
 
   // Combine reporters from both configs
   reporter: [["list", { printSteps: true }], ["github"], ["html"]],
