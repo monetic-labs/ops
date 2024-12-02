@@ -84,6 +84,7 @@
     "remark-parse": "^11.0.0",
     "remark-stringify": "^11.0.0",
     "unified": "^11.0.5",
+    "uuid": "^10.0.0",
     "utf-8-validate": "^6.0.5",
     "ws": "^8.18.0",
     "zustand": "^5.0.1"
@@ -96,7 +97,6 @@
     "@types/dompurify": "^3.0.5",
     "@types/jest": "^29.5.14",
     "use-debounce": "^10.0.4",
-    "uuid": "^10.0.0",
     "viem": "^2.21.34",
     "zod": "^3.23.8",
     "@testing-library/dom": "^10.4.0",
