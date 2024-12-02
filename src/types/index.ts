@@ -2,7 +2,7 @@ import { MessagingStore } from "@/libs/messaging/store";
 import { Graph } from "@/prompts/v0/functions/graph";
 import { SpeedOverCostPreference } from "@/prompts/v0/types";
 import { UsagePattern } from "@/prompts/v0/usage";
-import { MockWebSocket } from "@/tests/container/test-types";
+import { MockWebSocket } from "@/tests/e2e/container/test-types";
 import { SVGProps } from "react";
 import { StoreApi } from "zustand";
 import { AgentMessageContext, SupportMessageContext } from "./messaging";
@@ -18,14 +18,14 @@ export type ChainAddress = `0x${string}`;
 declare global {
   interface Window {
     __MOCK_WS__?: MockWebSocket;
-    
+
     __MOCK_AGENT_CONTEXT__?: AgentMessageContext;
     __MOCK_SUPPORT_CONTEXT__?: SupportMessageContext;
-    
-    __ACTIVE_MODE__?: 'agent' | 'support';
+
+    __ACTIVE_MODE__?: "agent" | "support";
     __MESSAGING_STORE__?: StoreApi<MessagingStore> & {
-      setState: StoreApi<MessagingStore>['setState'];
-      getState: StoreApi<MessagingStore>['getState'];
+      setState: StoreApi<MessagingStore>["setState"];
+      getState: StoreApi<MessagingStore>["getState"];
       subscribe: (listener: (state: MessagingStore) => void) => () => void;
     };
 
@@ -40,4 +40,4 @@ declare global {
       toBeVisible(): Promise<void>;
     }
   }
-} 
+}
