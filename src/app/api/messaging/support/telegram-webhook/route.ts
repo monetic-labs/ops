@@ -38,8 +38,8 @@ function convertToSupportMessage(telegramMsg: TelegramWebhookMessage): SupportMe
       telegramMessageId: telegramMsg.message_id,
       chatId: telegramMsg.chat.id.toString(),
       userId: telegramMsg.from?.id?.toString(),
-      timestamp: Date.now()
-    }
+      timestamp: Date.now(),
+    },
   };
 }
 
@@ -82,7 +82,7 @@ export async function POST(request: Request) {
     if (message.text) {
       console.log("📝 Received text message");
       const supportMessage = convertToSupportMessage(message);
-      
+
       await wsStore.send(supportMessage);
 
       // Only send auto-reply for new conversations
@@ -92,7 +92,7 @@ export async function POST(request: Request) {
 
         console.log("📤 Sending auto-reply to Telegram chat:", chatId);
         const telegramResponse = await fetch(
-          `https://api.telegram.org/bot${process.env.AGENTCHAD_TELEGRAM_BOT}/sendMessage`,
+          `https://api.telegram.org/bot${process.env.TELEGRAM_BOT_TOKEN}/sendMessage`,
           {
             method: "POST",
             headers: {

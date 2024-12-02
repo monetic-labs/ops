@@ -1,4 +1,3 @@
-
 // Add ShortcutsContextType to the types
 export interface ShortcutsContextType {
   isChatOpen: boolean;

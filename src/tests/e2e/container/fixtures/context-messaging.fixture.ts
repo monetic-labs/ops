@@ -1,14 +1,14 @@
 // fixtures/context-messaging.fixture.ts
-import { test as base } from '@playwright/test';
-import { PaneFixture } from './msg-pane.fixture';
-import { AgentMessageContext, SupportMessageContext } from '@/types/messaging';
+import { test as base } from "@playwright/test";
+import { PaneFixture } from "./msg-pane.fixture";
+import { AgentMessageContext, SupportMessageContext } from "@/types/messaging";
 
 type MessagingFixture = {
   pane: PaneFixture;
   initMessageHandling: () => Promise<void>;
   agentContext: AgentMessageContext;
   supportContext: SupportMessageContext;
-  setActiveMode: (mode: 'agent' | 'support') => Promise<void>;
+  setActiveMode: (mode: "agent" | "support") => Promise<void>;
 };
 
 export const test = base.extend<MessagingFixture>({
@@ -20,10 +20,10 @@ export const test = base.extend<MessagingFixture>({
     await use(async () => {
       await page.evaluate(() => {
         const ws = window.__MOCK_WS__;
-        if (!ws) throw new Error('WebSocket mock not initialized');
-        
+        if (!ws) throw new Error("WebSocket mock not initialized");
+
         ws.onmessage = (event: MessageEvent) => {
-          console.log('Message received:', event.data);
+          console.log("Message received:", event.data);
         };
       });
     });
@@ -33,52 +33,52 @@ export const test = base.extend<MessagingFixture>({
     // Set up mock agent context
     await page.evaluate(() => {
       const initialMessage = {
-        id: 'test-msg-1',
-        role: 'assistant',
-        type: 'system' as const,
-        text: 'Hello from agent',
+        id: "test-msg-1",
+        role: "assistant",
+        type: "system" as const,
+        text: "Hello from agent",
         timestamp: Date.now(),
-        status: 'sent' as const,
-        category: 'info' as const
+        status: "sent" as const,
+        category: "info" as const,
       };
 
       window.__MOCK_AGENT_CONTEXT__ = {
         mode: "agent",
         messages: [initialMessage],
         isTyping: false,
-        inputValue: '',
-        userId: 'test-user',
+        inputValue: "",
+        userId: "test-user",
         service: {
-          type: 'openai',
+          type: "openai",
           isLoading: false,
-          model: 'gpt-4',
+          model: "gpt-4",
           messages: [],
-          inputValue: '',
+          inputValue: "",
           setInputValue: async () => Promise.resolve(),
           sendMessage: async () => Promise.resolve(),
           handleSubmit: async () => Promise.resolve(),
-          getUserId: () => 'test-user'
+          getUserId: () => "test-user",
         },
         chatHelpers: {
           isLoading: false,
           messages: [],
-          input: '',
+          input: "",
           handleSubmit: async () => Promise.resolve(),
           handleInputChange: () => {},
           setInput: () => {},
           error: undefined,
-          append: async () => '',
-          reload: async () => '',
-          stop: async () => '',
+          append: async () => "",
+          reload: async () => "",
+          stop: async () => "",
           setMessages: () => {},
-          setData: () => {}
+          setData: () => {},
         },
         setInputValue: async () => Promise.resolve(),
         sendMessage: async () => Promise.resolve(),
-        handleSubmit: async () => Promise.resolve()
+        handleSubmit: async () => Promise.resolve(),
       };
       // Debug: Log the context after setting it
-      console.log('Agent context set:', window.__MOCK_AGENT_CONTEXT__);
+      console.log("Agent context set:", window.__MOCK_AGENT_CONTEXT__);
     });
 
     await use({} as AgentMessageContext); // The actual context is managed in the page
@@ -91,24 +91,24 @@ export const test = base.extend<MessagingFixture>({
         mode: "support",
         messages: [],
         isTyping: false,
-        inputValue: '',
-        userId: 'test-user',
+        inputValue: "",
+        userId: "test-user",
         service: {
           isTyping: false,
-          type: 'websocket',
-          channel: 'test',
+          type: "websocket",
+          channel: "test",
           isLoading: false,
           messages: [],
-          inputValue: '',
+          inputValue: "",
           setInputValue: async () => Promise.resolve(),
           sendMessage: async () => Promise.resolve(),
           handleSubmit: async () => Promise.resolve(),
           handleWebSocketMessage: () => {},
-          getUserId: () => 'test-user'
+          getUserId: () => "test-user",
         },
         setInputValue: async () => Promise.resolve(),
         sendMessage: async () => Promise.resolve(),
-        handleSubmit: async () => Promise.resolve()
+        handleSubmit: async () => Promise.resolve(),
       };
     });
 
@@ -116,13 +116,13 @@ export const test = base.extend<MessagingFixture>({
   },
 
   setActiveMode: async ({ page }, use) => {
-    await use(async (mode: 'agent' | 'support') => {
+    await use(async (mode: "agent" | "support") => {
       await page.evaluate((activeMode) => {
         // Update the active mode in your app's state management
         window.__ACTIVE_MODE__ = activeMode;
       }, mode);
     });
-  }
+  },
 });
 
-export { expect } from '@playwright/test';
+export { expect } from "@playwright/test";

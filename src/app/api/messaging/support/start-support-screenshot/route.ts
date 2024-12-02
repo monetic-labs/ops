@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 
-const TELEGRAM_BOT_TOKEN = process.env.AGENTCHAD_TELEGRAM_BOT;
-const TELEGRAM_CHAT_ID = process.env.NEXT_PUBLIC_TELEGRAM_SUPPORT_CHAT_ID;
+const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
+const TELEGRAM_CHAT_ID = process.env.TELEGRAM_SUPPORT_CHAT_ID;
 
 if (!TELEGRAM_BOT_TOKEN) {
   console.error("TELEGRAM_BOT_TOKEN is not configured");

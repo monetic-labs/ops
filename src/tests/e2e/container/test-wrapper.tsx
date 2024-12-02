@@ -53,9 +53,5 @@ export function TestWrapper({ children, mode = "bot" }: TestWrapperProps) {
     return () => document.removeEventListener("keydown", handleKeyDown);
   }, [uiActions]);
 
-  return (
-    <ShortcutsProvider disablePane={true}>
-      {children}
-    </ShortcutsProvider>
-  );
+  return <ShortcutsProvider disablePane={true}>{children}</ShortcutsProvider>;
 }

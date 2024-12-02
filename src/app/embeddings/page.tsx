@@ -12,29 +12,32 @@ import { useDocumentProcessor } from "@/hooks/embeddings/useDocumentProcessor";
 import { FormButton } from "@/components/generics/form-button";
 import { FormCard } from "@/components/generics/form-card";
 
-const KnowledgeBaseStats = dynamic(() => import("@/components/embeddings/kb-stats"), {
-  ssr: false,
-  loading: () => (
-    <Card className="bg-charyo-500/60 backdrop-blur-sm p-4">
-      <div className="flex items-center justify-center">
-        <Spinner size="sm" />
-        <span className="ml-2 text-notpurple-500">Loading stats...</span>
-      </div>
-    </Card>
-  ),
-});
+import KnowledgeBaseStats from "@/components/embeddings/kb-stats";
+import DocumentManager from "@/components/embeddings/doc-manager";
 
-const DocumentManager = dynamic(() => import("@/components/embeddings/doc-manager"), {
-  ssr: false,
-  loading: () => (
-    <Card className="bg-charyo-500/60 backdrop-blur-sm p-4">
-      <div className="flex items-center justify-center">
-        <Spinner size="sm" />
-        <span className="ml-2 text-notpurple-500">Loading documents...</span>
-      </div>
-    </Card>
-  ),
-});
+// const KnowledgeBaseStats = dynamic(() => import("@/components/embeddings/kb-stats"), {
+//   ssr: false,
+//   loading: () => (
+//     <Card className="bg-charyo-500/60 backdrop-blur-sm p-4">
+//       <div className="flex items-center justify-center">
+//         <Spinner size="sm" />
+//         <span className="ml-2 text-notpurple-500">Loading stats...</span>
+//       </div>
+//     </Card>
+//   ),
+// });
+
+// const DocumentManager = dynamic(() => import("@/components/embeddings/doc-manager"), {
+//   ssr: false,
+//   loading: () => (
+//     <Card className="bg-charyo-500/60 backdrop-blur-sm p-4">
+//       <div className="flex items-center justify-center">
+//         <Spinner size="sm" />
+//         <span className="ml-2 text-notpurple-500">Loading documents...</span>
+//       </div>
+//     </Card>
+//   ),
+// });
 
 const UploadForm = ({
   file,
@@ -166,7 +169,6 @@ const EmbeddingsPage = () => {
         >
           <div className="flex flex-col space-y-6">
             <KnowledgeBaseStats />
-
             <Card className="bg-charyo-500/60 backdrop-blur-sm p-4">
               <CardHeader>
                 <h3 className="text-lg font-semibold text-notpurple-500">Upload Guidelines</h3>

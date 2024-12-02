@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 
 import { rateLimit } from "@/libs/messaging/rate-limiter";
 
-const TELEGRAM_BOT_TOKEN = process.env.AGENTCHAD_TELEGRAM_BOT;
+const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
 const BASE_URL = process.env.NEXT_PUBLIC_NGROK_URL;
 
 const limiter = rateLimit({

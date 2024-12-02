@@ -44,10 +44,12 @@ const KnowledgeBaseStats = () => {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center p-4">
-        <Spinner size="sm" />
-        <span className="ml-2">Loading stats...</span>
-      </div>
+      <Card className="bg-charyo-500/60 backdrop-blur-sm p-4">
+        <div className="flex items-center justify-center">
+          <Spinner size="sm" />
+          <span className="ml-2 text-notpurple-500">Loading stats...</span>
+        </div>
+      </Card>
     );
   }
 
