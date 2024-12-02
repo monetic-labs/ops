@@ -1,19 +1,19 @@
+// REFAC THIS LATER
 
 import { MerchantCardTransactionGetOutput } from "@backpack-fux/pylon-sdk";
+import { Button } from "@nextui-org/button";
 import { Divider } from "@nextui-org/divider";
-import { Modal, ModalBody, ModalContent, ModalHeader } from "@nextui-org/modal";
+import { Modal, ModalBody, ModalContent, ModalFooter, ModalHeader } from "@nextui-org/modal";
 
-import ModalFooterWithSupport from "../generics/footer-modal-support";
-
-interface TransactionReceiptModalProps {
+interface TransactionDetailsModalProps {
   isOpen: boolean;
   onClose: () => void;
   transaction: MerchantCardTransactionGetOutput["transactions"][number] & { avatar?: string };
 }
 
-export default function TransactionReceiptModal({ isOpen, onClose, transaction }: TransactionReceiptModalProps) {
+export default function TransactionDetailsModal({ isOpen, onClose, transaction }: TransactionDetailsModalProps) {
   return (
-    <Modal className="max-w-md mx-auto" isOpen={isOpen} scrollBehavior="inside" onClose={onClose}>
+    <Modal isOpen={isOpen} size="lg" onClose={onClose}>
       <ModalContent>
         {(onClose) => (
           <>
@@ -23,8 +23,8 @@ export default function TransactionReceiptModal({ isOpen, onClose, transaction }
             </ModalHeader>
             <Divider />
             <ModalBody>
-              <div className="space-y-4 font-mono text-sm">
-                <div className="grid grid-cols-2 gap-2">
+              <div className="space-y-4 font-mono">
+                <div className="flex justify-between">
                   <span>Date:</span>
                   <span>
                     {" "}
@@ -53,6 +53,8 @@ export default function TransactionReceiptModal({ isOpen, onClose, transaction }
                   <span>
                     {transaction.merchantCard.displayName} (**** {transaction.merchantCard.lastFour})
                   </span>
+                </div>
+                <div className="flex justify-between">
                   <span>Category:</span>
                   <span>{transaction.merchantCategory}</span>
                 </div>
@@ -65,7 +67,7 @@ export default function TransactionReceiptModal({ isOpen, onClose, transaction }
                   </span>
                 </div>
                 <Divider />
-                <div className="grid grid-cols-2 gap-2">
+                <div className="flex justify-between">
                   <span>Status:</span>
                   <span
                     className={`font-bold ${
@@ -82,16 +84,12 @@ export default function TransactionReceiptModal({ isOpen, onClose, transaction }
               </div>
             </ModalBody>
             <Divider />
-            <ModalFooterWithSupport
-              actions={[
-                {
-                  label: "Close",
-                  onClick: onClose,
-                  className: "bg-ualert-500 text-notpurple-500",
-                },
-              ]}
-              onSupportClick={() => {}}
-            />
+            <ModalFooter className="flex flex-col items-center">
+              <p className="text-sm text-gray-500 mb-2">Thank you for your business!</p>
+              <Button onPress={onClose} className="bg-ualert-500">
+                Close
+              </Button>
+            </ModalFooter>
           </>
         )}
       </ModalContent>

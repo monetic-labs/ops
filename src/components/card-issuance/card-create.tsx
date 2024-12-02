@@ -1,24 +1,23 @@
 import React, { useMemo, useState } from "react";
 import { Select, SelectItem } from "@nextui-org/select";
-
 import { FormModal } from "@/components/generics/form-modal";
 import { CardType } from "@backpack-fux/pylon-sdk";
 import pylon from "@/libs/pylon-sdk";
 import { z } from "zod";
+import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { FormInput } from "../generics/form-input";
 import {
   CreateCardSchema,
   CreateCardModalProps,
   CardShippingDetailsSchema,
-  getRegionsForCountry,
-  cardDeliveryCountries,
-  shippingMethodOptions,
   limitCyclesObject,
+  shippingMethodOptions,
+  cardDeliveryCountries,
+  getRegionsForCountry,
 } from "@/data";
-import { CardStatus, ISO3166Alpha2Country } from "@backpack-fux/pylon-sdk";
-import { Controller, useForm } from "react-hook-form";
 import { Button } from "@nextui-org/button";
+import { CardStatus, ISO3166Alpha2Country } from "@backpack-fux/pylon-sdk";
 
 export default function CreateCardModal({ isOpen, onClose }: CreateCardModalProps) {
   const [error, setError] = useState<string | null>();

@@ -3,7 +3,7 @@ import React, { useCallback, useState } from "react";
 import { Chip } from "@nextui-org/chip";
 import { User } from "@nextui-org/user";
 
-import TransactionReceiptModal from "@/components/card-issuance/modal-transaction-receipt";
+import TransactionDetailsModal from "@/components/card-issuance/card-txns";
 import InfiniteTable from "@/components/generics/table-infinite";
 import { getOpepenAvatar } from "@/utils/helpers";
 import pylon from "@/libs/pylon-sdk";
@@ -115,7 +115,7 @@ export default function TransactionListTable() {
       />
       {selectedTransaction && (
         <>
-          <TransactionReceiptModal
+          <TransactionDetailsModal
             transaction={selectedTransaction}
             isOpen={Boolean(selectedTransaction)}
             onClose={() => setSelectedTransaction(null)}
