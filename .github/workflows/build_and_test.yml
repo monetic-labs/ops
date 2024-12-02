@@ -38,6 +38,7 @@ jobs:
         run: |
           export BACKPACK_GITHUB_TOKEN=${{ secrets.BACKPACK_GITHUB_TOKEN }}
           export PATH="$HOME/.bun/bin:$PATH"
+          bunx playwright install --with-deps
           bun install
 
       - name: Run tests
