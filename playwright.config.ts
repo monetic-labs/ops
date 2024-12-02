@@ -9,21 +9,17 @@ export default defineConfig({
   testDir: "./src/tests/e2e",
   timeout: 30000,
   expect: {
-    timeout: 5000
+    timeout: 5000,
   },
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
   // Keep the more robust retry logic
   retries: process.env.CI ? 2 : 0,
   workers: process.env.CI ? 1 : undefined,
-  
+
   // Combine reporters from both configs
-  reporter: [
-    ["list", { printSteps: true }],
-    ["github"],
-    ["html"]
-  ],
-  
+  reporter: [["list", { printSteps: true }], ["github"], ["html"]],
+
   use: {
     baseURL: "http://localhost:3000",
     testIdAttribute: "data-testid",
@@ -33,11 +29,11 @@ export default defineConfig({
     launchOptions: {
       env: {
         ...process.env,
-        PLAYWRIGHT_TEST: "true"
-      }
-    }
+        PLAYWRIGHT_TEST: "true",
+      },
+    },
   },
-  
+
   // Keep all projects including mobile devices
   projects: [
     {
@@ -74,11 +70,4 @@ export default defineConfig({
       },
     },
   ],
-  
-  webServer: {
-    command: "bun run dev",
-    url: "http://127.0.0.1:3000",
-    reuseExistingServer: !process.env.CI,
-    timeout: 120 * 1000,
-  },
 });
