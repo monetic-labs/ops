@@ -4,8 +4,8 @@
   "private": true,
   "scripts": {
     "test": "VITE_CJS_IGNORE_WARNING=true vitest --coverage --coverage.reporter=lcov",
-    "test:e2e": "playwright test --project=chromium",
-    "test:e2e:ui": "playwright test --ui",
+    "test:e2e": "npx playwright test --project=chromium",
+    "test:e2e:ui": "npx playwright test --ui",
     "dev": "next dev",
     "dev-secure": "next dev --experimental-https",
     "build": "next build",
