@@ -1,6 +1,7 @@
 import { useEffect } from "react";
-
 import { MentionOption } from "@/types/messaging";
+import { Graph, GraphNode } from "@/knowledge-base/v0/graph/graph";
+import graphData from "@/knowledge-base/v0/graph/graph.json";
 
 interface MentionListProps {
   options: MentionOption[];
@@ -21,22 +22,54 @@ export const MentionList: React.FC<MentionListProps> = ({
   selectedIndex,
   setSelectedIndex,
 }) => {
-  // Filter options based on search text
-  const filteredOptions = options.filter((option) => option.label.toLowerCase().includes(searchText.toLowerCase()));
+  // Get related capabilities for each option
+  const getRelatedInfo = (nodeKey: string) => {
+    const graph = graphData as Graph;
+    const node = graph.nodes[nodeKey];
+    
+    if (!node) return null;
+
+    const capabilities = graph.edges
+      .filter(edge => edge.from === nodeKey && edge.relationship === "provides")
+      .map(edge => graph.nodes[edge.to])
+      .filter(Boolean);
+
+    return {
+      type: node.type,
+      capabilities,
+      requires: node.requires || []
+    };
+  };
+
+  // Enhanced filtering with graph context
+  const filteredOptions = options.filter((option) => {
+    const searchLower = searchText.toLowerCase();
+    const relatedInfo = getRelatedInfo(option.value);
+
+    return (
+      option.label.toLowerCase().includes(searchLower) ||
+      (option.description && option.description.toLowerCase().includes(searchLower)) ||
+      // Search in related capabilities
+      (relatedInfo?.capabilities && relatedInfo.capabilities.some(cap => 
+        cap.description.toLowerCase().includes(searchLower)
+      ))
+    );
+  });
 
   // Reset selected index when search text changes
   useEffect(() => {
     setSelectedIndex(0);
-  }, [searchText]);
+  }, [searchText, setSelectedIndex]);
 
   if (!visible) return null;
 
   // Check for exact match
-  const exactMatch = filteredOptions.find((option) => option.label.toLowerCase() === searchText.toLowerCase());
+  const exactMatch = filteredOptions.find(
+    option => option.label.toLowerCase() === searchText.toLowerCase()
+  );
 
   if (exactMatch) {
     onSelect(exactMatch);
-
     return null;
   }
 
@@ -54,21 +87,49 @@ export const MentionList: React.FC<MentionListProps> = ({
       {filteredOptions.length === 0 ? (
         <div className="px-4 py-2 text-gray-400">No matches found</div>
       ) : (
-        filteredOptions.map((option, index) => (
-          <button
-            key={option.id}
-            className={`w-full px-4 py-2 text-left flex items-center gap-2
-                focus:outline-none text-notpurple-500
-                ${index === selectedIndex ? "bg-charyo-600" : "hover:bg-charyo-600"}`}
-            data-testid="mention-option"
-            onClick={() => onSelect(option)}
-            onMouseEnter={() => setSelectedIndex(index)}
-          >
-            {option.icon && <span className="w-5 h-5">{option.icon}</span>}
-            <span>{option.label}</span>
-            {option.description && <span className="text-sm text-gray-400">{option.description}</span>}
-          </button>
-        ))
+        filteredOptions.map((option, index) => {
+          const relatedInfo = getRelatedInfo(option.value);
+          
+          return (
+            <button
+              key={option.id}
+              className={`w-full px-4 py-2 text-left flex flex-col gap-1
+                  focus:outline-none text-notpurple-500
+                  ${index === selectedIndex ? "bg-charyo-600" : "hover:bg-charyo-600"}`}
+              data-testid="mention-option"
+              onClick={() => onSelect(option)}
+              onMouseEnter={() => setSelectedIndex(index)}
+            >
+              <div className="flex items-center gap-2">
+                {option.icon && <span className="w-5 h-5">{option.icon}</span>}
+                <span className="font-medium">{option.label}</span>
+                <span className="text-xs text-gray-400 px-2 rounded-full border border-gray-400">
+                  {relatedInfo?.type || 'unknown'}
+                </span>
+              </div>
+              
+              {option.description && (
+                <span className="text-sm text-gray-400">{option.description}</span>
+              )}
+              
+              {relatedInfo?.capabilities && relatedInfo.capabilities.length > 0 && (
+                <div className="text-xs text-gray-400 mt-1">
+                  <span className="font-medium">Capabilities: </span>
+                  {relatedInfo.capabilities
+                    .map(cap => cap.description.split('.')[0])
+                    .join(', ')}
+                </div>
+              )}
+              
+              {relatedInfo?.requires && relatedInfo.requires.length > 0 && (
+                <div className="text-xs text-gray-400">
+                  <span className="font-medium">Requires: </span>
+                  {relatedInfo.requires.join(', ')}
+                </div>
+              )}
+            </button>
+          );
+        })
       )}
     </div>
   );
