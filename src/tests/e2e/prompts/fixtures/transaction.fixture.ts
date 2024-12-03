@@ -1,4 +1,4 @@
-import { TransactionHistory } from "@/prompts/v0/types";
+import { TransactionHistory } from "@/knowledge-base/v0/types";
 
 export const mockTransactionHistory: TransactionHistory = {
   averageTransaction: 500,

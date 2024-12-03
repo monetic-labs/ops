@@ -51,7 +51,7 @@ export const test = base.extend<MessagingFixture>({
         service: {
           type: "openai",
           isLoading: false,
-          model: "gpt-4",
+          model: 'gpt-4-turbo',
           messages: [],
           inputValue: "",
           setInputValue: async () => Promise.resolve(),

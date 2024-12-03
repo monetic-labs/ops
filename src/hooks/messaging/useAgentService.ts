@@ -1,66 +1,63 @@
+import { OPENAI_MODELS } from "@/knowledge-base/config";
 import { useMessagingStore, useMessagingActions } from "@/libs/messaging/store";
-import { Message as AIMessage } from 'ai';
-import { UseChatHelpers } from "ai/react";
-import { useEffect } from "react";
+import { useChat } from "ai/react";
 
-interface ChatHelperUpdate {
-  messages: AIMessage[];
-  input?: string;
-  isLoading?: boolean;
-}
-
-export const useAgentService = (chatHelpers?: UseChatHelpers) => {
+export const useAgentService = () => {
   const { message: messageActions } = useMessagingActions();
   const state = useMessagingStore(state => state.message);
 
-  useEffect(() => {
-    if (chatHelpers) {
-      // Watch for changes in chatHelpers messages
-      const handleUpdate = () => {
-        const lastMessage = chatHelpers.messages[chatHelpers.messages.length - 1];
-        if (lastMessage && lastMessage.role === 'assistant') {
-          messageActions.appendMessage({
-            id: crypto.randomUUID(),
-            text: lastMessage.content,
-            type: 'bot',
-            timestamp: Date.now(),
-            status: 'received'
-          });
-        }
-      };
-
-      // Set up message monitoring
-      const messageObserver = new MutationObserver(handleUpdate);
-      const target = document.querySelector('[data-chat-messages]');
-      if (target) {
-        messageObserver.observe(target, { 
-          childList: true, 
-          subtree: true 
-        });
-      }
-
-      return () => messageObserver.disconnect();
+  // Initialize the AI SDK chat
+  const chatHelpers = useChat({
+    api: "/api/messaging/agent/chat",
+    onFinish: (message) => {
+      messageActions.appendMessage({
+        id: crypto.randomUUID(),
+        text: message.content,
+        type: 'bot',
+        timestamp: Date.now(),
+        status: 'received'
+      });
     }
-  }, [chatHelpers, messageActions]);
+  });
+
+  // Unified message handling function
+  const handleSendMessage = async (text: string) => {
+    // First append the user message to our store
+    await messageActions.sendMessage(text);
+    
+    try {
+      // Send to AI chat
+      await chatHelpers.setInput(text);
+      await chatHelpers.handleSubmit();
+    } catch (error) {
+      console.error('Failed to get AI response:', error);
+      // Optionally add an error message to the chat
+      messageActions.appendMessage({
+        id: crypto.randomUUID(),
+        text: 'Sorry, I encountered an error processing your message.',
+        type: 'system',
+        category: 'error',
+        timestamp: Date.now(),
+        status: 'error'
+      });
+    }
+  };
 
   return {
     type: "openai" as const,
-    model: "gpt-4",
+    model: OPENAI_MODELS.chat.default,
     messages: state.messages,
     isLoading: chatHelpers?.isLoading || false,
     inputValue: state.inputValue,
     setInputValue: messageActions.setInputValue,
-    sendMessage: messageActions.sendMessage,
+    sendMessage: handleSendMessage,
     handleSubmit: async (e: React.FormEvent) => {
       e.preventDefault();
       const text = state.inputValue;
       if (!text.trim()) return;
-      await messageActions.sendMessage(text);
       
-      // If we have chatHelpers, also send through AI SDK
-      if (chatHelpers) {
-        await chatHelpers.handleSubmit(e);
-      }
+      await handleSendMessage(text);
+      messageActions.setInputValue(''); // Clear input after sending
     },
     getUserId: () => state.userId || 'default-user'
   };

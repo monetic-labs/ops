@@ -1,5 +1,5 @@
-import { validateEmbeddingMetadata } from "@/prompts/v0/functions/graph-validation";
-import { createImmutableGraph } from "@/prompts/v0/functions/graph-validation";
+import { validateEmbeddingMetadata } from "@/knowledge-base/v0/graph/graph-validation";
+import { createImmutableGraph } from "@/knowledge-base/v0/graph/graph-validation";
 
 import { mockPineconeConfig } from "../fixtures/pinecone-index.fixture";
 import { mockNamespaceStats } from "../fixtures/pinecone-namespace.fixture";

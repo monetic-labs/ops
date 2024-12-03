@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { devtools } from 'zustand/middleware';
-import { useWebSocket } from '@/libs/websocket';
+//import { useWebSocket } from '@/libs/websocket';
 import { 
     MessageMode, 
     Message, 
@@ -103,7 +103,7 @@ const createMessage = (content: string, type: Message['type'], status: MessageSt
 
 export const useMessagingStore = create<MessagingStore>()(
     devtools((set, get) => {
-      const webSocket = useWebSocket.getState();
+      //const webSocket = useWebSocket.getState();
   
       return {
         ui: {
@@ -119,8 +119,8 @@ export const useMessagingStore = create<MessagingStore>()(
             userId: null,
         },
         connection: {
-          status: webSocket.status, // Align with WebSocket status
-          error: webSocket.error,
+          status: 'disconnected', // Align with WebSocket status
+          error: null,
         },
         actions: {
           ui: {
@@ -149,7 +149,7 @@ export const useMessagingStore = create<MessagingStore>()(
               }));
   
               try {
-                await webSocket.send(message);
+                //await webSocket.send(message);
                 get().actions.message.updateMessage(message.id, { status: 'sent' });
               } catch (error) {
                 get().actions.message.updateMessage(message.id, { status: 'error' });
@@ -184,7 +184,7 @@ export const useMessagingStore = create<MessagingStore>()(
               }));
   
               try {
-                await webSocket.connect();
+                //await webSocket.connect();
                 set(state => ({
                   connection: { 
                     ...state.connection, 
@@ -202,7 +202,9 @@ export const useMessagingStore = create<MessagingStore>()(
                 }));
               }
             },
-            disconnect: () => webSocket.disconnect(),
+            disconnect: () => {
+              //webSocket.disconnect();
+            },
             setError: (error) => set(state => ({
               connection: { ...state.connection, error }
             })),

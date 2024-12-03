@@ -1,4 +1,4 @@
-import { DecisionRule, OverrideTrigger } from "@/prompts/v0/types";
+import { DecisionRule, OverrideTrigger } from "@/knowledge-base/v0/types";
 
 export const mockDecisionRules: DecisionRule[] = [
   {

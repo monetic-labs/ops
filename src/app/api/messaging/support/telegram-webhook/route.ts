@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { useWebSocket } from "@/libs/websocket";
+//import { useWebSocket } from "@/libs/websocket";
 import { MessageStatus, WebSocketMessage, SupportMessage, Message } from "@/types/messaging";
 
 // Service-specific interface lives only in the route handler
@@ -45,7 +45,7 @@ function convertToSupportMessage(telegramMsg: TelegramWebhookMessage): SupportMe
 
 export async function POST(request: Request) {
   console.log("📥 Telegram webhook received request");
-  const wsStore = useWebSocket.getState();
+  //const wsStore = useWebSocket.getState();
 
   try {
     const body: TelegramUpdate = await request.json();
@@ -74,7 +74,7 @@ export async function POST(request: Request) {
         },
       };
 
-      await wsStore.send(wsMessage as Message);
+      //await wsStore.send(wsMessage as Message);
       return NextResponse.json({ success: true });
     }
 
@@ -83,7 +83,7 @@ export async function POST(request: Request) {
       console.log("📝 Received text message");
       const supportMessage = convertToSupportMessage(message);
 
-      await wsStore.send(supportMessage);
+      //await wsStore.send(supportMessage);
 
       // Only send auto-reply for new conversations
       if (message.text.toLowerCase() === "/start") {

@@ -1,11 +1,11 @@
 import { MessagingStore } from "@/libs/messaging/store";
-import { Graph } from "@/prompts/v0/functions/graph";
-import { SpeedOverCostPreference } from "@/prompts/v0/types";
-import { UsagePattern } from "@/prompts/v0/usage";
-import { MockWebSocket } from "@/tests/e2e/container/test-types";
+import { Graph } from "@/knowledge-base/v0/graph/graph";
+import { SpeedOverCostPreference } from "@/knowledge-base/v0/types";
+import { UsagePattern } from "@/knowledge-base/v0/usage";
 import { SVGProps } from "react";
 import { StoreApi } from "zustand";
 import { AgentMessageContext, SupportMessageContext } from "./messaging";
+import { MockWebSocket } from "@/tests/e2e/container/test-types";
 
 export type IconSvgProps = SVGProps<SVGSVGElement> & {
   size?: number;

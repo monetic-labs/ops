@@ -1,4 +1,4 @@
-import { SpeedOverCostPreference } from "@/prompts/v0/types";
+import { SpeedOverCostPreference } from "@/knowledge-base/v0/types";
 
 export const mockSpeedPreference: SpeedOverCostPreference = {
   goal: "optimize_for_speed",

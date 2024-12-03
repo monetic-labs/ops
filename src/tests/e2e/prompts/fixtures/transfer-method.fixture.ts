@@ -1,4 +1,4 @@
-import { TransferMethod } from "@/prompts/v0/types";
+import { TransferMethod } from "@/knowledge-base/v0/types";
 
 export const mockTransferMethods: TransferMethod[] = [
   {

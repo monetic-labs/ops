@@ -1,8 +1,8 @@
 import { test, expect } from "@playwright/test";
 
-import { generateEmbeddings } from "@/prompts/v0/embedding";
-import { createImmutableGraph, validateEmbeddingMetadata } from "@/prompts/v0/functions/graph-validation";
-import { Graph } from "@/prompts/v0/functions/graph";
+import { generateEmbeddings } from "@/knowledge-base/v0/embedding";
+import { createImmutableGraph, validateEmbeddingMetadata } from "@/knowledge-base/v0/graph/graph-validation";
+import { Graph } from "@/knowledge-base/v0/graph/graph";
 
 import { mockContextChunks } from "./fixtures/context-chunk.fixture";
 import { mockGraph } from "./fixtures/graph.fixture";

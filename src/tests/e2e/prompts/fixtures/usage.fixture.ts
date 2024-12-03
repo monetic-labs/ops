@@ -1,4 +1,4 @@
-import { UsagePattern } from "@/prompts/v0/usage";
+import { UsagePattern } from "@/knowledge-base/v0/usage";
 
 export const mockUsagePattern: UsagePattern = {
   intent: "quick_transfer",

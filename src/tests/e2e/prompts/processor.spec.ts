@@ -1,7 +1,7 @@
 import { test, expect } from "@playwright/test";
 
-import { generateEmbeddings } from "@/prompts/v0/embedding";
-import { createImmutableGraph } from "@/prompts/v0/functions/graph-validation";
+import { generateEmbeddings } from "@/knowledge-base/v0/embedding";
+import { createImmutableGraph } from "@/knowledge-base/v0/graph/graph-validation";
 
 import { mockGraph } from "./fixtures/graph.fixture";
 import { mockSpeedPreference } from "./fixtures/preference.fixture";

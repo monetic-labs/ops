@@ -1,4 +1,4 @@
-import { User } from "@/prompts/v0/functions/graph";
+import { User } from "@/knowledge-base/v0/graph/graph";
 
 export const mockUser: User = {
   id: "test-user-1",

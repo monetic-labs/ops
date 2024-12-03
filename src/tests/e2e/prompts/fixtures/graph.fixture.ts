@@ -1,4 +1,4 @@
-import { Graph } from "@/prompts/v0/functions/graph";
+import { Graph } from "@/knowledge-base/v0/graph/graph";
 
 export const mockGraph: Graph = {
   nodes: {

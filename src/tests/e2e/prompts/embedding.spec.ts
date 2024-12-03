@@ -1,8 +1,8 @@
 import { test, expect } from "@playwright/test";
 
-import { EmbeddingMetadata, validateEmbeddingMetadata } from "@/prompts/v0/embedding";
-import { generateEmbeddings } from "@/prompts/v0/embedding";
-import { createImmutableGraph } from "@/prompts/v0/functions/graph-validation";
+import { EmbeddingMetadata, validateEmbeddingMetadata } from "@/knowledge-base/v0/embedding";
+import { generateEmbeddings } from "@/knowledge-base/v0/embedding";
+import { createImmutableGraph } from "@/knowledge-base/v0/graph/graph-validation";
 
 import { mockSpeedPreference } from "./fixtures/preference.fixture";
 import { mockContextChunks } from "./fixtures/context-chunk.fixture";

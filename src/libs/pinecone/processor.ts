@@ -3,8 +3,8 @@ import fs from "fs";
 
 import matter from "gray-matter";
 
-import { Graph } from "@/prompts/v0/functions/graph";
-import { UsagePattern } from "@/prompts/v0/usage";
+import { Graph } from "@/knowledge-base/v0/graph/graph";
+import { UsagePattern } from "@/knowledge-base/v0/usage";
 
 export type ProcessedDocument = {
   content: string;

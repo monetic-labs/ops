@@ -8,8 +8,8 @@ import {
   findRelatedFeatures,
   validateCapabilityChain,
   getCapabilityPath,
-} from "@/prompts/v0/functions/graph";
-import { Graph } from "@/prompts/v0/functions/graph";
+} from "@/knowledge-base/v0/graph/graph";
+import { Graph } from "@/knowledge-base/v0/graph/graph";
 
 import { mockGraph } from "./fixtures/graph.fixture";
 import { mockSpeedPreference } from "./fixtures/preference.fixture";

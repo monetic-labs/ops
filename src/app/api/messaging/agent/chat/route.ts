@@ -5,6 +5,7 @@ import { PineconeConnectionError } from "@pinecone-database/pinecone/dist/errors
 
 import { getEmbedding } from "@/libs/openai/embedding";
 import { pinecone } from "@/libs/pinecone/pinecone";
+import { OPENAI_MODELS, RETRIEVAL_CONFIG, SYSTEM_PROMPTS } from "@/knowledge-base/config";
 
 export const runtime = "edge";
 
@@ -17,10 +18,10 @@ export async function POST(req: Request) {
     const queryEmbedding = await getEmbedding(lastMessage.content);
 
     try {
-      const index = pinecone.index("fintech-knowledge");
+      const index = pinecone.index(RETRIEVAL_CONFIG.pinecone.namespace);
       const queryResponse = await index.query({
         vector: queryEmbedding,
-        topK: 5,
+        topK: RETRIEVAL_CONFIG.pinecone.topK,
         includeMetadata: true,
       });
 
@@ -37,10 +38,8 @@ export async function POST(req: Request) {
 
       const result = await streamText({
         messages: convertToCoreMessages(messages),
-        model: openai("gpt-4-turbo"),
-        system: `You are a self banking customer support specialist. Use this context to answer questions:
-            \n---\n${context}\n---\n
-            If the context doesn't contain relevant information, use your general knowledge about fintech.`,
+        model: openai(OPENAI_MODELS.chat.default),
+        system: `${SYSTEM_PROMPTS.default}\n---\n${context}\n---\n`,
       });
 
       return result.toDataStreamResponse();
@@ -50,8 +49,8 @@ export async function POST(req: Request) {
         // Fallback to default context
         const result = await streamText({
           messages: convertToCoreMessages(messages),
-          model: openai("gpt-4-turbo"),
-          system: "I am a helpful assistant focused on financial technology support...",
+          model: openai(OPENAI_MODELS.chat.fallback),
+          system: SYSTEM_PROMPTS.fallback,
         });
 
         return result.toDataStreamResponse();

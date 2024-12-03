@@ -1,4 +1,4 @@
-import { Graph } from "./functions/graph";
+import { Graph } from "./graph/graph";
 
 export interface EmbeddingMetadata {
   type: "preference" | "usage" | "domain" | "capability";
