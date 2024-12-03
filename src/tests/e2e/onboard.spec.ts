@@ -221,6 +221,8 @@ async function selectDropdownOption(page: Page, selector: string, value: string,
   await page.getByTestId(selector).fill(value);
 
   if (browserName === "chromium" || page.context().browser()?.browserType().name() === "chromium") {
+    await page.waitForSelector(`text=${value}`, { state: "attached" });
+    await page.waitForTimeout(100); // Add a small delay to ensure stability
     await page.getByText(value).click();
   } else {
     await page.keyboard.press("ArrowDown");
