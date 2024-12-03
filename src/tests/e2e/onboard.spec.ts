@@ -1,14 +1,14 @@
 import { test, expect, Page } from "@playwright/test";
 import { setupAuthCookie, setupAuthMocks, setupMerchantApi } from "./fixtures/api/auth";
-import path from "path";
 import { setupRainCardCompany } from "./fixtures/api/rain";
-import { readFile } from "fs";
+import { setupComplianceMocks } from "./fixtures/api/compliance";
 
 test.describe("Onboarding Flow", () => {
   test.beforeEach(async ({ page }) => {
     await setupMerchantApi(page);
     await setupAuthMocks(page);
     await setupRainCardCompany(page);
+    await setupComplianceMocks(page);
     await page.goto("http://localhost:3000");
   });
 

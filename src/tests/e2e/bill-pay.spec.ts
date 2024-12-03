@@ -12,11 +12,13 @@ import {
   mockContacts,
 } from "./fixtures/data/disbursement";
 import { MINIMUM_DISBURSEMENT_ACH_AMOUNT, MINIMUM_DISBURSEMENT_WIRE_AMOUNT } from "./fixtures/data/disbursement";
+import { setupComplianceMocks } from "./fixtures/api/compliance";
 
 test.describe("Bill Pay Modal", () => {
   test.beforeEach(async ({ page }) => {
     await setupAuthCookie(page);
     await setupContactsApi(page);
+    await setupComplianceMocks(page);
     await page.goto("http://localhost:3000/?tab=bill-pay");
     // Open the modal
     await page.getByTestId("create-transfer-button").click();
