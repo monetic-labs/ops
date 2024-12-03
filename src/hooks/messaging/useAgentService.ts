@@ -9,6 +9,7 @@ export const useAgentService = () => {
   // Initialize the AI SDK chat
   const chatHelpers = useChat({
     api: "/api/messaging/agent/chat",
+    id: state.userId || 'default-user',
     onFinish: (message) => {
       messageActions.appendMessage({
         id: crypto.randomUUID(),
@@ -17,7 +18,18 @@ export const useAgentService = () => {
         timestamp: Date.now(),
         status: 'received'
       });
-    }
+    },
+    onError: (error) => {
+      console.error('Chat error:', error);
+      messageActions.appendMessage({
+        id: crypto.randomUUID(),
+        text: 'Sorry, I encountered an error processing your message.',
+        type: 'system',
+        category: 'error',
+        timestamp: Date.now(),
+        status: 'error'
+      });
+    },
   });
 
   // Unified message handling function

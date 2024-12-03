@@ -3,7 +3,6 @@
 import { useEffect } from "react";
 import { useMessagingStore, useMessagingActions } from "@/libs/messaging/store";
 import { MessageMode } from "@/types/messaging";
-import { useAgentService } from "@/hooks/messaging/useAgentService";
 
 interface MessagingProviderProps {
   children: React.ReactNode;
@@ -18,8 +17,7 @@ export const MessagingProvider = ({ children, userId, initialMode = 'bot' }: Mes
     connection: { connect },
     ui: { setWidth },
   } = useMessagingActions();
-  
-  const agentService = useAgentService();
+
 
   useEffect(() => {
     // Set initial values

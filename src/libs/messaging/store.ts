@@ -209,16 +209,6 @@ export const useMessagingStore = create<MessagingStore>()(
               connection: { ...state.connection, error }
             })),
           },
-        //   mode: {
-        //     setMode: (mode: ChatMode) => set(state => ({
-        //       message: { ...state.message, mode }
-        //     })),
-        //   },
-        //   user: {
-        //     setUserId: (userId: string) => set(state => ({
-        //       message: { ...state.message, userId }
-        //     })),
-        //   },
         },
         initialized: false,
       };

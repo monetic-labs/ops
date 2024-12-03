@@ -13,6 +13,9 @@ export async function POST(req: Request) {
   try {
     const { messages } = await req.json();
     const lastMessage = messages[messages.length - 1];
+    
+    // Log the incoming request for debugging
+    console.log('Incoming chat request:', { messageCount: messages.length });
 
     // Get embedding for the query
     const queryEmbedding = await getEmbedding(lastMessage.content);
