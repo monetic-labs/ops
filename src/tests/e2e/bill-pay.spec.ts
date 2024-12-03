@@ -300,7 +300,6 @@ async function fillBasicFormData(page: Page) {
   await paymentMethod.waitFor({ state: "visible" });
   await paymentMethod.click();
 
-  await page.getByTestId("payment-method").focus();
   await page.keyboard.type(mockContacts[0].disbursements[0].method);
   await page.keyboard.press("ArrowDown");
   await page.keyboard.press("Enter");
@@ -311,7 +310,6 @@ async function selectDropdownOption(page: Page, selector: string, value: string,
   await page.getByTestId(selector).fill(value);
 
   if (browserName === "chromium" && !isMobile(page)) {
-    await page.waitForSelector(`text=${value}`, { state: "visible" });
     await page.getByText(value).click();
   } else {
     await page.keyboard.press("ArrowDown");
