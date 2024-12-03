@@ -7,32 +7,23 @@ import { useSearchParams, useRouter } from "next/navigation";
 
 import { useMessagingActions, useMessagingState } from "@/libs/messaging/store";
 import { MessageMode } from "@/types/messaging";
-import { TEST_CONFIG } from "@/tests/e2e/container/test-env";
-import { isTestEnvironment } from "@/tests/e2e/container/test-env";
 
 export const ModeSwitcher: React.FC = () => {
   const { mode } = useMessagingState();
   const { setMode } = useMessagingActions().message;
   const searchParams = useSearchParams();
-  const router = useRouter();
 
   // Handle mode changes
   const handleModeChange = useCallback(
     (newMode: string | number) => {
-      const modeValue = newMode as "bot" | "support";
-      setMode(modeValue as MessageMode);
-  
-      if (isTestEnvironment()) {
-        const params = new URLSearchParams(searchParams.toString());
-        params.set("mode", modeValue);
-        router.replace(`${TEST_CONFIG.routes.pane}?${params.toString()}`, { scroll: false });
-      }
+      const modeValue = newMode as MessageMode;
+      setMode(modeValue);
     },
-    [setMode, searchParams, router]
+    [setMode, searchParams]
   );
 
   useEffect(() => {
-    const urlMode = searchParams.get("mode") as "bot" | "support";
+    const urlMode = searchParams.get("mode") as MessageMode;
 
     if (urlMode && urlMode !== mode) {
       console.log("Syncing mode with URL:", urlMode);
