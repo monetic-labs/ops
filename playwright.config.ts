@@ -58,13 +58,13 @@ export default defineConfig({
       },
     },
     {
-      name: "Mobile Chrome",
+      name: "mobile-chromium",
       use: {
         ...devices["Pixel 5"],
       },
     },
     {
-      name: "Mobile Safari",
+      name: "mobile-webkit",
       use: {
         ...devices["iPhone 12"],
       },
