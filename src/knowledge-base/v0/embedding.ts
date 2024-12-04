@@ -1,13 +1,20 @@
 import { Graph } from "./graph/graph";
 
 export interface EmbeddingMetadata {
-  type: "preference" | "usage" | "domain" | "capability";
+  type: "preference" | "usage" | "domain" | "capability" | "experience" | "system"  ;
   content: string;
   capabilities?: string[];
   domains?: string[];
   preference_type?: string;
   intent?: string;
   related_chunks?: string[];
+  energy_type?: string;
+  traits?: string[];
+  decision_style?: {
+    speed_multiplier: number;
+    risk_tolerance: string;
+    waiting_period: string;
+  };
 }
 
 export interface Embedding {

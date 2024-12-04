@@ -1,12 +1,12 @@
 import { Graph } from "@/knowledge-base/v0/graph/graph";
 import { UsagePattern } from "@/knowledge-base/v0/usage";
 import { SpeedOverCostPreference } from "@/knowledge-base/v0/types";
-import { EnergyTypePreference } from "@/knowledge-base/v0/experience/energy-type";
+import { EnergyTypePreference } from "@/knowledge-base/v0/experience/energy-types/energy-type";
 
 // Import graph data
 import graphData from "@/knowledge-base/v0/graph/graph.json";
-import speedOverCostPreference from "@/knowledge-base/v0/experience/speed-over-cost.json";
-import quickTransfer from "@/knowledge-base/v0/experience/quick-transfer.json";
+import speedOverCostPreference from "@/knowledge-base/v0/experience/preferences/cost-over-speed.json";
+import quickTransfer from "@/knowledge-base/v0/experience/preferences/quick-transfer.json";
 import transferMoney from "@/knowledge-base/v0/usage/transfer-money.json";
 
 interface RetrievalResult {
@@ -77,7 +77,7 @@ export async function retrieveContext(query: string): Promise<RetrievalResult> {
     mentions: mentionedDomains,
     capabilities,
     preferences: speedTerms.some(term => query.toLowerCase().includes(term)) 
-      ? speedOverCostPreference as SpeedOverCostPreference 
+      ? speedOverCostPreference as unknown as SpeedOverCostPreference 
       : undefined
   };
 }

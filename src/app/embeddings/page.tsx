@@ -14,6 +14,7 @@ import { FormCard } from "@/components/generics/form-card";
 
 import KnowledgeBaseStats from "@/components/embeddings/kb-stats";
 import DocumentManager from "@/components/embeddings/doc-manager";
+import { BootstrapSection } from "@/components/embeddings/bootstrap-section";
 
 // const KnowledgeBaseStats = dynamic(() => import("@/components/embeddings/kb-stats"), {
 //   ssr: false,
@@ -146,7 +147,9 @@ const EmbeddingsPage = () => {
 
   return (
     <div className="container mx-auto px-4 py-8 space-y-6">
-      <h1 className="text-2xl font-bold text-notpurple-500">Document Embeddings Management</h1>
+      <h1 className="text-2xl font-bold text-notpurple-500">
+        Document Embeddings Management
+      </h1>
 
       <Tabs
         aria-label="Document Management"
@@ -184,6 +187,7 @@ const EmbeddingsPage = () => {
             </Card>
 
             <DocumentManager />
+            <BootstrapSection />
           </div>
         </Tab>
 

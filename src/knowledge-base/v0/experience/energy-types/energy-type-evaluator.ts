@@ -1,6 +1,6 @@
-import { SpeedOverCostPreference, TransactionContext, TransferMethod } from "../types";
+import { SpeedOverCostPreference, TransactionContext, TransferMethod } from "../../types";
 import { EnergyTypePreference } from "./energy-type";
-import { evaluateTransferMethod } from "./preference-evaluator";
+import { evaluateTransferMethod } from "@/knowledge-base/v0/experience/preferences/preference-evaluator";
 
 export function evaluateWithEnergyType(
   context: TransactionContext,
@@ -122,7 +122,7 @@ function adjustCompletionTime(
         // Manifestors prefer immediate action
         return `${Math.max(1, adjustedMinutes - 1)}_minutes`;
         
-      case "generator":
+      case "builder":
         // Generators need response time
         return `${adjustedMinutes + 2}_minutes`;
         

@@ -35,7 +35,7 @@ export function useDocumentProcessor() {
       formData.append("file", file);
       if (category) formData.append("category", category);
 
-      const response = await fetch("/api/embeddings/docs", {
+      const response = await fetch("/api/embeddings/upload-docs", {
         method: "POST",
         body: formData,
       });

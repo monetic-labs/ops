@@ -56,7 +56,7 @@ const DocumentManager = () => {
     try {
       setLoading(true);
       const response = await fetch(
-        `/api/embeddings/docs${namespace === "default" ? "" : namespace ? `?namespace=${namespace}` : ""}`
+        `/api/embeddings/upload-docs${namespace === "default" ? "" : namespace ? `?namespace=${namespace}` : ""}`
       );
 
       if (!response.ok) throw new Error("Failed to fetch documents");

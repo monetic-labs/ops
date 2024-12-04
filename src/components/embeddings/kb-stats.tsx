@@ -5,7 +5,7 @@ import { Card } from "@nextui-org/card";
 import { Button } from "@nextui-org/button";
 import { Spinner } from "@nextui-org/spinner";
 
-type IndexStats = {
+export type IndexStats = {
   totalDocuments: number;
   dimension: number;
   namespaces: Record<string, { recordCount: number }>;

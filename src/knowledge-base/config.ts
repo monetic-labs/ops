@@ -30,3 +30,13 @@ export const RETRIEVAL_CONFIG = {
     namespace: "fintech-knowledge",
   },
 } as const;
+
+export const KNOWLEDGE_BASE_CONFIG = {
+  index: "fintech-knowledge",
+  dimension: 1536,
+} as const;
+
+export const PINECONE_CONFIG = {
+  cloud: "aws",
+  region: "us-east-1",
+} as const;

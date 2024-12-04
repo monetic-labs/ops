@@ -5,11 +5,22 @@ export interface User {
 }
 
 export interface GraphNode {
-  type: "domain" | "capability" | "system" | "permission";
+  type: "domain" | "capability" | "system" | "permission" | "experience";
   description: string;
   requires?: string[];
   ui_component?: string;
   roles?: string[];
+  // Add energy type specific fields for experience nodes
+  traits?: string[];
+  financial_strengths?: string[];
+  financial_challenges?: string[];
+  decision_style?: {
+    speed_multiplier: number;
+    risk_tolerance: "low" | "medium" | "high";
+    waiting_period: "minimal" | "foundation-based" | "recognition-based" | "lunar-cycle";
+    confirmation_threshold: "low" | "medium" | "high";
+  };
+  optimal_capabilities?: string[];
 }
 
 export interface GraphEdge {

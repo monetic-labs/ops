@@ -109,19 +109,40 @@
             "optimal_capabilities": ["transfers", "card-issuance"],
             "requires": ["user-auth"]
         },
-        "energy-type-generator": {
+        "energy-type-builder": {
             "type": "experience",
-            "description": "Generator financial interaction patterns",
-            "traits": ["consistent", "methodical", "building"],
-            "financial_strengths": ["steady_growth", "sustainable_patterns"],
-            "financial_challenges": ["quick_decisions", "opportunity_cost"],
+            "description": "Builder financial interaction patterns",
+            "traits": [
+                "Steady progress oriented",
+                "Foundation focused",
+                "Systematic approach",
+                "Consistent execution",
+                "Resource optimization"
+            ],
+            "financial_strengths": [
+                "Building sustainable systems",
+                "Regular savings habits",
+                "Steady wealth building",
+                "Resource management",
+                "Long-term planning"
+            ],
+            "financial_challenges": [
+                "May miss spontaneous opportunities",
+                "Can be overly cautious",
+                "Might stick to suboptimal systems"
+            ],
             "decision_style": {
                 "speed_multiplier": 0.8,
                 "risk_tolerance": "medium",
-                "waiting_period": "response-based",
+                "waiting_period": "foundation-based",
                 "confirmation_threshold": "medium"
-            },
-            "optimal_capabilities": ["automated-savings", "recurring-transfers"],
+        },
+            "optimal_capabilities": [
+                "automated-savings",
+                "recurring-transfers",
+                "cost-over-speed",
+                "systematic-investment"
+            ],
             "requires": ["user-auth"]
         }
     },
@@ -211,7 +232,7 @@
             }
         },
         {
-            "from": "energy-type-generator",
+            "from": "energy-type-builder",
             "to": "transfers",
             "relationship": "modifies",
             "parameters": {
