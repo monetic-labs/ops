@@ -5,7 +5,6 @@ import { validateEmbeddingMetadata } from "@/knowledge-base/v0/graph/graph-valid
 import { Graph } from "@/knowledge-base/v0/graph/graph";
 import { PineconeRecord } from "@/libs/pinecone/types";
 import { formatMetadataForPinecone } from "@/knowledge-base/v0/kb-helpers";
-import { IndexStats } from "@/components/embeddings/kb-stats";
 
 import { KNOWLEDGE_BASE_CONFIG, PINECONE_CONFIG } from "@/knowledge-base/config";
 
@@ -13,6 +12,12 @@ const INDEX_NAME = KNOWLEDGE_BASE_CONFIG.index;
 const DIMENSION = KNOWLEDGE_BASE_CONFIG.dimension;
 
 export async function POST() {
+  const results = {
+    success: 0,
+    failed: 0,
+    errors: [] as string[]
+  };
+
   try {
     // 1. List existing indexes first
     const indexes = await pinecone.listIndexes();
@@ -41,7 +46,12 @@ export async function POST() {
         await new Promise(resolve => setTimeout(resolve, 30000));
       } catch (error) {
         console.error("Error creating index:", error);
-        throw new Error(`Failed to create index: ${error instanceof Error ? error.message : "Unknown error"}`);
+        return NextResponse.json({ 
+          success: false, 
+          error: "Failed to create index",
+          details: error instanceof Error ? error.message : "Unknown error",
+          results 
+        }, { status: 500 });
       }
     }
 
@@ -51,45 +61,54 @@ export async function POST() {
       const indexStats = await index.describeIndexStats();
       console.log("Initial index stats:", indexStats);
 
-    // 4. Delete existing data - SKIP deletion if we get a 404 (empty index)
-    try {
+      // 4. Delete existing data if present
       if (indexStats.totalRecordCount && indexStats.totalRecordCount > 0) {
-        await index.deleteAll();
-        console.log("Deleted all existing vectors");
-      } else {
-        console.log("Index is empty, skipping deletion");
-      }
-    } catch (error: any) {
-        // If we get a 404, the index is empty - this is fine
-        if (error?.response?.status === 404 || error?.status === 404) {
-          console.log("Index is empty, continuing with bootstrap");
-        } else {
-          console.error("Error deleting data:", error);
-          throw error;
+        try {
+          await index.deleteAll();
+          console.log("Deleted all existing vectors");
+        } catch (error: any) {
+          if (error?.response?.status !== 404 && error?.status !== 404) {
+            console.error("Error deleting data:", error);
+            return NextResponse.json({ 
+              success: false, 
+              error: "Failed to clear existing data",
+              details: error instanceof Error ? error.message : "Unknown error",
+              results 
+            }, { status: 500 });
+          }
         }
       }
-
     } catch (error) {
       console.error("Error accessing index:", error);
-      throw new Error(`Failed to access index: ${error instanceof Error ? error.message : "Unknown error"}`);
+      return NextResponse.json({ 
+        success: false, 
+        error: "Failed to access index",
+        details: error instanceof Error ? error.message : "Unknown error",
+        results 
+      }, { status: 500 });
     }
 
-    // 5. Generate and validate embeddings
+    // 5. Generate embeddings
     console.log("Generating embeddings...");
     const embeddings = await bootstrapKnowledgeBase();
-    const batchSize = 100;
-    const results = {
-      success: 0,
-      failed: 0,
-      errors: [] as string[]
-    };
+    if (!embeddings || embeddings.length === 0) {
+      return NextResponse.json({ 
+        success: false, 
+        error: "No embeddings generated",
+        details: "Bootstrap process completed but no embeddings were created",
+        results 
+      }, { status: 400 });
+    }
+    console.log(`Generated ${embeddings.length} total embeddings`);
 
-    // Load graph for validation
+    // 6. Load graph for validation
     const graphData = await import("@/knowledge-base/v0/graph/graph.json");
     const graph = graphData as Graph;
 
-    // 6. Process in batches
+    // 7. Process in batches
+    const batchSize = 100;
     console.log(`Processing ${embeddings.length} embeddings in batches of ${batchSize}`);
+    
     for (let i = 0; i < embeddings.length; i += batchSize) {
       const batch = embeddings.slice(i, i + batchSize);
       const validBatch: PineconeRecord[] = [];
@@ -97,6 +116,14 @@ export async function POST() {
       for (const emb of batch) {
         const validation = validateEmbeddingMetadata(emb.metadata, graph);
         if (validation.isValid) {
+          // Check for zero vectors
+          const hasNonZero = emb.values.some(v => v !== 0);
+          if (!hasNonZero) {
+            results.failed++;
+            results.errors.push(`Invalid embedding ${emb.id}: Dense vectors must contain at least one non-zero value`);
+            continue;
+          }
+          
           validBatch.push({
             id: emb.id,
             values: emb.values,
@@ -120,9 +147,22 @@ export async function POST() {
       }
     }
 
-    // 7. Get final stats
+    // 8. Get final stats
     const finalStats = await index.describeIndexStats();
     console.log("Final index stats:", finalStats);
+
+    // 9. Return appropriate response based on results
+    if (results.failed > 0) {
+      return NextResponse.json({
+        success: false,
+        error: "Some embeddings failed to process",
+        results,
+        stats: {
+          totalDocuments: finalStats.totalRecordCount,
+          namespaces: finalStats.namespaces
+        }
+      }, { status: 207 }); // 207 Multi-Status for partial success
+    }
 
     return NextResponse.json({
       success: true,
@@ -132,11 +172,14 @@ export async function POST() {
         namespaces: finalStats.namespaces
       }
     });
+
   } catch (error) {
     console.error("Bootstrap error:", error);
     return NextResponse.json({ 
+      success: false, 
       error: "Bootstrap failed", 
-      details: error instanceof Error ? error.message : "Unknown error" 
+      details: error instanceof Error ? error.message : "Unknown error",
+      results
     }, { status: 500 });
   }
 }

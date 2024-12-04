@@ -1,7 +1,8 @@
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 import { MentionOption } from "@/types/messaging";
-import { Graph, GraphNode } from "@/knowledge-base/v0/graph/graph";
+import { Graph } from "@/knowledge-base/v0/graph/graph";
 import graphData from "@/knowledge-base/v0/graph/graph.json";
+import React from "react";
 
 interface MentionListProps {
   options: MentionOption[];
@@ -13,7 +14,7 @@ interface MentionListProps {
   setSelectedIndex: (index: number) => void;
 }
 
-export const MentionList: React.FC<MentionListProps> = ({
+export const MentionList = React.memo<MentionListProps>(({
   options,
   searchText,
   onSelect,
@@ -22,8 +23,8 @@ export const MentionList: React.FC<MentionListProps> = ({
   selectedIndex,
   setSelectedIndex,
 }) => {
-  // Get related capabilities for each option
-  const getRelatedInfo = (nodeKey: string) => {
+  // Memoize getRelatedInfo to prevent recreation on every render
+  const getRelatedInfo = useMemo(() => (nodeKey: string) => {
     const graph = graphData as Graph;
     const node = graph.nodes[nodeKey];
     
@@ -39,39 +40,24 @@ export const MentionList: React.FC<MentionListProps> = ({
       capabilities,
       requires: node.requires || []
     };
-  };
+  }, []); // Empty deps since graphData is static
 
-  // Enhanced filtering with graph context
-  const filteredOptions = options.filter((option) => {
-    const searchLower = searchText.toLowerCase();
-    const relatedInfo = getRelatedInfo(option.value);
+  // Memoize filteredOptions to prevent recalculation on every render
+  const filteredOptions = useMemo(() => {
+    if (!visible) return [];
+    return options.filter((option) => {
+      const searchLower = searchText.toLowerCase();
+      const relatedInfo = getRelatedInfo(option.value);
+      return (
+        option.label.toLowerCase().includes(searchLower) ||
+        (option.description && option.description.toLowerCase().includes(searchLower)) ||
+        (relatedInfo?.capabilities && relatedInfo.capabilities.some(cap => 
+          cap.description.toLowerCase().includes(searchLower)
+        ))
+      );
+    });
+  }, [visible, options, searchText, getRelatedInfo]);
 
-    return (
-      option.label.toLowerCase().includes(searchLower) ||
-      (option.description && option.description.toLowerCase().includes(searchLower)) ||
-      // Search in related capabilities
-      (relatedInfo?.capabilities && relatedInfo.capabilities.some(cap => 
-        cap.description.toLowerCase().includes(searchLower)
-      ))
-    );
-  });
-
-  // Reset selected index when search text changes
-  useEffect(() => {
-    setSelectedIndex(0);
-  }, [searchText, setSelectedIndex]);
-
-  if (!visible) return null;
-
-  // Check for exact match
-  const exactMatch = filteredOptions.find(
-    option => option.label.toLowerCase() === searchText.toLowerCase()
-  );
-
-  if (exactMatch) {
-    onSelect(exactMatch);
-    return null;
-  }
 
   return (
     <div
@@ -133,4 +119,6 @@ export const MentionList: React.FC<MentionListProps> = ({
       )}
     </div>
   );
-};
+});
+
+MentionList.displayName = 'MentionList';

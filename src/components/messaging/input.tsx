@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useCallback, forwardRef, useState } from 'react';
-import { useMessagingState, useMessagingActions } from '@/libs/messaging/store';
+import { useMessagingState, useMessagingActions, useMessagingStore } from '@/libs/messaging/store';
 import { useAgentService } from '@/hooks/messaging/useAgentService';
 import { useMentions } from '@/hooks/messaging/useMentions';
 import { MentionOption } from '@/types/messaging';
@@ -9,17 +9,13 @@ import { MentionList } from './mention-list';
 
 export const MessageInput = forwardRef<HTMLInputElement>((_, ref) => {
   const { inputValue, mode } = useMessagingState();
-  const { message: { setInputValue, sendMessage } } = useMessagingActions();
+  const { message: { setInputValue } } = useMessagingActions();
   const agentService = useAgentService();
   const { options: mentionOptions } = useMentions();
 
-  // Add state for mention handling
-  const [mentionState, setMentionState] = useState({
-    isOpen: false,
-    searchText: '',
-    selectedIndex: 0,
-    position: { top: 0, left: 0 }
-    });
+  // Move mentionState to global store instead of local state
+  const { mention: { setMentionState } } = useMessagingActions();
+  const mentionState = useMessagingStore(state => state.mention);
 
   const handleSubmit = useCallback(async (e: React.FormEvent) => {
     e.preventDefault();
@@ -29,62 +25,62 @@ export const MessageInput = forwardRef<HTMLInputElement>((_, ref) => {
       await agentService.sendMessage(inputValue.trim());
       setInputValue('');
       // Close mentions if open
-      setMentionState(prev => ({ ...prev, isOpen: false }));
+      setMentionState({ isOpen: false });
     } catch (error) {
       console.error('Failed to send message:', error);
     }
   }, [inputValue, agentService, setInputValue]);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const newValue = e.target.value;
     setInputValue(newValue);
-
+  
     // Handle @ mentions
-    const words = newValue.split(' ');
+    const cursorPosition = e.target.selectionStart;
+    const textBeforeCursor = newValue.slice(0, cursorPosition ?? 0);
+    const words = textBeforeCursor.split(' ');
     const lastWord = words[words.length - 1];
     
     if (lastWord.startsWith('@')) {
       const searchTerm = lastWord.slice(1).toLowerCase();
-      setMentionState(prev => ({
-        ...prev,
+      const rect = e.target.getBoundingClientRect();
+      
+      setMentionState({
         isOpen: true,
         searchText: searchTerm,
-      }));
-    } else {
-      setMentionState(prev => ({ ...prev, isOpen: false }));
+        selectedIndex: 0, // Reset index when search text changes
+        position: {
+          top: rect.top,
+          left: rect.left
+        }
+      });
+    } else if (mentionState.isOpen) {
+      setMentionState({
+        isOpen: false,
+        searchText: '',
+        selectedIndex: 0
+      });
     }
-  };
+  }, [setInputValue, setMentionState, mentionState.isOpen]);
 
-  const handleKeyDown = (e: React.KeyboardEvent) => {
+  const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
     if (!mentionState.isOpen) return;
 
     switch (e.key) {
       case 'ArrowDown':
         e.preventDefault();
-        setMentionState(prev => ({
-          ...prev,
+        setMentionState({
           selectedIndex: Math.min(
-            prev.selectedIndex + 1,
+            mentionState.selectedIndex + 1,
             mentionOptions.length - 1
           )
-        }));
+        });
         break;
       case 'ArrowUp':
         e.preventDefault();
-        setMentionState(prev => ({
-          ...prev,
-          selectedIndex: Math.max(prev.selectedIndex - 1, 0)
-        }));
-        break;
-      case 'Tab': // Add Tab handler
-        e.preventDefault();
-        const filteredOptionsTab = mentionOptions.filter(option =>
-          option.value.toLowerCase().includes(mentionState.searchText.toLowerCase())
-        );
-        if (filteredOptionsTab.length > 0) {
-          // Select the currently highlighted option or the first match
-          handleMentionSelect(filteredOptionsTab[mentionState.selectedIndex] || filteredOptionsTab[0]);
-        }
+        setMentionState({
+          selectedIndex: Math.max(mentionState.selectedIndex - 1, 0)
+        });
         break;
       case 'Enter':
         e.preventDefault();
@@ -96,17 +92,17 @@ export const MessageInput = forwardRef<HTMLInputElement>((_, ref) => {
         }
         break;
       case 'Escape':
-        setMentionState(prev => ({ ...prev, isOpen: false }));
+        setMentionState({ isOpen: false });
         break;
     }
-  };
+  }, [mentionState.isOpen, mentionState.selectedIndex, mentionState.searchText, mentionOptions, setMentionState]);
 
-  const handleMentionSelect = (option: MentionOption) => {
+  const handleMentionSelect = useCallback((option: MentionOption) => {
     const words = inputValue.split(' ');
     words[words.length - 1] = `@${option.value}`;
     setInputValue(words.join(' ') + ' ');
-    setMentionState(prev => ({ ...prev, isOpen: false }));
-  };
+    setMentionState({ isOpen: false });
+  }, [inputValue, setInputValue, setMentionState]);
 
   return (
     <form 
@@ -133,9 +129,7 @@ export const MessageInput = forwardRef<HTMLInputElement>((_, ref) => {
           position={mentionState.position}
           visible={mentionState.isOpen}
           selectedIndex={mentionState.selectedIndex}
-          setSelectedIndex={(index) => 
-            setMentionState(prev => ({ ...prev, selectedIndex: index }))
-          }
+          setSelectedIndex={(index) => setMentionState({ selectedIndex: index })}
         />
       </div>
 

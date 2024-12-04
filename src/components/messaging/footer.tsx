@@ -10,7 +10,7 @@ interface ChatFooterProps {
   inputRef?: React.RefObject<HTMLInputElement>;
 }
 
-export const ChatFooter: React.FC<ChatFooterProps> = ({ inputRef }) => {
+export const ChatFooter = React.memo<ChatFooterProps>(({ inputRef }) => {
   return (
     <div className="border-t border-charyo-600 p-4 space-y-4" data-testid="pane-footer">
       <ModeSwitcher />
@@ -18,4 +18,6 @@ export const ChatFooter: React.FC<ChatFooterProps> = ({ inputRef }) => {
       <MessageInput ref={inputRef} />
     </div>
   );
-};
+});
+
+ChatFooter.displayName = "PaneFooter";

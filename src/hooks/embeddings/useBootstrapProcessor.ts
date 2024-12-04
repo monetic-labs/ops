@@ -3,6 +3,7 @@ import { useState } from "react";
 interface BootstrapStats {
   totalDocuments: number;
   namespaces: Record<string, { recordCount: number }>;
+  errors: string[];
 }
 
 export const useBootstrapProcessor = () => {

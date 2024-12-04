@@ -1,3 +1,5 @@
+import { ContextChunk } from "@/knowledge-base/v0/chunking";
+
 export const mockContextChunks: ContextChunk[] = [
   {
     type: "domain",

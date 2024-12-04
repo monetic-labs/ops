@@ -17,21 +17,16 @@ export const ChatPane: React.FC<ChatPaneProps> = ({ isOpen, onClose }) => {
   const [mounted, setMounted] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  // Handle initial mount with hydration safety
+  // Combine mount and focus effects
   useEffect(() => {
     setMounted(true);
-  }, []);
-
-  // Focus input when pane opens
-  useEffect(() => {
-    if (isOpen && mounted) {
-      // Small delay to ensure DOM is ready
-      setTimeout(() => {
-        const input = inputRef.current;
-        input?.focus();
+    if (isOpen) {
+      const timer = setTimeout(() => {
+        inputRef.current?.focus();
       }, 100);
+      return () => clearTimeout(timer);
     }
-  }, [isOpen, mounted]);
+  }, [isOpen]);
 
   // Handle escape key
   useEffect(() => {
@@ -45,10 +40,15 @@ export const ChatPane: React.FC<ChatPaneProps> = ({ isOpen, onClose }) => {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [isOpen, isResizing, onClose]);
 
+  // const handleClose = useCallback(() => {
+  //   if (isResizing) return;
+  //   onClose();
+  // }, [onClose, isResizing]);
   const handleClose = useCallback(() => {
-    if (isResizing) return;
-    onClose();
-  }, [onClose, isResizing]);
+    if (!isResizing) {
+      onClose();
+    }
+  }, [isResizing, onClose]);
 
   if (!mounted) return null;
 

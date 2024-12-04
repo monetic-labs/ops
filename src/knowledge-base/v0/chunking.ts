@@ -1,6 +1,6 @@
 import { Graph } from "./graph/graph";
 
-interface ContextChunk {
+export interface ContextChunk {
   type: "domain" | "capability" | "usage" | "experience" | "system";
   priority: number;
   content: string;

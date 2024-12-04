@@ -3,6 +3,7 @@ import { Divider } from "@nextui-org/divider";
 import { Button } from "@nextui-org/button";
 import { Spinner } from "@nextui-org/spinner";
 import { useBootstrapProcessor } from "@/hooks/embeddings/useBootstrapProcessor";
+import { FormButton } from "../generics/form-button";
 
 export const BootstrapSection = () => {
     const { runBootstrap, isBootstrapping, bootstrapStatus } = useBootstrapProcessor();
@@ -19,28 +20,33 @@ export const BootstrapSection = () => {
         <CardBody>
           <div className="space-y-4">
             <div className="flex items-center space-x-4">
-              <Button
-                className="bg-ualert-500 text-white"
-                disabled={isBootstrapping}
-                onClick={runBootstrap}
-              >
-                {isBootstrapping ? (
-                  <Spinner color="current" size="sm" />
-                ) : (
-                  "Bootstrap Knowledge Base"
-                )}
-              </Button>
-              {bootstrapStatus.type && (
-                <span
-                  className={`${
-                    bootstrapStatus.type === "success"
-                      ? "text-green-500"
-                      : "text-red-500"
-                  }`}
-                >
-                  {bootstrapStatus.message}
-                </span>
+            <FormButton
+            className="w-full"
+            disabled={isBootstrapping}
+            onClick={runBootstrap}
+          >
+            {isBootstrapping ? (
+              <Spinner color="current" size="sm" />
+            ) : (
+              "Bootstrap Knowledge Base"
+            )}
+          </FormButton>
+          {bootstrapStatus?.type && (
+            <div
+              className={`p-4 rounded ${
+                bootstrapStatus.type === "success"
+                  ? "bg-green-100/10 text-green-500"
+                  : "bg-red-100/10 text-red-500"
+              }`}
+            >
+              {bootstrapStatus.message}
+              {bootstrapStatus.type === "error" && bootstrapStatus.stats && (
+                <div className="mt-2 text-sm">
+                  Failed documents: {bootstrapStatus.stats.errors.length || 0}
+                </div>
               )}
+            </div>
+          )}
             </div>
             <div className="text-notpurple-500/60">
               <p className="font-semibold">This will:</p>

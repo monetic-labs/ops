@@ -36,14 +36,14 @@ export const MessagingProvider = ({ children, userId, initialMode = 'bot' }: Mes
     };
   }, [connect, setMode, setWidth, initialMode]);
 
-  useEffect(() => {
-    const unsubscribe = useMessagingStore.subscribe(
-      (state) => state.connection.status
-    );
-    const connectionStatus = useMessagingStore.getState().connection.status;
-    console.log('Connection status:', connectionStatus );
-    return () => unsubscribe();
-  }, []);
+  // useEffect(() => {
+  //   const unsubscribe = useMessagingStore.subscribe(
+  //     (state) => state.connection.status
+  //   );
+  //   const connectionStatus = useMessagingStore.getState().connection.status;
+  //   console.log('Connection status:', connectionStatus );
+  //   return () => unsubscribe();
+  // }, []);
 
   return <>{children}</>;
 };

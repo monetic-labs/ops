@@ -11,6 +11,19 @@ import {
     MessageStatus 
   } from '@/types/messaging';
 
+// Add to MessagingStore interface
+interface MentionState {
+  isOpen: boolean;
+  searchText: string;
+  selectedIndex: number;
+  position: { top: number; left: number };
+}
+
+interface MentionActions {
+  setMentionState: (state: Partial<MentionState>) => void;
+  resetMentionState: () => void;
+}
+
 // Separate UI state from core messaging state
 interface UIState {
   isOpen: boolean;
@@ -38,15 +51,17 @@ interface ConnectionState {
 }
 
 export interface MessagingStore {
-    ui: UIState;
-    message: MessageState;
-    connection: ConnectionState;
-    actions: {
-        ui: UIActions;
-        message: MessageActions;
-        connection: ConnectionActions;
-    };
-    initialized: boolean;
+  ui: UIState;
+  message: MessageState;
+  mention: MentionState;
+  connection: ConnectionState;
+  actions: {
+    ui: UIActions;
+    message: MessageActions;
+    mention: MentionActions;
+    connection: ConnectionActions;
+  };
+  initialized: boolean;
 }
 
 interface MessageActions {
@@ -101,6 +116,7 @@ const createMessage = (content: string, type: Message['type'], status: MessageSt
     }
 };
 
+// Create the messaging store
 export const useMessagingStore = create<MessagingStore>()(
     devtools((set, get) => {
       //const webSocket = useWebSocket.getState();
@@ -117,6 +133,12 @@ export const useMessagingStore = create<MessagingStore>()(
             inputValue: '',
             isTyping: false,
             userId: null,
+        },
+        mention: {
+          isOpen: false,
+          searchText: '',
+          selectedIndex: 0,
+          position: { top: 0, left: 0 },
         },
         connection: {
           status: 'disconnected', // Align with WebSocket status
@@ -176,6 +198,19 @@ export const useMessagingStore = create<MessagingStore>()(
             setTyping: (isTyping: boolean) => set(state => ({
               message: { ...state.message, isTyping }
             })),
+          },
+          mention: {
+            setMentionState: (updates) => set(state => ({
+              mention: { ...state.mention, ...updates }
+            })),
+            resetMentionState: () => set(state => ({
+              mention: {
+                isOpen: false,
+                searchText: '',
+                selectedIndex: 0,
+                position: { top: 0, left: 0 }
+              }
+            }))
           },
           connection: {
             connect: async () => {
