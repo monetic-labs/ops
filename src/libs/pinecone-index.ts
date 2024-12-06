@@ -1,8 +1,8 @@
 import { pinecone } from "@/libs/pinecone/pinecone";
 import { knowledgeBase } from "@/libs/openai/retrieve";
+import { KNOWLEDGE_BASE_CONFIG, PINECONE_CONFIG } from "@/knowledge-base/config";
 
 import { getEmbedding } from "./openai/embedding";
-import { KNOWLEDGE_BASE_CONFIG, PINECONE_CONFIG } from "@/knowledge-base/config";
 
 async function initializePineconeIndex() {
   try {

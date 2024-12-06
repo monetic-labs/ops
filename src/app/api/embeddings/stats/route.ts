@@ -10,11 +10,11 @@ export async function GET() {
     const stats = await index.describeIndexStats();
 
     if (!stats.namespaces) {
-      return NextResponse.json({ 
+      return NextResponse.json({
         totalDocuments: 0,
         namespaces: {},
         dimension: stats.dimension,
-        indexFullness: 0
+        indexFullness: 0,
       });
     }
 
@@ -22,18 +22,19 @@ export async function GET() {
 
     return NextResponse.json({
       totalDocuments: stats.totalRecordCount,
-      namespaces: Object.entries(namespaces).reduce((acc, [ns, data]) => ({
-        ...acc,
-        [ns]: { recordCount: data.recordCount }
-      }), {}),
+      namespaces: Object.entries(namespaces).reduce(
+        (acc, [ns, data]) => ({
+          ...acc,
+          [ns]: { recordCount: data.recordCount },
+        }),
+        {}
+      ),
       dimension: stats.dimension,
-      indexFullness: stats.indexFullness
+      indexFullness: stats.indexFullness,
     });
   } catch (error) {
-    console.error('Failed to fetch Pinecone stats:', error);
-    return NextResponse.json(
-      { error: 'Failed to fetch index stats' },
-      { status: 500 }
-    );
+    console.error("Failed to fetch Pinecone stats:", error);
+
+    return NextResponse.json({ error: "Failed to fetch index stats" }, { status: 500 });
   }
 }

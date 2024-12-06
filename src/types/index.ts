@@ -1,11 +1,14 @@
+import { SVGProps } from "react";
+import { StoreApi } from "zustand";
+
 import { MessagingStore } from "@/libs/messaging/store";
 import { Graph } from "@/knowledge-base/v0/graph/graph";
 import { SpeedOverCostPreference } from "@/knowledge-base/v0/types";
 import { UsagePattern } from "@/knowledge-base/v0/usage";
-import { SVGProps } from "react";
-import { StoreApi } from "zustand";
+
 import { AgentMessageContext, SupportMessageContext } from "./messaging";
-import { MockWebSocket } from "@/tests/e2e/container/test-types";
+
+//import { MockWebSocket } from "@/tests/e2e/container/test-types";
 
 export type IconSvgProps = SVGProps<SVGSVGElement> & {
   size?: number;
@@ -17,7 +20,7 @@ export type ChainAddress = `0x${string}`;
 
 declare global {
   interface Window {
-    __MOCK_WS__?: MockWebSocket;
+    //__MOCK_WS__?: MockWebSocket;
 
     __MOCK_AGENT_CONTEXT__?: AgentMessageContext;
     __MOCK_SUPPORT_CONTEXT__?: SupportMessageContext;

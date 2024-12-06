@@ -1,8 +1,7 @@
 import { test, expect, Page } from "@playwright/test";
+
 import { setupAuthCookie, setupAuthMocks, setupMerchantApi } from "./fixtures/api/auth";
-import path from "path";
 import { setupRainCardCompany } from "./fixtures/api/rain";
-import { readFile } from "fs";
 
 test.describe("Onboarding Flow", () => {
   test.beforeEach(async ({ page }) => {
@@ -14,6 +13,7 @@ test.describe("Onboarding Flow", () => {
 
   test("should sign up with email", async ({ page }) => {
     const email = "hello@backpack.network";
+
     // Enter email
     await page.getByLabel("Email").fill(email);
     await page.getByTestId("sign-up-button").click();

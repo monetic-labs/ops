@@ -1,7 +1,9 @@
 import { test, expect, Page } from "@playwright/test";
+
 import { MOCK_BALANCE } from "@/utils/constants";
 import { setupContactsApi } from "@/tests/e2e/fixtures/api/disbursement";
 import { setupAuthCookie } from "@/tests/e2e/fixtures/api/auth";
+
 import {
   BANK_VALIDATIONS,
   ACCOUNT_HOLDER_VALIDATIONS,
@@ -244,6 +246,7 @@ test.describe("Bill Pay Modal", () => {
 
     test("should validate create button state", async ({ page, browserName }) => {
       const createButton = page.getByTestId("create-modal-button");
+
       await expect(createButton).toBeDisabled();
 
       // Fill form fields sequentially and check button state
@@ -286,6 +289,7 @@ test.describe("Bill Pay Modal", () => {
 async function fillBasicFormData(page: Page) {
   // Handle account holder selection
   const accountHolder = page.getByTestId("account-holder");
+
   await accountHolder.waitFor({ state: "visible" });
 
   // Focus and type to trigger dropdown
@@ -294,6 +298,7 @@ async function fillBasicFormData(page: Page) {
 
   // Wait for dropdown and options
   const dropdown = page.getByRole("listbox");
+
   await dropdown.waitFor({ state: "visible" });
 
   // Use keyboard navigation to select option
@@ -303,6 +308,7 @@ async function fillBasicFormData(page: Page) {
 
   // Handle payment method selection similarly
   const paymentMethod = page.getByTestId("payment-method");
+
   await expect(paymentMethod).toBeEnabled();
   await paymentMethod.click();
 
@@ -325,6 +331,7 @@ async function selectDropdownOption(page: Page, selector: string, value: string,
 
 async function fillFormField(page: Page, field: FormField) {
   const element = page.getByTestId(field.selector);
+
   await element.fill(field.value);
 
   if (field.validation) {

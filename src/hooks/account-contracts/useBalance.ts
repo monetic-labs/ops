@@ -1,10 +1,11 @@
 import { useState, useEffect, useCallback } from "react";
-import { publicClient } from "@/config/web3";
-import { BASE_USDC, MOCK_BALANCE, MOCK_SETTLEMENT_ADDRESS } from "@/utils/constants";
 import { Address, formatUnits } from "viem";
-import { formatDecimals, isTesting } from "@/utils/helpers";
 import { useAppKitAccount } from "@reown/appkit/react";
 import { useDebounce } from "use-debounce";
+
+import { publicClient } from "@/config/web3";
+import { BASE_USDC, MOCK_BALANCE, MOCK_SETTLEMENT_ADDRESS } from "@/utils/constants";
+import { formatDecimals, isTesting } from "@/utils/helpers";
 
 type UseBalanceProps = {
   amount: string;
@@ -32,18 +33,21 @@ export const useBalance = ({ amount, isModalOpen }: UseBalanceProps) => {
       args: [account as Address],
     });
     const formattedBalance = formatUnits(balanceResult, BASE_USDC.DECIMALS);
+
     return formatDecimals(formattedBalance);
   }, [account]);
 
   const fetchBalance = useCallback(
     async (force = false) => {
       const now = Date.now();
+
       // Only fetch if it's been more than 1 minute since last fetch or if forced
       if (!force && now - lastFetchTime < 60000) return;
 
       try {
         setIsLoading(true);
         const newBalance = await getUserBalance();
+
         setBalance(newBalance);
         setLastFetchTime(now);
       } catch (error) {

@@ -1,7 +1,6 @@
 // import { Message, WebSocketMessage } from "@/types/messaging";
 // import { create } from 'zustand';
 
-
 // interface WebSocketState {
 //   connection: WebSocket | null;
 //   status: 'connecting' | 'connected' | 'disconnected';
@@ -27,7 +26,7 @@
 //     if (get().status === 'connecting' || get().status === 'connected') return;
 
 //     set({ status: 'connecting' });
-    
+
 //     try {
 //       const ws = new MockWebSocket(process.env.NEXT_PUBLIC_WS_URL || "ws://localhost:3000");
 
@@ -83,4 +82,3 @@
 
 //   clearError: () => set({ error: null })
 // }));
-

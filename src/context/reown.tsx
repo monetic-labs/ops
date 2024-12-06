@@ -1,10 +1,11 @@
 import { AppKitNetwork, base, baseSepolia } from "@reown/appkit/networks";
 import { createAppKit, Metadata } from "@reown/appkit";
-import SignClient from "@walletconnect/sign-client";
+
 import { isLocal, isProduction, isStaging, isTesting } from "@/utils/helpers";
 import { getChain } from "@/config/web3";
 
 const projectId = process.env.NEXT_PUBLIC_REOWN_PROJECT_ID;
+
 if (!projectId) {
   throw new Error("Reown Project ID is not set");
 }

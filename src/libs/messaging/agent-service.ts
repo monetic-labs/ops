@@ -135,6 +135,7 @@ export const useAgentStore = create<AgentState>((set, get) => ({
       helpers.setInput(value);
     }
     set({ inputValue: value });
+
     return Promise.resolve();
   },
 

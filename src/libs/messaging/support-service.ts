@@ -45,6 +45,7 @@ export const useSupportStore = create<SupportState>((set, get) => ({
 
   setInputValue: async (value: string) => {
     set({ inputValue: value });
+
     return Promise.resolve();
   },
 

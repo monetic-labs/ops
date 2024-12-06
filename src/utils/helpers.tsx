@@ -132,5 +132,6 @@ export const formatAmountUSD = (value: number) => {
 export const formatDecimals = (value: string): string => {
   const [whole, decimal = ""] = value.split(".");
   const truncatedDecimal = decimal.slice(0, 2).padEnd(2, "0");
+
   return `${whole}.${truncatedDecimal}`;
 };

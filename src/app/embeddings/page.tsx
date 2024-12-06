@@ -9,12 +9,10 @@ import { Tabs, Tab } from "@nextui-org/tabs";
 
 import { FormButton } from "@/components/generics/form-button";
 import { FormCard } from "@/components/generics/form-card";
-
 import { BootstrapSection } from "@/components/embeddings/bootstrap-section";
 import DocumentManager from "@/components/embeddings/doc-manager";
 import KnowledgeBaseStats from "@/components/embeddings/kb-stats";
 import { useDocumentProcessor } from "@/hooks/embeddings/useDocumentProcessor";
-
 
 const UploadForm = ({
   file,
@@ -123,9 +121,7 @@ const EmbeddingsPage = () => {
 
   return (
     <div className="container mx-auto px-4 py-8 space-y-6">
-      <h1 className="text-2xl font-bold text-notpurple-500">
-        Document Embeddings Management
-      </h1>
+      <h1 className="text-2xl font-bold text-notpurple-500">Document Embeddings Management</h1>
 
       <Tabs
         aria-label="Document Management"
@@ -163,7 +159,6 @@ const EmbeddingsPage = () => {
             </Card>
 
             <DocumentManager />
-            
           </div>
         </Tab>
 
@@ -197,7 +192,6 @@ const EmbeddingsPage = () => {
               </div>
             </CardBody>
           </Card>
-          
         </Tab>
       </Tabs>
     </div>

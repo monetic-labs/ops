@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useCallback, useEffect, useRef, useState } from "react";
+
 import { useResizePanel } from "@/hooks/messaging/useResizePanel";
 
 import { ChatHeader } from "./header";
@@ -24,6 +25,7 @@ export const ChatPane: React.FC<ChatPaneProps> = ({ isOpen, onClose }) => {
       const timer = setTimeout(() => {
         inputRef.current?.focus();
       }, 100);
+
       return () => clearTimeout(timer);
     }
   }, [isOpen]);
@@ -31,13 +33,14 @@ export const ChatPane: React.FC<ChatPaneProps> = ({ isOpen, onClose }) => {
   // Handle escape key
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape' && isOpen && !isResizing) {
+      if (e.key === "Escape" && isOpen && !isResizing) {
         onClose();
       }
     };
 
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
+    window.addEventListener("keydown", handleKeyDown);
+
+    return () => window.removeEventListener("keydown", handleKeyDown);
   }, [isOpen, isResizing, onClose]);
 
   // const handleClose = useCallback(() => {
@@ -79,7 +82,7 @@ export const ChatPane: React.FC<ChatPaneProps> = ({ isOpen, onClose }) => {
         {/* Resize Handle */}
         <div
           className={`absolute right-0 top-0 w-1 h-full cursor-ew-resize hover:bg-ualert-500/50
-            ${isResizing ? 'bg-ualert-500/50' : 'bg-transparent'}`}
+            ${isResizing ? "bg-ualert-500/50" : "bg-transparent"}`}
           {...resizeHandleProps}
           data-testid="chat-pane-resize-handle"
         />

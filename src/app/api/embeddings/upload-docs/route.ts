@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+
 import { pinecone } from "@/libs/pinecone/pinecone";
 import { KNOWLEDGE_BASE_CONFIG } from "@/knowledge-base/config";
 import { Graph, getDomainCapabilities } from "@/knowledge-base/v0/graph/graph";
@@ -12,7 +13,7 @@ export async function GET(request: Request) {
   try {
     const index = pinecone.index(KNOWLEDGE_BASE_CONFIG.index);
     const graph: Graph = await loadGraph();
-    
+
     // Query Pinecone with metadata included
     const queryResponse = await index.query({
       filter: namespace ? { namespace } : undefined,
@@ -22,70 +23,73 @@ export async function GET(request: Request) {
     });
 
     // Transform Pinecone matches into our DocumentList format with enhanced sections
-    const documents = queryResponse.matches?.map(match => {
-      let nodeId;
-      try {
-        // Ensure we're working with a string
-        const contentStr = typeof match.metadata?.content === 'string' 
-          ? match.metadata.content 
-          : JSON.stringify(match.metadata?.content);
-          
-        // First parse to get the outer JSON object
-        const outerContent = JSON.parse(contentStr);
-        // Then parse the inner JSON string
-        const parsedContent = JSON.parse(outerContent.content);
-        nodeId = parsedContent.id;  // Extract the node ID
-        console.log('Outer:', outerContent, 'Inner:', parsedContent, 'Node ID:', nodeId); // Enhanced debug log
-      } catch (error) {
-        console.warn('Failed to parse content:', match.metadata?.content, error);
-        nodeId = match.id;
-      }
-    
-      const node = graph.nodes[nodeId];
-      console.log('Graph node lookup:', nodeId, node);
-    
-      let section = "No section";
-    
-      if (node) {
-        if (node.type === "domain") {
-          const capabilities = getDomainCapabilities(graph, nodeId);
-          const capabilityNames = capabilities.map(cap => cap.description);
-          section = `${node.description} providing: ${capabilityNames.join(', ') || 'no capabilities'}`;
-        } else if (node.type === "capability") {
-          const requirements = node.requires || [];
-          const usedByNodes = graph.edges
-            .filter(edge => edge.to === nodeId && edge.relationship === "uses")
-            .map(edge => graph.nodes[edge.from]?.description);
-    
-          section = `${node.description}${
-            requirements.length ? ` requiring: ${requirements.join(', ')}` : ''
-          }${usedByNodes.length ? ` • Used by: ${usedByNodes.join(', ')}` : ''}`;
-        }
-      }
+    const documents =
+      queryResponse.matches?.map((match) => {
+        let nodeId: string | undefined;
 
-      return {
-        id: match.id,
-        metadata: {
-          category: match.metadata?.type || "Uncategorized",
-          section,
-          text: match.metadata?.content || "No content available",
-          created_at: match.metadata?.created_at || Date.now(),
-          source: match.metadata?.source,
-          label: node?.description || match.id,
-          type: node?.type,
-          ...match.metadata
+        try {
+          // Ensure we're working with a string
+          const contentStr =
+            typeof match.metadata?.content === "string"
+              ? match.metadata.content
+              : JSON.stringify(match.metadata?.content);
+
+          // First parse to get the outer JSON object
+          const outerContent = JSON.parse(contentStr);
+          // Then parse the inner JSON string
+          const parsedContent = JSON.parse(outerContent.content);
+
+          nodeId = parsedContent.id as string;
+          console.log("Outer:", outerContent, "Inner:", parsedContent, "Node ID:", nodeId);
+        } catch (error) {
+          console.warn("Failed to parse content:", match.metadata?.content, error);
+          nodeId = match.id;
         }
-      };
-    }) || [];
+
+        const node = nodeId ? graph.nodes[nodeId] : undefined;
+
+        console.log("Graph node lookup:", nodeId, node);
+
+        let section = "No section";
+
+        if (node) {
+          if (node.type === "domain") {
+            const capabilities = getDomainCapabilities(graph, nodeId);
+            const capabilityNames = capabilities.map((cap) => cap.description);
+
+            section = `${node.description} providing: ${capabilityNames.join(", ") || "no capabilities"}`;
+          } else if (node.type === "capability") {
+            const requirements = node.requires || [];
+            const usedByNodes = graph.edges
+              .filter((edge) => edge.to === nodeId && edge.relationship === "uses")
+              .map((edge) => graph.nodes[edge.from]?.description);
+
+            section = `${node.description}${
+              requirements.length ? ` requiring: ${requirements.join(", ")}` : ""
+            }${usedByNodes.length ? ` • Used by: ${usedByNodes.join(", ")}` : ""}`;
+          }
+        }
+
+        return {
+          id: match.id,
+          metadata: {
+            category: match.metadata?.type || "Uncategorized",
+            section,
+            text: match.metadata?.content || "No content available",
+            created_at: match.metadata?.created_at || Date.now(),
+            source: match.metadata?.source,
+            label: node?.description || match.id,
+            type: node?.type,
+            ...match.metadata,
+          },
+        };
+      }) || [];
 
     return NextResponse.json({ documents });
-
   } catch (error) {
     console.error("Failed to fetch documents:", error);
-    return NextResponse.json(
-      { error: "Failed to fetch documents" },
-      { status: 500 }
-    );
+
+    return NextResponse.json({ error: "Failed to fetch documents" }, { status: 500 });
   }
 }
 

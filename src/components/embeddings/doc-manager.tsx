@@ -10,9 +10,10 @@ import { Divider } from "@nextui-org/divider";
 
 import { useDocumentManager } from "@/hooks/embeddings/useDocumentManager";
 import CardFooterWithActions from "@/components/generics/card-footer-actions";
+import { usePineconeStats } from "@/hooks/embeddings/usePineconeStats";
 
 import IDSnippet from "../generics/snippet-id";
-import { usePineconeStats } from "@/hooks/embeddings/usePineconeStats";
+
 import { ContentPreview } from "./doc-previewer";
 
 interface DocumentList {
@@ -67,6 +68,7 @@ const DocumentManager = () => {
 
       if (!response.ok) throw new Error("Failed to fetch documents");
       const data = await response.json();
+
       setDocuments(data.documents);
     } catch (error) {
       console.error("Failed to fetch documents:", error);
@@ -165,7 +167,7 @@ const DocumentManager = () => {
           <div className="space-y-2">
             <h4 className="text-sm font-medium text-notpurple-500/60">Content Preview</h4>
             <div className="bg-charyo-800/40 rounded-lg p-3">
-              <ContentPreview content={doc.metadata.text || '{}'} />
+              <ContentPreview content={doc.metadata.text || "{}"} />
             </div>
           </div>
 
@@ -193,14 +195,12 @@ const DocumentManager = () => {
     <Card className="bg-charyo-500/60 backdrop-blur-sm w-full">
       <CardHeader className="flex flex-col items-start">
         <h3 className="text-lg font-semibold text-notpurple-500">Document Management</h3>
-          <p className="text-small text-notpurple-500/60">
-            {statsLoading ? (
-              "Loading stats..."
-            ) : (
-              `Managing ${stats?.totalDocuments || 0} documents across ${
+        <p className="text-small text-notpurple-500/60">
+          {statsLoading
+            ? "Loading stats..."
+            : `Managing ${stats?.totalDocuments || 0} documents across ${
                 Object.keys(stats?.namespaces || {}).length
-            } namespaces`
-            )}
+              } namespaces`}
         </p>
       </CardHeader>
       <Divider />

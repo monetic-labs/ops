@@ -72,7 +72,7 @@ export const MerchantOnboard: React.FC<{ onCancel: () => void; initialEmail: str
   const userDetailTabs = tabs.filter((tab) => tab.key.startsWith("user-details-"));
 
   return (
-    <FormCard className="overflow-y-auto max-h-screen" title="Know Your Business" data-testid="onboarding-form">
+    <FormCard className="overflow-y-auto max-h-screen" data-testid="onboarding-form" title="Know Your Business">
       <Tabs selectedKey={activeTab} onSelectionChange={(key) => setActiveTab(key as string)}>
         {mainTabs.map((tab) => (
           <Tab key={tab.key} title={tab.title}>
@@ -116,16 +116,16 @@ export const MerchantOnboard: React.FC<{ onCancel: () => void; initialEmail: str
             )}
             {tab.key === "register-account" && (
               <AccountRegistration
+                accountUsers={formData.accountUsers.representatives.filter((user) => user.role !== "representative")}
                 email={formData.accountUsers.representatives[0].email}
                 handleRainToSAccepted={handleRainToSAccepted}
                 isRainToSAccepted={isRainToSAccepted}
                 kybBridgeLink={createMerchantData?.data.kycLink || null}
                 rainToSError={rainToSError}
                 tosBridgeLink={createMerchantData?.data.tosLink || null}
+                userDetails={formData.userDetails}
                 onCancel={handleCancel}
                 onKYCDone={handleKYCDone}
-                accountUsers={formData.accountUsers.representatives.filter((user) => user.role !== "representative")}
-                userDetails={formData.userDetails}
               />
             )}
           </Tab>

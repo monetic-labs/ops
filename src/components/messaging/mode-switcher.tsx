@@ -7,8 +7,6 @@ import { useSearchParams, useRouter } from "next/navigation";
 
 import { useMessagingActions, useMessagingState } from "@/libs/messaging/store";
 import { MessageMode } from "@/types/messaging";
-import { TEST_CONFIG } from "@/tests/e2e/container/test-env";
-import { isTestEnvironment } from "@/tests/e2e/container/test-env";
 
 export const ModeSwitcher: React.FC = () => {
   const { mode } = useMessagingState();
@@ -20,13 +18,8 @@ export const ModeSwitcher: React.FC = () => {
   const handleModeChange = useCallback(
     (newMode: string | number) => {
       const modeValue = newMode as "bot" | "support";
+
       setMode(modeValue as MessageMode);
-  
-      if (isTestEnvironment()) {
-        const params = new URLSearchParams(searchParams.toString());
-        params.set("mode", modeValue);
-        router.replace(`${TEST_CONFIG.routes.pane}?${params.toString()}`, { scroll: false });
-      }
     },
     [setMode, searchParams, router]
   );

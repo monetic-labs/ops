@@ -52,7 +52,7 @@ export const AutocompleteInput = <T extends FieldValues>({
               onSelectionChange={(value) => field.onChange(value)}
             >
               {(item) => (
-                <AutocompleteItem key={item.value} value={item.value} data-testid={`${testid}-item`}>
+                <AutocompleteItem key={item.value} data-testid={`${testid}-item`} value={item.value}>
                   {item.label}
                 </AutocompleteItem>
               )}

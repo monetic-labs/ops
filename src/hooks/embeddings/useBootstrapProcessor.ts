@@ -32,12 +32,11 @@ export const useBootstrapProcessor = () => {
       setBootstrapStatus({
         type: "success",
         message: `Successfully bootstrapped knowledge base with ${result.results.success} embeddings`,
-        stats: result.stats
+        stats: result.stats,
       });
-      
+
       // Trigger a refresh of the KB stats
-      window.dispatchEvent(new CustomEvent('kb-stats-refresh'));
-      
+      window.dispatchEvent(new CustomEvent("kb-stats-refresh"));
     } catch (error) {
       setBootstrapStatus({
         type: "error",

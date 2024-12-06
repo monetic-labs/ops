@@ -29,6 +29,7 @@ export default function MerchantServicesTabs({ userId }: { userId: string }) {
 
   const handleTabChange = (key: string) => {
     const params = new URLSearchParams(searchParams.toString());
+
     params.set("tab", key);
     // Clear subtab when main tab changes
     params.delete("subtab");
@@ -41,6 +42,7 @@ export default function MerchantServicesTabs({ userId }: { userId: string }) {
   // TODO
   const handleSubTabChange = (key: string) => {
     const params = new URLSearchParams(searchParams.toString());
+
     params.set("subtab", key);
     router.push(`/?${params.toString()}`);
   };

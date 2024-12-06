@@ -15,6 +15,7 @@ export async function bootstrapKnowledgeBase() {
     // 1. Load and validate graph structure - using direct import instead of dynamic
     console.log("Loading graph data...");
     const graph: Graph = createImmutableGraph(graphData as Graph);
+
     console.log("Graph loaded with", Object.keys(graph.nodes).length, "nodes");
 
     // 2. Generate embeddings for graph structure
@@ -30,14 +31,16 @@ export async function bootstrapKnowledgeBase() {
         type: "domain",
         id: "graph-structure",
         title: "Product Graph Structure",
-        category: "system"
-      }
+        category: "system",
+      },
     });
+
     embeddings.push(graphEmbedding);
 
     // 3. Process graph nodes into embeddings
     console.log("Chunking graph data...");
     const chunks = chunkGraphData(graph);
+
     console.log(`Generated ${chunks.length} chunks`);
 
     for (const chunk of chunks) {
@@ -50,9 +53,10 @@ export async function bootstrapKnowledgeBase() {
           id: `chunk-${chunk.type}-${embeddings.length}`,
           title: `${chunk.type} chunk ${embeddings.length}`,
           category: "graph",
-          related_chunks: chunk.related_chunks
-        }
+          related_chunks: chunk.related_chunks,
+        },
       });
+
       embeddings.push(embedding);
     }
 
@@ -77,10 +81,11 @@ export async function bootstrapKnowledgeBase() {
           traits: energyType.traits,
           decision_style: energyType.decision_style,
           related_chunks: graph.edges
-            .filter(e => e.from === energyType.id || e.to === energyType.id)
-            .map(e => e.from === energyType.id ? e.to : e.from)
-        }
+            .filter((e) => e.from === energyType.id || e.to === energyType.id)
+            .map((e) => (e.from === energyType.id ? e.to : e.from)),
+        },
       });
+
       embeddings.push(embedding);
     }
 
@@ -96,13 +101,15 @@ export async function bootstrapKnowledgeBase() {
           id: pref.goal,
           title: pref.goal,
           category: "preference",
-          related_chunks: pref.context.capabilities
-        }
+          related_chunks: pref.context.capabilities,
+        },
       });
+
       embeddings.push(embedding);
     }
 
     console.log(`Generated ${embeddings.length} total embeddings`);
+
     return embeddings;
   } catch (error) {
     console.error("Error in bootstrapKnowledgeBase:", error);

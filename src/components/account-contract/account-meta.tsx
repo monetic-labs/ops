@@ -22,15 +22,10 @@ export default function AccountOverview() {
 
   return (
     <Card className="w-full max-w-7xl mx-auto bg-charyo-500/0">
-      <CardHeader className="flex flex-col sm:flex-row justify-between sm:items-center"></CardHeader>
+      <CardHeader className="flex flex-col sm:flex-row justify-between sm:items-center" />
       <CardBody>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           <FundCard
-            title="Income"
-            amount={income}
-            description="The funds settled to your account this period."
-            color="primary"
-            isLoading={isLoading}
             actions={[
               {
                 label: "Summary",
@@ -38,13 +33,13 @@ export default function AccountOverview() {
                 color: "success",
               },
             ]}
+            amount={income}
+            color="primary"
+            description="The funds settled to your account this period."
+            isLoading={isLoading}
+            title="Income"
           />
           <FundCard
-            title="Available"
-            amount={available}
-            description="The funds available to you on demand."
-            color="success"
-            isLoading={isLoading}
             actions={[
               {
                 label: "Add Funds",
@@ -57,13 +52,18 @@ export default function AccountOverview() {
                 color: "primary",
               },
             ]}
+            amount={available}
+            color="success"
+            description="The funds available to you on demand."
+            isLoading={isLoading}
+            title="Available"
           />
           <FundCard
-            title="Expenses"
             amount={totalExpenses}
-            description="Your card expenses for the period."
             color="danger"
+            description="Your card expenses for the period."
             isLoading={isLoading}
+            title="Expenses"
           />
         </div>
       </CardBody>

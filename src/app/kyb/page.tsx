@@ -1,12 +1,11 @@
 "use client";
 
 import { useGetComplianceStatus } from "@/hooks/merchant/useGetComplianceStatus";
-import { title } from "@/components/primitives";
-import { Button } from "@nextui-org/button";
 import { StatusCard } from "@/components/kyb-status/status-card";
 
 export default function KYB() {
   const { complianceStatus } = useGetComplianceStatus();
+
   console.log(complianceStatus); // TODO: Remove
 
   const handleBridgeKYB = () => {

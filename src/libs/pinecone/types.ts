@@ -46,4 +46,3 @@ export interface DecisionStyle {
   waiting_period: string;
   confirmation_threshold?: string;
 }
-

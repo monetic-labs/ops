@@ -36,6 +36,7 @@ export const PostcodeInput = <T extends FieldValues>({
 
   const handlePostcodeChange = async (value: string) => {
     const numericValue = value.replace(/\D/g, "");
+
     field.onChange(numericValue);
 
     if (numericValue.length === 5) {
@@ -61,8 +62,8 @@ export const PostcodeInput = <T extends FieldValues>({
         <div className="w-1/4">
           <FormInput
             className="text-notpurple-500"
-            data-testid={testId}
             control={control}
+            data-testid={testId}
             inputMode="numeric"
             label="Postcode"
             maxLength={5}

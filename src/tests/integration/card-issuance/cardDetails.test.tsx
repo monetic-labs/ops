@@ -1,7 +1,8 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
-import pylon from "@/libs/pylon-sdk";
 import { CardLimitFrequency, CardStatus } from "@backpack-fux/pylon-sdk";
+
+import pylon from "@/libs/pylon-sdk";
 import CardDetailsModal from "@/components/card-issuance/card-details";
 
 vi.mock("@/libs/pylon-sdk", () => ({
@@ -139,6 +140,7 @@ describe("CardDetailsModal", () => {
         },
         status: undefined,
       };
+
       vi.mocked(pylon.updateRainCard).mockResolvedValueOnce(cardMockData as any);
 
       render(<CardDetailsModal {...defaultProps} />);
@@ -158,6 +160,7 @@ describe("CardDetailsModal", () => {
 
     it("should handle update error", async () => {
       const mockError = new Error("Update failed");
+
       vi.mocked(pylon.updateRainCard).mockRejectedValueOnce(mockError);
 
       render(<CardDetailsModal {...defaultProps} />);

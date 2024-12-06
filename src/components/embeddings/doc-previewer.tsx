@@ -6,7 +6,7 @@ const formatContentPreview = (content: string) => {
   try {
     const parsed = JSON.parse(content);
     const innerContent = JSON.parse(parsed.content);
-    
+
     return {
       type: parsed.type,
       id: innerContent.id,
@@ -19,8 +19,8 @@ const formatContentPreview = (content: string) => {
       metadata: {
         category: parsed.metadata?.category,
         related: parsed.metadata?.related_chunks,
-        title: parsed.metadata?.title
-      }
+        title: parsed.metadata?.title,
+      },
     };
   } catch (error) {
     return null;
@@ -30,6 +30,7 @@ const formatContentPreview = (content: string) => {
 // Component to display content preview
 export const ContentPreview = ({ content }: { content: string }) => {
   const preview = formatContentPreview(content);
+
   if (!preview) return <p className="text-red-500">Invalid content format</p>;
 
   return (
@@ -56,15 +57,11 @@ export const ContentPreview = ({ content }: { content: string }) => {
       </CardHeader>
       <CardBody className="p-4 flex flex-col gap-4 bg-charyo-500/70">
         <div>
-          <h3 className="text-lg font-semibold text-notpurple-500">
-            {preview.description}
-          </h3>
+          <h3 className="text-lg font-semibold text-notpurple-500">{preview.description}</h3>
           {preview.user_intent && (
             <div className="mt-2">
               <span className="text-sm text-gray-500 font-medium">User Intent:</span>
-              <p className="text-lg font-semibold text-notpurple-500">
-                "{preview.user_intent}"
-              </p>
+              <p className="text-lg font-semibold text-notpurple-500">{`"${preview.user_intent}"`}</p>
             </div>
           )}
         </div>
@@ -74,28 +71,20 @@ export const ContentPreview = ({ content }: { content: string }) => {
             <span className="text-sm text-gray-500 font-medium">Requires:</span>
             <div className="flex flex-wrap gap-1">
               {preview.requires.map((req: string) => (
-                <Chip 
-                  key={req}
-                  className="bg-red-500 text-white" 
-                  size="sm"
-                >
+                <Chip key={req} className="bg-red-500 text-white" size="sm">
                   {req}
                 </Chip>
               ))}
             </div>
           </div>
         )}
-        
+
         {preview.metadata?.related && (
           <div className="flex flex-col gap-2  ">
             <span className="text-sm text-gray-500 font-medium">Related Components:</span>
             <div className="flex flex-wrap gap-1">
               {preview.metadata.related.map((item: string) => (
-                <Chip 
-                  key={item}
-                  className="bg-purple-500 text-white" 
-                  size="sm"
-                >
+                <Chip key={item} className="bg-purple-500 text-white" size="sm">
                   {item}
                 </Chip>
               ))}
@@ -106,9 +95,7 @@ export const ContentPreview = ({ content }: { content: string }) => {
         {preview.parameters && (
           <div className="mt-2 p-3 bg-charyo-300/30 rounded-lg">
             <h4 className="text-sm font-semibold mb-2">Parameters</h4>
-            <pre className="text-xs overflow-auto">
-              {JSON.stringify(preview.parameters, null, 2)}
-            </pre>
+            <pre className="text-xs overflow-auto">{JSON.stringify(preview.parameters, null, 2)}</pre>
           </div>
         )}
       </CardBody>

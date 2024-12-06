@@ -162,6 +162,7 @@ export const CardShippingDetailsSchema = z
   })
   .superRefine((data, ctx) => {
     const validRegions = getRegionsForCountry(data.country);
+
     if (!validRegions.find((t) => t.value === data.region)) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,

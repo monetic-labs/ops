@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 import { Button } from "@nextui-org/button";
 import { ModalFooter } from "@nextui-org/modal";
 import { Switch } from "@nextui-org/switch";
@@ -6,7 +6,6 @@ import { Kbd } from "@nextui-org/kbd";
 import html2canvas from "html2canvas";
 import { Tooltip } from "@nextui-org/tooltip";
 
-import { ChatPane } from "../messaging/pane";
 import { useShortcuts } from "./shortcuts-provider";
 
 interface ActionButton {
@@ -116,9 +115,9 @@ export default function ModalFooterWithSupport({
               <span className="items-center font-mono">New Sender?</span>
               <Switch
                 defaultSelected
-                data-testid="new-sender-toggle"
-                color="secondary"
                 aria-label="New Customer"
+                color="secondary"
+                data-testid="new-sender-toggle"
                 isSelected={isNewSender}
                 onValueChange={onNewSenderChange}
               />
@@ -127,10 +126,10 @@ export default function ModalFooterWithSupport({
           {actions.map((action, index) => (
             <Button
               key={index}
-              data-testid={`${action.label.toLowerCase()}-modal-button`}
-              className={`bg-ualert-500 text-notpurple-500 w-full sm:w-auto ${action.className || ""}`}
-              isDisabled={action.isDisabled}
               aria-label={action.label}
+              className={`bg-ualert-500 text-notpurple-500 w-full sm:w-auto ${action.className || ""}`}
+              data-testid={`${action.label.toLowerCase()}-modal-button`}
+              isDisabled={action.isDisabled}
             >
               {action.label}
             </Button>

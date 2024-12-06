@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
+
 //import { useWebSocket } from "@/libs/websocket";
-import { MessageStatus, WebSocketMessage, SupportMessage, Message } from "@/types/messaging";
+import { WebSocketMessage, SupportMessage } from "@/types/messaging";
 
 // Service-specific interface lives only in the route handler
 interface TelegramWebhookMessage {
@@ -49,10 +50,12 @@ export async function POST(request: Request) {
 
   try {
     const body: TelegramUpdate = await request.json();
+
     console.log("📦 Webhook body:", JSON.stringify(body, null, 2));
 
     if (!body.message) {
       console.log("⚠️ No message in webhook body");
+
       return NextResponse.json({ success: false, error: "No message found" }, { status: 400 });
     }
 
@@ -114,6 +117,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error("❌ Error in webhook handler:", error);
+
     return NextResponse.json(
       { success: false, error: error instanceof Error ? error.message : "Failed to process message" },
       { status: 500 }

@@ -1,6 +1,7 @@
-import { isLocal } from "@/utils/helpers";
 import { http, createPublicClient } from "viem";
 import { baseSepolia, base } from "viem/chains";
+
+import { isLocal } from "@/utils/helpers";
 import "viem/window";
 
 export const getChain = () => {

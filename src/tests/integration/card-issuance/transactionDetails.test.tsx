@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
+
 import TransactionDetailsModal from "@/components/card-issuance/card-txns";
 
 describe("TransactionDetailsModal", () => {
@@ -55,6 +56,7 @@ describe("TransactionDetailsModal", () => {
     render(<TransactionDetailsModal {...defaultProps} />);
 
     const status = screen.getByText("COMPLETED");
+
     expect(status).toBeInTheDocument();
     expect(status).toHaveClass("text-ugh-400");
   });
@@ -71,18 +73,22 @@ describe("TransactionDetailsModal", () => {
 
   it("displays a pending status with appropriate styling", () => {
     const pendingTransaction = { ...mockTransaction, status: "PENDING" };
+
     render(<TransactionDetailsModal {...defaultProps} transaction={pendingTransaction} />);
 
     const status = screen.getByText("PENDING");
+
     expect(status).toBeInTheDocument();
     expect(status).toHaveClass("text-yellow-500");
   });
 
   it("displays a failed status with appropriate styling", () => {
     const failedTransaction = { ...mockTransaction, status: "FAILED" };
+
     render(<TransactionDetailsModal {...defaultProps} transaction={failedTransaction} />);
 
     const status = screen.getByText("FAILED");
+
     expect(status).toBeInTheDocument();
     expect(status).toHaveClass("text-red-500");
   });

@@ -1,4 +1,4 @@
-import { SetStateAction, useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Info } from "lucide-react";
 import { Modal, ModalBody, ModalContent, ModalHeader } from "@nextui-org/modal";
 import { Divider } from "@nextui-org/divider";
@@ -9,12 +9,10 @@ import {
   MerchantDisbursementCreateOutput,
 } from "@backpack-fux/pylon-sdk";
 import { Address } from "viem";
-import NewTransferFields from "./fields/new-transfer";
-import ModalFooterWithSupport from "../../generics/footer-modal-support";
-import ExistingTransferFields from "./fields/existing-transfer";
+import { Button } from "@nextui-org/button";
+
 import { useExistingDisbursement } from "@/hooks/bill-pay/useExistingDisbursement";
 import { modal } from "@/context/reown";
-import { Button } from "@nextui-org/button";
 import TransferStatusView, { TransferStatus } from "@/components/generics/transfer-status";
 import { buildTransfer } from "@/utils/reown";
 import { useBalance } from "@/hooks/account-contracts/useBalance";
@@ -27,6 +25,11 @@ import {
   NewBillPay,
 } from "@/types/bill-pay";
 import { useNewDisbursement } from "@/hooks/bill-pay/useNewDisbursement";
+
+import ModalFooterWithSupport from "../../generics/footer-modal-support";
+
+import ExistingTransferFields from "./fields/existing-transfer";
+import NewTransferFields from "./fields/new-transfer";
 
 type CreateBillPayModalProps = {
   isOpen: boolean;
@@ -53,6 +56,7 @@ const getLiquidationAddress = (
   } else {
     // For new disbursements (MerchantDisbursementCreateOutput)
     const createResponse = response as MerchantDisbursementCreateOutput;
+
     return createResponse.disbursements[0].address as Address;
   }
 };
@@ -88,16 +92,19 @@ export default function CreateBillPayModal({
 
   useEffect(() => {
     const formValid = validateBillPay(billPay, settlementBalance);
+
     setFormIsValid(formValid);
   }, [billPay, settlementBalance, setFormIsValid]);
 
   const fee = useMemo(() => {
     if (!billPay.vendorMethod) return 0;
+
     return methodFees[billPay.vendorMethod] || 0;
   }, [billPay.vendorMethod]);
 
   const total = useMemo(() => {
     const amount = parseFloat(billPay.amount) || 0;
+
     return amount + amount * fee;
   }, [billPay.amount, fee]);
 
@@ -240,21 +247,21 @@ export default function CreateBillPayModal({
         )}
         <ModalHeader>Create New Transfer</ModalHeader>
         <ModalBody className="overflow-y-auto max-h-[50vh] relative">{renderTransferFields()}</ModalBody>
-        {!isWalletConnected && <div className="absolute inset-0 bg-gray-500 bg-opacity-50 z-10"></div>}
+        {!isWalletConnected && <div className="absolute inset-0 bg-gray-500 bg-opacity-50 z-10" />}
         <Divider className="my-4" />
         {renderFeeAndTotal()}
         <Divider className="my-1" />
         <ModalFooterWithSupport
-          onSupportClick={handleSupportClick}
+          actions={footerActions}
           isNewSender={isNewSender}
           onNewSenderChange={handleNewSenderChange}
-          actions={footerActions}
+          onSupportClick={handleSupportClick}
         />
         {!isWalletConnected && (
           <div className="absolute inset-0 flex items-center justify-center z-20">
             <Button
-              data-testid="connect-wallet-button"
               color="primary"
+              data-testid="connect-wallet-button"
               onPress={async () => {
                 await modal.open();
               }}

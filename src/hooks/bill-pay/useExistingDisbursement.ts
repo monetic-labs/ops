@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { DisbursementMethod, MerchantDisbursementUpdateOutput } from "@backpack-fux/pylon-sdk";
+
 import pylon from "@/libs/pylon-sdk";
 
 export const useExistingDisbursement = () => {
@@ -26,7 +27,9 @@ export const useExistingDisbursement = () => {
           ach_reference: achReference,
         },
       });
+
       setDisbursement(response);
+
       return response;
     } catch (error) {
       setError(error);

@@ -1,8 +1,9 @@
-import { Graph } from "./graph/graph";
 import { getEmbedding } from "@/libs/openai/embedding";
 
+import { Graph } from "./graph/graph";
+
 export interface EmbeddingMetadata {
-  type: "preference" | "usage" | "domain" | "capability" | "experience" | "system"  ;
+  type: "preference" | "usage" | "domain" | "capability" | "experience" | "system";
   content: string;
   capabilities?: string[];
   domains?: string[];
@@ -39,11 +40,12 @@ export async function generateEmbeddings(
 
   // Extract type based on data structure
   let type: EmbeddingMetadata["type"];
+
   console.log("Checking data type:", {
     hasType: "type" in data,
     type: data.type,
     hasPreferenceType: "preference_type" in data,
-    hasIntent: "intent" in data
+    hasIntent: "intent" in data,
   });
 
   if ("type" in data && ["domain", "capability", "usage", "system", "experience", "preference"].includes(data.type)) {
@@ -71,30 +73,32 @@ export async function generateEmbeddings(
     related_chunks: data.related_chunks || [],
     energy_type: data.energy_type,
     traits: data.traits,
-    decision_style: data.decision_style
+    decision_style: data.decision_style,
   };
 
   try {
     // Create text for embedding that captures the essential meaning
     const embeddingText = [
       `Type: ${type}`,
-      `Description: ${data.description || ''}`,
+      `Description: ${data.description || ""}`,
       `Content: ${metadata.content}`,
-      data.capabilities ? `Capabilities: ${data.capabilities.join(', ')}` : '',
-      data.domains ? `Domains: ${data.domains.join(', ')}` : '',
-      data.traits ? `Traits: ${data.traits.join(', ')}` : '',
-      data.intent ? `Intent: ${data.intent}` : '',
-    ].filter(Boolean).join('\n');
+      data.capabilities ? `Capabilities: ${data.capabilities.join(", ")}` : "",
+      data.domains ? `Domains: ${data.domains.join(", ")}` : "",
+      data.traits ? `Traits: ${data.traits.join(", ")}` : "",
+      data.intent ? `Intent: ${data.intent}` : "",
+    ]
+      .filter(Boolean)
+      .join("\n");
 
     console.log(`Generating embedding for ${id}...`);
     const values = await getEmbedding(embeddingText);
-    
+
     if (!values || values.length === 0) {
-      throw new Error('OpenAI returned empty embedding');
+      throw new Error("OpenAI returned empty embedding");
     }
 
     console.log(`Successfully generated embedding for ${id} with ${values.length} dimensions`);
-    
+
     return {
       id,
       values,
@@ -102,7 +106,9 @@ export async function generateEmbeddings(
     };
   } catch (error) {
     console.error(`Error generating embedding for ${id}:`, error);
-    throw new Error(`Failed to generate embedding for ${id}: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    throw new Error(
+      `Failed to generate embedding for ${id}: ${error instanceof Error ? error.message : "Unknown error"}`
+    );
   }
 }
 
@@ -117,12 +123,13 @@ export function validateEmbeddingMetadata(
     type: metadata.type,
     hasCapabilities: Boolean(metadata.capabilities?.length),
     hasDomains: Boolean(metadata.domains?.length),
-    content: metadata.content.substring(0, 100) + "..." // Log truncated content for debugging
+    content: metadata.content.substring(0, 100) + "...", // Log truncated content for debugging
   });
 
   // Validate metadata type
   if (!["preference", "usage", "domain", "capability", "experience", "system"].includes(metadata.type)) {
     errors.push(`Invalid metadata type: ${metadata.type}`);
+
     return { isValid: false, errors };
   }
 
@@ -141,6 +148,7 @@ export function validateEmbeddingMetadata(
         }
       });
     }
+
     return { isValid: errors.length === 0, errors };
   }
 

@@ -31,11 +31,13 @@ export function useCountries() {
         countryCode: countryCode.toLowerCase(),
         flagUrl: `https://flagcdn.com/${countryCode.toLowerCase()}.svg`,
       };
+
       return countryData;
     });
 
     // Update cache
     countryCache.push(...computedCountries);
+
     return computedCountries;
   }, []); // Empty deps array since this should only compute once
 

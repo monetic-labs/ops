@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect } from "react";
 
 interface PineconeStats {
   totalDocuments: number;
@@ -15,13 +15,15 @@ export function usePineconeStats() {
   const fetchStats = async () => {
     try {
       setLoading(true);
-      const response = await fetch('/api/embeddings/stats');
-      if (!response.ok) throw new Error('Failed to fetch Pinecone stats');
+      const response = await fetch("/api/embeddings/stats");
+
+      if (!response.ok) throw new Error("Failed to fetch Pinecone stats");
       const data = await response.json();
+
       setStats(data);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to fetch stats');
-      console.error('Error fetching Pinecone stats:', err);
+      setError(err instanceof Error ? err.message : "Failed to fetch stats");
+      console.error("Error fetching Pinecone stats:", err);
     } finally {
       setLoading(false);
     }
