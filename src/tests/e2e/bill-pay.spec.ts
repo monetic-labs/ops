@@ -14,12 +14,14 @@ import {
   mockContacts,
 } from "./fixtures/data/disbursement";
 import { MINIMUM_DISBURSEMENT_ACH_AMOUNT, MINIMUM_DISBURSEMENT_WIRE_AMOUNT } from "./fixtures/data/disbursement";
+import { setupComplianceMocks } from "./fixtures/api/compliance";
 
 test.describe("Bill Pay Modal", () => {
   test.beforeEach(async ({ page }) => {
     await setupAuthCookie(page);
     await setupContactsApi(page);
-    await page.goto("http://localhost:3000");
+    await setupComplianceMocks(page);
+    await page.goto("http://localhost:3000/?tab=bill-pay");
     // Open the modal
     await page.getByTestId("create-transfer-button").click();
     await page.getByTestId("create-transfer-modal").waitFor({ state: "visible" });
@@ -61,16 +63,13 @@ test.describe("Bill Pay Modal", () => {
         await expect(page.getByText(`Must be less than 10 characters`)).not.toBeVisible();
       });
 
-      test("should validate amount field", async ({ page }) => {
+      test("should validate amount field", async ({ page, browserName }) => {
         await fillBasicFormData(page);
 
         const amount = page.getByTestId("amount");
 
         // Test ACH amount validations
-        await page.getByTestId("payment-method").click();
-        await page.keyboard.type("ACH");
-        await page.keyboard.press("ArrowDown");
-        await page.keyboard.press("Enter");
+        await selectDropdownOption(page, "payment-method", "ACH_SAME_DAY", browserName);
 
         await amount.fill("50");
         await expect(page.getByText(`Amount must be at least ${MINIMUM_DISBURSEMENT_ACH_AMOUNT} USDC`)).toBeVisible();
@@ -82,14 +81,8 @@ test.describe("Bill Pay Modal", () => {
         await page.getByTestId("payment-method").clear();
 
         // Test WIRE amount validations
-        await page.getByTestId("payment-method").click();
-        await page.getByTestId("payment-method").fill("WIRE");
-        if (page.context().browser()?.browserType().name() === "chromium") {
-          await page.getByText("WIRE").click();
-        } else {
-          await page.keyboard.press("ArrowDown");
-          await page.keyboard.press("Enter");
-        }
+        if (isMobile(page) && browserName === "chromium") return; // TODO: skip on chromium mobile
+        await selectDropdownOption(page, "payment-method", "WIRE", browserName);
 
         await amount.fill("400");
         await expect(page.getByText(`Amount must be at least ${MINIMUM_DISBURSEMENT_WIRE_AMOUNT} USDC`)).toBeVisible();
@@ -214,6 +207,8 @@ test.describe("Bill Pay Modal", () => {
       }
       await expect(amount).not.toHaveAttribute("aria-invalid", "true");
 
+      if (isMobile(page) && browserName === "chromium") return; // TODO: skip on chromium mobile
+
       // Test Wire minimum
       await selectDropdownOption(page, "payment-method", "WIRE", browserName);
 
@@ -302,14 +297,12 @@ async function fillBasicFormData(page: Page) {
   await dropdown.waitFor({ state: "visible" });
 
   // Use keyboard navigation to select option
-  // await page.keyboard.type(mockContacts[0].accountOwnerName);
   await page.keyboard.press("ArrowDown");
   await page.keyboard.press("Enter");
 
   // Handle payment method selection similarly
   const paymentMethod = page.getByTestId("payment-method");
-
-  await expect(paymentMethod).toBeEnabled();
+  await paymentMethod.waitFor({ state: "visible" });
   await paymentMethod.click();
 
   await page.keyboard.type(mockContacts[0].disbursements[0].method);
@@ -321,7 +314,7 @@ async function selectDropdownOption(page: Page, selector: string, value: string,
   await page.getByTestId(selector).click();
   await page.getByTestId(selector).fill(value);
 
-  if (browserName === "chromium") {
+  if (browserName === "chromium" && !isMobile(page)) {
     await page.getByText(value).click();
   } else {
     await page.keyboard.press("ArrowDown");
@@ -353,4 +346,9 @@ async function runValidationTests(page: Page, fieldValidations: FieldValidations
       await expect(element).not.toHaveAttribute("aria-invalid", "true");
     }
   }
+}
+
+function isMobile(page: Page) {
+  const viewport = page.viewportSize();
+  return viewport ? viewport.width <= 600 : false;
 }

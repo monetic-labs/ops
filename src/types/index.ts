@@ -8,8 +8,6 @@ import { UsagePattern } from "@/knowledge-base/v0/usage";
 
 import { AgentMessageContext, SupportMessageContext } from "./messaging";
 
-//import { MockWebSocket } from "@/tests/e2e/container/test-types";
-
 export type IconSvgProps = SVGProps<SVGSVGElement> & {
   size?: number;
 };

@@ -12,7 +12,6 @@ export const ModeSwitcher: React.FC = () => {
   const { mode } = useMessagingState();
   const { setMode } = useMessagingActions().message;
   const searchParams = useSearchParams();
-  const router = useRouter();
 
   // Handle mode changes
   const handleModeChange = useCallback(
@@ -21,11 +20,11 @@ export const ModeSwitcher: React.FC = () => {
 
       setMode(modeValue as MessageMode);
     },
-    [setMode, searchParams, router]
+    [setMode, searchParams]
   );
 
   useEffect(() => {
-    const urlMode = searchParams.get("mode") as "bot" | "support";
+    const urlMode = searchParams.get("mode") as MessageMode;
 
     if (urlMode && urlMode !== mode) {
       console.log("Syncing mode with URL:", urlMode);

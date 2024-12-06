@@ -2,7 +2,7 @@ import { defineConfig, devices } from "@playwright/test";
 import dotenv from "dotenv";
 
 // Use more specific .env path configuration
-dotenv.config();
+dotenv.config({ path: path.resolve(__dirname, ".env") });
 
 export default defineConfig({
   testDir: "./src/tests/e2e",
@@ -14,7 +14,7 @@ export default defineConfig({
   forbidOnly: !!process.env.CI,
   // Keep the more robust retry logic
   retries: process.env.CI ? 2 : 0,
-  workers: process.env.CI ? 10 : undefined,
+  workers: process.env.CI ? 7 : undefined,
 
   // Combine reporters from both configs
   reporter: [["list", { printSteps: true }], ["github"], ["html"]],
@@ -57,16 +57,22 @@ export default defineConfig({
       },
     },
     {
-      name: "Mobile Chrome",
+      name: "mobile-chromium",
       use: {
         ...devices["Pixel 5"],
       },
     },
     {
-      name: "Mobile Safari",
+      name: "mobile-webkit",
       use: {
         ...devices["iPhone 12"],
       },
     },
   ],
+  webServer: {
+    command: "npm run dev",
+    url: "http://localhost:3000",
+    timeout: 120 * 1000,
+    reuseExistingServer: !process.env.CI,
+  },
 });
