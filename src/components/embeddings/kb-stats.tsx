@@ -40,6 +40,12 @@ const KnowledgeBaseStats = () => {
 
   useEffect(() => {
     fetchStats();
+
+    //handle refresh from browser
+    // window.addEventListener("focus", fetchStats);
+    // return () => {
+    //   window.removeEventListener("focus", fetchStats);
+    // };
   }, []);
 
   if (loading) {

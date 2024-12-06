@@ -2,6 +2,7 @@ import { pinecone } from "@/libs/pinecone/pinecone";
 import { knowledgeBase } from "@/libs/openai/retrieve";
 
 import { getEmbedding } from "./openai/embedding";
+import { KNOWLEDGE_BASE_CONFIG, PINECONE_CONFIG } from "@/knowledge-base/config";
 
 async function initializePineconeIndex() {
   try {
@@ -11,13 +12,13 @@ async function initializePineconeIndex() {
     if (!existingIndexes.indexes?.some((index) => index.name === "fintech-knowledge")) {
       // Create index if it doesn't exist
       await pinecone.createIndex({
-        name: "fintech-knowledge",
-        dimension: 1536, // OpenAI ada-002 embedding dimension
-        metric: "cosine",
+        name: KNOWLEDGE_BASE_CONFIG.index,
+        dimension: KNOWLEDGE_BASE_CONFIG.dimension, // OpenAI ada-002 embedding dimension
+        metric: PINECONE_CONFIG.metric,
         spec: {
           serverless: {
-            cloud: "aws",
-            region: "us-east-1",
+            cloud: PINECONE_CONFIG.cloud,
+            region: PINECONE_CONFIG.region,
           },
         },
       });
@@ -40,7 +41,7 @@ async function initializePineconeIndex() {
             id: `${category}-${Date.now()}`,
             values: embedding,
             metadata: {
-              text,
+              text: text,
               category,
             },
           },

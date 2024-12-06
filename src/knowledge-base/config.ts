@@ -24,19 +24,20 @@ export const OPENAI_MODELS = {
     I can help with general banking, payments, and financial technology questions.`,
   } as const;
 
-export const RETRIEVAL_CONFIG = {
-  pinecone: {
-    topK: 5,
-    namespace: "fintech-knowledge",
-  },
-} as const;
-
 export const KNOWLEDGE_BASE_CONFIG = {
   index: "fintech-knowledge",
   dimension: 1536,
 } as const;
 
+export const RETRIEVAL_CONFIG = {
+  pinecone: {
+    topK: 5,
+    namespace: KNOWLEDGE_BASE_CONFIG.index,
+  },
+} as const;
+
 export const PINECONE_CONFIG = {
+  metric: "cosine",
   cloud: "aws",
   region: "us-east-1",
 } as const;

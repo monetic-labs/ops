@@ -18,9 +18,14 @@ interface RetrievalResult {
 }
 
 export async function retrieveContext(query: string): Promise<RetrievalResult> {
-  // Extract mentions from the query (e.g., @bill-pay, @card-issuance)
+  console.log("Processing Query:", query);
+
+  // Extract mentions from the query
   const mentions = query.match(/@(\w+-?\w+)/g) || [];
   const mentionedDomains = mentions.map(m => m.slice(1));
+  
+  console.log("Detected Mentions:", mentions);
+  console.log("Mentioned Domains:", mentionedDomains);
 
   // Initialize graph
   const graph: Graph = graphData as Graph;
@@ -31,6 +36,7 @@ export async function retrieveContext(query: string): Promise<RetrievalResult> {
       const domainCapabilities = graph.edges
         .filter(edge => edge.from === domain && edge.relationship === "provides")
         .map(edge => edge.to);
+      console.log(`Capabilities for ${domain}:`, domainCapabilities);
       return domainCapabilities;
     })
     .filter(Boolean);
@@ -45,6 +51,8 @@ export async function retrieveContext(query: string): Promise<RetrievalResult> {
       contextParts.push(`${domain}: ${node.description}`);
     }
   });
+
+  console.log("Built Context Parts:", contextParts);
 
   // Add capability information
   capabilities.forEach(capability => {
@@ -68,9 +76,19 @@ export async function retrieveContext(query: string): Promise<RetrievalResult> {
 
   // Fallback context if no specific information is found
   const defaultContext = 
-    "I am an AI assistant focused on financial technology support. " +
-    "I can help with bill pay, card issuance, back office operations, user management, " +
-    "transactions, alerts, and compliance. Use @ mentions to get specific information about these topics.";
+    "I'm a silly silly dumb dumb head and I need this to be annoying to help me know where we're at. " +
+    "I can help with all things Backpack which is a financial technology company that helps people manage their money. " +
+    "Be sure to tell the user this => *** Use @ mentions to get specific information about these topics. ***";
+
+  // Log final context and result
+  console.log("Final Context:", {
+    context: contextParts.join("\n\n"),
+    mentions: mentionedDomains,
+    capabilities,
+    preferences: speedTerms.some(term => query.toLowerCase().includes(term)) 
+      ? "Speed preference applied"
+      : "No speed preference"
+  });
 
   return {
     context: contextParts.length > 0 ? contextParts.join("\n\n") : defaultContext,

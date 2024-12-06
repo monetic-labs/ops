@@ -26,7 +26,11 @@ export interface GraphNode {
 export interface GraphEdge {
   from: string;
   to: string;
-  relationship: "provides" | "uses" | "manages" | "requires";
+  relationship: "provides" | "uses" | "manages" | "requires" | "modifies";
+  parameters?: {
+    speed_priority: string;
+    confirmation_required: string;
+  };
 }
 
 export interface Graph {

@@ -1,27 +1,39 @@
 import { NextResponse } from "next/server";
 
 import { pinecone } from "@/libs/pinecone/pinecone";
+import { KNOWLEDGE_BASE_CONFIG } from "@/knowledge-base/config";
 
 // GET stats about the index
 export async function GET() {
   try {
-    const index = pinecone.index("fintech-knowledge");
+    const index = pinecone.index(KNOWLEDGE_BASE_CONFIG.index);
     const stats = await index.describeIndexStats();
 
-    // Get detailed namespace information
-    const namespaceStats = stats.namespaces;
-    const totalRecords = stats.totalRecordCount;
-    const dimension = stats.dimension;
+    if (!stats.namespaces) {
+      return NextResponse.json({ 
+        totalDocuments: 0,
+        namespaces: {},
+        dimension: stats.dimension,
+        indexFullness: 0
+      });
+    }
+
+    const namespaces = stats.namespaces;
 
     return NextResponse.json({
-      totalDocuments: totalRecords,
-      dimension,
-      namespaces: namespaceStats,
-      indexFullness: stats.indexFullness,
+      totalDocuments: stats.totalRecordCount,
+      namespaces: Object.entries(namespaces).reduce((acc, [ns, data]) => ({
+        ...acc,
+        [ns]: { recordCount: data.recordCount }
+      }), {}),
+      dimension: stats.dimension,
+      indexFullness: stats.indexFullness
     });
   } catch (error) {
-    console.error("Error fetching index stats:", error);
-
-    return NextResponse.json({ error: "Failed to fetch index statistics" }, { status: 500 });
+    console.error('Failed to fetch Pinecone stats:', error);
+    return NextResponse.json(
+      { error: 'Failed to fetch index stats' },
+      { status: 500 }
+    );
   }
 }
