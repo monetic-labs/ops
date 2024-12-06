@@ -29,15 +29,19 @@ export const MessageInput = forwardRef<HTMLInputElement>((_, ref) => {
       if (!inputValue.trim()) return;
 
       try {
-        await agentService.sendMessage(inputValue.trim());
+        // Send message and clear input immediately
+        const messageToSend = inputValue.trim();
         setInputValue("");
         // Close mentions if open
         setMentionState({ isOpen: false });
+        
+        // Send message after clearing input
+        await agentService.sendMessage(messageToSend);
       } catch (error) {
         console.error("Failed to send message:", error);
       }
     },
-    [inputValue, agentService, setInputValue]
+    [inputValue, agentService, setInputValue, setMentionState]
   );
 
   const handleChange = useCallback(

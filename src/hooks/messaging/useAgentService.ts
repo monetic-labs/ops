@@ -34,17 +34,41 @@ export const useAgentService = () => {
   });
 
   // Unified message handling function
-  const handleSendMessage = async (text: string) => {
-    // First append the user message to our store
-    await messageActions.sendMessage(text);
+  // const handleSendMessage = async (text: string) => {
+  //   // First append the user message to our store
+  //   await messageActions.sendMessage(text);
+
+  //   try {
+  //     // Send to AI chat
+  //     await chatHelpers.setInput(text);
+  //     await chatHelpers.handleSubmit();
+  //   } catch (error) {
+  //     console.error("Failed to get AI response:", error);
+  //     // Optionally add an error message to the chat
+  //     messageActions.appendMessage({
+  //       id: crypto.randomUUID(),
+  //       text: "Sorry, I encountered an error processing your message.",
+  //       type: "system",
+  //       category: "error",
+  //       timestamp: Date.now(),
+  //       status: "error",
+  //     });
+  //   }
+  // };
+
+  // Simplified message handling
+  const sendMessage = async (text: string) => {
+    if (!text.trim()) return;
 
     try {
-      // Send to AI chat
+      // Send user message first
+      await messageActions.sendMessage(text);
+      
+      // Use the proper methods from useChat
       await chatHelpers.setInput(text);
-      await chatHelpers.handleSubmit();
+      await chatHelpers.handleSubmit(new Event('submit') as any);
     } catch (error) {
       console.error("Failed to get AI response:", error);
-      // Optionally add an error message to the chat
       messageActions.appendMessage({
         id: crypto.randomUUID(),
         text: "Sorry, I encountered an error processing your message.",
@@ -63,16 +87,7 @@ export const useAgentService = () => {
     isLoading: chatHelpers?.isLoading || false,
     inputValue: state.inputValue,
     setInputValue: messageActions.setInputValue,
-    sendMessage: handleSendMessage,
-    handleSubmit: async (e: React.FormEvent) => {
-      e.preventDefault();
-      const text = state.inputValue;
-
-      if (!text.trim()) return;
-
-      await handleSendMessage(text);
-      messageActions.setInputValue(""); // Clear input after sending
-    },
+    sendMessage,
     getUserId: () => state.userId || "default-user",
   };
 };
