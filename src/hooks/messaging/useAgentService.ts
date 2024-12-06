@@ -33,29 +33,6 @@ export const useAgentService = () => {
     },
   });
 
-  // Unified message handling function
-  // const handleSendMessage = async (text: string) => {
-  //   // First append the user message to our store
-  //   await messageActions.sendMessage(text);
-
-  //   try {
-  //     // Send to AI chat
-  //     await chatHelpers.setInput(text);
-  //     await chatHelpers.handleSubmit();
-  //   } catch (error) {
-  //     console.error("Failed to get AI response:", error);
-  //     // Optionally add an error message to the chat
-  //     messageActions.appendMessage({
-  //       id: crypto.randomUUID(),
-  //       text: "Sorry, I encountered an error processing your message.",
-  //       type: "system",
-  //       category: "error",
-  //       timestamp: Date.now(),
-  //       status: "error",
-  //     });
-  //   }
-  // };
-
   // Simplified message handling
   const sendMessage = async (text: string) => {
     if (!text.trim()) return;
