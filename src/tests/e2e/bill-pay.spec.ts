@@ -302,6 +302,7 @@ async function fillBasicFormData(page: Page) {
 
   // Handle payment method selection similarly
   const paymentMethod = page.getByTestId("payment-method");
+
   await paymentMethod.waitFor({ state: "visible" });
   await paymentMethod.click();
 
@@ -350,5 +351,6 @@ async function runValidationTests(page: Page, fieldValidations: FieldValidations
 
 function isMobile(page: Page) {
   const viewport = page.viewportSize();
+
   return viewport ? viewport.width <= 600 : false;
 }

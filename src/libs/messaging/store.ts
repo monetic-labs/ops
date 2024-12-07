@@ -10,6 +10,7 @@ import {
   SystemMessage,
   SupportMessage,
   MessageStatus,
+  MessageServiceType,
 } from "@/types/messaging";
 
 // Add to MessagingStore interface
@@ -44,6 +45,8 @@ interface MessageState {
   inputValue: string;
   isTyping: boolean;
   userId: string | null;
+  activeService: MessageServiceType; // Add this to track current service
+  pendingMessage: Message | null;
 }
 
 interface ConnectionState {
@@ -67,11 +70,12 @@ export interface MessagingStore {
 
 interface MessageActions {
   setMode: (mode: MessageMode) => void;
-  sendMessage: (content: string) => Promise<void>;
+  setActiveService: (service: MessageServiceType) => void;
   appendMessage: (message: Message) => void;
   updateMessage: (id: string, updates: Partial<Message>) => void;
   setTyping: (isTyping: boolean) => void;
   setInputValue: (value: string) => void;
+  setPendingMessage: (message: Message | null) => void;
 }
 
 interface ConnectionActions {
@@ -135,6 +139,8 @@ export const useMessagingStore = create<MessagingStore>()(
           inputValue: "",
           isTyping: false,
           userId: null,
+          activeService: "openai" as MessageServiceType, // Add this
+          pendingMessage: null,
         },
         mention: {
           isOpen: false,
@@ -165,6 +171,14 @@ export const useMessagingStore = create<MessagingStore>()(
             setMode: (mode: MessageMode) =>
               set((state) => ({
                 message: { ...state.message, mode },
+              })),
+            setActiveService: (service: MessageServiceType) =>
+              set((state) => ({
+                message: { ...state.message, activeService: service },
+              })),
+            setPendingMessage: (message: Message | null) =>
+              set((state) => ({
+                message: { ...state.message, pendingMessage: message },
               })),
             sendMessage: async (content: string) => {
               const message = createMessage(content, "user", "sending");
@@ -279,6 +293,8 @@ export const resetMessagingStore = () => {
       inputValue: "",
       isTyping: false,
       userId: null,
+      activeService: "agent" as MessageServiceType,
+      pendingMessage: null,
     },
     connection: {
       status: "disconnected",

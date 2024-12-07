@@ -31,10 +31,11 @@ export const MessageInput = forwardRef<HTMLInputElement>((_, ref) => {
       try {
         // Send message and clear input immediately
         const messageToSend = inputValue.trim();
+
         setInputValue("");
         // Close mentions if open
         setMentionState({ isOpen: false });
-        
+
         // Send message after clearing input
         await agentService.sendMessage(messageToSend);
       } catch (error) {

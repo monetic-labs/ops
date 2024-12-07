@@ -3,7 +3,7 @@
 import React, { useEffect, useCallback } from "react";
 import { Tab, Tabs } from "@nextui-org/tabs";
 import { Bot, MessageCircle } from "lucide-react";
-import { useSearchParams, useRouter } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 
 import { useMessagingActions, useMessagingState } from "@/libs/messaging/store";
 import { MessageMode } from "@/types/messaging";

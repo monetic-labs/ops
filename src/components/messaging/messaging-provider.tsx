@@ -13,7 +13,7 @@ interface MessagingProviderProps {
 
 export const MessagingProvider = ({ children, userId, initialMode = "bot" }: MessagingProviderProps) => {
   const {
-    message: { setMode },
+    message: { setMode, setActiveService },
     connection: { connect },
     ui: { setWidth },
   } = useMessagingActions();
@@ -21,29 +21,21 @@ export const MessagingProvider = ({ children, userId, initialMode = "bot" }: Mes
   useEffect(() => {
     // Set initial values
     setMode(initialMode);
-    setWidth(400); // Default width
+    setActiveService(initialMode === "bot" ? "openai" : "websocket");
+    setWidth(400);
 
-    // Initialize websocket connection
+    // Initialize connection if needed
     connect().catch((error) => {
-      console.error("Failed to establish WebSocket connection:", error);
+      console.error("Failed to establish connection:", error);
     });
 
-    // Cleanup on unmount
     return () => {
       const { disconnect } = useMessagingStore.getState().actions.connection;
 
       disconnect();
     };
-  }, [connect, setMode, setWidth, initialMode]);
+  }, [connect, setMode, setWidth, setActiveService, initialMode]);
 
-  // useEffect(() => {
-  //   const unsubscribe = useMessagingStore.subscribe(
-  //     (state) => state.connection.status
-  //   );
-  //   const connectionStatus = useMessagingStore.getState().connection.status;
-  //   console.log('Connection status:', connectionStatus );
-  //   return () => unsubscribe();
-  // }, []);
 
   return <>{children}</>;
 };
