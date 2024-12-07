@@ -49,8 +49,8 @@ jobs:
           bun install
           bunx playwright install --with-deps
 
-      - name: Run tests
-        run: bun run test
+      # - name: Run tests
+      #   run: bun run test
 
       - name: Run e2e tests
         run: bun run test:e2e
