@@ -18,7 +18,7 @@
   },
   "dependencies": {
     "@ai-sdk/openai": "^0.0.70",
-    "@backpack-fux/pylon-sdk": "^0.2.964",
+    "@backpack-fux/pylon-sdk": "^0.2.966",
     "@hookform/resolvers": "^3.9.1",
     "@nextui-org/accordion": "^2.2.2",
     "@nextui-org/autocomplete": "^2.3.2",
@@ -42,7 +42,7 @@
     "@nextui-org/snippet": "2.0.41",
     "@nextui-org/spinner": "^2.2.2",
     "@nextui-org/switch": "2.0.33",
-    "@nextui-org/system": "2.2.5",
+    "@nextui-org/system": "2.3.0",
     "@nextui-org/table": "^2.2.2",
     "@nextui-org/tabs": "^2.2.2",
     "@nextui-org/theme": "2.2.9",
