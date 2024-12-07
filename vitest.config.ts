@@ -15,12 +15,17 @@ export default defineConfig({
     setupFiles: ["src/tests/integration/setup.ts"],
     coverage: {
       provider: "v8",
-      reporter: ["text", "json"],
+      reporter: ["text", "json", "html"],
       exclude: ["node_modules/", "src/tests/integration/setup.ts"],
+      all: true,
     },
     alias: {
       "@": path.resolve(__dirname, "./src"),
     },
     exclude: ["**/e2e/**", "**/node_modules/**"],
+    reporters: [
+      ["html", { outputFolder: "playwright-report" }],
+      ["json", { outputFile: "playwright-report/results.json" }],
+    ],
   },
 });
