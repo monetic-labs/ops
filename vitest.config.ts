@@ -15,7 +15,7 @@ export default defineConfig({
     setupFiles: ["src/tests/integration/setup.ts"],
     coverage: {
       provider: "v8",
-      reporter: ["text", "json", "html"],
+      reporter: ["text", "json"],
       exclude: ["node_modules/", "src/tests/integration/setup.ts"],
     },
     alias: {
