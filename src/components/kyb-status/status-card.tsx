@@ -41,6 +41,7 @@ export function StatusCard({ provider, status, onVerify }: StatusCardProps) {
       case RainKybStatus.PENDING:
         return ComplianceStatus.PENDING;
       case BridgeKybStatus.NOT_STARTED:
+      case RainKybStatus.NOT_STARTED:
         return ComplianceStatus.NOT_STARTED;
       case BridgeKybStatus.INCOMPLETE:
         return ComplianceStatus.INCOMPLETE;
