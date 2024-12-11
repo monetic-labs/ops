@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { MERCHANT_COOKIE_NAME } from "@/utils/constants";
 
+export const dynamic = 'force-dynamic';
+
 export async function GET(request: Request) {
   try {
     const cookieStore = cookies();
