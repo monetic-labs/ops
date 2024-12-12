@@ -7,18 +7,18 @@ export async function middleware(request: NextRequest) {
   const isAuthRoute = request.nextUrl.pathname.startsWith("/auth");
   const isOnboardRoute = request.nextUrl.pathname.startsWith("/onboard");
   const isKybRoute = request.nextUrl.pathname.startsWith("/kyb");
+  const isHomePage = request.nextUrl.pathname === "/";
 
-  // Case 2: Not logged in - redirect to onboarding
+  // Case 1: Not logged in
   if (!authToken) {
     if (!isAuthRoute && !isOnboardRoute) {
-      return NextResponse.redirect(new URL("/onboard", request.url));
+      return NextResponse.rewrite(new URL("/auth", request.url));
     }
     return NextResponse.next();
   }
 
-  // Case 1: Logged in
+  // Case 2: Logged in - Check compliance status
   try {
-    // TODO: Get the compliance status via the SDK
     const complianceResponse = await fetch(`${request.nextUrl.origin}/api/check-compliance`, {
       headers: {
         Cookie: `${MERCHANT_COOKIE_NAME}=${authToken.value}`,
@@ -26,26 +26,25 @@ export async function middleware(request: NextRequest) {
     });
 
     if (!complianceResponse.ok) {
+      console.error("Failed to fetch compliance status");
       return NextResponse.next();
     }
 
     const complianceStatus = await complianceResponse.json();
-
     const isFullyApproved =
-      complianceStatus.kycStatus.toUpperCase() === "APPROVED" && complianceStatus.status.toUpperCase() === "APPROVED";
+      complianceStatus.kycStatus?.toUpperCase() === "APPROVED" && complianceStatus.status?.toUpperCase() === "APPROVED";
 
-    // Case 1a: Not fully approved - redirect to KYB
+    // Case 2a: Not fully approved - must complete KYB
     if (!isFullyApproved && !isKybRoute) {
       return NextResponse.redirect(new URL("/kyb", request.url));
     }
 
-    // Case 1b: Fully approved
+    // Case 2b: Fully approved
     if (isFullyApproved) {
       if (isAuthRoute || isOnboardRoute || isKybRoute) {
         return NextResponse.redirect(new URL("/", request.url));
       }
-      // Rewrite home page
-      if (request.nextUrl.pathname === "/") {
+      if (isHomePage) {
         return NextResponse.rewrite(new URL("/", request.url));
       }
     }
