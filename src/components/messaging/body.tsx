@@ -1,14 +1,32 @@
 "use client";
 
-import React, { useRef, useEffect } from "react";
+import React, { useRef, useEffect, useCallback } from "react";
 
-import { useMessagingState } from "@/libs/messaging/store";
+import { useCurrentModeMessages, useMessagingActions, useMessagingState } from "@/libs/messaging/store";
 
 import { MessageBubble } from "./message-bubble";
+import { useWebSocket } from "@/hooks/messaging/useWebSocket";
 
 export const ChatBody: React.FC = () => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const { mode, messages, isTyping } = useMessagingState();
+  const messages = useCurrentModeMessages();
+  const { appendMessage } = useMessagingActions().message;
+
+
+  // Receive Telegram Support Messages
+  const handleWebSocketMessage = useCallback((message: any) => {
+    console.log('Received WebSocket message:', message);
+    appendMessage({
+      id: crypto.randomUUID(),
+      text: message.text || message,
+      type: 'support',
+      timestamp: Date.now(),
+      status: 'received'
+    });
+  }, [appendMessage]);
+
+  // Initialize WebSocket connection
+  useWebSocket({ handleMessage: handleWebSocketMessage });
 
   const scrollToBottom = () => {
     if (messagesEndRef.current) {
@@ -36,12 +54,6 @@ export const ChatBody: React.FC = () => {
         <MessageBubble key={message.id} contentTestId={`message-item`} data-testid="message-item" message={message} />
       ))}
 
-      {isTyping && (
-        <div className="typing-indicator" data-testid="typing-indicator">
-          <span>{mode === "support" ? "Support" : "Agent"} is typing</span>
-          <span className="animate-pulse">...</span>
-        </div>
-      )}
 
       <div ref={messagesEndRef} data-testid="messages-end" />
     </div>

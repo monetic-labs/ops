@@ -5,7 +5,7 @@ export type MessageType = "user" | "bot" | "support" | "system" | "typing";
 /** Possible states of a message */
 export type MessageStatus = "sending" | "sent" | "error" | "received";
 /** Available messaging service types */
-export type MessageServiceType = "telegram" | "openai" | "websocket";
+export type MessageServiceType = "telegram" | "openai";
 
 /** Base interface for all message types */
 export interface BaseMessage {
@@ -27,18 +27,6 @@ export interface TypingIndicator {
   chatId: string | number;
   isTyping: boolean;
   userId?: string;
-}
-
-/** WebSocket-specific message format */
-export interface WebSocketMessage extends BaseMessage {
-  type: MessageType;
-  metadata: {
-    telegramMessageId?: number;
-    chatId?: string;
-    timestamp: number;
-    userId?: string;
-    isTyping?: boolean;
-  };
 }
 
 /** User-sent message format */
@@ -88,10 +76,9 @@ export interface MessageService {
   isTyping?: boolean;
   isLoading: boolean;
   inputValue: string;
-  setInputValue: (value: string) => Promise<void>;
+  setInputValue: (value: string) => Promise<void>; 
   sendMessage: (text: string) => Promise<void>;
   handleSubmit: (e: React.FormEvent) => Promise<void>;
-  handleWebSocketMessage?: (message: WebSocketMessage) => void;
   getUserId: () => string;
 }
 
@@ -107,10 +94,9 @@ export interface AgentMessageService extends MessageService {
 
 /** Support service specific interface */
 export interface SupportMessageService extends MessageService {
-  type: "telegram" | "websocket";
+  type: "telegram";
   channel: string;
   isTyping: boolean;
-  handleWebSocketMessage: (message: WebSocketMessage) => void;
   metadata?: {
     agentId?: string;
     department?: string;

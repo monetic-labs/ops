@@ -21,7 +21,8 @@ export const MessagingProvider = ({ children, userId, initialMode = "bot" }: Mes
   useEffect(() => {
     // Set initial values
     setMode(initialMode);
-    setActiveService(initialMode === "bot" ? "openai" : "websocket");
+    // Map the mode to the correct service type
+    setActiveService(initialMode === "bot" ? "openai" : "telegram");
     setWidth(400);
 
     // Initialize connection if needed

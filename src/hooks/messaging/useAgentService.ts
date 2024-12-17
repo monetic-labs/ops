@@ -21,12 +21,10 @@ export const useAgentService = () => {
   const { message: messageActions } = useMessagingActions();
   const state = useMessagingStore((state) => state.message);
 
-  // Initialize chat with AI SDK, configuring message handling and error responses
   const chatHelpers = useChat({
     api: "/api/messaging/agent/chat",
     id: state.userId || "default-user",
-    // Transform our message format to match the AI SDK's expected format
-    initialMessages: state.messages
+    initialMessages: state.messages.bot
       .filter(msg => msg.type === 'user' || msg.type === 'bot')
       .map(msg => ({
         id: msg.id,
@@ -55,12 +53,10 @@ export const useAgentService = () => {
     },
   });
 
-  /**
-   * Sends a message to the AI agent and handles the response.
-   * 
-   * @param {string} text - The message text to send
-   * @returns {Promise<void>}
-   */
+  const setInputValue = async (value: string) => {
+    await messageActions.setInputValue({ mode: 'bot', value });
+  };
+
   const sendMessage = async (text: string) => {
     if (!text.trim()) return;
 
@@ -74,32 +70,36 @@ export const useAgentService = () => {
     };
 
     try {
-      // Add message to our store first
       messageActions.appendMessage(userMessage);
-      
-      // Send the message to the AI
       await chatHelpers.append({
         id: messageId,
         content: text,
         role: 'user',
       });
-
-      // Update message status once sent
       messageActions.updateMessage(messageId, { status: "sent" });
+      await setInputValue(''); // Clear input after sending
     } catch (error) {
       console.error("Failed to get AI response:", error);
       messageActions.updateMessage(messageId, { status: "error" });
     }
   };
 
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const text = state.inputValues.bot;
+    if (!text.trim()) return;
+    await sendMessage(text.trim());
+  };
+
   return {
     type: "openai" as const,
     model: OPENAI_MODELS.chat.default,
-    messages: state.messages,
+    messages: state.messages.bot,
     isLoading: chatHelpers?.isLoading || false,
-    inputValue: state.inputValue,
-    setInputValue: messageActions.setInputValue,
+    inputValue: state.inputValues.bot,
+    setInputValue,
     sendMessage,
+    handleSubmit,
     getUserId: () => state.userId || "default-user",
   };
 };

@@ -18,7 +18,7 @@
   },
   "dependencies": {
     "@ai-sdk/openai": "^0.0.70",
-    "@backpack-fux/pylon-sdk": "^0.2.966",
+    "@backpack-fux/pylon-sdk": "^0.2.968",
     "@hookform/resolvers": "^3.9.1",
     "@nextui-org/accordion": "^2.2.2",
     "@nextui-org/autocomplete": "^2.3.2",
@@ -85,6 +85,7 @@
     "remark-gfm": "^4.0.0",
     "remark-parse": "^11.0.0",
     "remark-stringify": "^11.0.0",
+    "socket.io-client": "^4.8.1",
     "unified": "^11.0.5",
     "utf-8-validate": "^6.0.5",
     "uuid": "^10.0.0",

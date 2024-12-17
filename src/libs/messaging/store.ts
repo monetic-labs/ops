@@ -1,7 +1,6 @@
 import { create } from "zustand";
 import { devtools } from "zustand/middleware";
 
-//import { useWebSocket } from '@/libs/websocket';
 import {
   MessageMode,
   Message,
@@ -11,9 +10,10 @@ import {
   SupportMessage,
   MessageStatus,
   MessageServiceType,
+  MessageType,
 } from "@/types/messaging";
 
-// Add to MessagingStore interface
+// Mention state interface
 interface MentionState {
   isOpen: boolean;
   searchText: string;
@@ -21,39 +21,70 @@ interface MentionState {
   position: { top: number; left: number };
 }
 
-interface MentionActions {
-  setMentionState: (state: Partial<MentionState>) => void;
-  resetMentionState: () => void;
-}
-
-// Separate UI state from core messaging state
+// UI state interface
 interface UIState {
   isOpen: boolean;
   width: number;
   isResizing: boolean;
 }
 
+// Core message state
+interface MessageState {
+  mode: MessageMode;
+  messages: {
+    bot: Message[];    // Messages for OpenAI bot service
+    support: Message[]; // Messages for Telegram support service
+  };
+  inputValues: {
+    bot: string;
+    support: string;
+  };
+  isTyping: boolean;
+  userId: string | null;
+  merchantId?: string | null;
+  activeService: MessageServiceType;
+  pendingMessage: Message | null;
+}
+
+// Connection state
+interface ConnectionState {
+  status: "disconnected" | "connecting" | "connected";
+  error: Error | null;
+}
+
+// Action interfaces
 interface UIActions {
   togglePane: () => void;
   setWidth: (width: number) => void;
   setResizing: (isResizing: boolean) => void;
 }
 
-interface MessageState {
-  mode: MessageMode;
-  messages: Message[];
-  inputValue: string;
-  isTyping: boolean;
-  userId: string | null;
-  activeService: MessageServiceType; // Add this to track current service
-  pendingMessage: Message | null;
+interface MessageActions {
+  setMode: (mode: MessageMode) => void;
+  setActiveService: (service: MessageServiceType) => void;
+  setUserId: (userId: string) => void;
+  setMerchantId: (merchantId: string) => void;
+  appendMessage: (message: Message) => void;
+  updateMessage: (id: string, updates: Partial<Omit<Message, "type">>) => void;
+  updateMessageStatus: (id: string, status: MessageStatus) => void;
+  setTyping: (isTyping: boolean) => void;
+  setInputValue: (payload: { mode: MessageMode; value: string }) => void;
+  setPendingMessage: (message: Message | null) => void;
+  clearMessages: () => void;
 }
 
-interface ConnectionState {
-  status: "disconnected" | "connecting" | "connected";
-  error: Error | null;
+interface MentionActions {
+  setMentionState: (state: Partial<MentionState>) => void;
+  resetMentionState: () => void;
 }
 
+interface ConnectionActions {
+  connect: () => Promise<void>;
+  disconnect: () => void;
+  setError: (error: Error | null) => void;
+}
+
+// Main store interface
 export interface MessagingStore {
   ui: UIState;
   message: MessageState;
@@ -68,24 +99,8 @@ export interface MessagingStore {
   initialized: boolean;
 }
 
-interface MessageActions {
-  setMode: (mode: MessageMode) => void;
-  setActiveService: (service: MessageServiceType) => void;
-  appendMessage: (message: Message) => void;
-  updateMessage: (id: string, updates: Partial<Message>) => void;
-  setTyping: (isTyping: boolean) => void;
-  setInputValue: (value: string) => void;
-  setPendingMessage: (message: Message | null) => void;
-}
-
-interface ConnectionActions {
-  connect: () => Promise<void>;
-  disconnect: () => void;
-  setError: (error: Error | null) => void;
-}
-
-// Create a new message helper
-const createMessage = (content: string, type: Message["type"], status: MessageStatus = "sending"): Message => {
+// Helper function to create messages with proper typing
+export const createMessage = (content: string, type: MessageType, status: MessageStatus = "sending"): Message => {
   const baseMessage = {
     id: crypto.randomUUID(),
     text: content,
@@ -104,181 +119,207 @@ const createMessage = (content: string, type: Message["type"], status: MessageSt
       return {
         ...baseMessage,
         type: "bot",
+        status,
       } as BotMessage;
     case "support":
       return {
         ...baseMessage,
         type: "support",
+        status,
       } as SupportMessage;
     case "system":
       return {
         ...baseMessage,
         type: "system",
         category: "info",
+        status,
       } as SystemMessage;
     default:
       throw new Error(`Invalid message type: ${type}`);
   }
 };
 
-// Create the messaging store
+// Create the store
 export const useMessagingStore = create<MessagingStore>()(
   devtools(
-    (set, get) => {
-      //const webSocket = useWebSocket.getState();
-
-      return {
+    (set, get) => ({
+      ui: {
+        isOpen: false,
+        width: 400,
+        isResizing: false,
+      },
+      message: {
+        mode: "bot",
+        messages: {
+          bot: [],
+          support: [],
+        },
+        inputValues: {
+          bot: "",
+          support: "",
+        },
+        isTyping: false,
+        userId: null,
+        activeService: "openai",
+        pendingMessage: null,
+      },
+      mention: {
+        isOpen: false,
+        searchText: "",
+        selectedIndex: 0,
+        position: { top: 0, left: 0 },
+      },
+      connection: {
+        status: "disconnected",
+        error: null,
+      },
+      actions: {
         ui: {
-          isOpen: false,
-          width: 400,
-          isResizing: false,
+          togglePane: () => set((state) => ({
+            ui: { ...state.ui, isOpen: !state.ui.isOpen },
+          })),
+          setWidth: (width) => set((state) => ({
+            ui: { ...state.ui, width },
+          })),
+          setResizing: (isResizing) => set((state) => ({
+            ui: { ...state.ui, isResizing },
+          })),
         },
         message: {
-          mode: "bot" as MessageMode, // Explicitly type as ChatMode
-          messages: [] as Message[],
-          inputValue: "",
-          isTyping: false,
-          userId: null,
-          activeService: "openai" as MessageServiceType, // Add this
-          pendingMessage: null,
-        },
-        mention: {
-          isOpen: false,
-          searchText: "",
-          selectedIndex: 0,
-          position: { top: 0, left: 0 },
-        },
-        connection: {
-          status: "disconnected", // Align with WebSocket status
-          error: null,
-        },
-        actions: {
-          ui: {
-            togglePane: () =>
-              set((state) => ({
-                ui: { ...state.ui, isOpen: !state.ui.isOpen },
-              })),
-            setWidth: (width) =>
-              set((state) => ({
-                ui: { ...state.ui, width },
-              })),
-            setResizing: (isResizing) =>
-              set((state) => ({
-                ui: { ...state.ui, isResizing },
-              })),
-          },
-          message: {
-            setMode: (mode: MessageMode) =>
-              set((state) => ({
-                message: { ...state.message, mode },
-              })),
-            setActiveService: (service: MessageServiceType) =>
-              set((state) => ({
-                message: { ...state.message, activeService: service },
-              })),
-            setPendingMessage: (message: Message | null) =>
-              set((state) => ({
-                message: { ...state.message, pendingMessage: message },
-              })),
-            sendMessage: async (content: string) => {
-              const message = createMessage(content, "user", "sending");
-
-              set((state) => ({
-                message: {
-                  ...state.message,
-                  messages: [...state.message.messages, message],
+          setMode: (mode: MessageMode) =>
+            set((state) => ({
+              message: {
+                ...state.message,
+                mode,
+                activeService: mode === "bot" ? "openai" : "telegram",
+              },
+            })),
+          setMerchantId: (merchantId: string) =>
+            set((state) => ({
+              message: { ...state.message, merchantId },
+            })),
+          setUserId: (userId: string) =>
+            set((state) => ({
+              message: { ...state.message, userId },
+            })),
+          setActiveService: (service: MessageServiceType) =>
+            set((state) => ({
+              message: { ...state.message, activeService: service },
+            })),
+          appendMessage: (message: Message) =>
+            set((state) => ({
+              message: {
+                ...state.message,
+                messages: {
+                  ...state.message.messages,
+                  [state.message.mode]: [...state.message.messages[state.message.mode], message],
                 },
-              }));
-
-              try {
-                //await webSocket.send(message);
-                get().actions.message.updateMessage(message.id, { status: "sent" });
-              } catch (error) {
-                get().actions.message.updateMessage(message.id, { status: "error" });
-                get().actions.connection.setError(error as Error);
-              }
-            },
-            appendMessage: (message: Message) =>
-              set((state) => ({
-                message: {
-                  ...state.message,
-                  messages: [...state.message.messages, message],
-                },
-              })),
-            updateMessage: (id: string, updates: Partial<Message>) =>
-              set((state) => ({
-                message: {
-                  ...state.message,
-                  messages: state.message.messages.map((msg) =>
-                    msg.id === id ? ({ ...msg, ...updates } as Message) : msg
+              },
+            })),
+          updateMessage: (id: string, updates: Partial<Omit<Message, "type">>) =>
+            set((state) => ({
+              message: {
+                ...state.message,
+                messages: {
+                  ...state.message.messages,
+                  [state.message.mode]: state.message.messages[state.message.mode].map((msg) =>
+                    msg.id === id ? { ...msg, ...updates } : msg
                   ),
                 },
-              })),
-            setInputValue: (value: string) =>
-              set((state) => ({
-                message: { ...state.message, inputValue: value },
-              })),
-            setTyping: (isTyping: boolean) =>
-              set((state) => ({
-                message: { ...state.message, isTyping },
-              })),
-          },
-          mention: {
-            setMentionState: (updates) =>
-              set((state) => ({
-                mention: { ...state.mention, ...updates },
-              })),
-            resetMentionState: () =>
-              set((state) => ({
-                mention: {
-                  isOpen: false,
-                  searchText: "",
-                  selectedIndex: 0,
-                  position: { top: 0, left: 0 },
+              },
+            })),
+          updateMessageStatus: (id: string, status: MessageStatus) =>
+            set((state) => ({
+              message: {
+                ...state.message,
+                messages: {
+                  ...state.message.messages,
+                  [state.message.mode]: state.message.messages[state.message.mode].map((msg) =>
+                    msg.id === id ? { ...msg, status } : msg
+                  ),
                 },
-              })),
-          },
-          connection: {
-            connect: async () => {
-              set((state) => ({
-                connection: { ...state.connection, status: "connecting" },
-              }));
-
-              try {
-                //await webSocket.connect();
-                set((state) => ({
-                  connection: {
-                    ...state.connection,
-                    status: "connected",
-                    error: null,
-                  },
-                }));
-              } catch (error) {
-                set((state) => ({
-                  connection: {
-                    ...state.connection,
-                    status: "disconnected",
-                    error: error as Error,
-                  },
-                }));
-              }
-            },
-            disconnect: () => {
-              //webSocket.disconnect();
-            },
-            setError: (error) =>
-              set((state) => ({
-                connection: { ...state.connection, error },
-              })),
-          },
+              },
+            })),
+          setTyping: (isTyping: boolean) =>
+            set((state) => ({
+              message: { ...state.message, isTyping },
+            })),
+          setInputValue: ({ mode, value }: { mode: MessageMode; value: string }) =>
+            set((state) => ({
+              message: {
+                ...state.message,
+                inputValues: {
+                  ...state.message.inputValues,
+                  [mode]: value
+                }
+              },
+            })),
+          setPendingMessage: (message: Message | null) =>
+            set((state) => ({
+              message: { ...state.message, pendingMessage: message },
+            })),
+          clearMessages: () =>
+            set((state) => ({
+              message: {
+                ...state.message,
+                messages: {
+                  ...state.message.messages,
+                  [state.message.mode]: [],
+                },
+              },
+            })),
         },
-        initialized: false,
-      };
-    },
+        mention: {
+          setMentionState: (updates) => set((state) => ({
+            mention: { ...state.mention, ...updates },
+          })),
+          resetMentionState: () => set((state) => ({
+            mention: {
+              isOpen: false,
+              searchText: "",
+              selectedIndex: 0,
+              position: { top: 0, left: 0 },
+            },
+          })),
+        },
+        connection: {
+          connect: async () => {
+            set((state) => ({
+              connection: { ...state.connection, status: "connecting" },
+            }));
+            try {
+              // Connection logic here
+              set((state) => ({
+                connection: { ...state.connection, status: "connected", error: null },
+              }));
+            } catch (error) {
+              set((state) => ({
+                connection: {
+                  ...state.connection,
+                  status: "disconnected",
+                  error: error as Error,
+                },
+              }));
+            }
+          },
+          disconnect: () => {
+            // Disconnect logic here
+            set((state) => ({
+              connection: { ...state.connection, status: "disconnected" },
+            }));
+          },
+          setError: (error) => set((state) => ({
+            connection: { ...state.connection, error },
+          })),
+        },
+      },
+      initialized: false,
+    }),
     { name: "messaging-store" }
   )
 );
 
+// Reset function
 export const resetMessagingStore = () => {
   useMessagingStore.setState({
     initialized: false,
@@ -289,11 +330,17 @@ export const resetMessagingStore = () => {
     },
     message: {
       mode: "bot",
-      messages: [],
-      inputValue: "",
+      messages: {
+        bot: [],
+        support: [],
+      },
+      inputValues: {
+        bot: "",
+        support: "",
+      },
       isTyping: false,
       userId: null,
-      activeService: "agent" as MessageServiceType,
+      activeService: "openai",
       pendingMessage: null,
     },
     connection: {
@@ -303,12 +350,19 @@ export const resetMessagingStore = () => {
   });
 };
 
-// Typed selectors for specific state slices
+// Add a selector to get current mode's messages
+export const useCurrentModeMessages = () => {
+  const { mode, messages } = useMessagingStore((state) => state.message);
+  return messages[mode];
+};
+
+// Typed selectors
 export const useMessagingUI = () => useMessagingStore((state) => state.ui);
 export const useMessagingState = () => useMessagingStore((state) => state.message);
 export const useMessagingConnection = () => useMessagingStore((state) => state.connection);
 export const useMessagingActions = () => useMessagingStore((state) => state.actions);
 
+// Dev tools
 if (typeof window !== "undefined") {
   window.__MESSAGING_STORE__ = useMessagingStore;
 }

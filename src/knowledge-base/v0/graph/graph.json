@@ -144,6 +144,47 @@
                 "systematic-investment"
             ],
             "requires": ["user-auth"]
+        },
+        "energy-type-strategist": {
+            "type": "experience",
+            "description": "Strategist financial interaction patterns",
+            "traits": [
+                "Deep analytical abilities",
+                "Natural strategic insight",
+                "Excellence in guiding and advising others",
+                "Pattern recognition",
+                "Efficiency-focused",
+                "Selective energy management"
+            ],
+            "financial_strengths": [
+                "Long-term strategic planning",
+                "Due diligence expertise",
+                "Risk assessment capabilities",
+                "Value-based investment approach",
+                "Advisory potential"
+            ],
+            "financial_challenges": [
+                "Tendency to overanalyze",
+                "Waiting for recognition",
+                "Energy management in execution",
+                "Potential for missed opportunities due to timing",
+                "Need for external validation"
+            ],
+            "decision_style": {
+                "speed_multiplier": 0.7,
+                "risk_tolerance": "medium",
+                "waiting_period": "recognition-based",
+                "confirmation_threshold": "high"
+            },
+            "optimal_capabilities": [
+                "Strategic planning",
+                "Risk analysis",
+                "Advisory services",
+                "System optimization",
+                "Pattern recognition",
+                "Leadership guidance"
+            ],
+            "requires": ["user-auth"]
         }
     },
     "edges": [

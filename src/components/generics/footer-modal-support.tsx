@@ -3,10 +3,10 @@ import { Button } from "@nextui-org/button";
 import { ModalFooter } from "@nextui-org/modal";
 import { Switch } from "@nextui-org/switch";
 import { Kbd } from "@nextui-org/kbd";
-import html2canvas from "html2canvas";
 import { Tooltip } from "@nextui-org/tooltip";
 
 import { useShortcuts } from "./shortcuts-provider";
+import { useSupportScreenshot } from "@/hooks/messaging/useSupportService";
 
 interface ActionButton {
   label: string;
@@ -21,7 +21,6 @@ interface ModalFooterWithSupportProps {
   onSupportClick: () => void;
   isNewSender?: boolean;
   onNewSenderChange?: (value: boolean) => void;
-  captureElementId?: string;
 }
 
 export default function ModalFooterWithSupport({
@@ -29,9 +28,9 @@ export default function ModalFooterWithSupport({
   onNewSenderChange,
   isNewSender,
   actions,
-  captureElementId = "root",
 }: ModalFooterWithSupportProps) {
   const shortcuts = useShortcuts();
+  const { captureScreenshot } = useSupportScreenshot();
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -48,45 +47,11 @@ export default function ModalFooterWithSupport({
 
   const handleSupportClick = async () => {
     try {
-      // Add a small delay to ensure all elements are rendered
-      await new Promise((resolve) => setTimeout(resolve, 100));
-      // Capture the entire visible page
-      const canvas = await html2canvas(document.body, {
-        logging: false,
-        useCORS: true,
-        allowTaint: true,
-        foreignObjectRendering: true,
-        windowWidth: document.documentElement.clientWidth,
-        windowHeight: document.documentElement.clientHeight,
-        onclone: (document) => {
-          // This function runs on the cloned document before rendering
-          // You can modify elements here if needed
-          document.querySelectorAll("img, image").forEach((img) => {
-            img.setAttribute("crossorigin", "anonymous");
-          });
-        },
-      });
-
-      // Reduce the image quality and size
-      const screenshot = canvas.toDataURL("image/jpeg", 0.5);
-
-      const response = await fetch("/api/messaging/support/start-support-screenshot", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ screenshot: screenshot }),
-      });
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      //setShowSupportChat(true);
+      await captureScreenshot();
       shortcuts.openChat();
       onSupportClick();
     } catch (error) {
-      console.error("Error capturing screenshot:", error);
+      console.error("Error in support flow:", error);
       shortcuts.openChat();
       onSupportClick();
     }
@@ -136,8 +101,6 @@ export default function ModalFooterWithSupport({
           ))}
         </div>
       </ModalFooter>
-      {/* {Handled by global state - remove this when pane works correctly /> } */}
-      {/* {shortcuts.isChatOpen && <ChatPane isOpen={shortcuts.isChatOpen} onClose={shortcuts.closeChat} />} */}
     </>
   );
 }

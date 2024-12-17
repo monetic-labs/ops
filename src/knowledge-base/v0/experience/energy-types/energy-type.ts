@@ -1,5 +1,5 @@
 export interface EnergyTypeProfile {
-  type: "manifestor" | "builder" | "manifesting_generator" | "projector" | "reflector";
+  type: "manifestor" | "builder" | "multitasker" | "projector" | "reflector" | "strategist" | "oracle";
   traits: string[];
   financial_strengths: string[];
   financial_challenges: string[];
@@ -10,6 +10,7 @@ export interface EnergyTypeProfile {
     confirmation_threshold: "low" | "medium" | "high";
   };
   optimal_capabilities: string[];
+  speech_patterns: string[]; // optional for now 
 }
 
 export interface EnergyTypePreference {
@@ -60,6 +61,7 @@ export const BUILDER_PROFILE: EnergyTypeProfile = {
     confirmation_threshold: "medium",
   },
   optimal_capabilities: ["automated-savings", "recurring-transfers", "cost-over-speed", "systematic-investment"],
+  speech_patterns: ["I'm a builder, I'm a builder, I'm a builder"],
 };
 
 // Builder preference configuration

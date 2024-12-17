@@ -56,9 +56,9 @@ export async function processUsagePatterns(usageDir: string, graph: Graph): Prom
         name: cap,
         description: graph.nodes[cap].description,
       })),
-      flow: pattern.example_dialogue.map((d) => ({
+      flow: pattern.agent_relations.map((d) => ({
         user: d.user,
-        system: d.system,
+        system: d.agent,
       })),
       edge_cases: pattern.edge_cases,
     };
