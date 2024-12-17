@@ -77,24 +77,26 @@ export const FormCompanyInfo: React.FC<{
   };
 
   return (
-    <FormCard className="w-full" title="Company Account" data-testid="company-account-form">
+    <FormCard className="w-full" data-testid="company-account-form" title="Company Account">
       <form className="space-y-4" onSubmit={onFormSubmit}>
         <FormInput
           about="Use the registered name of the company, your dba can be updated later."
           control={control}
+          data-testid="company-account-name-input"
           errorMessage={errors.company?.name?.message}
           label="Company Name"
           maxLength={50}
           name="company.name"
           placeholder="Algersoft"
-          data-testid="company-account-name-input"
         />
         <FormInput
           about="Use the email where you want to receive important account notifications."
           control={control}
+          data-testid="company-account-email-input"
           errorMessage={errors.company?.email?.message}
           label="Email"
           name="company.email"
+          pattern={emailRegex.source}
           placeholder="nope@algersoft.com"
           value={emailInput}
           onChange={(e) =>
@@ -107,21 +109,20 @@ export const FormCompanyInfo: React.FC<{
               "company.email"
             )
           }
-          pattern={emailRegex.source}
-          data-testid="company-account-email-input"
         />
         <FormInput
+          control={control}
+          data-testid="company-account-website-input"
+          errorMessage={errors.company?.website?.message}
+          label="Website"
+          name="company.website"
+          placeholder="algersoft.com"
           startContent={
             <div className="pointer-events-none flex items-center">
               <span className="text-default-400 text-small">https://</span>
             </div>
           }
-          control={control}
-          errorMessage={errors.company?.website?.message}
-          label="Website"
           type="url"
-          name="company.website"
-          placeholder="algersoft.com"
           value={websiteInput.replace("https://", "").replace("http://", "")}
           onChange={(e) =>
             handleWebsiteChange(
@@ -133,7 +134,6 @@ export const FormCompanyInfo: React.FC<{
               "company.website"
             )
           }
-          data-testid="company-account-website-input"
         />
         <PostcodeInput
           about="Address where the company is registered."
@@ -141,35 +141,35 @@ export const FormCompanyInfo: React.FC<{
           errorMessage={errors.company?.registeredAddress?.postcode?.message}
           name="company.registeredAddress.postcode"
           showAddressInputs={showAddressInputs}
-          onLookupComplete={onPostcodeLookup}
-          watchPostcode={watchPostcode}
           testId="company-account-postcode-input"
+          watchPostcode={watchPostcode}
+          onLookupComplete={onPostcodeLookup}
         />
         <div className={`fade-in ${showAddressInputs ? "show" : ""}`}>
           <FormInput
             control={control}
+            data-testid="company-account-street-address-1-input"
             errorMessage={errors.company?.registeredAddress?.street1?.message}
             label="Street Address 1"
             name="company.registeredAddress.street1"
             placeholder="123 Main St"
-            data-testid="company-account-street-address-1-input"
           />
         </div>
         <div className={`fade-in ${showAddressInputs ? "show" : ""}`}>
           <FormInput
             control={control}
+            data-testid="company-account-street-address-2-input"
             errorMessage={errors.company?.registeredAddress?.street2?.message}
             label="Street Address 2"
             name="company.registeredAddress.street2"
             placeholder="Apt 4B"
-            data-testid="company-account-street-address-2-input"
           />
         </div>
         <div className="flex justify-end space-x-4">
           <Button className="text-notpurple-500" variant="light" onClick={onCancel}>
             Cancel
           </Button>
-          <FormButton type="submit" data-testid="company-account-submit-button" onClick={onFormSubmit}>
+          <FormButton data-testid="company-account-submit-button" type="submit" onClick={onFormSubmit}>
             Submit
           </FormButton>
         </div>

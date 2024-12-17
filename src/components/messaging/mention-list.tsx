@@ -1,6 +1,9 @@
-import { useEffect } from "react";
+import { useMemo } from "react";
+import React from "react";
 
 import { MentionOption } from "@/types/messaging";
+import { Graph } from "@/knowledge-base/v0/graph/graph";
+import graphData from "@/knowledge-base/v0/graph/graph.json";
 
 interface MentionListProps {
   options: MentionOption[];
@@ -12,64 +15,72 @@ interface MentionListProps {
   setSelectedIndex: (index: number) => void;
 }
 
-export const MentionList: React.FC<MentionListProps> = ({
-  options,
-  searchText,
-  onSelect,
-  position,
-  visible,
-  selectedIndex,
-  setSelectedIndex,
-}) => {
-  // Filter options based on search text
-  const filteredOptions = options.filter((option) => option.label.toLowerCase().includes(searchText.toLowerCase()));
+export const MentionList = React.memo<MentionListProps>(
+  ({ options, searchText, onSelect, position, visible, selectedIndex, setSelectedIndex }) => {
+    // Memoize filteredOptions to prevent recalculation on every render
+    const filteredOptions = useMemo(() => {
+      if (!visible) return [];
 
-  // Reset selected index when search text changes
-  useEffect(() => {
-    setSelectedIndex(0);
-  }, [searchText]);
+      // Show all options when only @ is typed (searchText is empty)
+      if (!searchText.trim()) {
+        return options;
+      }
 
-  if (!visible) return null;
+      return options.filter((option) => {
+        const searchLower = searchText.toLowerCase();
+        return (
+          option.label.toLowerCase().includes(searchLower) ||
+          (option.description && option.description.toLowerCase().includes(searchLower))
+        );
+      });
+    }, [visible, searchText, options]);
 
-  // Check for exact match
-  const exactMatch = filteredOptions.find((option) => option.label.toLowerCase() === searchText.toLowerCase());
+    // Handle no results
+    if (!visible) {
+      return null;
+    }
 
-  if (exactMatch) {
-    onSelect(exactMatch);
-
-    return null;
-  }
-
-  return (
-    <div
-      className="absolute z-[100] bg-charyo-500 rounded-lg shadow-lg max-h-60 overflow-y-auto 
+    return (
+      <div
+        className="absolute z-[100] bg-charyo-500 rounded-lg shadow-lg max-h-60 overflow-y-auto 
           border border-charyo-600 w-full"
-      data-testid="mention-list"
-      style={{
-        bottom: "100%",
-        marginBottom: "8px",
-        left: 0,
-      }}
-    >
-      {filteredOptions.length === 0 ? (
-        <div className="px-4 py-2 text-gray-400">No matches found</div>
-      ) : (
-        filteredOptions.map((option, index) => (
-          <button
-            key={option.id}
-            className={`w-full px-4 py-2 text-left flex items-center gap-2
+        data-testid="mention-list"
+        style={{
+          bottom: "100%",
+          marginBottom: "8px",
+          left: 0,
+        }}
+      >
+        {filteredOptions.length === 0 ? (
+          <div className="px-4 py-2 text-gray-400">No matches found</div>
+        ) : (
+          filteredOptions.map((option, index) => (
+            <button
+              key={option.id}
+              className={`w-full px-4 py-2 text-left flex flex-col gap-1
                 focus:outline-none text-notpurple-500
                 ${index === selectedIndex ? "bg-charyo-600" : "hover:bg-charyo-600"}`}
-            data-testid="mention-option"
-            onClick={() => onSelect(option)}
-            onMouseEnter={() => setSelectedIndex(index)}
-          >
-            {option.icon && <span className="w-5 h-5">{option.icon}</span>}
-            <span>{option.label}</span>
-            {option.description && <span className="text-sm text-gray-400">{option.description}</span>}
-          </button>
-        ))
-      )}
-    </div>
-  );
-};
+              data-testid="mention-option"
+              onClick={() => onSelect(option)}
+              onMouseEnter={() => setSelectedIndex(index)}
+            >
+              <div className="flex items-center gap-2">
+                {option.icon && <span className="w-5 h-5">{option.icon}</span>}
+                <span className="font-medium">{option.label}</span>
+                <span className="text-xs text-gray-400 px-2 rounded-full border border-gray-400">
+                  {option.category || "unknown"}
+                </span>
+              </div>
+
+              {option.description && (
+                <span className="text-sm text-gray-400">{option.description}</span>
+              )}
+            </button>
+          ))
+        )}
+      </div>
+    );
+  }
+);
+
+MentionList.displayName = "MentionList";

@@ -25,7 +25,7 @@ export function Providers({ children, themeProps, userId }: ProvidersProps) {
     isChatOpen: false,
     openChat: () => {},
     closeChat: () => {},
-    toggleChat: () => {}
+    toggleChat: () => {},
   };
 
   return (

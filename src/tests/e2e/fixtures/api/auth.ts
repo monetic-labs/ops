@@ -1,4 +1,5 @@
 import { Page } from "@playwright/test";
+
 import { mockAuthCookie, mockLoginResponses } from "../data/auth";
 import { mockMerchantCreateResponse } from "../data/onboarding";
 
@@ -27,6 +28,7 @@ export async function setupAuthCookie(page: Page) {
 export async function setupMerchantApi(page: Page) {
   await page.route("**/v1/merchant/", async (route) => {
     const request = route.request();
+
     console.log("Intercepted merchant create request:", request.url());
 
     await route.fulfill({

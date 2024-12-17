@@ -12,7 +12,7 @@ interface FormModalProps {
 
 export const FormModal: React.FC<FormModalProps> = ({ isOpen, onClose, title, children, onSubmit, isValid }) => {
   return (
-    <Modal isOpen={isOpen} onClose={onClose} scrollBehavior="inside" data-testid="form-modal">
+    <Modal data-testid="form-modal" isOpen={isOpen} scrollBehavior="inside" onClose={onClose}>
       <ModalContent>
         <ModalHeader>{title}</ModalHeader>
         <ModalBody>{children}</ModalBody>

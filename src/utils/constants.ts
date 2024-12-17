@@ -1,4 +1,5 @@
 import { Address, erc20Abi } from "viem";
+
 import { isLocal } from "./helpers";
 
 export const MERCHANT_COOKIE_NAME = "pyv2_merchant_token";

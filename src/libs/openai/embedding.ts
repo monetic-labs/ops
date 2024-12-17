@@ -1,4 +1,5 @@
 import { OPENAI_MODELS } from "@/knowledge-base/config";
+
 import { openai } from "./client";
 
 export async function getEmbedding(text: string) {

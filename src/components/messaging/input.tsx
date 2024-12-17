@@ -1,149 +1,133 @@
+// src/components/messaging/input.tsx
 "use client";
 
-import React, { useCallback, forwardRef, useState } from 'react';
-import { useMessagingState, useMessagingActions } from '@/libs/messaging/store';
-import { useAgentService } from '@/hooks/messaging/useAgentService';
-import { useMentions } from '@/hooks/messaging/useMentions';
-import { MentionOption } from '@/types/messaging';
-import { MentionList } from './mention-list';
+import React, { useCallback, forwardRef } from "react";
+
+import { useMessagingState, useMessagingActions, useCurrentModeMessages, useMessagingStore } from "@/libs/messaging/store";
+import { useAgentService } from "@/hooks/messaging/useAgentService";
+import { useMentions } from "@/hooks/messaging/useMentions";
+import { useSupportService } from "@/hooks/messaging/useSupportService";
+import { MentionOption } from "@/types/messaging";
+import { MentionList } from "./mention-list";
 
 export const MessageInput = forwardRef<HTMLInputElement>((_, ref) => {
-  const { inputValue, mode } = useMessagingState();
-  const { message: { setInputValue, sendMessage } } = useMessagingActions();
+  const { mode } = useMessagingState();
+  const {
+    message: { setInputValue },
+  } = useMessagingActions();
+  
+  // Services
   const agentService = useAgentService();
-  const { options: mentionOptions } = useMentions();
+  const supportService = useSupportService();
+  const activeService = mode === 'support' ? supportService : agentService;
 
-  // Add state for mention handling
-  const [mentionState, setMentionState] = useState({
-    isOpen: false,
-    searchText: '',
-    selectedIndex: 0,
-    position: { top: 0, left: 0 }
-    });
+  // Mentions
+  const { 
+    options: mentionOptions,
+    mentionState,
+    setMentionState,
+    handleKeyDown: handleMentionKeyDown,
+    handleSelectMention,
+    handleInputChange: handleMentionInputChange
+  } = useMentions();
+
+  const handleChange = useCallback(
+    async (e: React.ChangeEvent<HTMLInputElement>) => {
+      const newValue = e.target.value;
+      await activeService.setInputValue(newValue);
+
+      // Handle mentions
+      handleMentionInputChange(
+        newValue, 
+        e.target.selectionStart || 0,
+        e.target
+      );
+    },
+    [activeService, handleMentionInputChange]
+  );
+
+  const handleMentionSelect = useCallback(
+    async (option: MentionOption) => {
+      const currentInput = activeService.inputValue;
+      const cursorPos = (document.querySelector('[data-testid="chat-input"]') as HTMLInputElement)?.selectionStart || 0;
+      const textBeforeCursor = currentInput.slice(0, cursorPos);
+      const textAfterCursor = currentInput.slice(cursorPos);
+      
+      // Find the last @ symbol before cursor
+      const lastAtIndex = textBeforeCursor.lastIndexOf('@');
+      if (lastAtIndex === -1) return;
+      
+      const selectedMention = handleSelectMention(option);
+      
+      // Replace the text between @ and cursor with the mention
+      const newValue = textBeforeCursor.slice(0, lastAtIndex) + selectedMention.insertText + ' ' + textAfterCursor;
+      
+      await activeService.setInputValue(newValue);
+      
+      // Set cursor position after the inserted mention
+      setTimeout(() => {
+        const input = document.querySelector('[data-testid="chat-input"]') as HTMLInputElement;
+        if (input) {
+          const newCursorPos = lastAtIndex + selectedMention.insertText.length + 1;
+          input.setSelectionRange(newCursorPos, newCursorPos);
+          input.focus();
+        }
+      }, 0);
+    },
+    [activeService, handleSelectMention]
+  );
+
+  const handleKeyDown = useCallback(
+    (e: React.KeyboardEvent) => {
+      if (mentionState.isOpen) {
+        const result = handleMentionKeyDown(e);
+        if (result) {
+          handleMentionSelect(result.option);
+        }
+      }
+    },
+    [mentionState.isOpen, handleMentionKeyDown, handleMentionSelect]
+  );
 
   const handleSubmit = useCallback(async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!inputValue.trim()) return;
-
-    try {
-      await agentService.sendMessage(inputValue.trim());
-      setInputValue('');
-      // Close mentions if open
-      setMentionState(prev => ({ ...prev, isOpen: false }));
-    } catch (error) {
-      console.error('Failed to send message:', error);
-    }
-  }, [inputValue, agentService, setInputValue]);
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const newValue = e.target.value;
-    setInputValue(newValue);
-
-    // Handle @ mentions
-    const words = newValue.split(' ');
-    const lastWord = words[words.length - 1];
-    
-    if (lastWord.startsWith('@')) {
-      const searchTerm = lastWord.slice(1).toLowerCase();
-      setMentionState(prev => ({
-        ...prev,
-        isOpen: true,
-        searchText: searchTerm,
-      }));
-    } else {
-      setMentionState(prev => ({ ...prev, isOpen: false }));
-    }
-  };
-
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (!mentionState.isOpen) return;
-
-    switch (e.key) {
-      case 'ArrowDown':
-        e.preventDefault();
-        setMentionState(prev => ({
-          ...prev,
-          selectedIndex: Math.min(
-            prev.selectedIndex + 1,
-            mentionOptions.length - 1
-          )
-        }));
-        break;
-      case 'ArrowUp':
-        e.preventDefault();
-        setMentionState(prev => ({
-          ...prev,
-          selectedIndex: Math.max(prev.selectedIndex - 1, 0)
-        }));
-        break;
-      case 'Tab': // Add Tab handler
-        e.preventDefault();
-        const filteredOptionsTab = mentionOptions.filter(option =>
-          option.value.toLowerCase().includes(mentionState.searchText.toLowerCase())
-        );
-        if (filteredOptionsTab.length > 0) {
-          // Select the currently highlighted option or the first match
-          handleMentionSelect(filteredOptionsTab[mentionState.selectedIndex] || filteredOptionsTab[0]);
-        }
-        break;
-      case 'Enter':
-        e.preventDefault();
-        const filteredOptions = mentionOptions.filter(option =>
-          option.value.toLowerCase().includes(mentionState.searchText)
-        );
-        if (filteredOptions[mentionState.selectedIndex]) {
-          handleMentionSelect(filteredOptions[mentionState.selectedIndex]);
-        }
-        break;
-      case 'Escape':
-        setMentionState(prev => ({ ...prev, isOpen: false }));
-        break;
-    }
-  };
-
-  const handleMentionSelect = (option: MentionOption) => {
-    const words = inputValue.split(' ');
-    words[words.length - 1] = `@${option.value}`;
-    setInputValue(words.join(' ') + ' ');
-    setMentionState(prev => ({ ...prev, isOpen: false }));
-  };
+    await activeService.handleSubmit(e);
+  }, [activeService]);
 
   return (
     <form 
+      className="flex items-center p-4 relative" 
+      data-testid="chat-input-form" 
       onSubmit={handleSubmit}
-      className="flex items-center p-4 relative"
-      data-testid="chat-input-form"
     >
       <div className="relative flex-1">
         <input
           ref={ref}
-          type="text"
-          value={inputValue}
-          onChange={handleChange}
-          onKeyDown={handleKeyDown}
-          placeholder={`Type a message to ${mode === 'support' ? 'support' : 'agent'}...`}
           className="w-full p-2 border rounded-lg mr-2"
           data-testid="chat-input"
+          placeholder={`Type a message to ${mode === "support" ? "support" : "agent"}...`}
+          type="text"
+          value={activeService.inputValue}
+          onChange={handleChange}
+          onKeyDown={handleKeyDown}
         />
-        
+
         <MentionList
           options={mentionOptions}
-          searchText={mentionState.searchText}
-          onSelect={handleMentionSelect}
           position={mentionState.position}
-          visible={mentionState.isOpen}
+          searchText={mentionState.searchText}
           selectedIndex={mentionState.selectedIndex}
-          setSelectedIndex={(index) => 
-            setMentionState(prev => ({ ...prev, selectedIndex: index }))
-          }
+          setSelectedIndex={(index) => setMentionState({ selectedIndex: index })}
+          visible={mentionState.isOpen}
+          onSelect={handleMentionSelect}
         />
       </div>
 
       <button
-        type="submit"
-        disabled={!inputValue.trim()}
         className="px-4 py-2 bg-ualert-500 text-white rounded-lg disabled:opacity-50"
         data-testid="chat-submit"
+        disabled={!activeService.inputValue.trim()}
+        type="submit"
       >
         Send
       </button>
@@ -151,4 +135,4 @@ export const MessageInput = forwardRef<HTMLInputElement>((_, ref) => {
   );
 });
 
-MessageInput.displayName = 'MessageInput';
+MessageInput.displayName = "MessageInput";

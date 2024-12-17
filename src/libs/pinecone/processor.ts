@@ -6,6 +6,9 @@ import matter from "gray-matter";
 import { Graph } from "@/knowledge-base/v0/graph/graph";
 import { UsagePattern } from "@/knowledge-base/v0/usage";
 
+/**
+ * Represents a processed document with content and metadata
+ */
 export type ProcessedDocument = {
   content: string;
   category: string;
@@ -13,11 +16,21 @@ export type ProcessedDocument = {
   metadata: Record<string, any>;
 };
 
+/**
+ * Extends ProcessedDocument with additional fields for prompt-specific documents
+ */
 export interface PromptDocument extends ProcessedDocument {
   type: "graph" | "usage" | "experience" | "preference";
   relationships?: string[];
   context?: Record<string, any>;
 }
+
+/**
+ * Processes usage pattern files and validates them against the graph structure
+ * @param usageDir - Directory containing usage pattern JSON files
+ * @param graph - Graph instance for capability validation
+ * @returns Array of processed PromptDocuments
+ */
 export async function processUsagePatterns(usageDir: string, graph: Graph): Promise<PromptDocument[]> {
   const documents: PromptDocument[] = [];
   const files = fs.readdirSync(usageDir).filter((file) => file.endsWith(".json"));
@@ -43,9 +56,9 @@ export async function processUsagePatterns(usageDir: string, graph: Graph): Prom
         name: cap,
         description: graph.nodes[cap].description,
       })),
-      flow: pattern.example_dialogue.map((d) => ({
+      flow: pattern.agent_relations.map((d) => ({
         user: d.user,
-        system: d.system,
+        system: d.agent,
       })),
       edge_cases: pattern.edge_cases,
     };
@@ -169,6 +182,11 @@ export function processGraphStructure(graph: Graph): PromptDocument {
   };
 }
 
+/**
+ * Processes markdown files and extracts frontmatter metadata
+ * @param filePath - Path to the markdown file
+ * @returns ProcessedDocument or null if processing fails
+ */
 export function processMarkdownFile(filePath: string): ProcessedDocument | null {
   try {
     const fileContent = fs.readFileSync(filePath, "utf-8");
@@ -190,6 +208,11 @@ export function processMarkdownFile(filePath: string): ProcessedDocument | null 
   }
 }
 
+/**
+ * Recursively finds all markdown files in a directory and its subdirectories
+ * @param dir - Root directory to start searching from
+ * @returns Array of file paths for all found markdown files
+ */
 export function getAllMarkdownFiles(dir: string): string[] {
   let results: string[] = [];
   const items = fs.readdirSync(dir);
@@ -209,6 +232,11 @@ export function getAllMarkdownFiles(dir: string): string[] {
   return results;
 }
 
+/**
+ * Main document processing function that handles markdown files in a directory
+ * @param docsDir - Directory containing documents to process
+ * @returns Array of processed documents
+ */
 export async function processDocuments(docsDir: string): Promise<ProcessedDocument[]> {
   console.log(`Scanning directory: ${docsDir}`);
 

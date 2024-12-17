@@ -1,12 +1,9 @@
 import { z } from "zod";
+import { DisbursementMethod, ISO3166Alpha2State, ISO3166Alpha3Country } from "@backpack-fux/pylon-sdk";
+
 import { BASE_USDC } from "@/utils/constants";
 import { isLocal } from "@/utils/helpers";
-import {
-  DisbursementMethod,
-  ISO3166Alpha2Country,
-  ISO3166Alpha2State,
-  ISO3166Alpha3Country,
-} from "@backpack-fux/pylon-sdk";
+
 import { NewBillPay } from "../bill-pay";
 import { ExistingBillPay } from "../bill-pay";
 
@@ -71,8 +68,10 @@ export const existingBillPaySchema = z.object({
       (val) => {
         if (!val || val === "") return false;
         const amount = parseFloat(val);
+
         if (isNaN(amount)) return false;
         const minAmount = isLocal ? 0.1 : 1;
+
         return amount >= minAmount;
       },
       `Amount must be at least ${isLocal ? 0.1 : 1} ${BASE_USDC.SYMBOL}`
@@ -120,9 +119,11 @@ export const newBillPaySchema = z.object({
     .refine((val) => {
       // Add ABA routing number checksum validation
       let sum = 0;
+
       for (let i = 0; i < 9; i++) {
         sum += parseInt(val[i]) * [3, 7, 1, 3, 7, 1, 3, 7, 1][i];
       }
+
       return sum % 10 === 0;
     }, "Invalid routing number checksum"),
 
@@ -134,12 +135,14 @@ export const newBillPaySchema = z.object({
       (val) => {
         const amount = parseFloat(val || "0");
         const minAmount = isLocal ? 0.1 : 1;
+
         return amount >= minAmount;
       },
       `Amount must be at least ${isLocal ? 0.1 : 1} ${BASE_USDC.SYMBOL}`
     )
     .refine((val) => {
       const decimals = val.split(".")[1]?.length || 0;
+
       return decimals <= 2;
     }, "Amount cannot have more than 2 decimal places"),
 
@@ -222,6 +225,7 @@ const getZodFieldValidation = (
 
 export function getValidationProps({ label, value, currency, balance, method }: FieldValidationInput) {
   let schema;
+
   switch (label) {
     case FieldLabel.ACCOUNT_HOLDER:
       schema = newBillPaySchema.shape.vendorName;
@@ -251,6 +255,7 @@ export function getValidationProps({ label, value, currency, balance, method }: 
             return MINIMUM_DISBURSEMENT_ACH_AMOUNT;
         }
       };
+
       schema = z
         .string()
         .min(1, "Amount is required")
@@ -258,8 +263,10 @@ export function getValidationProps({ label, value, currency, balance, method }: 
           (val) => {
             if (!val || val === "") return false;
             const amount = parseFloat(val);
+
             if (isNaN(amount)) return false;
             const minAmount = getMinimumAmount(method);
+
             return amount >= minAmount;
           },
           (val) => ({
@@ -269,10 +276,12 @@ export function getValidationProps({ label, value, currency, balance, method }: 
         .refine((val) => {
           const amount = parseFloat(val);
           const maxAmount = balance ? parseFloat(balance) : 0;
+
           return amount <= maxAmount;
         }, `Amount must be less than ${balance} ${BASE_USDC.SYMBOL}`)
         .refine((val) => {
           const decimals = val.split(".")[1]?.length || 0;
+
           return decimals <= 2;
         }, "Amount cannot have more than 2 decimal places");
       break;
@@ -281,8 +290,10 @@ export function getValidationProps({ label, value, currency, balance, method }: 
         if (method === DisbursementMethod.WIRE && !/^\d+\s/.test(val)) {
           return false;
         }
+
         return true;
       };
+
       schema = z
         .string()
         .min(1, "Street address is required")
@@ -312,6 +323,7 @@ export function getValidationProps({ label, value, currency, balance, method }: 
       const getMaxLength = (method?: DisbursementMethod) => {
         return method === DisbursementMethod.WIRE ? 35 : 10;
       };
+
       schema = z
         .string()
         .trim()
@@ -319,6 +331,7 @@ export function getValidationProps({ label, value, currency, balance, method }: 
         .refine(
           (val) => {
             const maxLength = getMaxLength(method);
+
             return val.length <= maxLength;
           },
           (val) => ({
@@ -343,8 +356,10 @@ export const validateBillPay = (billPay: NewBillPay | ExistingBillPay, balance?:
       (val) => {
         if (!val || val === "") return false;
         const amount = parseFloat(val);
+
         if (isNaN(amount)) return false;
         const minAmount = isLocal ? 0.1 : 1;
+
         return amount >= minAmount;
       },
       `Amount must be at least ${isLocal ? 0.1 : 1} ${BASE_USDC.SYMBOL}`
@@ -352,6 +367,7 @@ export const validateBillPay = (billPay: NewBillPay | ExistingBillPay, balance?:
     .refine((val) => {
       const amount = parseFloat(val);
       const maxAmount = balance ? parseFloat(balance) : 0;
+
       return amount <= maxAmount;
     }, `Amount must be less than ${balance} ${BASE_USDC.SYMBOL}`);
 

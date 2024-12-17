@@ -28,11 +28,11 @@ const getTransferStatusDescription = (status: TransferStatus) => {
 const getTransferStatusIcon = (status: TransferStatus) => {
   switch (status) {
     case TransferStatus.SENT:
-      return <CheckIcon size={32} className="text-green-500" />;
+      return <CheckIcon className="text-green-500" size={32} />;
     case TransferStatus.ERROR:
-      return <CircleX size={32} className="text-red-500" />;
+      return <CircleX className="text-red-500" size={32} />;
     default:
-      return <Spinner size="lg" color="secondary" />;
+      return <Spinner color="secondary" size="lg" />;
   }
 };
 

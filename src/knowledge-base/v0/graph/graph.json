@@ -109,19 +109,81 @@
             "optimal_capabilities": ["transfers", "card-issuance"],
             "requires": ["user-auth"]
         },
-        "energy-type-generator": {
+        "energy-type-builder": {
             "type": "experience",
-            "description": "Generator financial interaction patterns",
-            "traits": ["consistent", "methodical", "building"],
-            "financial_strengths": ["steady_growth", "sustainable_patterns"],
-            "financial_challenges": ["quick_decisions", "opportunity_cost"],
+            "description": "Builder financial interaction patterns",
+            "traits": [
+                "Steady progress oriented",
+                "Foundation focused",
+                "Systematic approach",
+                "Consistent execution",
+                "Resource optimization"
+            ],
+            "financial_strengths": [
+                "Building sustainable systems",
+                "Regular savings habits",
+                "Steady wealth building",
+                "Resource management",
+                "Long-term planning"
+            ],
+            "financial_challenges": [
+                "May miss spontaneous opportunities",
+                "Can be overly cautious",
+                "Might stick to suboptimal systems"
+            ],
             "decision_style": {
                 "speed_multiplier": 0.8,
                 "risk_tolerance": "medium",
-                "waiting_period": "response-based",
+                "waiting_period": "foundation-based",
                 "confirmation_threshold": "medium"
+        },
+            "optimal_capabilities": [
+                "automated-savings",
+                "recurring-transfers",
+                "cost-over-speed",
+                "systematic-investment"
+            ],
+            "requires": ["user-auth"]
+        },
+        "energy-type-strategist": {
+            "type": "experience",
+            "description": "Strategist financial interaction patterns",
+            "traits": [
+                "Deep analytical abilities",
+                "Natural strategic insight",
+                "Excellence in guiding and advising others",
+                "Pattern recognition",
+                "Efficiency-focused",
+                "Selective energy management"
+            ],
+            "financial_strengths": [
+                "Long-term strategic planning",
+                "Due diligence expertise",
+                "Risk assessment capabilities",
+                "Value-based investment approach",
+                "Advisory potential"
+            ],
+            "financial_challenges": [
+                "Tendency to overanalyze",
+                "Waiting for recognition",
+                "Energy management in execution",
+                "Potential for missed opportunities due to timing",
+                "Need for external validation"
+            ],
+            "decision_style": {
+                "speed_multiplier": 0.7,
+                "risk_tolerance": "medium",
+                "waiting_period": "recognition-based",
+                "confirmation_threshold": "high"
             },
-            "optimal_capabilities": ["automated-savings", "recurring-transfers"],
+            "optimal_capabilities": [
+                "Strategic planning",
+                "Risk analysis",
+                "Advisory services",
+                "System optimization",
+                "Pattern recognition",
+                "Leadership guidance"
+            ],
             "requires": ["user-auth"]
         }
     },
@@ -211,7 +273,7 @@
             }
         },
         {
-            "from": "energy-type-generator",
+            "from": "energy-type-builder",
             "to": "transfers",
             "relationship": "modifies",
             "parameters": {

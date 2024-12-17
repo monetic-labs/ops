@@ -1,0 +1,60 @@
+{
+    "goal": "optimize_for_cost",
+    "user_intent": "Maximize cost efficiency, willing to accept longer processing times",
+    "preference_type": "cost_vs_speed",
+    "context": {
+      "domains": ["account-services", "bill-pay"],
+      "capabilities": ["transfers", "automated-savings"],
+      "priority": "cost"
+    },
+    "parameters": {
+      "cost_tolerance": {
+        "max_premium_percentage": 0.5, 
+        "max_premium_absolute": 5.00, 
+        "currency": "USD"
+      },
+      "speed_expectations": {
+        "target_completion_time": "24_hours",
+        "max_acceptable_time": "48_hours"
+      },
+      "batch_processing": {
+        "enabled": true,
+        "minimum_batch_size": 5,
+        "maximum_wait_time": "72_hours"
+      }
+    },
+    "decision_rules": [
+      {
+        "condition": "transaction_amount <= 1000",
+        "action": "evaluate_fee_threshold",
+        "max_fee_percentage": 0.1
+      },
+      {
+        "condition": "transaction_amount > 1000 && <= 5000",
+        "action": "batch_if_possible",
+        "max_fee_percentage": 0.05
+      },
+      {
+        "condition": "transaction_amount > 5000",
+        "action": "force_batch_processing",
+        "threshold": "premium_exceeds_5_usd"
+      }
+    ],
+    "optimization_strategies": [
+      {
+        "type": "batching",
+        "conditions": ["multiple_transfers_pending", "non_urgent"],
+        "action": "combine_transfers"
+      },
+      {
+        "type": "timing",
+        "conditions": ["off_peak_available", "within_max_wait_time"],
+        "action": "schedule_off_peak"
+      },
+      {
+        "type": "routing",
+        "conditions": ["multiple_routes_available"],
+        "action": "select_lowest_fee_route"
+      }
+    ]
+  }

@@ -1,4 +1,5 @@
-import { test, expect } from "@playwright/test";
+import { test } from "@playwright/test";
+
 import { setupAuthCookie } from "@/tests/e2e/fixtures/api/auth";
 import { setupComplianceMocks } from "@/tests/e2e/fixtures/api/compliance";
 

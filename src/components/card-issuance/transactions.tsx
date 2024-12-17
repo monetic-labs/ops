@@ -2,12 +2,12 @@
 import React, { useCallback, useState } from "react";
 import { Chip } from "@nextui-org/chip";
 import { User } from "@nextui-org/user";
+import { MerchantCardTransactionGetOutput } from "@backpack-fux/pylon-sdk";
 
 import TransactionDetailsModal from "@/components/card-issuance/card-txns";
 import InfiniteTable from "@/components/generics/table-infinite";
 import { getOpepenAvatar } from "@/utils/helpers";
 import pylon from "@/libs/pylon-sdk";
-import { MerchantCardTransactionGetOutput } from "@backpack-fux/pylon-sdk";
 
 const statusColorMap: Record<string, "success" | "warning" | "danger" | "primary"> = {
   COMPLETED: "success",
@@ -80,6 +80,7 @@ export default function TransactionListTable() {
       const { transactions, meta } = await (cursor && cursor?.length > 1
         ? pylon.getCardTransactions({ after: cursor })
         : pylon.getCardTransactions({}));
+
       return {
         items: transactions.map((t) => ({
           ...t,
@@ -90,6 +91,7 @@ export default function TransactionListTable() {
       };
     } catch (error) {
       console.log(error);
+
       return { items: [], cursor: "" };
     }
   };
@@ -109,15 +111,15 @@ export default function TransactionListTable() {
           { name: "DATE", uid: "createdAt" },
         ]}
         initialData={transactions}
-        renderCell={renderCell}
         loadMore={loadMore}
+        renderCell={renderCell}
         onRowSelect={handleRowSelect}
       />
       {selectedTransaction && (
         <>
           <TransactionDetailsModal
-            transaction={selectedTransaction}
             isOpen={Boolean(selectedTransaction)}
+            transaction={selectedTransaction}
             onClose={() => setSelectedTransaction(null)}
           />
         </>

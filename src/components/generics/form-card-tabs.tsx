@@ -55,8 +55,8 @@ export const FormCardTabs = <T,>({
           <Tooltip content="Add another user">
             <Button
               className="text-notpurple-500"
-              variant="light"
               data-testid="form-card-tabs-add-button"
+              variant="light"
               onClick={onAdd}
             >
               Add
@@ -66,8 +66,8 @@ export const FormCardTabs = <T,>({
             <Tooltip content="Remove selected user">
               <Button
                 className="text-notpurple-500"
-                variant="light"
                 data-testid="form-card-tabs-remove-button"
+                variant="light"
                 onClick={() => onRemove?.(selectedTab)}
               >
                 Remove

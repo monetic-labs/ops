@@ -1,4 +1,4 @@
-import { TransactionContext, SpeedOverCostPreference, TransferMethod, Override } from "../types";
+import { TransactionContext, SpeedOverCostPreference, TransferMethod, Override } from "@/knowledge-base/v0/types";
 
 export function evaluateTransferMethod(
   context: TransactionContext,

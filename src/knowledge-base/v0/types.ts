@@ -74,6 +74,7 @@ export interface TransactionHistory {
   };
 }
 
+
 export interface TransactionContext {
   amount: number;
   availableMethods: TransferMethod[];
@@ -85,4 +86,18 @@ export interface TransferMethod {
   speed: number; // in minutes
   fee: number;
   feeType: "flat" | "percentage";
+}
+
+export interface SpeechPattern {
+  pattern: string;
+  type: "user" | "agent";
+}
+
+export interface GreetingContext {
+  type: "user" | "agent";
+  script: {
+    part_1: string;
+    part_2?: string;
+    part_3?: string;
+  };
 }

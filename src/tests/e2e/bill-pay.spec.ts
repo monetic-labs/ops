@@ -1,7 +1,9 @@
 import { test, expect, Page } from "@playwright/test";
+
 import { MOCK_BALANCE } from "@/utils/constants";
 import { setupContactsApi } from "@/tests/e2e/fixtures/api/disbursement";
 import { setupAuthCookie } from "@/tests/e2e/fixtures/api/auth";
+
 import {
   BANK_VALIDATIONS,
   ACCOUNT_HOLDER_VALIDATIONS,
@@ -45,9 +47,9 @@ test.describe("Bill Pay Modal", () => {
 
   test.describe("Existing Transfer", () => {
     test.describe("Form Validation", () => {
-      test("should validate memo field", async ({ page }) => {
+      test("should validate memo field", async ({ page, browserName }) => {
         // Setup form with basic valid data
-        await fillBasicFormData(page);
+        await fillBasicFormData(page, browserName);
 
         await expect(page.getByTestId("memo")).toBeVisible();
         await expect(page.getByTestId("memo-label")).toHaveText("ACH Reference");
@@ -62,7 +64,7 @@ test.describe("Bill Pay Modal", () => {
       });
 
       test("should validate amount field", async ({ page, browserName }) => {
-        await fillBasicFormData(page);
+        await fillBasicFormData(page, browserName);
 
         const amount = page.getByTestId("amount");
 
@@ -94,8 +96,8 @@ test.describe("Bill Pay Modal", () => {
         await expect(page.getByTestId("create-modal-button")).toBeDisabled();
       });
 
-      test("should show correct fee and total", async ({ page }) => {
-        await fillBasicFormData(page);
+      test("should show correct fee and total", async ({ page, browserName }) => {
+        await fillBasicFormData(page, browserName);
         await page.getByTestId("amount").fill("1");
 
         await expect(page.getByTestId("fee")).toBeVisible();
@@ -239,6 +241,7 @@ test.describe("Bill Pay Modal", () => {
 
     test("should validate create button state", async ({ page, browserName }) => {
       const createButton = page.getByTestId("create-modal-button");
+
       await expect(createButton).toBeDisabled();
 
       // Fill form fields sequentially and check button state
@@ -278,9 +281,10 @@ test.describe("Bill Pay Modal", () => {
 
 // Helper functions
 
-async function fillBasicFormData(page: Page) {
+async function fillBasicFormData(page: Page, browserName: string) {
   // Handle account holder selection
   const accountHolder = page.getByTestId("account-holder");
+
   await accountHolder.waitFor({ state: "visible" });
 
   // Focus and type to trigger dropdown
@@ -289,6 +293,7 @@ async function fillBasicFormData(page: Page) {
 
   // Wait for dropdown and options
   const dropdown = page.getByRole("listbox");
+
   await dropdown.waitFor({ state: "visible" });
 
   // Use keyboard navigation to select option
@@ -296,13 +301,7 @@ async function fillBasicFormData(page: Page) {
   await page.keyboard.press("Enter");
 
   // Handle payment method selection similarly
-  const paymentMethod = page.getByTestId("payment-method");
-  await paymentMethod.waitFor({ state: "visible" });
-  await paymentMethod.click();
-
-  await page.keyboard.type(mockContacts[0].disbursements[0].method);
-  await page.keyboard.press("ArrowDown");
-  await page.keyboard.press("Enter");
+  await selectDropdownOption(page, "payment-method", mockContacts[0].disbursements[0].method, browserName);
 }
 
 async function selectDropdownOption(page: Page, selector: string, value: string, browserName?: string) {
@@ -319,6 +318,7 @@ async function selectDropdownOption(page: Page, selector: string, value: string,
 
 async function fillFormField(page: Page, field: FormField) {
   const element = page.getByTestId(field.selector);
+
   await element.fill(field.value);
 
   if (field.validation) {
@@ -344,5 +344,6 @@ async function runValidationTests(page: Page, fieldValidations: FieldValidations
 
 function isMobile(page: Page) {
   const viewport = page.viewportSize();
+
   return viewport ? viewport.width <= 600 : false;
 }

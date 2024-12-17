@@ -53,8 +53,8 @@ export function StatusCard({ provider, status, onVerify }: StatusCardProps) {
       </div>
 
       <button
-        onClick={onVerify}
         className="w-full flex items-center justify-center gap-2 bg-indigo-600 text-white py-2 px-4 rounded-lg hover:bg-indigo-700 transition-colors duration-300"
+        onClick={onVerify}
       >
         Start Verification
         <ExternalLink className="w-4 h-4" />
