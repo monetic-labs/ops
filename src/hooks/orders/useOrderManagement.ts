@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { TransactionListOutput, TransactionListItem } from "@backpack-fux/pylon-sdk";
 import { useRouter } from "next/navigation";
+
 import pylon from "@/libs/pylon-sdk";
 
 export const useOrderManagement = () => {
@@ -43,11 +44,15 @@ export const useOrderManagement = () => {
 
   const handleTransactionUpdated = useCallback(
     (updatedTransaction: TransactionListItem) => {
+      console.log("Updated transaction:", updatedTransaction);
       updateTransactions((prevTransactions) => {
         const existingIndex = prevTransactions.findIndex((t) => t.id === updatedTransaction.id);
+
         if (existingIndex !== -1) {
           const newTransactions = [...prevTransactions];
+
           newTransactions[existingIndex] = updatedTransaction;
+
           return newTransactions;
         }
 
@@ -64,17 +69,17 @@ export const useOrderManagement = () => {
           // These are just to keep the connection alive, no need to update state
           break;
         case "INITIAL_LIST":
-          handleInitialList(data.data.transactions as TransactionListItem[]);
+          handleInitialList(data.data.transactions);
           break;
         case "TRANSACTION_UPDATED":
-          handleTransactionUpdated(data.data.transactions as TransactionListItem);
+          handleTransactionUpdated(data.data);
           break;
         default:
           setState((prevState) => ({
             ...prevState,
             error: "Unknown transaction update type",
           }));
-          console.warn("Unknown transaction update type:", data.type);
+          console.warn("Unknown transaction update type:", data);
       }
     },
     [handleInitialList, handleTransactionUpdated]

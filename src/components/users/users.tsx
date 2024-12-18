@@ -3,137 +3,170 @@ import { Chip } from "@nextui-org/chip";
 import { Table, TableBody, TableCell, TableColumn, TableHeader, TableRow } from "@nextui-org/table";
 import { User } from "@nextui-org/user";
 import React, { useCallback, useEffect, useState } from "react";
+import { MerchantUserGetOutput, PersonRole } from "@backpack-fux/pylon-sdk";
 
-import { userData, usersColumns, usersStatusColorMap, User as CardUser, cardTransactionData } from "@/data";
+import { Column, usersColumns, usersStatusColorMap } from "@/data";
+import { getFullName, getOpepenAvatar } from "@/utils/helpers";
+import pylon from "@/libs/pylon-sdk";
 
 import CreateUserModal from "./user-create";
 import UserEditModal from "./user-edit";
-import UserDetailsModal from "./users-details";
-import { getOpepenAvatar } from "@/utils/helpers";
-import InfiniteTable from "../generics/table-infinite";
 
-export default function UserTab() {
-  const [selectedUser, setSelectedUser] = useState<(typeof userData)[0] | null>(null);
-  const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
+export default function UserTab({ userId }: { userId: string }) {
+  const [users, setUsers] = useState<MerchantUserGetOutput[]>([]);
+  const [selectedUser, setSelectedUser] = useState<MerchantUserGetOutput | null>(null);
+  const [userRole, setUserRole] = useState<PersonRole | null>(null);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
-  const [avatars, setAvatars] = useState<Record<string, string>>({});
+  const [isLoading, setIsLoading] = useState(false);
+
+  const canManageUsers = userRole === PersonRole.ADMIN || userRole === PersonRole.SUPER_ADMIN;
+  const isEditable =
+    userRole === PersonRole.SUPER_ADMIN ||
+    (userRole === PersonRole.ADMIN && selectedUser?.role !== PersonRole.SUPER_ADMIN);
+  const availableRoles = Object.values(PersonRole).filter((role) => {
+    if (userRole === PersonRole.SUPER_ADMIN) return true;
+    if (userRole === PersonRole.ADMIN) return role !== PersonRole.SUPER_ADMIN;
+
+    return role === PersonRole.MEMBER;
+  });
 
   useEffect(() => {
-    const newAvatars: Record<string, string> = {};
-    userData.forEach((user) => {
-      newAvatars[user.id] = getOpepenAvatar(user.id, 32);
-    });
-    setAvatars(newAvatars);
+    const fetchUsers = async () => {
+      setIsLoading(true);
+      try {
+        const users = await pylon.getUsers();
+
+        setUsers(users);
+        setUserRole(users.find((user) => user.id === userId)?.role || null);
+      } catch (error) {
+        console.error("Error fetching users:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchUsers();
   }, []);
 
-  const renderCell = useCallback((user: CardUser, columnKey: keyof CardUser) => {
+  const renderCell = useCallback((user: MerchantUserGetOutput, columnKey: keyof MerchantUserGetOutput) => {
     const cellValue = user[columnKey];
+    const displayValue = cellValue || "N/A";
+    const style = cellValue ? {} : { color: "rgba(128, 128, 128, 0.5)" };
 
     switch (columnKey) {
-      case "name":
+      case "firstName":
+        const fullName = getFullName(user.firstName, user.lastName);
+
         return (
-          <User
-            avatarProps={{
-              radius: "lg",
-              src: avatars[user.id],
-            }}
-            description={user.name}
-            name={cellValue}
-          >
-            {cellValue}
-          </User>
-        );
-      case "status":
-        return (
-          <Chip className="capitalize" color={usersStatusColorMap[user.status]} size="sm" variant="flat">
-            {cellValue}
-          </Chip>
-        );
-      case "actions":
-        return (
-          <div className="flex items-center justify-center gap-2">
-            <Button
-              className="bg-charyo-400 text-notpurple-500"
-              size="sm"
-              onPress={() => {
-                setSelectedUser(user);
-                setIsDetailsModalOpen(true);
+          <div className="flex items-center gap-2">
+            <User
+              avatarProps={{
+                radius: "lg",
+                src: getOpepenAvatar(fullName, 32),
               }}
+              description={user.username}
+              name={fullName}
             >
-              Details
-            </Button>
-            <Button
-              className="bg-charyo-400 text-notpurple-500"
-              size="sm"
-              onPress={() => {
-                setSelectedUser(user);
-                setIsEditModalOpen(true);
-              }}
-            >
-              Edit
-            </Button>
+              {fullName}
+            </User>
+          </div>
+        );
+      case "role":
+        return (
+          <div className="flex items-center gap-2">
+            <Chip className="capitalize" color={usersStatusColorMap[user.role] || "default"} size="sm" variant="flat">
+              {user.role
+                .replace(/_/g, " ")
+                .toLowerCase()
+                .replace(/\b\w/g, (char) => char.toUpperCase())}
+            </Chip>
           </div>
         );
       default:
-        return cellValue;
+        return <span style={style}>{displayValue}</span>;
     }
-  }, [avatars]);
-
-  const loadMore = async (cursor: string | undefined) => {
-    const pageSize = 10; 
-    const startIndex = cursor ? parseInt(cursor) : 0;
-    const endIndex = startIndex + pageSize;
-    const newItems = userData.slice(startIndex, endIndex);
-    const newCursor = endIndex < userData.length ? endIndex.toString() : undefined;
-    
-    return { items: newItems, cursor: newCursor };
-  };
+  }, []);
 
   return (
     <>
-      <div className="flex justify-end items-center mb-4">
-        <Button className="text-notpurple-500" onPress={() => setIsCreateModalOpen(true)}>
-          Create User
-        </Button>
-      </div>
-      <InfiniteTable
-        columns={usersColumns}
-        initialData={userData}
-        renderCell={renderCell}
-        loadMore={loadMore}
-      />
+      {canManageUsers && (
+        <div className="flex justify-end items-center mb-4">
+          <Button className="text-notpurple-500" onPress={() => setIsCreateModalOpen(true)}>
+            Create User
+          </Button>
+        </div>
+      )}
+      <Table aria-label="Transactions table with custom cells">
+        <TableHeader columns={usersColumns as Column<MerchantUserGetOutput>[]}>
+          {(column) => <TableColumn key={column.uid}>{column.name}</TableColumn>}
+        </TableHeader>
+        <TableBody emptyContent={isLoading ? null : "No users found"} items={users}>
+          {(item) => {
+            return (
+              <TableRow
+                key={item.id}
+                className={`transition-all hover:bg-gray-100 dark:hover:bg-charyo-500 ${
+                  canManageUsers ? "hover:cursor-pointer" : "hover:cursor-default"
+                }`}
+                onClick={() => {
+                  setSelectedUser(item);
+                  setIsEditModalOpen(true);
+                }}
+              >
+                {(columnKey) => <TableCell>{renderCell(item, columnKey as keyof MerchantUserGetOutput)}</TableCell>}
+              </TableRow>
+            );
+          }}
+        </TableBody>
+      </Table>
 
       {selectedUser && (
         <>
-          <UserDetailsModal
-            isOpen={isDetailsModalOpen}
-            user={selectedUser}
-            onClose={() => setIsDetailsModalOpen(false)}
-          />
           <UserEditModal
-            isOpen={isEditModalOpen}
+            availableRoles={availableRoles}
+            isEditable={isEditable}
+            isOpen={isEditModalOpen && canManageUsers}
+            isSelf={selectedUser.id === userId}
             user={selectedUser}
-            onClose={() => setIsEditModalOpen(false)}
-            onRemove={(userId) => {
-              // Implement remove logic here
-              console.log("Removing user:", userId);
+            onClose={() => {
+              setSelectedUser(null);
               setIsEditModalOpen(false);
             }}
-            onSave={(updatedUser) => {
-              // Implement save logic here
-              console.log("Saving user:", updatedUser);
+            onRemove={async (userId) => {
+              const success = await pylon.deleteUser(selectedUser.id);
+
+              if (success) {
+                setUsers(users.filter((user) => user.id !== selectedUser.id));
+                setSelectedUser(null);
+                setIsEditModalOpen(false);
+              } else {
+                alert("Failed to remove user");
+              }
+            }}
+            onSave={async (updatedUser) => {
+              const returnedUser = await pylon.updateUser(updatedUser.id, {
+                firstName: updatedUser.firstName,
+                lastName: updatedUser.lastName,
+                username: updatedUser.username,
+                email: updatedUser.email,
+                role: updatedUser.role,
+                phone: updatedUser.phone,
+              });
+
+              setUsers(users.map((user) => (user.id === returnedUser.id ? returnedUser : user)));
+              setSelectedUser(null);
               setIsEditModalOpen(false);
             }}
           />
         </>
       )}
       <CreateUserModal
-        isOpen={isCreateModalOpen}
+        availableRoles={availableRoles}
+        isOpen={isCreateModalOpen && canManageUsers}
         onClose={() => setIsCreateModalOpen(false)}
         onSave={(newUser) => {
-          // Implement create user logic here
-          console.log("Creating user:", newUser);
+          setUsers([...users, newUser]);
           setIsCreateModalOpen(false);
         }}
       />

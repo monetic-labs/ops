@@ -1,5 +1,4 @@
 import { useState } from "react";
-
 import { Button } from "@nextui-org/button";
 import { Tab, Tabs } from "@nextui-org/tabs";
 
@@ -9,7 +8,11 @@ import CreateCardModal from "@/components/card-issuance/card-create";
 import CardListTable from "./card-list";
 import TransactionListTable from "./transactions";
 
-export default function CardServicesTabs() {
+type CardServicesTabsProps = {
+  handleSubTabChange: (key: string) => void;
+};
+
+export default function CardServicesTabs({ handleSubTabChange }: CardServicesTabsProps) {
   const [selectedService, setSelectedService] = useState<string>(cardServicesConfig[0].id);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 

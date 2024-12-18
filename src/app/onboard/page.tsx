@@ -4,7 +4,7 @@ import { Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { useRouter } from "next/navigation";
 
-import { KYBMerchantForm } from "@/components/onboard/merchant";
+import { MerchantOnboard } from "@/components/onboard/merchant";
 
 // This function is used to render the onboarding page and allows us to get the email from the query params submitted from the auth input
 function OnboardContent() {
@@ -16,7 +16,7 @@ function OnboardContent() {
     router.push("/");
   };
 
-  return <KYBMerchantForm initialEmail={email} onCancel={onCancel} />;
+  return <MerchantOnboard initialEmail={email} onCancel={onCancel} />;
 }
 
 export default function OnboardPage() {

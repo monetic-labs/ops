@@ -1,35 +1,79 @@
+import { MerchantUserGetOutput, PersonRole } from "@backpack-fux/pylon-sdk";
 import { Button } from "@nextui-org/button";
 import { Input } from "@nextui-org/input";
 import { Modal, ModalBody, ModalContent, ModalFooter, ModalHeader } from "@nextui-org/modal";
 import { Select, SelectItem } from "@nextui-org/select";
 import { useState } from "react";
 
+import pylon from "@/libs/pylon-sdk";
+
 interface CreateUserModalProps {
   isOpen: boolean;
+  availableRoles: PersonRole[];
   onClose: () => void;
-  onSave: (newUser: NewUser) => void;
+  onSave: (newUser: MerchantUserGetOutput) => void;
 }
 
-interface NewUser {
-  firstName: string;
-  lastName: string;
-  email: string;
-  role: string;
-}
-
-const roles = ["Member", "Developer", "Bookkeeper", "Admin", "Super Admin"];
-
-export default function CreateUserModal({ isOpen, onClose, onSave }: CreateUserModalProps) {
-  const [newUser, setNewUser] = useState<NewUser>({
+export default function CreateUserModal({ isOpen, availableRoles, onClose, onSave }: CreateUserModalProps) {
+  const [newUser, setNewUser] = useState<MerchantUserGetOutput>({
+    id: "",
     firstName: "",
     lastName: "",
     email: "",
-    role: "User",
+    role: PersonRole.MEMBER,
   });
 
-  const handleSave = () => {
-    onSave(newUser);
-    onClose();
+  const [errors, setErrors] = useState({
+    firstName: "",
+    lastName: "",
+    email: "",
+  });
+
+  const validateFields = () => {
+    const nameRegex = /^[A-Za-z]+$/;
+    const emailRegex = /\S+@\S+\.\S+/;
+    const newErrors = {
+      firstName: newUser.firstName
+        ? nameRegex.test(newUser.firstName)
+          ? ""
+          : "First name must contain only letters"
+        : "First name is required",
+      lastName: newUser.lastName
+        ? nameRegex.test(newUser.lastName)
+          ? ""
+          : "Last name must contain only letters"
+        : "Last name is required",
+      email: newUser.email ? (emailRegex.test(newUser.email) ? "" : "Invalid email address") : "Email is required",
+    };
+
+    setErrors(newErrors);
+
+    return !Object.values(newErrors).some((error) => error);
+  };
+
+  const handleSave = async () => {
+    if (validateFields()) {
+      const user = await pylon.createUser({
+        email: newUser.email.toLowerCase(),
+        firstName: newUser.firstName.charAt(0).toUpperCase() + newUser.firstName.slice(1),
+        lastName: newUser.lastName.charAt(0).toUpperCase() + newUser.lastName.slice(1),
+        role: newUser.role,
+      });
+
+      if (user) {
+        onSave(user);
+        setNewUser({
+          id: "",
+          firstName: "",
+          lastName: "",
+          email: "",
+          role: PersonRole.MEMBER,
+        });
+        onClose();
+      } else {
+        alert("Failed to create user");
+      }
+    }
   };
 
   return (
@@ -38,16 +82,22 @@ export default function CreateUserModal({ isOpen, onClose, onSave }: CreateUserM
         <ModalHeader>Create New User</ModalHeader>
         <ModalBody>
           <Input
+            errorMessage={errors.firstName}
+            isInvalid={!!errors.firstName}
             label="First Name"
             value={newUser.firstName}
             onChange={(e) => setNewUser({ ...newUser, firstName: e.target.value })}
           />
           <Input
+            errorMessage={errors.lastName}
+            isInvalid={!!errors.lastName}
             label="Last Name"
             value={newUser.lastName}
             onChange={(e) => setNewUser({ ...newUser, lastName: e.target.value })}
           />
           <Input
+            errorMessage={errors.email}
+            isInvalid={!!errors.email}
             label="Email"
             type="email"
             value={newUser.email}
@@ -56,11 +106,14 @@ export default function CreateUserModal({ isOpen, onClose, onSave }: CreateUserM
           <Select
             label="Role"
             selectedKeys={[newUser.role]}
-            onChange={(e) => setNewUser({ ...newUser, role: e.target.value })}
+            onChange={(e) => setNewUser({ ...newUser, role: e.target.value as PersonRole })}
           >
-            {roles.map((role) => (
+            {availableRoles.map((role) => (
               <SelectItem key={role} value={role}>
-                {role}
+                {role
+                  .replace(/_/g, " ")
+                  .toLowerCase()
+                  .replace(/\b\w/g, (char) => char.toUpperCase())}
               </SelectItem>
             ))}
           </Select>

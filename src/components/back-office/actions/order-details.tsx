@@ -1,12 +1,12 @@
 import React from "react";
-import { Modal, ModalContent, ModalHeader, ModalBody, ModalFooter } from "@nextui-org/modal";
-import { Button } from "@nextui-org/button";
+import { Modal, ModalContent, ModalHeader, ModalBody } from "@nextui-org/modal";
 import { Divider } from "@nextui-org/divider";
 import { BillingAddress, ShippingAddress } from "@backpack-fux/pylon-sdk";
 
 import { formattedDate, mapCurrencyToSymbol } from "@/utils/helpers";
+import ModalFooterWithSupport from "@/components/generics/footer-modal-support";
 
-interface DetailsResponseProps {
+interface PaymentDetailsResponseProps {
   isOpen: boolean;
   response: {
     transactionId: string;
@@ -25,9 +25,14 @@ interface DetailsResponseProps {
   onClose: () => void;
 }
 
-export function DetailsResponse({ isOpen, response, onClose }: DetailsResponseProps) {
+export function PaymentDetails({ isOpen, response, onClose }: PaymentDetailsResponseProps) {
+  const handleSupportClick = () => {
+    // Handle support action
+    console.log("Support clicked");
+  };
+
   return (
-    <Modal className="" isOpen={isOpen} onClose={onClose}>
+    <Modal className="max-w-md mx-auto" isOpen={isOpen} scrollBehavior="inside" onClose={onClose}>
       <ModalContent>
         {(onClose) => (
           <>
@@ -37,11 +42,12 @@ export function DetailsResponse({ isOpen, response, onClose }: DetailsResponsePr
             </ModalHeader>
             <Divider />
             <ModalBody>
-              <div className="space-y-4 font-mono">
-                <div className="flex justify-between">
+              <div className="space-y-4 font-mono text-sm">
+                {/* Transaction details */}
+                <div className="grid grid-cols-2 gap-2">
                   <span>Response Status:</span>
                   <span
-                    className={`font-bold ${
+                    className={`text-right font-bold ${
                       response.transactionStatus === "Approved"
                         ? "text-ualert-100"
                         : response.transactionStatus === "Failed"
@@ -51,72 +57,94 @@ export function DetailsResponse({ isOpen, response, onClose }: DetailsResponsePr
                   >
                     {response.transactionStatus}
                   </span>
-                </div>
-                <div className="flex justify-between">
                   <span>Processor:</span>
-                  <span>{response.transactionProcessor}</span>
-                </div>
-                <div className="flex justify-between">
+                  <span className="text-right">{response.transactionProcessor}</span>
                   <span>Payment Method:</span>
-                  <span>{response.transactionPaymentMethod}</span>
-                </div>
-                <div className="flex justify-between">
+                  <span className="text-right">{response.transactionPaymentMethod}</span>
                   <span>Subtotal:</span>
-                  <span>{`${mapCurrencyToSymbol[response.transactionCurrency.toLowerCase()]}${
+                  <span className="text-right">{`${mapCurrencyToSymbol[response.transactionCurrency.toLowerCase()]}${
                     response.transactionSubtotal
                   } ${response.transactionCurrency}`}</span>
-                </div>
-                <div className="flex justify-between">
                   <span>Tip:</span>
-                  <span>{`${mapCurrencyToSymbol[response.transactionCurrency.toLowerCase()]}${
+                  <span className="text-right">{`${mapCurrencyToSymbol[response.transactionCurrency.toLowerCase()]}${
                     response.transactionTip
                   } ${response.transactionCurrency}`}</span>
-                </div>
-                <div className="flex justify-between">
                   <span>Total:</span>
-                  <span>{`${mapCurrencyToSymbol[response.transactionCurrency.toLowerCase()]}${
+                  <span className="text-right">{`${mapCurrencyToSymbol[response.transactionCurrency.toLowerCase()]}${
                     response.transactionTotal
                   } ${response.transactionCurrency}`}</span>
                 </div>
                 <Divider />
-                <div className="flex justify-between">
-                  <span>Billing Address:</span>
-                  <span>{response.transactionBillingAddress.firstName}</span>
-                  <span>{response.transactionBillingAddress.lastName}</span>
-                  <span>{response.transactionBillingAddress.street1}</span>
-                  <span>{response.transactionBillingAddress.street2}</span>
-                  <span>{response.transactionBillingAddress.street3}</span>
-                  <span>{response.transactionBillingAddress.city}</span>
-                  <span>{response.transactionBillingAddress.state}</span>
-                  <span>{response.transactionBillingAddress.postcode}</span>
-                  <span>{response.transactionBillingAddress.state}</span>
-                  <span>{response.transactionBillingAddress.country}</span>
+                {/* Billing Address */}
+                <div>
+                  <span className="font-bold mb-1">Billing Address:</span>
+                  <address className="not-italic text-right">
+                    {response.transactionBillingAddress.firstName} {response.transactionBillingAddress.lastName}
+                    <br />
+                    {response.transactionBillingAddress.street1}
+                    <br />
+                    {response.transactionBillingAddress.street2 && (
+                      <>
+                        {response.transactionBillingAddress.street2}
+                        <br />
+                      </>
+                    )}
+                    {response.transactionBillingAddress.street3 && (
+                      <>
+                        {response.transactionBillingAddress.street3}
+                        <br />
+                      </>
+                    )}
+                    {response.transactionBillingAddress.city}, {response.transactionBillingAddress.state}{" "}
+                    {response.transactionBillingAddress.postcode}
+                    <br />
+                    {response.transactionBillingAddress.country}
+                  </address>
                 </div>
-                <div className="flex justify-between">
-                  <span>Shipping Address:</span>
-                  <span>{response.transactionShippingAddress.firstName}</span>
-                  <span>{response.transactionShippingAddress.lastName}</span>
-                  <span>{response.transactionShippingAddress.street1}</span>
-                  <span>{response.transactionShippingAddress.street2}</span>
-                  <span>{response.transactionShippingAddress.street3}</span>
-                  <span>{response.transactionShippingAddress.city}</span>
-                  <span>{response.transactionShippingAddress.state}</span>
-                  <span>{response.transactionShippingAddress.postcode}</span>
-                  <span>{response.transactionShippingAddress.country}</span>
+                {/* Shipping Address */}
+                <div>
+                  <span className="font-bold mb-1">Shipping Address:</span>
+                  <address className="not-italic text-right">
+                    {response.transactionShippingAddress.firstName} {response.transactionShippingAddress.lastName}
+                    <br />
+                    {response.transactionShippingAddress.street1}
+                    <br />
+                    {response.transactionShippingAddress.street2 && (
+                      <>
+                        {response.transactionShippingAddress.street2}
+                        <br />
+                      </>
+                    )}
+                    {response.transactionShippingAddress.street3 && (
+                      <>
+                        {response.transactionShippingAddress.street3}
+                        <br />
+                      </>
+                    )}
+                    {response.transactionShippingAddress.city}, {response.transactionShippingAddress.state}{" "}
+                    {response.transactionShippingAddress.postcode}
+                    <br />
+                    {response.transactionShippingAddress.country}
+                  </address>
                 </div>
                 <Divider />
-                <div className="flex justify-between">
+                <div className="grid grid-cols-2 gap-2">
                   <span>Timestamp:</span>
-                  <span>{formattedDate(response.timestamp)}</span>
+                  <span className="text-right">{formattedDate(response.timestamp)}</span>
                 </div>
               </div>
             </ModalBody>
             <Divider />
-            <ModalFooter className="flex justify-center">
-              <Button className="bg-ualert-500 text-notpurple-500" color="primary" onPress={onClose}>
-                Close
-              </Button>
-            </ModalFooter>
+            <ModalFooterWithSupport
+              actions={[
+                {
+                  label: "Close",
+                  onClick: onClose,
+                  className: "bg-ualert-500 text-notpurple-500",
+                },
+              ]}
+              onSupportClick={handleSupportClick}
+            />
           </>
         )}
       </ModalContent>

@@ -4,25 +4,56 @@ import { useEffect, useState } from "react";
 import { Card, CardBody, CardHeader } from "@nextui-org/card";
 import { Divider } from "@nextui-org/divider";
 import { Tab, Tabs } from "@nextui-org/tabs";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
+import {
+  BridgeComplianceKycStatus as BridgeKybStatus,
+  BridgeComplianceTosStatus as BridgeTosStatus,
+  CardCompanyStatus as RainKybStatus,
+} from "@backpack-fux/pylon-sdk";
 
 import WidgetManagement from "@/components/back-office/widget-tab";
 import BackOfficeTabs from "@/components/back-office/back-office";
-import BillPayTab from "@/components/bill-pay/bill-pay";
+import BillPayTabs from "@/components/bill-pay/bill-pay";
 import CardServicesTabs from "@/components/card-issuance";
 import ComplianceTable from "@/components/compliance/compliance";
-import UsersTab from "@/components/users/users";
+import UserTab from "@/components/users/users";
 import { tabsConfig } from "@/config/tabs";
 import { useGetComplianceStatus } from "@/hooks/merchant/useGetComplianceStatus";
 
-export default function MerchantServicesTabs() {
-  const [selectedService, setSelectedService] = useState<string>(tabsConfig[0].id);
+export default function MerchantServicesTabs({ userId }: { userId: string }) {
   const { complianceStatus } = useGetComplianceStatus();
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const initialTab = searchParams.get("tab") || tabsConfig[0].id;
+  const [selectedService, setSelectedService] = useState<string>(initialTab);
+
+  const handleTabChange = (key: string) => {
+    const params = new URLSearchParams(searchParams.toString());
+
+    params.set("tab", key);
+    // Clear subtab when main tab changes
+    params.delete("subtab");
+    // Important: Update the URL first
+    router.push(`/?${params.toString()}`);
+    // Then update the state
+    setSelectedService(key);
+  };
+
+  // TODO
+  const handleSubTabChange = (key: string) => {
+    const params = new URLSearchParams(searchParams.toString());
+
+    params.set("subtab", key);
+    router.push(`/?${params.toString()}`);
+  };
 
   useEffect(() => {
-    if (complianceStatus && complianceStatus.kycStatus !== "approved") {
-      router.push("/unapproved-kyb");
+    if (
+      complianceStatus &&
+      complianceStatus.kycStatus !== BridgeKybStatus.APPROVED &&
+      complianceStatus.status !== RainKybStatus.APPROVED
+    ) {
+      router.push("/kyb");
     }
   }, [complianceStatus]);
 
@@ -31,28 +62,28 @@ export default function MerchantServicesTabs() {
       case "card-issuance":
         return (
           <>
-            <CardServicesTabs />
-            <Divider className="my-4" />
-          </>
-        );
-      case "users":
-        return (
-          <>
-            <UsersTab />
+            <CardServicesTabs handleSubTabChange={(subtab) => handleSubTabChange(subtab)} />
             <Divider className="my-4" />
           </>
         );
       case "bill-pay":
         return (
           <>
-            <BillPayTab />
+            <BillPayTabs handleSubTabChange={(subtab) => handleSubTabChange(subtab)} />
             <Divider className="my-4" />
           </>
         );
       case "back-office":
         return (
           <>
-            <BackOfficeTabs />
+            <BackOfficeTabs handleSubTabChange={(subtab) => handleSubTabChange(subtab)} />
+            <Divider className="my-4" />
+          </>
+        );
+      case "users":
+        return (
+          <>
+            <UserTab userId={userId} />
             <Divider className="my-4" />
           </>
         );
@@ -81,7 +112,7 @@ export default function MerchantServicesTabs() {
           tabContent: "text-notpurple-500/60",
         }}
         selectedKey={selectedService}
-        onSelectionChange={(key) => setSelectedService(key as string)}
+        onSelectionChange={(key) => handleTabChange(key as string)}
       >
         {tabsConfig.map((tab) => (
           <Tab key={tab.id} title={tab.label}>

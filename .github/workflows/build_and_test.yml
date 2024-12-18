@@ -1,0 +1,71 @@
+name: Build and Test
+
+on:
+  push:
+    branches:
+      - main
+      - staging
+  pull_request:
+    branches:
+      - main
+      - staging
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Set up env
+        run: |
+          touch .env
+          echo "NEXT_PUBLIC_PYLON_BASE_URL=http://localhost:5000" >> .env
+          echo "NEXT_PUBLIC_NODE_ENV=ci" >> .env
+          echo "BACKPACK_GITHUB_TOKEN=test-token" >> .env
+          echo "NEXT_PUBLIC_REOWN_PROJECT_ID=d1885a44-da83-4e2f-bd10-de217d04beb2" >> .env
+          echo "PINECONE_API_KEY=test-key" >> .env
+          echo "OPENAI_API_KEY=test-key" >> .env
+          echo "TELEGRAM_CHAT_ID=test-chat-id" >> .env
+          echo "TELEGRAM_BOT_TOKEN=test-bot-token" >> .env
+
+      - name: Install bun
+        run: |
+          curl -fsSL https://bun.sh/install | bash
+
+      - name: Install dependencies
+        run: |
+          export BACKPACK_GITHUB_TOKEN=${{ secrets.BACKPACK_GITHUB_TOKEN }}
+          export PINECONE_API_KEY=${{ secrets.PINECONE_API_KEY }}
+          export OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }}
+          export TELEGRAM_CHAT_ID=${{ secrets.TELEGRAM_CHAT_ID }}
+          export TELEGRAM_BOT_TOKEN=${{ secrets.TELEGRAM_BOT_TOKEN }}
+          bun install
+          bunx playwright install --with-deps
+
+      # - name: Run tests
+      #   run: bun run test
+
+      - name: Run e2e tests
+        run: bun run test:e2e
+
+      # - name: Setup LCOV
+      #   uses: hrishikesh-kadam/setup-lcov@v1
+
+      # - name: Check coverage thresholds
+      #   uses: zgosalvez/github-actions-report-lcov@v3
+      #   with:
+      #     check: "true"
+      #     coverage-files: ./coverage/lcov.info
+      #     minimum-coverage: 0
+      #     github-token: ${{ secrets.GITHUB_TOKEN }}
+      #     update-comment: true
+
+      - name: Build application
+        run: bun run build

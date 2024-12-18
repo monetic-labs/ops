@@ -1,0 +1,9 @@
+{
+    "goal": "quick_money_transfer",
+    "user_intent": "I want to send money quickly",
+    "success_metrics": [
+        "Complete transfer in under 1 minute",
+        "Minimal input requirements",
+        "Clear confirmation"
+    ]
+}

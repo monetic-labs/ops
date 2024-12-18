@@ -1,7 +1,8 @@
-'use client';
+"use client";
 
-import React from 'react';
-import ScrollBackground from './scroll-bg';
+import React from "react";
+
+import ScrollBackground from "./scroll-bg";
 
 const PageWithScrollBackground: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   return (

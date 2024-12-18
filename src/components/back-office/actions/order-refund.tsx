@@ -38,6 +38,7 @@ export function RefundModal({
 
   const handleRefundAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = parseFloat(e.target.value);
+
     if (!isNaN(value) && value <= order.totalAmount) {
       setRefundAmount(value);
     }
@@ -45,6 +46,7 @@ export function RefundModal({
 
   const handleRefundReferenceChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newValue = e.target.value;
+
     if (validateReference(newValue)) {
       setRefundReference(newValue);
       setIsReferenceValid(true);
@@ -55,6 +57,7 @@ export function RefundModal({
 
   const validateReference = (value: string) => {
     const regex = /^[a-zA-Z0-9-]*$/;
+
     return regex.test(value);
   };
 
@@ -107,15 +110,15 @@ export function RefundModal({
                       Refund Reference:
                     </label>
                     <Input
-                      id="refundReference"
-                      type="text"
-                      value={refundReference}
-                      onChange={handleRefundReferenceChange}
-                      placeholder="Enter refund reference"
-                      isInvalid={!isReferenceValid}
                       errorMessage={
                         !isReferenceValid ? "Reference can contain only alphanumeric characters and hyphens" : ""
                       }
+                      id="refundReference"
+                      isInvalid={!isReferenceValid}
+                      placeholder="Enter refund reference"
+                      type="text"
+                      value={refundReference}
+                      onChange={handleRefundReferenceChange}
                     />
                   </div>
                 )}
@@ -125,8 +128,8 @@ export function RefundModal({
             <ModalFooter className="flex justify-center space-x-4">
               <Button
                 color="primary"
-                onPress={() => onConfirm(refundAmount)}
                 isDisabled={isPartialRefund && (!isReferenceValid || refundReference.length === 0)}
+                onPress={() => onConfirm(refundAmount)}
               >
                 Confirm Refund
               </Button>

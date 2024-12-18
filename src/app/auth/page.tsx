@@ -32,7 +32,8 @@ export default function AuthPage() {
     if (email) {
       try {
         const response = await issueOTP(email);
-        if (response) {
+
+        if (response === 200) {
           setShowOtpInput(true);
           console.log("OTP issued:", email);
         }
@@ -78,7 +79,7 @@ export default function AuthPage() {
       setOtpSubmitted(true);
       const response = await verifyOTP({ email, otp: otpValue });
 
-      if (response) {
+      if (response === 200) {
         // Handle successful verification (e.g., redirect to dashboard)
         console.log("OTP verified successfully");
         router.refresh(); // or router.push('/')
@@ -143,7 +144,7 @@ export default function AuthPage() {
           />
           {showOtpInput && (
             <>
-              <div className="flex justify-center space-x-2">
+              <div className="flex justify-center space-x-2" data-testid="otp-input-container">
                 {Array.from({ length: OTP_LENGTH }).map((_, index) => (
                   <input
                     key={index}
@@ -153,6 +154,7 @@ export default function AuthPage() {
                     className={`w-10 h-12 text-center text-xl border-2 rounded-md bg-charyo-500 text-white 
         ${isOtpComplete ? "animate-flash border-ualert-500" : otpSubmitted ? "border-green-500" : "border-gray-300"}
         focus:border-ualert-500 focus:outline-none`}
+                    data-testid={`otp-input-${index}`}
                     maxLength={1}
                     type="text"
                     value={otp[index] || ""}
@@ -177,6 +179,7 @@ export default function AuthPage() {
                 </Button>
                 <Button
                   className="bg-ualert-500 text-white hover:bg-ualert-600"
+                  data-testid="resend-otp-button"
                   isLoading={isIssueLoading}
                   type="button"
                   variant="flat"
@@ -191,6 +194,7 @@ export default function AuthPage() {
             <div className="flex gap-2">
               <Button
                 className="bg-charyo-500 text-white hover:bg-notpurple-600 flex-1"
+                data-testid="sign-up-button"
                 type="submit"
                 variant="shadow"
                 onClick={handleSignUp}
@@ -199,6 +203,7 @@ export default function AuthPage() {
               </Button>
               <Button
                 className="bg-ualert-500 text-white hover:bg-notpurple-600 flex-1"
+                data-testid="sign-in-button"
                 isLoading={isIssueLoading}
                 type="button"
                 variant="shadow"

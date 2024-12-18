@@ -1,0 +1,285 @@
+{
+    "nodes": {
+        "bill-pay": {
+            "type": "domain",
+            "description": "Bill payment and transfer management system",
+            "ui_component": "bill-pay.tsx"
+        },
+        "back-office": {
+            "type": "domain",
+            "description": "Administrative and operational management system",
+            "ui_component": "back-office.tsx"
+        },
+        "card-services": {
+            "type": "domain",
+            "description": "Card issuance and management system",
+            "ui_component": "card-issuance/index.tsx"
+        },
+        "user-management": {
+            "type": "domain",
+            "description": "User administration system",
+            "ui_component": "users.tsx"
+        },
+
+        "transfers": {
+            "type": "capability",
+            "description": "Money transfer functionality",
+            "requires": ["user-auth"],
+            "ui_component": "transfers-tab"
+        },
+        "contacts": {
+            "type": "capability",
+            "description": "Payment recipient management",
+            "requires": ["user-auth"],
+            "ui_component": "contacts-tab"
+        },
+
+        "payments": {
+            "type": "capability",
+            "description": "Payment processing and management",
+            "requires": ["user-auth", "admin-access"],
+            "ui_component": "payments-tab"
+        },
+        "orders": {
+            "type": "capability",
+            "description": "Order creation and management",
+            "requires": ["user-auth", "admin-access"],
+            "ui_component": "orders-tab"
+        },
+        "widgets": {
+            "type": "capability",
+            "description": "Widget configuration and management",
+            "requires": ["user-auth", "admin-access"],
+            "ui_component": "widget-tab"
+        },
+
+        "card-issuance": {
+            "type": "capability",
+            "description": "Card creation and issuance",
+            "requires": ["user-auth"],
+            "ui_component": "card-create"
+        },
+        "card-management": {
+            "type": "capability",
+            "description": "Card listing and management",
+            "requires": ["user-auth"],
+            "ui_component": "card-list"
+        },
+        "transaction-viewing": {
+            "type": "capability",
+            "description": "Transaction history viewing",
+            "requires": ["user-auth"],
+            "ui_component": "transactions"
+        },
+
+        "user-administration": {
+            "type": "capability",
+            "description": "User account management",
+            "requires": ["admin-access"],
+            "ui_component": "user-create"
+        },
+        "role-management": {
+            "type": "capability",
+            "description": "User role assignment and management",
+            "requires": ["admin-access"],
+            "ui_component": "user-edit"
+        },
+
+        "user-auth": {
+            "type": "system",
+            "description": "User authentication system"
+        },
+        "admin-access": {
+            "type": "permission",
+            "description": "Administrative access control",
+            "roles": ["ADMIN", "SUPER_ADMIN"]
+        },
+        "energy-type-manifestor": {
+            "type": "experience",
+            "description": "Manifestor financial interaction patterns",
+            "traits": ["visionary", "independent", "initiator"],
+            "financial_strengths": ["opportunity_spotting", "venture_initiation"],
+            "financial_challenges": ["follow_through", "resource_management"],
+            "decision_style": {
+                "speed_multiplier": 1.5,
+                "risk_tolerance": "high",
+                "waiting_period": "minimal",
+                "confirmation_threshold": "low"
+            },
+            "optimal_capabilities": ["transfers", "card-issuance"],
+            "requires": ["user-auth"]
+        },
+        "energy-type-builder": {
+            "type": "experience",
+            "description": "Builder financial interaction patterns",
+            "traits": [
+                "Steady progress oriented",
+                "Foundation focused",
+                "Systematic approach",
+                "Consistent execution",
+                "Resource optimization"
+            ],
+            "financial_strengths": [
+                "Building sustainable systems",
+                "Regular savings habits",
+                "Steady wealth building",
+                "Resource management",
+                "Long-term planning"
+            ],
+            "financial_challenges": [
+                "May miss spontaneous opportunities",
+                "Can be overly cautious",
+                "Might stick to suboptimal systems"
+            ],
+            "decision_style": {
+                "speed_multiplier": 0.8,
+                "risk_tolerance": "medium",
+                "waiting_period": "foundation-based",
+                "confirmation_threshold": "medium"
+        },
+            "optimal_capabilities": [
+                "automated-savings",
+                "recurring-transfers",
+                "cost-over-speed",
+                "systematic-investment"
+            ],
+            "requires": ["user-auth"]
+        },
+        "energy-type-strategist": {
+            "type": "experience",
+            "description": "Strategist financial interaction patterns",
+            "traits": [
+                "Deep analytical abilities",
+                "Natural strategic insight",
+                "Excellence in guiding and advising others",
+                "Pattern recognition",
+                "Efficiency-focused",
+                "Selective energy management"
+            ],
+            "financial_strengths": [
+                "Long-term strategic planning",
+                "Due diligence expertise",
+                "Risk assessment capabilities",
+                "Value-based investment approach",
+                "Advisory potential"
+            ],
+            "financial_challenges": [
+                "Tendency to overanalyze",
+                "Waiting for recognition",
+                "Energy management in execution",
+                "Potential for missed opportunities due to timing",
+                "Need for external validation"
+            ],
+            "decision_style": {
+                "speed_multiplier": 0.7,
+                "risk_tolerance": "medium",
+                "waiting_period": "recognition-based",
+                "confirmation_threshold": "high"
+            },
+            "optimal_capabilities": [
+                "Strategic planning",
+                "Risk analysis",
+                "Advisory services",
+                "System optimization",
+                "Pattern recognition",
+                "Leadership guidance"
+            ],
+            "requires": ["user-auth"]
+        }
+    },
+    "edges": [
+        {
+            "from": "bill-pay",
+            "to": "transfers",
+            "relationship": "provides"
+        },
+        {
+            "from": "bill-pay",
+            "to": "contacts",
+            "relationship": "provides"
+        },
+        {
+            "from": "transfers",
+            "to": "contacts",
+            "relationship": "uses"
+        },
+
+        {
+            "from": "back-office",
+            "to": "payments",
+            "relationship": "provides"
+        },
+        {
+            "from": "back-office",
+            "to": "orders",
+            "relationship": "provides"
+        },
+        {
+            "from": "back-office",
+            "to": "widgets",
+            "relationship": "provides"
+        },
+
+        {
+            "from": "card-services",
+            "to": "card-issuance",
+            "relationship": "provides"
+        },
+        {
+            "from": "card-services",
+            "to": "card-management",
+            "relationship": "provides"
+        },
+        {
+            "from": "card-services",
+            "to": "transaction-viewing",
+            "relationship": "provides"
+        },
+        {
+            "from": "card-management",
+            "to": "transaction-viewing",
+            "relationship": "uses"
+        },
+
+        {
+            "from": "user-management",
+            "to": "user-administration",
+            "relationship": "provides"
+        },
+        {
+            "from": "user-management",
+            "to": "role-management",
+            "relationship": "provides"
+        },
+        {
+            "from": "role-management",
+            "to": "admin-access",
+            "relationship": "manages"
+        },
+
+        {
+            "from": "user-administration",
+            "to": "user-auth",
+            "relationship": "manages"
+        },
+
+        {
+            "from": "energy-type-manifestor",
+            "to": "transfers",
+            "relationship": "modifies",
+            "parameters": {
+                "speed_priority": "high",
+                "confirmation_required": "minimal"
+            }
+        },
+        {
+            "from": "energy-type-builder",
+            "to": "transfers",
+            "relationship": "modifies",
+            "parameters": {
+                "speed_priority": "medium",
+                "confirmation_required": "response-based"
+            }
+        }
+    ]
+}

@@ -1,29 +1,185 @@
-import { TransactionListItem } from "@backpack-fux/pylon-sdk";
+import {
+  DisbursementState,
+  MerchantDisbursementCreateOutput,
+  MerchantDisbursementEventGetOutput,
+  MerchantUserGetOutput,
+  PersonRole,
+  TransactionListItem,
+  CardLimitFrequency,
+  CardShippingMethod,
+  CardStatus,
+} from "@backpack-fux/pylon-sdk";
+import { z } from "zod";
+
+export interface CreateCardModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+}
+
+export const limitCyclesObject: { label: string; value: CardLimitFrequency }[] = [
+  { label: "Day", value: CardLimitFrequency.DAY },
+  { label: "Week", value: CardLimitFrequency.WEEK },
+  { label: "Month", value: CardLimitFrequency.MONTH },
+  { label: "Year", value: CardLimitFrequency.YEAR },
+  { label: "All Time", value: CardLimitFrequency.ALL_TIME },
+  { label: "Per Authorization", value: CardLimitFrequency.PER_AUTHORIZATION },
+];
+
+export const limitStatesObject: { label: string; value: CardStatus }[] = [
+  { label: "Not Activated", value: CardStatus.NOT_ACTIVATED },
+  { label: "Canceled", value: CardStatus.CANCELLED },
+  { label: "Active", value: CardStatus.ACTIVE },
+  { label: "Locked", value: CardStatus.LOCKED },
+];
+
+export const ISO3166Alpha2Country = z.string().length(2);
+
+export const cardDeliveryCountries: { label: string; value: string }[] = [{ label: "United States", value: "US" }];
+
+export const shippingMethodOptions = [
+  { label: "Standard", value: "STANDARD" },
+  { label: "Express", value: "EXPRESS" },
+  { label: "International", value: "INTERNATIONAL" },
+];
+
+export const cardTypes = [
+  { value: "physical", label: "Physical" },
+  { value: "virtual", label: "Virtual" },
+];
+
+const VALID_STATUSES = [CardStatus.ACTIVE, CardStatus.CANCELLED, CardStatus.LOCKED, CardStatus.NOT_ACTIVATED];
+const VALID_FREQUENCIES = [
+  CardLimitFrequency.DAY,
+  CardLimitFrequency.WEEK,
+  CardLimitFrequency.MONTH,
+  CardLimitFrequency.YEAR,
+  CardLimitFrequency.ALL_TIME,
+  CardLimitFrequency.PER_AUTHORIZATION,
+];
+
+export const UpateCardSchema = z.object({
+  status: z.string().refine(
+    (value) => VALID_STATUSES.includes(value as (typeof VALID_STATUSES)[number]),
+    (value) => ({ message: `Please select valid status` })
+  ),
+  limitAmount: z
+    .string()
+    .min(1, "Please enter card limit number")
+    .transform((val) => Number(val))
+    .refine((val) => !isNaN(val) && val > 0, "Please enter a valid number for card limit"),
+  limitFrequency: z.string().refine(
+    (value) => VALID_FREQUENCIES.includes(value as (typeof VALID_FREQUENCIES)[number]),
+    (value) => ({ message: `Please select valid limit frequency` })
+  ),
+});
+
+export const CreateCardSchema = z.object({
+  displayName: z.string().min(1, "Enter valid card name"),
+  ownerFirstName: z.string().min(1, "Please enter valid first name"),
+  ownerLastName: z.string().min(1, "Please enter valid last name"),
+  ownerEmail: z.string().email().min(1, "Please enter valid email"),
+  limitAmount: z
+    .string()
+    .min(1, "Please enter card limit number")
+    .transform((val) => Number(val))
+    .refine((val) => !isNaN(val) && val > 0, "Please enter a valid number for card limit"),
+  limitFrequency: z.nativeEnum(CardLimitFrequency),
+});
+
+const validCountries = ["US"];
+const regionsData: Record<string, Array<{ label: string; value: string }>> = {
+  US: [
+    { label: "Alabama", value: "AL" },
+    { label: "Alaska", value: "AK" },
+    { label: "Arizona", value: "AZ" },
+    { label: "Arkansas", value: "AR" },
+    { label: "California", value: "CA" },
+    { label: "Colorado", value: "CO" },
+    { label: "Connecticut", value: "CT" },
+    { label: "Delaware", value: "DE" },
+    { label: "Florida", value: "FL" },
+    { label: "Georgia", value: "GA" },
+    { label: "Hawaii", value: "HI" },
+    { label: "Idaho", value: "ID" },
+    { label: "Illinois", value: "IL" },
+    { label: "Indiana", value: "IN" },
+    { label: "Iowa", value: "IA" },
+    { label: "Kansas", value: "KS" },
+    { label: "Kentucky", value: "KY" },
+    { label: "Louisiana", value: "LA" },
+    { label: "Maine", value: "ME" },
+    { label: "Maryland", value: "MD" },
+    { label: "Massachusetts", value: "MA" },
+    { label: "Michigan", value: "MI" },
+    { label: "Minnesota", value: "MN" },
+    { label: "Mississippi", value: "MS" },
+    { label: "Missouri", value: "MO" },
+    { label: "Montana", value: "MT" },
+    { label: "Nebraska", value: "NE" },
+    { label: "Nevada", value: "NV" },
+    { label: "New Hampshire", value: "NH" },
+    { label: "New Jersey", value: "NJ" },
+    { label: "New Mexico", value: "NM" },
+    { label: "New York", value: "NY" },
+    { label: "North Carolina", value: "NC" },
+    { label: "North Dakota", value: "ND" },
+    { label: "Ohio", value: "OH" },
+    { label: "Oklahoma", value: "OK" },
+    { label: "Oregon", value: "OR" },
+    { label: "Pennsylvania", value: "PA" },
+    { label: "Rhode Island", value: "RI" },
+    { label: "South Carolina", value: "SC" },
+    { label: "South Dakota", value: "SD" },
+    { label: "Tennessee", value: "TN" },
+    { label: "Texas", value: "TX" },
+    { label: "Utah", value: "UT" },
+    { label: "Vermont", value: "VT" },
+    { label: "Virginia", value: "VA" },
+    { label: "Washington", value: "WA" },
+    { label: "West Virginia", value: "WV" },
+    { label: "Wisconsin", value: "WI" },
+    { label: "Wyoming", value: "WY" },
+  ],
+};
+
+export const getRegionsForCountry = (country: string) => {
+  return regionsData[country] || [];
+};
+
+export const CardShippingDetailsSchema = z
+  .object({
+    street1: z.string().min(1),
+    street2: z.string().optional(),
+    city: z.string().min(1),
+    region: z.string().min(1),
+    postalCode: z.string().min(1),
+    country: z.string().refine((value) => validCountries.includes(value as (typeof validCountries)[number]), {
+      message: `Please select a country`,
+    }),
+    phoneNumber: z.string().min(1),
+    phoneCountryCode: z.string().min(1).max(3),
+    shippingMethod: z.nativeEnum(CardShippingMethod).optional(),
+  })
+  .superRefine((data, ctx) => {
+    const validRegions = getRegionsForCountry(data.country);
+
+    if (!validRegions.find((t) => t.value === data.region)) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Please select valid region",
+        path: ["region"],
+      });
+    }
+  });
+
+type StatusColor = "success" | "warning" | "danger" | "primary" | "secondary" | "default" | undefined;
 
 export interface Column<T> {
   name: string;
   uid: keyof T;
 }
 
-export interface BillPay {
-  id: string;
-  vendor: string;
-  internalNote: string;
-  memo: string;
-  status: string;
-  amount: string;
-  fees: string;
-  paymentMethod: "ACH" | "Wire" | "SWIFT" | "SEPA" | "Stable";
-  currency: string;
-  transactionCost: number;
-  settlementTime: string;
-  receivingBank: {
-    name: string;
-    routingNumber: string;
-    accountNumber: string;
-    memo: string;
-  };
-}
+export type BillPay = Omit<MerchantDisbursementEventGetOutput, "contact"> & MerchantDisbursementCreateOutput;
 
 export interface CardTransactions {
   id: string;
@@ -66,19 +222,26 @@ export interface Payment {
 }
 export interface User {
   id: string;
-  name: string;
+  fullName: string;
   role: string;
   email: string;
+  phone: string;
   status: string;
   actions: string;
 }
 
 export const billPayColumns: readonly Column<BillPay>[] = [
-  { name: "VENDOR", uid: "vendor" },
-  { name: "STATUS", uid: "status" },
-  { name: "AMOUNT", uid: "amount" },
-  { name: "MEMO", uid: "memo" },
-  { name: "INTERNAL NOTE", uid: "internalNote" },
+  { name: "VENDOR", uid: "accountOwnerName" },
+  { name: "STATUS", uid: "state" },
+  { name: "AMOUNT RECEIVED", uid: "currencyOut" },
+  { name: "PAYMENT REFERENCE", uid: "paymentMessage" },
+  { name: "TIME OF TRANSFER", uid: "createdAt" },
+] as const;
+
+export const contactColumns: readonly Column<MerchantDisbursementCreateOutput>[] = [
+  { name: "NAME", uid: "accountOwnerName" },
+  { name: "METHODS", uid: "disbursements" },
+  { name: "STATUS", uid: "isActive" },
 ] as const;
 
 export const cardTransactionColumns: readonly Column<CardTransactions>[] = [
@@ -106,73 +269,13 @@ export const paymentsColumns: readonly Column<TransactionListItem>[] = [
   { name: "Created", uid: "createdAt" },
 ] as const;
 
-export const usersColumns: readonly Column<User>[] = [
-  { name: "NAME", uid: "name" },
+export const usersColumns: readonly Column<MerchantUserGetOutput>[] = [
+  { name: "NAME", uid: "firstName" },
   { name: "ROLE", uid: "role" },
   { name: "EMAIL", uid: "email" },
-  { name: "STATUS", uid: "status" },
-  { name: "ACTIONS", uid: "actions" },
+  { name: "PHONE NUMBER", uid: "phone" },
+  { name: "WALLET ADDRESS", uid: "walletAddress" },
 ] as const;
-
-export const billPayData: BillPay[] = [
-  {
-    id: "1",
-    vendor: "Acme, LTD",
-    internalNote: "supplies",
-    memo: "",
-    status: "Active",
-    amount: "$10,000.00",
-    fees: "$200.00",
-    paymentMethod: "ACH",
-    currency: "USD",
-    transactionCost: 25,
-    settlementTime: "2-3 business days",
-    receivingBank: {
-      name: "Bank of America",
-      routingNumber: "026009593",
-      accountNumber: "1234567890",
-      memo: "Invoice #12345",
-    },
-  },
-  {
-    id: "2",
-    vendor: "Design Contractor",
-    internalNote: "marketing",
-    memo: "",
-    status: "Active",
-    amount: "$10,000.00",
-    fees: "$200.00",
-    paymentMethod: "Wire",
-    currency: "USD",
-    transactionCost: 35,
-    settlementTime: "1-2 business days",
-    receivingBank: {
-      name: "Chase Bank",
-      routingNumber: "021000021",
-      accountNumber: "0987654321",
-      memo: "Project #98765",
-    },
-  },
-  {
-    id: "3",
-    vendor: "UPS Shipping Account",
-    internalNote: "fullfilment operations",
-    memo: "Physical",
-    status: "Inactive",
-    amount: "$5000.00",
-    fees: "$100.00",
-    paymentMethod: "SWIFT",
-    currency: "EUR",
-    transactionCost: 50,
-    settlementTime: "3-5 business days",
-    receivingBank: {
-      name: "Deutsche Bank",
-      routingNumber: "DEUTDEFF",
-      accountNumber: "DE89370400440532013000",
-      memo: "Shipping Invoice #54321",
-    },
-  },
-];
 
 export const cardTransactionData: CardTransactions[] = [
   {
@@ -268,47 +371,22 @@ export const issuedCardData: IssuedCards[] = [
   },
 ];
 
-export const userData: User[] = [
-  {
-    id: "1",
-    name: "Rick Sanchez",
-    role: "Admin",
-    email: "rick.sanchez@example.com",
-    status: "Active",
-    actions: "Actions",
-  },
-  {
-    id: "2",
-    name: "Morty Smith",
-    role: "Bookkeeper",
-    email: "morty.smith@example.com",
-    status: "Active",
-    actions: "modal",
-  },
-  {
-    id: "3",
-    name: "Summer Smith",
-    role: "Developer",
-    email: "summer.smith@example.com",
-    status: "Inactive",
-    actions: "modal",
-  },
-  {
-    id: "4",
-    name: "Beth Smith",
-    role: "Member",
-    email: "beth.smith@example.com",
-    status: "Suspended",
-    actions: "modal",
-  },
-];
-
-export const statusColorMap: Record<string, "success" | "danger"> = {
-  Active: "success",
-  Inactive: "danger",
+export const statusColorMap: Record<DisbursementState, StatusColor> = {
+  PENDING: "default",
+  AWAITING_FUNDS: "secondary",
+  COMPLETED: "primary",
+  FAILED: "danger",
+  IN_REVIEW: "warning",
+  FUNDS_RECEIVED: "success",
+  PAYMENT_SUBMITTED: "success",
+  PAYMENT_PROCESSED: "success",
+  CANCELED: "danger",
+  ERROR: "danger",
+  RETURNED: "danger",
+  REFUNDED: "success",
 };
 
-export const paymentsStatusColorMap: Record<string, "success" | "warning" | "danger" | "primary" | "secondary"> = {
+export const paymentsStatusColorMap: Record<string, StatusColor> = {
   SENT_FOR_AUTHORIZATION: "primary",
   AUTHORIZED: "secondary",
   SENT_FOR_SETTLEMENT: "warning",
@@ -323,8 +401,10 @@ export const paymentsStatusColorMap: Record<string, "success" | "warning" | "dan
   REFUND_FAILED: "danger",
 };
 
-export const usersStatusColorMap: Record<string, "success" | "danger" | "warning"> = {
-  Active: "success",
-  Inactive: "danger",
-  Suspended: "warning",
+export const usersStatusColorMap: Record<PersonRole, StatusColor> = {
+  MEMBER: "primary",
+  DEVELOPER: "secondary",
+  BOOKKEEPER: "warning",
+  ADMIN: "success",
+  SUPER_ADMIN: "danger",
 };

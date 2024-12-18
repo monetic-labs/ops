@@ -1,109 +1,80 @@
-
+import { useState } from "react";
+import { Tabs, Tab } from "@nextui-org/tabs";
 import { Button } from "@nextui-org/button";
-import { Chip } from "@nextui-org/chip";
-import { User } from "@nextui-org/user";
-import React, { ReactNode, useCallback, useEffect, useState } from "react";
+import { useAppKitAccount } from "@reown/appkit/react";
+import { Address } from "viem";
 
-import CreateBillPayModal from "@/components/bill-pay/bill-create";
-import BillPayDetailsModal from "@/components/bill-pay/bill-details";
-import { BillPay, billPayColumns, billPayData, statusColorMap } from "@/data";
-import { getOpepenAvatar } from "@/utils/helpers";
-import InfiniteTable from "@/components/generics/table-infinite";
+import { billPayConfig, BillPayId } from "@/config/tabs";
+import { DEFAULT_NEW_BILL_PAY } from "@/types/bill-pay";
+import { NewBillPay, ExistingBillPay } from "@/types/bill-pay";
+import { isTesting } from "@/utils/helpers";
+import { MOCK_SETTLEMENT_ADDRESS } from "@/utils/constants";
 
-export default function BillPayTable() {
+import CreateBillPayModal from "./bill-actions/create";
+import Transfers from "./transfers-tab";
+import Contacts from "./contacts-tab";
+
+type BillPayTabsProps = {
+  handleSubTabChange: (key: string) => void;
+};
+
+export default function BillPayTabs({ handleSubTabChange }: BillPayTabsProps) {
+  const [billPay, setBillPay] = useState<NewBillPay | ExistingBillPay>(DEFAULT_NEW_BILL_PAY);
+  const [selectedService, setSelectedService] = useState<string>(billPayConfig[0].id);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
-  const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
-  const [selectedBillPay, setSelectedBillPay] = useState<BillPay | null>(null);
-  const [avatars, setAvatars] = useState<Record<string, string>>({});
 
-  useEffect(() => {
-    const newAvatars: Record<string, string> = {};
-    billPayData.forEach((billPay) => {
-      newAvatars[billPay.vendor] = getOpepenAvatar(billPay.vendor, 32);
-    });
-    setAvatars(newAvatars);
-  }, []);
+  const appKitAccount = useAppKitAccount();
+  const isConnected = isTesting ? true : appKitAccount.isConnected;
+  const settlementAddress = isTesting ? MOCK_SETTLEMENT_ADDRESS : appKitAccount.address;
 
-  const handleRowSelect = useCallback((billPay: BillPay) => {
-    setSelectedBillPay(billPay);
-    setIsDetailsModalOpen(true);
-  }, []);
-
-  const renderCell = useCallback((billPay: BillPay, columnKey: React.Key): ReactNode => {
-    const cellValue = billPay[columnKey as keyof BillPay];
-
-    switch (columnKey) {
-      case "vendor":
-        return (
-          <User
-            avatarProps={{
-              radius: "lg",
-              src: avatars[billPay.vendor],
-            }}
-            description={billPay.internalNote}
-            name={billPay.vendor}
-          >
-            {billPay.vendor}
-          </User>
-        );
-      case "status":
-        return (
-          <Chip
-            className="capitalize"
-            color={statusColorMap[billPay.status as keyof typeof statusColorMap]}
-            size="sm"
-            variant="flat"
-          >
-            {billPay.status}
-          </Chip>
-        );
+  const renderTabContent = (tabId: string) => {
+    switch (tabId) {
+      case BillPayId.TRANSFERS:
+        return <Transfers />;
+      case BillPayId.CONTACTS:
+        return <Contacts />;
       default:
-        return cellValue as ReactNode;
+        return <div>Tab content not found</div>;
     }
-  }, [avatars]);
-
-  const loadMore = async (cursor: string | undefined) => {
-    const pageSize = 3;
-    const startIndex = cursor ? parseInt(cursor) : 0;
-    const endIndex = startIndex + pageSize;
-    const newItems = billPayData.slice(startIndex, endIndex);
-    const newCursor = endIndex < billPayData.length ? endIndex.toString() : undefined;
-    
-    return { items: newItems, cursor: newCursor };
   };
 
   return (
-    <>
-      <div className="flex justify-end items-center mb-4">
-        <Button color="default" onPress={() => setIsCreateModalOpen(true)}>
-          + New
+    <div className="w-full">
+      <div className="flex justify-between items-center mb-4">
+        <Tabs
+          aria-label="Bill Pay options"
+          classNames={{
+            base: "w-full overflow-x-auto sm:overflow-x-viseible",
+            tabList: "bg-charyo-500/60 backdrop-blur-sm border-none",
+            tab: "flex-grow sm:flex-grow-0",
+            tabContent: "text-notpurple-500/60",
+          }}
+          selectedKey={selectedService}
+          onSelectionChange={(key) => setSelectedService(key as string)}
+        >
+          {billPayConfig.map((tab) => (
+            <Tab key={tab.id} title={tab.label} />
+          ))}
+        </Tabs>
+        <Button color="default" data-testid="create-transfer-button" onPress={() => setIsCreateModalOpen(true)}>
+          Create Transfer
         </Button>
       </div>
-      <InfiniteTable
-        columns={billPayColumns}
-        initialData={billPayData.slice(0, 3)} // Load first 3 items initially
-        renderCell={renderCell}
-        loadMore={loadMore}
-        onRowSelect={handleRowSelect}
-      />
+      <div className="mt-4">{renderTabContent(selectedService)}</div>
       <CreateBillPayModal
+        billPay={billPay}
         isOpen={isCreateModalOpen}
-        onClose={() => setIsCreateModalOpen(false)}
-        onSave={(newBillPay) => {
-          console.log("Creating bill pay:", newBillPay);
+        isWalletConnected={isConnected}
+        setBillPay={setBillPay}
+        settlementAddress={settlementAddress as Address}
+        onClose={() => {
           setIsCreateModalOpen(false);
+          setBillPay(DEFAULT_NEW_BILL_PAY);
+        }}
+        onSave={(newBillPay) => {
+          console.log("Creating transfer:", newBillPay);
         }}
       />
-      {selectedBillPay && (
-        <>
-          <BillPayDetailsModal
-            billPay={selectedBillPay}
-            isOpen={isDetailsModalOpen}
-            onClose={() => setIsDetailsModalOpen(false)}
-          />
-        </>
-      )}
-    </>
+    </div>
   );
 }
-

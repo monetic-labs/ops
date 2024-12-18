@@ -5,6 +5,7 @@ import { link as linkStyles } from "@nextui-org/theme";
 import clsx from "clsx";
 import NextLink from "next/link";
 import { useRouter } from "next/navigation";
+
 import { DiscordIcon, GithubIcon, Logo, TwitterIcon } from "@/components/icons";
 import { ThemeSwitch } from "@/components/theme-switch";
 import { siteConfig } from "@/config/site";
@@ -14,10 +15,9 @@ export const Navbar = () => {
   const router = useRouter();
 
   const handleSignOut = async () => {
-    //TODO implment this in pylon
     await pylon.logout();
-
-    router.push("/");
+    // TODO: validate statusCode
+    router.refresh();
   };
 
   return (

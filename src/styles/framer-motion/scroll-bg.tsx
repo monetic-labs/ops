@@ -1,20 +1,21 @@
 "use client";
 
-import React from 'react';
-import { motion, useScroll, useSpring, useTransform } from 'framer-motion';
-import bgCelestial from '@/assets/bg-celestial.svg';
-import bgStellar from '@/assets/bg-stellar.svg';
+import React from "react";
+import { motion, useScroll, useSpring, useTransform } from "framer-motion";
+
+import bgCelestial from "@/assets/bg-celestial.svg";
+import bgStellar from "@/assets/bg-stellar.svg";
 
 const ScrollBackground: React.FC = () => {
   const { scrollY } = useScroll();
 
   // Parallax effect for the base layer
-  const baseLayerY = useTransform(scrollY, [0, 100], ['0%', '10%']);
+  const baseLayerY = useTransform(scrollY, [0, 100], ["0%", "10%"]);
 
   // Adding 3D swirling effects for stars and iconography
-  const rotate = useTransform(scrollY, [0, 1000], ['0deg', '360deg']);
-  const translateX = useTransform(scrollY, [0, 1000], ['0%', '100%']);
-  const translateY = useTransform(scrollY, [0, 1000], ['0%', '100%']);
+  const rotate = useTransform(scrollY, [0, 1000], ["0deg", "360deg"]);
+  const translateX = useTransform(scrollY, [0, 1000], ["0%", "100%"]);
+  const translateY = useTransform(scrollY, [0, 1000], ["0%", "100%"]);
 
   // Adding a spring to smooth out the motion
   const smoothTranslateX = useSpring(translateX, { stiffness: 50, damping: 20 });
@@ -24,15 +25,15 @@ const ScrollBackground: React.FC = () => {
     <>
       <motion.div
         style={{
-          position: 'fixed',
+          position: "fixed",
           top: 0,
           left: 0,
           right: 0,
           bottom: 0,
           backgroundImage: `url(${bgCelestial.src})`,
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-          backgroundRepeat: 'no-repeat',
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+          backgroundRepeat: "no-repeat",
           y: baseLayerY,
           zIndex: -3,
         }}
@@ -40,15 +41,15 @@ const ScrollBackground: React.FC = () => {
       {/* 3D swirling layer */}
       <motion.div
         style={{
-          position: 'fixed',
+          position: "fixed",
           top: 0,
           left: 0,
           right: 0,
           bottom: 0,
           backgroundImage: `url(${bgStellar.src})`,
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-          backgroundRepeat: 'no-repeat',
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+          backgroundRepeat: "no-repeat",
           rotate,
           x: smoothTranslateX,
           y: smoothTranslateY,

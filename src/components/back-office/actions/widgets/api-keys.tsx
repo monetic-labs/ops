@@ -1,12 +1,12 @@
-import { useState, useEffect } from 'react';
-import { Modal, ModalBody, ModalFooter, ModalHeader, ModalContent } from "@nextui-org/modal";
+import { useState, useEffect } from "react";
+import { Modal, ModalBody, ModalHeader, ModalContent } from "@nextui-org/modal";
 import { Button } from "@nextui-org/button";
 import { TableColumn, TableCell, Table, TableBody, TableHeader, TableRow } from "@nextui-org/table";
-import { useApiService } from '@/hooks/widgets/useApiService';
-import { Input } from '@nextui-org/input';
-import ModalFooterWithSupport from '@/components/generics/footer-modal-support';
-import { Chip } from '@nextui-org/chip';
-import { FormButton } from '@/components/generics/form-button';
+import { Input } from "@nextui-org/input";
+import { Snippet } from "@nextui-org/snippet";
+
+import { useApiService } from "@/hooks/widgets/useApiService";
+import ModalFooterWithSupport from "@/components/generics/footer-modal-support";
 
 interface GenerateApiKeysModalProps {
   isOpen: boolean;
@@ -15,7 +15,7 @@ interface GenerateApiKeysModalProps {
 
 export default function GenerateApiKeysModal({ isOpen, onClose }: GenerateApiKeysModalProps) {
   const { apiKeys, isLoading, error, loadApiKeys, generateApiKey, deleteApiKey } = useApiService();
-  const [newKeyName, setNewKeyName] = useState('');
+  const [newKeyName, setNewKeyName] = useState("");
   const [isGenerating, setIsGenerating] = useState(false);
 
   useEffect(() => {
@@ -28,7 +28,7 @@ export default function GenerateApiKeysModal({ isOpen, onClose }: GenerateApiKey
     if (!newKeyName) return;
     setIsGenerating(true);
     await generateApiKey(newKeyName);
-    setNewKeyName('');
+    setNewKeyName("");
     setIsGenerating(false);
   };
 
@@ -48,8 +48,14 @@ export default function GenerateApiKeysModal({ isOpen, onClose }: GenerateApiKey
     },
   ];
 
+  const truncateKey = (key: string): string => {
+    if (key.length <= 10) return key;
+
+    return `${key.slice(0, 5)}....${key.slice(-4)}`;
+  };
+
   return (
-    <Modal isOpen={isOpen} onClose={onClose} size="2xl">
+    <Modal isOpen={isOpen} size="2xl" onClose={onClose}>
       <ModalContent>
         <ModalHeader className="flex flex-col gap-1">API Keys</ModalHeader>
         <ModalBody>
@@ -66,16 +72,16 @@ export default function GenerateApiKeysModal({ isOpen, onClose }: GenerateApiKey
                 <TableColumn>ACTIONS</TableColumn>
               </TableHeader>
               <TableBody>
-                {apiKeys.map((key) => (
-                  <TableRow key={key.id}>
+                {apiKeys.map((key, index) => (
+                  <TableRow key={index}>
                     <TableCell>{key.name}</TableCell>
                     <TableCell>
-                      <Chip>{key.key.substr(0, 8)}...</Chip>
+                      <Snippet codeString={key.key}>{truncateKey(key.key)}</Snippet>
                     </TableCell>
                     <TableCell>{new Date(key.createdAt).toLocaleDateString()}</TableCell>
-                    <TableCell>{key.lastUsed ? new Date(key.lastUsed).toLocaleDateString() : 'Never'}</TableCell>
+                    <TableCell>{key.lastUsed ? new Date(key.lastUsed).toLocaleDateString() : "Never"}</TableCell>
                     <TableCell>
-                      <Button color="primary" size="sm" onClick={() => handleDeleteKey(key.id)}>
+                      <Button color="primary" size="sm" onClick={() => handleDeleteKey(key.key)}>
                         Delete
                       </Button>
                     </TableCell>
@@ -85,17 +91,10 @@ export default function GenerateApiKeysModal({ isOpen, onClose }: GenerateApiKey
             </Table>
           )}
           <div className="flex gap-2 mb-4">
-            <Input
-              placeholder="Enter key name"
-              value={newKeyName}
-              onChange={(e) => setNewKeyName(e.target.value)}
-            />
+            <Input placeholder="Enter key name" value={newKeyName} onChange={(e) => setNewKeyName(e.target.value)} />
           </div>
         </ModalBody>
-        <ModalFooterWithSupport
-          onSupportClick={handleSupportClick}
-          actions={footerActions}
-        />
+        <ModalFooterWithSupport actions={footerActions} onSupportClick={handleSupportClick} />
       </ModalContent>
     </Modal>
   );
