@@ -3,7 +3,7 @@
 import React, { useEffect, useCallback } from "react";
 import { Tab, Tabs } from "@nextui-org/tabs";
 import { Bot, MessageCircle } from "lucide-react";
-import { useSearchParams, useRouter } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 
 import { useMessagingActions, useMessagingState } from "@/libs/messaging/store";
 import { MessageMode } from "@/types/messaging";
@@ -16,8 +16,9 @@ export const ModeSwitcher: React.FC = () => {
   // Handle mode changes
   const handleModeChange = useCallback(
     (newMode: string | number) => {
-      const modeValue = newMode as MessageMode;
-      setMode(modeValue);
+      const modeValue = newMode as "bot" | "support";
+
+      setMode(modeValue as MessageMode);
     },
     [setMode, searchParams]
   );

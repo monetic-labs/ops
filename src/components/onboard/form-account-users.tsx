@@ -122,25 +122,26 @@ export const FormAccountUsers: React.FC<{
     <div className="space-y-4">
       <FormInput
         control={control}
+        data-testid={`account-users-first-name-input-${index}`}
         errorMessage={errors.representatives?.[index]?.firstName?.message}
         label="First Name"
         maxLength={25}
         name={`representatives.${index}.firstName`}
         placeholder="Rick"
-        data-testid={`account-users-first-name-input-${index}`}
       />
       <FormInput
         control={control}
+        data-testid={`account-users-last-name-input-${index}`}
         errorMessage={errors.representatives?.[index]?.lastName?.message}
         label="Last Name"
         maxLength={25}
         name={`representatives.${index}.lastName`}
         placeholder="Sanchez"
-        data-testid={`account-users-last-name-input-${index}`}
       />
       <FormInput
         about="Use the email for the primary contact for this company."
         control={control}
+        data-testid={`account-users-email-input-${index}`}
         errorMessage={errors.representatives?.[index]?.email?.message}
         label="Email"
         name={`representatives.${index}.email`}
@@ -160,10 +161,10 @@ export const FormAccountUsers: React.FC<{
             `representatives.${index}.email` as const
           )
         }
-        data-testid={`account-users-email-input-${index}`}
       />
       <FormInput
         control={control}
+        data-testid={`account-users-phone-number-input-${index}`}
         errorMessage={errors.representatives?.[index]?.phoneNumber?.message}
         label="Phone Number"
         maxLength={10}
@@ -184,17 +185,16 @@ export const FormAccountUsers: React.FC<{
             `representatives.${index}.phoneNumber` as const
           )
         }
-        data-testid={`account-users-phone-number-input-${index}`}
       />
       {index === 0 ? (
         <FormInput
           disabled
           isReadOnly
           control={control}
+          data-testid={`account-users-role-input-${index}`}
           label="Role"
           name={`representatives.${index}.role`}
           value="Owner"
-          data-testid={`account-users-role-input-${index}`}
         />
       ) : (
         <AutocompleteInput

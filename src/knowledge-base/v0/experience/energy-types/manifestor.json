@@ -1,0 +1,38 @@
+{
+    "id": "energy-type-manifestor",
+    "type": "experience",
+    "description": "Manifestor financial interaction patterns",
+    "traits": [
+      "Visionary",
+      "Independent",
+      "Initiator",
+      "Quick decision maker",
+      "Opportunity focused"
+    ],
+    "financial_strengths": [
+      "Opportunity spotting",
+      "Venture initiation",
+      "Quick financial decisions",
+      "Innovation in wealth creation",
+      "Strategic vision"
+    ],
+    "financial_challenges": [
+      "Follow through",
+      "Resource management",
+      "May act too quickly",
+      "Risk of impulsive decisions"
+    ],
+    "decision_style": {
+      "speed_multiplier": 1.5,
+      "risk_tolerance": "high",
+      "waiting_period": "minimal",
+      "confirmation_threshold": "low"
+    },
+    "optimal_capabilities": [
+      "transfers",
+      "card-issuance",
+      "speed-over-cost",
+      "quick-transfer"
+    ],
+    "requires": ["user-auth"]
+  }

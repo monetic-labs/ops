@@ -1,43 +1,18 @@
 "use client";
 
 import { useCallback, useState } from "react";
-import { Input } from "@nextui-org/input";
 import { Card, CardBody, CardHeader } from "@nextui-org/card";
+import { Divider } from "@nextui-org/divider";
+import { Input } from "@nextui-org/input";
 import { Spinner } from "@nextui-org/spinner";
 import { Tabs, Tab } from "@nextui-org/tabs";
-import dynamic from "next/dynamic";
-import { Divider } from "@nextui-org/divider";
 
-import { useDocumentProcessor } from "@/hooks/embeddings/useDocumentProcessor";
 import { FormButton } from "@/components/generics/form-button";
 import { FormCard } from "@/components/generics/form-card";
-
-import KnowledgeBaseStats from "@/components/embeddings/kb-stats";
+import { BootstrapSection } from "@/components/embeddings/bootstrap-section";
 import DocumentManager from "@/components/embeddings/doc-manager";
-
-// const KnowledgeBaseStats = dynamic(() => import("@/components/embeddings/kb-stats"), {
-//   ssr: false,
-//   loading: () => (
-//     <Card className="bg-charyo-500/60 backdrop-blur-sm p-4">
-//       <div className="flex items-center justify-center">
-//         <Spinner size="sm" />
-//         <span className="ml-2 text-notpurple-500">Loading stats...</span>
-//       </div>
-//     </Card>
-//   ),
-// });
-
-// const DocumentManager = dynamic(() => import("@/components/embeddings/doc-manager"), {
-//   ssr: false,
-//   loading: () => (
-//     <Card className="bg-charyo-500/60 backdrop-blur-sm p-4">
-//       <div className="flex items-center justify-center">
-//         <Spinner size="sm" />
-//         <span className="ml-2 text-notpurple-500">Loading documents...</span>
-//       </div>
-//     </Card>
-//   ),
-// });
+import KnowledgeBaseStats from "@/components/embeddings/kb-stats";
+import { useDocumentProcessor } from "@/hooks/embeddings/useDocumentProcessor";
 
 const UploadForm = ({
   file,
@@ -212,6 +187,7 @@ const EmbeddingsPage = () => {
                   setFile={setFile}
                   status={status}
                 />
+                <BootstrapSection />
                 <Guidelines />
               </div>
             </CardBody>

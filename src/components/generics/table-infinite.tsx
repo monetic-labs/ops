@@ -111,8 +111,6 @@ export function InfiniteTableWithExternalList<T extends { id: string }>({
       isHeaderSticky
       aria-label="Generic table with infinite scroll"
       baseRef={scrollerRef}
-      selectionMode="single"
-      onRowAction={(key) => onRowSelect && onRowSelect(list.items.find((item) => item.id === key) as T)}
       bottomContent={
         hasMore ? (
           <div className="flex justify-center items-center py-4">
@@ -123,6 +121,8 @@ export function InfiniteTableWithExternalList<T extends { id: string }>({
       classNames={{
         wrapper: "max-h-[400px]",
       }}
+      selectionMode="single"
+      onRowAction={(key) => onRowSelect && onRowSelect(list.items.find((item) => item.id === key) as T)}
     >
       <TableHeader columns={columns as Column<T>[]}>
         {(column) => <TableColumn key={column.uid.toString()}>{column.name}</TableColumn>}

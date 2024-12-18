@@ -1,4 +1,5 @@
 import { FieldValues, Path, PathValue, UseFormSetValue } from "react-hook-form";
+
 import {
   birthdayRegex,
   companyEINRegex,
@@ -62,6 +63,7 @@ export const handleEmailChange = <T extends FieldValues>(
   fieldName: Path<T>
 ) => {
   const value = e.target.value;
+
   setEmailInput(value);
   setValue(fieldName, value as PathValue<T, Path<T>>, { shouldValidate: true });
 };

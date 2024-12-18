@@ -1,10 +1,16 @@
 import { useState } from "react";
 
+/**
+ * Options for deleting a single document
+ */
 interface DeleteOptions {
   id: string;
   namespace?: string;
 }
 
+/**
+ * Options for deleting multiple documents
+ */
 interface DeleteManyOptions {
   ids?: string[];
   filter?: Record<string, any>;
@@ -12,10 +18,20 @@ interface DeleteManyOptions {
   deleteAll?: boolean;
 }
 
+/**
+ * Custom hook for managing document operations in the embeddings system
+ * Provides functionality for deleting single or multiple documents
+ * @returns Object containing delete functions and state
+ */
 export function useDocumentManager() {
   const [deleting, setDeleting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  /**
+   * Deletes a single document by ID
+   * @param options - DeleteOptions containing document ID and optional namespace
+   * @returns Promise resolving to the deletion result
+   */
   const deleteDocument = async ({ id, namespace }: DeleteOptions) => {
     try {
       setDeleting(true);
@@ -46,6 +62,11 @@ export function useDocumentManager() {
     }
   };
 
+  /**
+   * Deletes multiple documents based on provided options
+   * @param options - DeleteManyOptions for bulk deletion
+   * @returns Promise resolving to the deletion result
+   */
   const deleteManyDocuments = async (options: DeleteManyOptions) => {
     try {
       setDeleting(true);

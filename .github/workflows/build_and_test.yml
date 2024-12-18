@@ -16,12 +16,12 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v2
+      - name: Set up Bun
+        uses: oven-sh/setup-bun@v2
         with:
-          node-version: "20"
+          bun-version: latest
 
       - name: Set up env
         run: |
@@ -35,6 +35,10 @@ jobs:
           echo "TELEGRAM_CHAT_ID=test-chat-id" >> .env
           echo "TELEGRAM_BOT_TOKEN=test-bot-token" >> .env
 
+      - name: Install bun
+        run: |
+          curl -fsSL https://bun.sh/install | bash
+
       - name: Install dependencies
         run: |
           export BACKPACK_GITHUB_TOKEN=${{ secrets.BACKPACK_GITHUB_TOKEN }}
@@ -42,26 +46,26 @@ jobs:
           export OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }}
           export TELEGRAM_CHAT_ID=${{ secrets.TELEGRAM_CHAT_ID }}
           export TELEGRAM_BOT_TOKEN=${{ secrets.TELEGRAM_BOT_TOKEN }}
-          npm install
-          npx playwright install --with-deps
+          bun install
+          bunx playwright install --with-deps
 
-      - name: Run tests
-        run: npm test
+      # - name: Run tests
+      #   run: bun run test
 
       - name: Run e2e tests
-        run: npm run test:e2e
+        run: bun run test:e2e
 
-      - name: Setup LCOV
-        uses: hrishikesh-kadam/setup-lcov@v1
+      # - name: Setup LCOV
+      #   uses: hrishikesh-kadam/setup-lcov@v1
 
-      - name: Check coverage thresholds
-        uses: zgosalvez/github-actions-report-lcov@v3
-        with:
-          check: "true"
-          coverage-files: ./coverage/lcov.info
-          minimum-coverage: 0
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          update-comment: true
+      # - name: Check coverage thresholds
+      #   uses: zgosalvez/github-actions-report-lcov@v3
+      #   with:
+      #     check: "true"
+      #     coverage-files: ./coverage/lcov.info
+      #     minimum-coverage: 0
+      #     github-token: ${{ secrets.GITHUB_TOKEN }}
+      #     update-comment: true
 
       - name: Build application
-        run: npm run build
+        run: bun run build

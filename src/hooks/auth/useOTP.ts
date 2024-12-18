@@ -11,6 +11,7 @@ export function useIssueOTP() {
     setIsLoading(true);
     try {
       const response = await pylon.initiateLoginOTP({ email });
+
       return response.statusCode;
     } catch (err: any) {
       if (err.response && err.response.status === 404) {
@@ -33,6 +34,7 @@ export function useVerifyOTP() {
     setIsLoading(true);
     try {
       const resp = await pylon.verifyLoginOTP(data);
+
       return resp.statusCode;
     } catch (err) {
       setError(err instanceof Error ? err.message : "An error occurred");

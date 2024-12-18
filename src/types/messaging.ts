@@ -1,11 +1,13 @@
 import { UseChatHelpers } from "ai/react";
 
-// Message Types
+/** Core message types supported by the system */
 export type MessageType = "user" | "bot" | "support" | "system" | "typing";
+/** Possible states of a message */
 export type MessageStatus = "sending" | "sent" | "error" | "received";
-export type MessageServiceType = "telegram" | "openai" | "websocket";
+/** Available messaging service types */
+export type MessageServiceType = "telegram" | "openai";
 
-// Base Message Interface
+/** Base interface for all message types */
 export interface BaseMessage {
   id: string;
   text: string;
@@ -19,6 +21,7 @@ export interface BaseMessage {
   };
 }
 
+/** Interface for typing indicator messages */
 export interface TypingIndicator {
   type: "typing";
   chatId: string | number;
@@ -26,55 +29,37 @@ export interface TypingIndicator {
   userId?: string;
 }
 
-// Add this interface for types of messages that can be sent via websocket
-export interface WebSocketMessage extends BaseMessage {
-  type: MessageType;
-  id: string;
-  text: string;
-  status?: MessageStatus;
-  metadata: {
-    telegramMessageId?: number;
-    chatId?: string;
-    timestamp: number;
-    userId?: string;
-    isTyping?: boolean;
-  };
-}
-
-// User Message Interface
+/** User-sent message format */
 export interface UserMessage extends BaseMessage {
   type: "user";
   status: MessageStatus;
 }
 
-// Bot Message Interface
+/** Bot response message format */
 export interface BotMessage extends BaseMessage {
   type: "bot";
   source?: string;
   status?: MessageStatus;
 }
 
-// Support Message Interface
+/** Support agent message format */
 export interface SupportMessage extends BaseMessage {
   type: "support";
   agentId?: string;
   status?: MessageStatus;
 }
 
-// System Message Interface
+/** System notification message format */
 export interface SystemMessage extends BaseMessage {
   type: "system";
   category: "info" | "warning" | "error";
   status?: MessageStatus;
 }
 
-// Union type for all message types
 export type Message = UserMessage | BotMessage | SupportMessage | SystemMessage;
-
-// Chat Mode Types
 export type MessageMode = "bot" | "support";
 
-// Mention Option Interface
+/** Interface for mention/autocomplete options */
 export interface MentionOption {
   id: string;
   value: string;
@@ -84,22 +69,22 @@ export interface MentionOption {
   category?: string;
 }
 
+/** Base interface for message services */
 export interface MessageService {
   type: MessageServiceType;
   messages: Message[];
   isTyping?: boolean;
   isLoading: boolean;
   inputValue: string;
-  setInputValue: (value: string) => Promise<void>;
+  setInputValue: (value: string) => Promise<void>; 
   sendMessage: (text: string) => Promise<void>;
   handleSubmit: (e: React.FormEvent) => Promise<void>;
-  handleWebSocketMessage?: (message: WebSocketMessage) => void;
   getUserId: () => string;
 }
 
+/** AI agent service specific interface */
 export interface AgentMessageService extends MessageService {
   type: "openai";
-  isLoading: boolean;
   model: string;
   context?: {
     systemPrompt?: string;
@@ -107,18 +92,18 @@ export interface AgentMessageService extends MessageService {
   };
 }
 
+/** Support service specific interface */
 export interface SupportMessageService extends MessageService {
-  type: "telegram" | "websocket";
+  type: "telegram";
   channel: string;
   isTyping: boolean;
-  handleWebSocketMessage: (message: WebSocketMessage) => void;
   metadata?: {
     agentId?: string;
     department?: string;
   };
 }
 
-// Base context interface that both modes share
+/** Base messaging context shared between modes */
 interface BaseMessagingContext {
   messages: Message[];
   inputValue: string;
@@ -128,18 +113,18 @@ interface BaseMessagingContext {
   userId: string;
 }
 
-// Agent-specific context
+/** Agent-specific messaging context */
 export interface AgentMessageContext extends BaseMessagingContext {
   mode: "agent";
   service: AgentMessageService;
   chatHelpers: UseChatHelpers;
-  isTyping: boolean; // Agent mode doesn't use typing indicators
+  isTyping: boolean;
 }
 
-// Support-specific context
+/** Support-specific messaging context */
 export interface SupportMessageContext extends BaseMessagingContext {
   mode: "support";
   service: SupportMessageService;
-  chatHelpers?: never; // Support mode doesn't use chat helpers
+  chatHelpers?: never;
   isTyping: boolean;
 }

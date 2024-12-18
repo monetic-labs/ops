@@ -5,6 +5,7 @@ import { StatusCard } from "@/components/kyb-status/status-card";
 
 export default function KYB() {
   const { complianceStatus } = useGetComplianceStatus();
+
   console.log(complianceStatus); // TODO: Remove
 
   const handleBridgeKYB = () => {

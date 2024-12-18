@@ -6,10 +6,9 @@ import { useRouter } from "next/navigation";
 
 import { FormCard } from "@/components/generics/form-card";
 import { signBridgeTermsOfService } from "@/utils/merchant/signBridgeTOS";
+import { CompanyUserDetailsSchema } from "@/types/validations/onboard";
 
 import { OTPVerificationModal } from "../generics/otp-modal";
-import { VerifyOTP } from "@backpack-fux/pylon-sdk";
-import { CompanyUserDetailsSchema } from "@/types/validations/onboard";
 
 interface AccountRegistrationProps {
   tosBridgeLink: string | null;
@@ -66,6 +65,7 @@ export const AccountRegistration: React.FC<AccountRegistrationProps> = ({
     setIsOTPModalOpen(false);
     console.log("OTP verification success");
     setIsOTPVerified(true);
+
     //onKYCDone();
     return null;
   };
@@ -101,8 +101,8 @@ export const AccountRegistration: React.FC<AccountRegistrationProps> = ({
         </Link>
       </p>
       <Button
-        data-testid="bill-pay-agreement-button"
         className="w-full bg-ualert-500 text-notpurple-100"
+        data-testid="bill-pay-agreement-button"
         isDisabled={isBridgeToSAccepted}
         onClick={handleBridgeAcceptToS}
       >
@@ -129,8 +129,8 @@ export const AccountRegistration: React.FC<AccountRegistrationProps> = ({
         </Link>
       </p>
       <Button
-        data-testid="card-program-agreement-button"
         className="w-full bg-ualert-500 text-notpurple-100"
+        data-testid="card-program-agreement-button"
         isDisabled={isRainToSAccepted}
         onClick={handleRainAcceptToS}
       >
@@ -144,10 +144,10 @@ export const AccountRegistration: React.FC<AccountRegistrationProps> = ({
     <>
       <FormCard title="Register Account">
         <Accordion
-          showDivider={false}
           className="p-2 flex flex-col gap-1 w-full"
-          variant="shadow"
           itemClasses={itemClasses}
+          showDivider={false}
+          variant="shadow"
         >
           {accordionItems}
         </Accordion>
@@ -156,21 +156,21 @@ export const AccountRegistration: React.FC<AccountRegistrationProps> = ({
             Cancel
           </Button>
           <Button
-            isDisabled={!isBridgeToSAccepted || !isRainToSAccepted || !isOTPVerified}
             className="text-notpurple-500"
+            data-testid="finish-kyb-button"
+            isDisabled={!isBridgeToSAccepted || !isRainToSAccepted || !isOTPVerified}
             variant="solid"
             onClick={handleKYB}
-            data-testid="finish-kyb-button"
           >
             Finish KYB
           </Button>
         </div>
       </FormCard>
       <OTPVerificationModal
+        email={email}
         isOpen={isOTPModalOpen}
         onClose={() => setIsOTPModalOpen(false)}
         onVerified={handleOTPVerified}
-        email={email}
       />
     </>
   );

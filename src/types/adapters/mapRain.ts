@@ -1,18 +1,19 @@
 // mappers/rainMapper.ts
 
 import {
-  CompanyAccountSchema,
-  CompanyDetailsSchema,
-  CompanyAccountUsersSchema,
-  CompanyUserDetailsSchema,
-} from "@/types/validations/onboard";
-import {
   RainAddress,
   RainPerson,
   RainEntity,
   RainInitialUser,
   MerchantRainCompanyCreateInput,
 } from "@backpack-fux/pylon-sdk";
+
+import {
+  CompanyAccountSchema,
+  CompanyDetailsSchema,
+  CompanyAccountUsersSchema,
+  CompanyUserDetailsSchema,
+} from "@/types/validations/onboard";
 
 function formatSSN(ssn: string): string {
   return ssn.replace(/-/g, "");

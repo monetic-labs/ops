@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Card, CardBody, CardHeader } from "@nextui-org/card";
 import { Select, SelectItem } from "@nextui-org/select";
 import { Spinner } from "@nextui-org/spinner";
@@ -10,8 +10,11 @@ import { Divider } from "@nextui-org/divider";
 
 import { useDocumentManager } from "@/hooks/embeddings/useDocumentManager";
 import CardFooterWithActions from "@/components/generics/card-footer-actions";
+import { usePineconeStats } from "@/hooks/embeddings/usePineconeStats";
 
 import IDSnippet from "../generics/snippet-id";
+
+import { ContentPreview } from "./doc-previewer";
 
 interface DocumentList {
   id: string;
@@ -33,37 +36,40 @@ interface NamespaceOption {
 const DocumentManager = () => {
   const [namespace, setNamespace] = useState("");
   const [documents, setDocuments] = useState<DocumentList[]>([]);
-  const [namespaces, setNamespaces] = useState<Record<string, { recordCount: number }>>({});
   const [loading, setLoading] = useState(true);
   const { deleteDocument, deleteManyDocuments, deleting, error } = useDocumentManager();
+  const { stats, loading: statsLoading, refreshStats } = usePineconeStats();
 
-  const namespaceOptions: NamespaceOption[] = [
-    {
-      label: "Default namespace",
-      value: "default", // Changed from empty string to 'default'
-      description: `${namespaces[""]?.recordCount || 0} documents`,
-    },
-    ...Object.entries(namespaces)
-      .filter(([ns]) => ns !== "") // Filter out empty string namespace
-      .map(([ns, { recordCount }]) => ({
-        label: ns,
-        value: ns,
-        description: `${recordCount} documents`,
-      })),
-  ];
+  const namespaceOptions: NamespaceOption[] = useMemo(() => {
+    if (!stats?.namespaces) return [];
+
+    return [
+      {
+        label: "Default namespace",
+        value: "default",
+        description: `${stats.namespaces[""]?.vectorCount || 0} vectors`,
+      },
+      ...Object.entries(stats.namespaces)
+        .filter(([ns]) => ns !== "")
+        .map(([ns, { vectorCount }]) => ({
+          label: ns,
+          value: ns,
+          description: `${vectorCount} vectors`,
+        })),
+    ];
+  }, [stats]);
 
   const fetchDocuments = async () => {
     try {
       setLoading(true);
       const response = await fetch(
-        `/api/embeddings/docs${namespace === "default" ? "" : namespace ? `?namespace=${namespace}` : ""}`
+        `/api/embeddings/upload-docs${namespace === "default" ? "" : namespace ? `?namespace=${namespace}` : ""}`
       );
 
       if (!response.ok) throw new Error("Failed to fetch documents");
       const data = await response.json();
 
       setDocuments(data.documents);
-      setNamespaces(data.namespaces);
     } catch (error) {
       console.error("Failed to fetch documents:", error);
     } finally {
@@ -82,7 +88,7 @@ const DocumentManager = () => {
           id,
           namespace: namespace || undefined,
         });
-        await fetchDocuments();
+        await Promise.all([fetchDocuments(), refreshStats()]);
       } catch (error) {
         console.error("Delete failed:", error);
       }
@@ -100,7 +106,7 @@ const DocumentManager = () => {
           deleteAll: true,
           namespace: namespace || undefined,
         });
-        await fetchDocuments();
+        await Promise.all([fetchDocuments(), refreshStats()]);
       } catch (error) {
         console.error("Delete all failed:", error);
       }
@@ -108,7 +114,6 @@ const DocumentManager = () => {
   };
 
   const renderDocumentCard = (doc: DocumentList) => {
-    const preview = doc.metadata.text || "No content available";
     const category = doc.metadata.category || "Uncategorized";
     const section = doc.metadata.section || "No section";
 
@@ -162,7 +167,7 @@ const DocumentManager = () => {
           <div className="space-y-2">
             <h4 className="text-sm font-medium text-notpurple-500/60">Content Preview</h4>
             <div className="bg-charyo-800/40 rounded-lg p-3">
-              <p className="text-sm text-notpurple-500 whitespace-pre-wrap font-mono">{preview}</p>
+              <ContentPreview content={doc.metadata.text || "{}"} />
             </div>
           </div>
 
@@ -190,7 +195,13 @@ const DocumentManager = () => {
     <Card className="bg-charyo-500/60 backdrop-blur-sm w-full">
       <CardHeader className="flex flex-col items-start">
         <h3 className="text-lg font-semibold text-notpurple-500">Document Management</h3>
-        <p className="text-small text-notpurple-500/60">Manage your document embeddings</p>
+        <p className="text-small text-notpurple-500/60">
+          {statsLoading
+            ? "Loading stats..."
+            : `Managing ${stats?.totalDocuments || 0} documents across ${
+                Object.keys(stats?.namespaces || {}).length
+              } namespaces`}
+        </p>
       </CardHeader>
       <Divider />
       <CardBody className="space-y-4">

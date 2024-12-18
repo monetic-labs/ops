@@ -1,8 +1,9 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { CardStatus, CardType } from "@backpack-fux/pylon-sdk";
+
 import pylon from "@/libs/pylon-sdk";
 import CreateCardModal from "@/components/card-issuance/card-create";
-import { CardStatus, CardType } from "@backpack-fux/pylon-sdk";
 
 vi.mock("@/libs/pylon-sdk", () => ({
   default: {
@@ -73,6 +74,7 @@ describe("CreateCardModal", () => {
 
     it("should handle virtual card creation error", async () => {
       const error = new Error("API Error");
+
       vi.mocked(pylon.createVirtualCard).mockRejectedValueOnce(error);
 
       render(<CreateCardModal {...defaultProps} />);
@@ -130,6 +132,7 @@ describe("CreateCardModal", () => {
       });
       fireEvent.click(screen.getByTestId("STANDARD"));
     };
+
     it("should successfully create a physical card", async () => {
       render(<CreateCardModal {...defaultProps} />);
 
@@ -169,6 +172,7 @@ describe("CreateCardModal", () => {
 
     it("should handle physical card creation error", async () => {
       const error = new Error("Physical Card API Error");
+
       vi.mocked(pylon.createPhysicalCard).mockRejectedValueOnce(error);
 
       render(<CreateCardModal {...defaultProps} />);

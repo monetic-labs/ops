@@ -1,10 +1,11 @@
 import { useEffect, useState } from "react";
 import { useInfiniteScroll } from "@nextui-org/use-infinite-scroll";
 import { DisbursementMethod, FiatCurrency } from "@backpack-fux/pylon-sdk";
-import { useGetContacts } from "@/hooks/bill-pay/useGetContacts";
 import { Autocomplete, AutocompleteItem } from "@nextui-org/autocomplete";
 import { Input } from "@nextui-org/input";
 import { Eye, EyeOff } from "lucide-react";
+
+import { useGetContacts } from "@/hooks/bill-pay/useGetContacts";
 import { DEFAULT_EXISTING_BILL_PAY, DEFAULT_NEW_BILL_PAY, ExistingBillPay, NewBillPay } from "@/types/bill-pay";
 import { FieldLabel, getValidationProps } from "@/types/validations/bill-pay";
 
@@ -81,6 +82,7 @@ export default function ExistingTransferFields({
 
   const handleSelectionChange = (contactId: string) => {
     const selectedContact = contacts.find((contact) => contact.id === contactId);
+
     if (selectedContact) {
       setBillPay({
         ...billPay,
@@ -95,6 +97,7 @@ export default function ExistingTransferFields({
 
   const handleMethodChange = (value: DisbursementMethod) => {
     const selectedDisbursement = selectedContact?.disbursements.find((disbursement) => disbursement.method === value);
+
     setBillPay({
       ...billPay,
       vendorMethod: value,
@@ -116,11 +119,13 @@ export default function ExistingTransferFields({
   return (
     <>
       <Autocomplete
+        isRequired
         data-testid="account-holder"
         label={FieldLabel.ACCOUNT_HOLDER}
         placeholder="Select an account holder"
-        isRequired
         {...validationResults.accountHolder}
+        defaultItems={contacts}
+        isLoading={isLoadingContacts}
         listboxProps={{
           emptyContent: (
             <button
@@ -135,7 +140,12 @@ export default function ExistingTransferFields({
             </button>
           ),
         }}
+        scrollRef={scrollerRef}
         value={billPay.vendorName}
+        onInputChange={(value) => {
+          setSearch(value);
+        }}
+        onOpenChange={setIsOpen}
         onSelectionChange={(contactId) => {
           if (contactId) {
             handleSelectionChange(contactId as string);
@@ -143,21 +153,14 @@ export default function ExistingTransferFields({
             setBillPay(DEFAULT_EXISTING_BILL_PAY);
           }
         }}
-        onInputChange={(value) => {
-          setSearch(value);
-        }}
-        isLoading={isLoadingContacts}
-        defaultItems={contacts}
-        scrollRef={scrollerRef}
-        onOpenChange={setIsOpen}
       >
         {(contact) => (
           <AutocompleteItem
-            data-testid={`account-holder-item-${contact.id}`}
             key={contact.id}
+            data-testid={`account-holder-item-${contact.id}`}
+            endContent={<div className="text-gray-400 text-xs">{contact.nickname}</div>}
             textValue={contact.accountOwnerName}
             value={contact.accountOwnerName}
-            endContent={<div className="text-gray-400 text-xs">{contact.nickname}</div>}
           >
             {contact.accountOwnerName}
           </AutocompleteItem>
@@ -165,31 +168,25 @@ export default function ExistingTransferFields({
       </Autocomplete>
       <Input
         data-testid="bank-name"
-        label={FieldLabel.BANK_NAME}
         isDisabled={!billPay.vendorBankName}
+        label={FieldLabel.BANK_NAME}
         {...validationResults.bankName}
         value={billPay.vendorBankName}
       />
       <div className="flex space-x-4">
         <Input
-          data-testid="account-number"
-          label={FieldLabel.ACCOUNT_NUMBER}
           isReadOnly
+          data-testid="account-number"
           isDisabled={!billPay.accountNumber}
+          label={FieldLabel.ACCOUNT_NUMBER}
           {...validationResults.accountNumber}
-          value={
-            billPay.accountNumber
-              ? isVisible
-                ? billPay.accountNumber
-                : `${"•".repeat(billPay.accountNumber.length - 4)}${billPay.accountNumber.slice(-4)}`
-              : ""
-          }
+          className="w-3/5 md:w-1/2"
           endContent={
             <button
+              aria-label="toggle account number visibility"
               className="focus:outline-none"
               type="button"
               onClick={toggleVisibility}
-              aria-label="toggle account number visibility"
             >
               {billPay.accountNumber ? (
                 isVisible ? (
@@ -201,27 +198,33 @@ export default function ExistingTransferFields({
             </button>
           }
           type="text"
-          className="w-3/5 md:w-1/2"
+          value={
+            billPay.accountNumber
+              ? isVisible
+                ? billPay.accountNumber
+                : `${"•".repeat(billPay.accountNumber.length - 4)}${billPay.accountNumber.slice(-4)}`
+              : ""
+          }
         />
         <Input
-          data-testid="routing-number"
-          label={FieldLabel.ROUTING_NUMBER}
-          isDisabled={!billPay.routingNumber}
-          value={`${billPay.routingNumber}`}
           className="w-2/5 md:w-1/2"
+          data-testid="routing-number"
+          isDisabled={!billPay.routingNumber}
+          label={FieldLabel.ROUTING_NUMBER}
+          value={`${billPay.routingNumber}`}
         />
       </div>
       <Autocomplete
-        data-testid="payment-method"
-        label={FieldLabel.PAYMENT_METHOD}
         isRequired
+        data-testid="payment-method"
         isDisabled={!billPay.vendorName}
+        label={FieldLabel.PAYMENT_METHOD}
         {...validationResults.paymentMethod}
         value={billPay.vendorMethod}
         onSelectionChange={(value) => handleMethodChange(value as DisbursementMethod)}
       >
         {availableMethods.map((method) => (
-          <AutocompleteItem data-testid={`payment-method-item-${method}`} key={method} textValue={method}>
+          <AutocompleteItem key={method} data-testid={`payment-method-item-${method}`} textValue={method}>
             {method}
           </AutocompleteItem>
         ))}
@@ -229,39 +232,25 @@ export default function ExistingTransferFields({
       {billPay.vendorMethod && (
         <Input
           data-testid="memo"
+          description={`${billPay.vendorMethod === DisbursementMethod.WIRE ? "This cannot be changed." : ""}`}
           isDisabled={billPay.vendorMethod === DisbursementMethod.WIRE}
           label={
             <span data-testid="memo-label">
               {billPay.vendorMethod === DisbursementMethod.WIRE ? "Wire Message" : "ACH Reference"}
             </span>
           }
-          description={`${billPay.vendorMethod === DisbursementMethod.WIRE ? "This cannot be changed." : ""}`}
           value={billPay.memo}
           onChange={(e) => setBillPay({ ...billPay, memo: e.target.value || undefined })}
           {...validationResults.memo}
         />
       )}
       <Input
-        label={FieldLabel.AMOUNT}
-        data-testid="amount"
-        type="number"
         isRequired
+        data-testid="amount"
         isDisabled={!billPay.vendorName || !billPay.vendorMethod}
+        label={FieldLabel.AMOUNT}
+        type="number"
         {...validationResults.amount}
-        value={billPay.amount}
-        onChange={(e) => {
-          const value = e.target.value;
-          // Only allow 2 decimal places
-          const regex = /^\d*\.?\d{0,2}$/;
-          if (regex.test(value) || value === "") {
-            setBillPay({ ...billPay, amount: value });
-          }
-        }}
-        startContent={
-          <div className="pointer-events-none flex items-center">
-            <span className="text-default-400 text-small">$</span>
-          </div>
-        }
         endContent={
           <div className="flex items-center py-2">
             <label className="sr-only" htmlFor="currency">
@@ -282,6 +271,21 @@ export default function ExistingTransferFields({
             </select>
           </div>
         }
+        startContent={
+          <div className="pointer-events-none flex items-center">
+            <span className="text-default-400 text-small">$</span>
+          </div>
+        }
+        value={billPay.amount}
+        onChange={(e) => {
+          const value = e.target.value;
+          // Only allow 2 decimal places
+          const regex = /^\d*\.?\d{0,2}$/;
+
+          if (regex.test(value) || value === "") {
+            setBillPay({ ...billPay, amount: value });
+          }
+        }}
       />
     </>
   );
