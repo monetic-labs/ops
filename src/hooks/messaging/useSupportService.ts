@@ -1,16 +1,18 @@
 // src/hooks/messaging/useSupportService.ts
 import { useMessagingStore, useMessagingActions } from "@/libs/messaging/store";
-import { SupportMessageService, Message } from "@/types/messaging";
+import { SupportMessageService } from "@/types/messaging";
 import { useCallback } from "react";
 import pylon from "@/libs/pylon-sdk";
 import html2canvas from "html2canvas";
+
+const baseUrl = process.env.NEXT_PUBLIC_PYLON_BASE_URL;
 
 export const useSupportScreenshot = () => {
   const captureScreenshot = useCallback(async () => {
     try {
       // Add a small delay to ensure all elements are rendered
       await new Promise((resolve) => setTimeout(resolve, 100));
-      
+
       // Capture the entire visible page
       const canvas = await html2canvas(document.body, {
         logging: false,
@@ -26,15 +28,42 @@ export const useSupportScreenshot = () => {
           });
         },
       });
+      const mimeType = "image/png";
+      const key = "screenshot" + Date.now() + crypto.randomUUID() + ".png";
 
-      // Convert to data URI with reduced quality
-      const dataUri = canvas.toDataURL('image/jpeg', 0.5);
-      
-      // Send screenshot via Pylon SDK
-      await pylon.createTelegramMessage({
-        text: "Support Screenshot",
-        file: dataUri,
-      });
+      canvas.toBlob(async (blob) => {
+        if (!blob) return;
+        const {
+          data: {
+            data: { uploadUrl, accessUrl },
+          },
+        } = await (
+          await fetch(`${baseUrl}/v1/merchant/chat/file/upload`, {
+            method: "POST",
+            body: JSON.stringify({
+              mimeType,
+              fileName: key,
+            }),
+            headers: {
+              "content-type": "application/json",
+            },
+            credentials: "include",
+          })
+        ).json();
+
+        await fetch(uploadUrl, {
+          method: "PUT",
+          body: blob,
+          headers: {
+            "Content-Type": blob.type,
+          },
+        });
+
+        await pylon.createTelegramMessage({
+          text: "Support Screenshot",
+          file: accessUrl,
+        });
+      }, mimeType);
 
       return true;
     } catch (error) {
