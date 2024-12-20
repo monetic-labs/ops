@@ -7,6 +7,13 @@ import { SpeedOverCostPreference } from "@/knowledge-base/v0/types";
 import { UsagePattern } from "@/knowledge-base/v0/usage";
 
 import { AgentMessageContext, SupportMessageContext } from "./messaging";
+import {
+  GetComplianceStatusResponse,
+  MerchantRainCompanyStatusOutput,
+  BridgeComplianceKycStatus,
+  BridgeComplianceTosStatus,
+  CardCompanyStatus,
+} from "@backpack-fux/pylon-sdk";
 
 export type IconSvgProps = SVGProps<SVGSVGElement> & {
   size?: number;
@@ -15,6 +22,17 @@ export type IconSvgProps = SVGProps<SVGSVGElement> & {
 export type OrderID = `${string}-${string}-${string}-${string}`;
 
 export type ChainAddress = `0x${string}`;
+
+export interface ComplianceStatus extends GetComplianceStatusResponse, MerchantRainCompanyStatusOutput {
+  kycStatus: BridgeComplianceKycStatus;
+  tosStatus: BridgeComplianceTosStatus;
+  status: CardCompanyStatus;
+}
+
+export interface ComplianceResponse {
+  complianceStatus: ComplianceStatus;
+  error?: string;
+}
 
 declare global {
   interface Window {

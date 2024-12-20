@@ -50,7 +50,6 @@ export default function MerchantServicesTabs({ userId }: { userId: string }) {
   useEffect(() => {
     if (
       complianceStatus &&
-      complianceStatus.tosStatus !== BridgeTosStatus.ACCEPTED &&
       complianceStatus.kycStatus !== BridgeKybStatus.APPROVED &&
       complianceStatus.status !== RainKybStatus.APPROVED
     ) {
