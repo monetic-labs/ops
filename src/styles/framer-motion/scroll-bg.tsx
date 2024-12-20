@@ -1,62 +1,48 @@
 "use client";
 
 import React from "react";
-import { motion, useScroll, useSpring, useTransform } from "framer-motion";
+import { motion, useScroll, useTransform } from "framer-motion";
+import { useWindowSize } from "@/hooks/useWindowSize";
 
-import bgCelestial from "@/assets/bg-celestial.svg";
-import bgStellar from "@/assets/bg-stellar.svg";
+const bgCelestial = "/bg-celestial.png";
+const bgCelestialMobile = "/bg-celestial-mobile.png";
 
 const ScrollBackground: React.FC = () => {
   const { scrollY } = useScroll();
+  const { height, width } = useWindowSize();
+  const isMobile = width <= 768;
 
-  // Parallax effect for the base layer
-  const baseLayerY = useTransform(scrollY, [0, 100], ["0%", "10%"]);
+  // Subtle parallax effect
+  const yRange = height * 0.2;
+  const y = useTransform(scrollY, [0, height], [0, yRange]);
 
-  // Adding 3D swirling effects for stars and iconography
-  const rotate = useTransform(scrollY, [0, 1000], ["0deg", "360deg"]);
-  const translateX = useTransform(scrollY, [0, 1000], ["0%", "100%"]);
-  const translateY = useTransform(scrollY, [0, 1000], ["0%", "100%"]);
-
-  // Adding a spring to smooth out the motion
-  const smoothTranslateX = useSpring(translateX, { stiffness: 50, damping: 20 });
-  const smoothTranslateY = useSpring(translateY, { stiffness: 50, damping: 20 });
+  // Scale slightly larger to prevent edges
+  const scale = useTransform(
+    scrollY,
+    [0, height],
+    [1.05, 1.1]
+  );
 
   return (
-    <>
-      <motion.div
-        style={{
-          position: "fixed",
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          backgroundImage: `url(${bgCelestial.src})`,
-          backgroundSize: "cover",
-          backgroundPosition: "center",
-          backgroundRepeat: "no-repeat",
-          y: baseLayerY,
-          zIndex: -3,
-        }}
-      />
-      {/* 3D swirling layer */}
-      <motion.div
-        style={{
-          position: "fixed",
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          backgroundImage: `url(${bgStellar.src})`,
-          backgroundSize: "cover",
-          backgroundPosition: "center",
-          backgroundRepeat: "no-repeat",
-          rotate,
-          x: smoothTranslateX,
-          y: smoothTranslateY,
-          zIndex: -1,
-        }}
-      />
-    </>
+    <motion.div
+      style={{
+        position: "fixed",
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        width: "100vw",
+        height: "100vh",
+        backgroundImage: `url(${isMobile ? bgCelestialMobile : bgCelestial})`,
+        backgroundSize: "cover",
+        backgroundPosition: "center",
+        backgroundRepeat: "no-repeat",
+        y,
+        scale,
+        transformOrigin: "center",
+        zIndex: -1,
+      }}
+    />
   );
 };
 
