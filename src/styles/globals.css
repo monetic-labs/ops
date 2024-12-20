@@ -2,13 +2,15 @@
 @tailwind components;
 @tailwind utilities;
 
-html, body {
+body {
+  background-image: url('/bg-celestial.png');
+  background-repeat: repeat;
+  background-size: cover;
+  background-attachment: fixed;
+  background-position: center;
   min-height: 100vh;
-  min-height: -webkit-fill-available;
   overflow-x: hidden;
-  background-color: #000; /* Fallback color */
-  margin: 0;
-  padding: 0;
+  background-color: #000;
 }
 
 @keyframes flash {
@@ -73,14 +75,25 @@ html, body {
   background: #555;
 }
 
-/* Update mobile media query */
+/* For mobile devices */
 @media (max-width: 768px) {
+  body {
+    background-attachment: fixed;
+  }
+  
+  /* Prevent iOS Safari elastic scrolling from breaking the background */
   html {
     height: -webkit-fill-available;
   }
   
   body {
     min-height: -webkit-fill-available;
-    overflow-x: hidden;
+  }
+}
+
+/* Add support for tall screens */
+@media (min-aspect-ratio: 2/3) and (max-aspect-ratio: 3/4) {
+  body {
+    background-size: auto 100vh;
   }
 }
