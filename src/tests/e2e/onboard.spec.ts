@@ -79,6 +79,7 @@ test.describe("Onboarding Flow", () => {
     await page
       .getByTestId("company-details-settlement-address-input")
       .fill("0x1234567890123456789012345678901234567890");
+    await page.getByTestId("company-details-company-registration-number-input").fill("1234567890");
     await page.getByTestId("company-details-company-ein-input").fill("123456789");
     await selectDropdownOption(page, "company-details-company-type-input", "LLC", browserName);
     await page.getByTestId("company-details-company-description-input").fill("A company that does things");

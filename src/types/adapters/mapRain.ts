@@ -51,6 +51,7 @@ export function mapToRainMerchantCreateDto(
     name: company.name,
     type: companyType,
     description: companyDescription,
+    registrationNumber: companyEIN,
     taxId: companyEIN,
     website: company.website,
     expectedSpend: additionalData.expectedSpend,

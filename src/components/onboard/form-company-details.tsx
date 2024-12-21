@@ -6,11 +6,11 @@ import { CardCompanyType } from "@backpack-fux/pylon-sdk";
 import { FormCard } from "@/components/generics/form-card";
 import { FormInput } from "@/components/generics/form-input";
 import { FormButton } from "@/components/generics/form-button";
-import { CompanyDetailsSchema, companyDetailsSchema } from "@/types/validations/onboard";
+import { CompanyDetailsSchema, companyDetailsSchema, companyRegistrationNumberRegex } from "@/types/validations/onboard";
 import { AutocompleteInput } from "@/components/generics/autocomplete-input";
 import { companyEINRegex, walletAddressRegex } from "@/types/validations/onboard";
 
-import { handleCompanyEINChange } from "../generics/form-input-handlers";
+import { handleCompanyEINChange, handleCompanyRegistrationNumberChange } from "../generics/form-input-handlers";
 import { handleWalletAddressChange } from "../generics/form-input-handlers";
 
 const companyTypes: { label: string; value: CardCompanyType }[] = [
@@ -31,6 +31,7 @@ export const FormCompanyDetails: React.FC<{
 }> = ({ onSubmit, initialData, updateFormData }) => {
   const [walletAddressInput, setWalletAddressInput] = useState(initialData.walletAddress || "");
   const [companyEINInput, setCompanyEINInput] = useState(initialData.companyEIN || "");
+  const [companyRegistrationNumberInput, setCompanyRegistrationNumberInput] = useState(initialData.companyRegistrationNumber || "");
   const {
     control,
     formState: { errors },
@@ -80,6 +81,19 @@ export const FormCompanyDetails: React.FC<{
           }
           value={walletAddressInput.replace(/^0x/, "")}
           onChange={(e) => handleWalletAddressChange(e, setValue, setWalletAddressInput, "walletAddress")}
+        />
+        <FormInput
+          about="Use the entity responsible for funds moving in and out of the settlement address."
+          control={control}
+          data-testid="company-details-company-registration-number-input"
+          errorMessage={errors.companyRegistrationNumber?.message}
+          label="Company Registration Number"
+          maxLength={10}
+          name="companyRegistrationNumber"
+          pattern={companyRegistrationNumberRegex.source}
+          placeholder="1234567890"
+          value={companyRegistrationNumberInput}
+          onChange={(e) => handleCompanyRegistrationNumberChange(e, setValue, setCompanyRegistrationNumberInput, "companyRegistrationNumber")}
         />
         <FormInput
           about="Use the entity responsible for funds moving in and out of the settlement address."

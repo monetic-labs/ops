@@ -22,6 +22,7 @@ export const useFormState = (initialEmail: string) => {
     companyDetails: {
       walletAddress: "",
       companyEIN: "",
+      companyRegistrationNumber: "",
       companyType: CardCompanyType.LLC,
       companyDescription: "",
     },
