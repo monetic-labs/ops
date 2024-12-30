@@ -19,6 +19,7 @@ export async function setupComplianceMocks(page: Page) {
     });
   });
 
+  // TODO: Fix this
   await page.route("**/api/check-compliance", async (route) => {
     await route.fulfill({
       status: 200,
