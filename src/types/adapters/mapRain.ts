@@ -31,7 +31,7 @@ export function mapToRainMerchantCreateDto(
   }
 ): MerchantRainCompanyCreateInput {
   const { company } = accountData;
-  const { walletAddress, companyEIN, companyType, companyDescription } = detailsData;
+  const { walletAddress, companyEIN, companyType, companyDescription, companyRegistrationNumber } = detailsData;
   const { representatives } = usersData;
   const { userDetails } = userDetailsData;
 
@@ -51,7 +51,7 @@ export function mapToRainMerchantCreateDto(
     name: company.name,
     type: companyType,
     description: companyDescription,
-    registrationNumber: companyEIN,
+    registrationNumber: companyRegistrationNumber,
     taxId: companyEIN,
     website: company.website,
     expectedSpend: additionalData.expectedSpend,
