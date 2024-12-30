@@ -3,12 +3,14 @@
 @tailwind utilities;
 
 body {
-  background-image: url('/bg-auth.svg');
+  background-image: url('/bg-celestial.png');
   background-repeat: repeat;
   background-size: cover;
   background-attachment: fixed;
   background-position: center;
   min-height: 100vh;
+  overflow-x: hidden;
+  background-color: #000;
 }
 
 @keyframes flash {
@@ -71,4 +73,27 @@ body {
 
 .support-chat::-webkit-scrollbar-thumb:hover {
   background: #555;
+}
+
+/* For mobile devices */
+@media (max-width: 768px) {
+  body {
+    background-attachment: fixed;
+  }
+  
+  /* Prevent iOS Safari elastic scrolling from breaking the background */
+  html {
+    height: -webkit-fill-available;
+  }
+  
+  body {
+    min-height: -webkit-fill-available;
+  }
+}
+
+/* Add support for tall screens */
+@media (min-aspect-ratio: 2/3) and (max-aspect-ratio: 3/4) {
+  body {
+    background-size: auto 100vh;
+  }
 }

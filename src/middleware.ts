@@ -66,8 +66,9 @@ export const config = {
      * - _next/static (static files)
      * - _next/image (image optimization files)
      * - favicon.ico (favicon file)
-     * - bg-auth.svg (background image)
+     * - bg-celestial.png (background image)
+     * - bg-celestial-mobile.png (background image)
      */
-    "/((?!api|_next/static|_next/image|favicon.ico|bg-auth.svg).*)",
+    "/((?!api|_next/static|_next/image|favicon.ico|bg-celestial.png|bg-celestial-mobile.png).*)",
   ],
 };

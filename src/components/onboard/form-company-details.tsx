@@ -6,11 +6,15 @@ import { CardCompanyType } from "@backpack-fux/pylon-sdk";
 import { FormCard } from "@/components/generics/form-card";
 import { FormInput } from "@/components/generics/form-input";
 import { FormButton } from "@/components/generics/form-button";
-import { CompanyDetailsSchema, companyDetailsSchema } from "@/types/validations/onboard";
+import {
+  CompanyDetailsSchema,
+  companyDetailsSchema,
+  companyRegistrationNumberRegex,
+} from "@/types/validations/onboard";
 import { AutocompleteInput } from "@/components/generics/autocomplete-input";
 import { companyEINRegex, walletAddressRegex } from "@/types/validations/onboard";
 
-import { handleCompanyEINChange } from "../generics/form-input-handlers";
+import { handleCompanyEINChange, handleCompanyRegistrationNumberChange } from "../generics/form-input-handlers";
 import { handleWalletAddressChange } from "../generics/form-input-handlers";
 
 const companyTypes: { label: string; value: CardCompanyType }[] = [
@@ -31,6 +35,9 @@ export const FormCompanyDetails: React.FC<{
 }> = ({ onSubmit, initialData, updateFormData }) => {
   const [walletAddressInput, setWalletAddressInput] = useState(initialData.walletAddress || "");
   const [companyEINInput, setCompanyEINInput] = useState(initialData.companyEIN || "");
+  const [companyRegistrationNumberInput, setCompanyRegistrationNumberInput] = useState(
+    initialData.companyRegistrationNumber || ""
+  );
   const {
     control,
     formState: { errors },
@@ -82,11 +89,31 @@ export const FormCompanyDetails: React.FC<{
           onChange={(e) => handleWalletAddressChange(e, setValue, setWalletAddressInput, "walletAddress")}
         />
         <FormInput
-          about="Use the entity responsible for funds moving in and out of the settlement address."
+          about="The unique number assigned to your business or legal entity when it is officially registered with the relevant government authorities."
+          control={control}
+          data-testid="company-details-company-registration-number-input"
+          errorMessage={errors.companyRegistrationNumber?.message}
+          label="Company Registration Number"
+          maxLength={12}
+          name="companyRegistrationNumber"
+          pattern={companyRegistrationNumberRegex.source}
+          placeholder="1234567"
+          value={companyRegistrationNumberInput}
+          onChange={(e) =>
+            handleCompanyRegistrationNumberChange(
+              e,
+              setValue,
+              setCompanyRegistrationNumberInput,
+              "companyRegistrationNumber"
+            )
+          }
+        />
+        <FormInput
+          about="The number issued by the tax authority to identify your entity for tax purposes, required for filing taxes and other official tax-related activities."
           control={control}
           data-testid="company-details-company-ein-input"
           errorMessage={errors.companyEIN?.message}
-          label="Company EIN"
+          label="Company Tax ID"
           maxLength={10}
           name="companyEIN"
           pattern={companyEINRegex.source}

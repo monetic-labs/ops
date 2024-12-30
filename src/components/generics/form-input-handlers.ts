@@ -36,6 +36,16 @@ export const handleBirthdayChange = <T extends FieldValues>(
   }
 };
 
+export const handleCompanyRegistrationNumberChange = <T extends FieldValues>(
+  e: React.ChangeEvent<HTMLInputElement>,
+  setValue: UseFormSetValue<T>,
+  setCompanyRegistrationNumberInput: React.Dispatch<React.SetStateAction<string>>,
+  fieldName: Path<T>
+) => {
+  let value = e.target.value.replace(/[^\d-]/g, "");
+  setCompanyRegistrationNumberInput(value);
+};
+
 export const handleCompanyEINChange = <T extends FieldValues>(
   e: React.ChangeEvent<HTMLInputElement>,
   setValue: UseFormSetValue<T>,

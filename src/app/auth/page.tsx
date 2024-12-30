@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useRef, useState } from "react";
+import React, { useRef, useState, MouseEvent } from "react";
 import { Button } from "@nextui-org/button";
 import { Input } from "@nextui-org/input";
 import { useRouter } from "next/navigation";
@@ -22,12 +22,12 @@ export default function AuthPage() {
   const [notification, setNotification] = useState<string | null>(null);
   const router = useRouter();
 
-  const handleSignUp = async (e: React.FormEvent) => {
+  const handleSignUp = async (e: MouseEvent) => {
     e.preventDefault();
     router.push(`/onboard?email=${encodeURIComponent(email)}`);
   };
 
-  const handleLogin = async (e: React.FormEvent) => {
+  const handleLogin = async (e: MouseEvent) => {
     e.preventDefault();
     if (email) {
       try {
