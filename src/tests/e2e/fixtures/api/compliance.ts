@@ -18,4 +18,12 @@ export async function setupComplianceMocks(page: Page) {
       body: JSON.stringify(mockRainComplianceResponse),
     });
   });
+
+  await page.route("**/api/check-compliance", async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({ ...mockRainComplianceResponse.data, ...mockBridgeComplianceResponse.data }),
+    });
+  });
 }

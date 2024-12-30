@@ -1,7 +1,6 @@
 "use client";
 
-import React, { useRef, useState } from "react";
-import type { PressEvent } from "@react-types/shared";
+import React, { useRef, useState, MouseEvent } from "react";
 import { Button } from "@nextui-org/button";
 import { Input } from "@nextui-org/input";
 import { useRouter } from "next/navigation";
@@ -23,13 +22,13 @@ export default function AuthPage() {
   const [notification, setNotification] = useState<string | null>(null);
   const router = useRouter();
 
-  const handleSignUp = (e: PressEvent) => {
-    // TODO: Check if event is keyboard event and prevent default if necessary
+  const handleSignUp = async (e: MouseEvent) => {
+    e.preventDefault();
     router.push(`/onboard?email=${encodeURIComponent(email)}`);
   };
 
-  const handleLogin = async (e: PressEvent) => {
-    // TODO: Check if event is keyboard event and prevent default if necessary
+  const handleLogin = async (e: MouseEvent) => {
+    e.preventDefault();
     if (email) {
       try {
         const response = await issueOTP(email);
@@ -198,7 +197,7 @@ export default function AuthPage() {
                 data-testid="sign-up-button"
                 type="submit"
                 variant="shadow"
-                onPress={handleSignUp}
+                onClick={handleSignUp}
               >
                 Sign Up
               </Button>
@@ -208,7 +207,7 @@ export default function AuthPage() {
                 isLoading={isIssueLoading}
                 type="button"
                 variant="shadow"
-                onPress={handleLogin}
+                onClick={handleLogin}
               >
                 Sign In
               </Button>
