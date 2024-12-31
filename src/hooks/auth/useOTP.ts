@@ -1,49 +1,106 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { VerifyOTP } from "@backpack-fux/pylon-sdk";
-
 import pylon from "@/libs/pylon-sdk";
 
-export function useIssueOTP() {
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  const issueOTP = async (email: string): Promise<number | null> => {
-    setIsLoading(true);
-    try {
-      const response = await pylon.initiateLoginOTP({ email });
-
-      return response.statusCode;
-    } catch (err: any) {
-      if (err.response && err.response.status === 404) {
-        throw { statusCode: 404, message: "User not found" };
-      }
-      throw err;
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  return { issueOTP, isLoading, error };
+interface OTPState {
+  isLoading: boolean;
+  error: string | null;
+  otpSent: boolean;
+  otp: string;
 }
 
-export function useVerifyOTP() {
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | boolean>(false);
+export function useOTP(inputRef: React.RefObject<HTMLInputElement>) {
+  const [state, setState] = useState<OTPState>({
+    isLoading: false,
+    error: null,
+    otpSent: false,
+    otp: "",
+  });
 
-  const verifyOTP = async (data: VerifyOTP): Promise<number | null> => {
-    setIsLoading(true);
+  const setOTP = useCallback((value: string) => {
+    setState(prev => ({
+      ...prev,
+      otp: value,
+      error: null,
+    }));
+  }, []);
+
+  const issueOTP = useCallback(async (email: string) => {
+    setState(prev => ({ ...prev, isLoading: true, error: null }));
     try {
-      const resp = await pylon.verifyLoginOTP(data);
-
-      return resp.statusCode;
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "An error occurred");
-
-      return null;
+      const response = await pylon.initiateLoginOTP({ email });
+      setState(prev => ({
+        ...prev,
+        otpSent: response.statusCode === 200,
+      }));
+      return response.statusCode;
+    } catch (err: any) {
+      if (err.response?.status === 404) {
+        throw { statusCode: 404, message: "User not found" };
+      }
+      setState(prev => ({
+        ...prev,
+        error: err.message || "Failed to send OTP",
+      }));
+      throw err;
     } finally {
-      setIsLoading(false);
+      setState(prev => ({ ...prev, isLoading: false }));
     }
-  };
+  }, []);
 
-  return { verifyOTP, isLoading, error };
+  const verifyOTP = useCallback(async (data: VerifyOTP) => {
+    setState(prev => ({ ...prev, isLoading: true, error: null }));
+    try {
+      const response = await pylon.verifyLoginOTP(data);
+      const isValid = Boolean(response.data.message);
+
+      if (isValid) {
+        setState(prev => ({
+          ...prev,
+          isLoading: true,
+        }));
+      } else {
+        setState(prev => ({
+          ...prev,
+          error: "Incorrect OTP",
+          isLoading: false,
+        }));
+
+        setTimeout(() => {
+          setState(prev => ({
+            ...prev,
+            otp: "",
+            error: null,
+          }));
+          inputRef.current?.focus();
+        }, 1000);
+      }
+
+      return isValid;
+    } catch (err) {
+      setState(prev => ({
+        ...prev,
+        error: "Incorrect OTP",
+        isLoading: false,
+      }));
+      return false;
+    }
+  }, []);
+
+  const resetState = useCallback(() => {
+    setState({
+      isLoading: false,
+      error: null,
+      otpSent: false,
+      otp: "",
+    });
+  }, []);
+
+  return {
+    ...state,
+    setOTP,
+    issueOTP,
+    verifyOTP,
+    resetState,
+  };
 }

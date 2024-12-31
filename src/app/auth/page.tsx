@@ -1,138 +1,121 @@
 "use client";
 
-import React, { useRef, useState, MouseEvent } from "react";
+import React, { useRef, useState, MouseEvent, useEffect } from "react";
 import { Button } from "@nextui-org/button";
 import { Input } from "@nextui-org/input";
 import { useRouter } from "next/navigation";
+import { Spinner } from "@nextui-org/spinner";
+import { InputOtp } from "@nextui-org/input-otp";
 
-import { useIssueOTP, useVerifyOTP } from "@/hooks/auth/useOTP";
+import { PressEvent } from "@react-types/shared";
+
+import { useOTP } from "@/hooks/auth/useOTP";
 import Notification from "@/components/generics/notification";
 import { title, subtitle } from "@/components/primitives";
 import { OTP_CODE_LENGTH as OTP_LENGTH } from "@/utils/constants";
+import { isLocal, isTesting } from "@/utils/helpers";
 
 export default function AuthPage() {
   const [email, setEmail] = useState("");
-  const [otp, setOtp] = useState("");
   const [showOtpInput, setShowOtpInput] = useState(false);
-  const [otpSubmitted, setOtpSubmitted] = useState(false);
-  const [isOtpComplete, setIsOtpComplete] = useState(false);
-  const { issueOTP, isLoading: isIssueLoading, error: issueError } = useIssueOTP();
-  const { verifyOTP, isLoading: isVerifyLoading, error: verifyError } = useVerifyOTP();
-  const otpInputs = useRef<(HTMLInputElement | null)[]>([]);
+  const otpInputRef = useRef<HTMLInputElement>(null);
+  const {
+    issueOTP,
+    verifyOTP,
+    isLoading,
+    error: otpError,
+    otpSent,
+    resetState: resetOTPState,
+    otp,
+    setOTP,
+  } = useOTP(otpInputRef);
   const [notification, setNotification] = useState<string | null>(null);
   const router = useRouter();
+  const [resendTimer, setResendTimer] = useState(0);
+  const [canResend, setCanResend] = useState(true);
+  const shouldEnableTimer = !isLocal && !isTesting;
 
   const handleSignUp = async (e: MouseEvent) => {
     e.preventDefault();
     router.push(`/onboard?email=${encodeURIComponent(email)}`);
   };
 
-  const handleLogin = async (e: MouseEvent) => {
-    e.preventDefault();
-    if (email) {
-      try {
-        const response = await issueOTP(email);
-
-        if (response === 200) {
-          setShowOtpInput(true);
-          console.log("OTP issued:", email);
-        }
-      } catch (error: any) {
-        console.error("Error issuing OTP:", error);
-        if (error.statusCode === 404) {
-          setNotification("New User Detected. Redirecting to registration...");
-          setTimeout(() => {
-            setNotification(null);
-            router.push(`/onboard?email=${encodeURIComponent(email)}`);
-          }, 3000); // Delay to allow the user to read the toast
-        } else {
-          console.log("How did I get here?", error);
-        }
-      }
-    }
-  };
-
-  const handleOtpChange = (index: number, value: string) => {
-    const newOtp = otp.split("");
-
-    newOtp[index] = value;
-    const updatedOtp = newOtp.join("");
-
-    setOtp(updatedOtp);
-
-    if (value !== "" && index < OTP_LENGTH - 1) {
-      otpInputs.current[index + 1]?.focus();
-    }
-
-    if (updatedOtp.length === OTP_LENGTH) {
-      console.log("6th digit entered:", updatedOtp);
-      setIsOtpComplete(true);
-      setTimeout(() => setIsOtpComplete(false), 1000); // Reset after 1 second
-      handleVerify(updatedOtp);
-    } else {
-      setIsOtpComplete(false);
-    }
-  };
-
-  const handleVerify = async (otpValue: string) => {
-    if (email && otpValue.length === OTP_LENGTH) {
-      setOtpSubmitted(true);
-      const response = await verifyOTP({ email, otp: otpValue });
-
+  const handleLogin = async (e: PressEvent) => {
+    try {
+      const response = await issueOTP(email);
       if (response === 200) {
-        // Handle successful verification (e.g., redirect to dashboard)
-        console.log("OTP verified successfully");
-        router.refresh(); // or router.push('/')
+        setShowOtpInput(true);
+        if (shouldEnableTimer) {
+          setCanResend(false);
+          setResendTimer(30);
+        }
       }
-      // Clear OTP after verification
-      setOtp("");
-      // Reset focus to first input
-      otpInputs.current[0]?.focus();
-      // Reset otpSubmitted after a delay to show the visual feedback
-      setTimeout(() => setOtpSubmitted(false), 2000);
+    } catch (error: any) {
+      console.error("Error issuing OTP:", error);
+      if (error.statusCode === 404) {
+        setNotification("New User Detected. Redirecting to registration...");
+        setTimeout(() => {
+          setNotification(null);
+          router.push(`/onboard?email=${encodeURIComponent(email)}`);
+        }, 3000);
+      }
+    }
+  };
+
+  const handleVerify = async (otpValue?: string) => {
+    const valueToVerify = otpValue || otp;
+    if (email && valueToVerify.length === OTP_LENGTH) {
+      const success = await verifyOTP({ email, otp: valueToVerify });
+      if (success) {
+        router.refresh();
+      }
     }
   };
 
   const handleCancel = () => {
     setShowOtpInput(false);
-    setOtp("");
-    setOtpSubmitted(false);
+    resetOTPState();
   };
 
   const handleResendOTP = async () => {
-    if (email) {
+    if (email && canResend) {
+      if (shouldEnableTimer) {
+        setCanResend(false);
+        setResendTimer(30);
+      }
+      resetOTPState();
       await issueOTP(email);
     }
   };
 
-  const handlePaste = (e: React.ClipboardEvent) => {
-    e.preventDefault();
-    const pasteData = e.clipboardData.getData("text");
-
-    if (pasteData.length === OTP_LENGTH) {
-      const newOtp = pasteData.split("");
-
-      setOtp(newOtp.join(""));
-
-      newOtp.forEach((char, i) => {
-        otpInputs.current[i]?.focus();
-      });
-
-      if (newOtp.length === OTP_LENGTH) {
-        setIsOtpComplete(true);
-        setTimeout(() => setIsOtpComplete(false), 1000); // Reset after 1 second
-        handleVerify(newOtp.join(""));
-      } else {
-        setIsOtpComplete(false);
-      }
+  useEffect(() => {
+    if (otpSent) {
+      setShowOtpInput(true);
     }
-  };
+  }, [otpSent]);
+
+  useEffect(() => {
+    if (resendTimer > 0) {
+      const timer = setInterval(() => {
+        setResendTimer((prev) => prev - 1);
+      }, 1000);
+
+      return () => clearInterval(timer);
+    } else {
+      setCanResend(true);
+    }
+  }, [resendTimer]);
 
   return (
     <section className="flex flex-col items-center justify-center gap-6 py-12 px-4 max-w-3xl mx-auto">
       <h1 className={title({ color: "chardient" })}>Self Banking Portal</h1>
       <h2 className={subtitle({ color: "charyo" })}>Welcome, Skeptic</h2>
       <div className="bg-background/60 backdrop-blur-md rounded-lg p-6 shadow-lg w-full max-w-md">
+        {isLoading && (
+          <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 rounded-lg z-10">
+            <Spinner size="lg" />
+          </div>
+        )}
         <form className="space-y-4">
           <Input
             required
@@ -144,48 +127,46 @@ export default function AuthPage() {
           />
           {showOtpInput && (
             <>
-              <div className="flex justify-center space-x-2" data-testid="otp-input-container">
-                {Array.from({ length: OTP_LENGTH }).map((_, index) => (
-                  <input
-                    key={index}
-                    ref={(el) => {
-                      otpInputs.current[index] = el;
-                    }}
-                    className={`w-10 h-12 text-center text-xl border-2 rounded-md bg-charyo-500 text-white 
-        ${isOtpComplete ? "animate-flash border-ualert-500" : otpSubmitted ? "border-green-500" : "border-gray-300"}
-        focus:border-ualert-500 focus:outline-none`}
-                    data-testid={`otp-input-${index}`}
-                    maxLength={1}
-                    type="text"
-                    value={otp[index] || ""}
-                    onChange={(e) => handleOtpChange(index, e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === "Backspace" && !otp[index] && index > 0) {
-                        otpInputs.current[index - 1]?.focus();
-                      }
-                    }}
-                    onPaste={handlePaste}
-                  />
-                ))}
+              <div className="flex flex-col items-center justify-center">
+                <InputOtp
+                  ref={otpInputRef}
+                  length={OTP_LENGTH}
+                  value={otp}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => setOTP(e.target.value)}
+                  onValueChange={setOTP}
+                  onComplete={handleVerify}
+                  size={window.innerWidth < 640 ? "sm" : "lg"}
+                  variant="faded"
+                  classNames={{
+                    input: "w-10 h-12 text-center text-xl text-white",
+                    base: "flex justify-center space-x-2",
+                  }}
+                  isDisabled={isLoading}
+                  errorMessage={otpError}
+                  isInvalid={otpError !== null}
+                  data-testid="otp-input-container"
+                />
               </div>
               <div className="flex gap-2 justify-between">
                 <Button
                   className="bg-notpurple-500/30 text-white hover:bg-gray-600"
                   type="button"
                   variant="flat"
-                  onClick={handleCancel}
+                  onPress={handleCancel}
+                  disabled={isLoading}
                 >
                   Cancel
                 </Button>
                 <Button
                   className="bg-ualert-500 text-white hover:bg-ualert-600"
                   data-testid="resend-otp-button"
-                  isLoading={isIssueLoading}
                   type="button"
                   variant="flat"
-                  onClick={handleResendOTP}
+                  onPress={handleResendOTP}
+                  isDisabled={isLoading || (!canResend && shouldEnableTimer)}
+                  isLoading={isLoading}
                 >
-                  Resend OTP
+                  {!canResend && shouldEnableTimer ? `Resend in ${resendTimer}s` : "Resend OTP"}
                 </Button>
               </div>
             </>
@@ -204,17 +185,17 @@ export default function AuthPage() {
               <Button
                 className="bg-ualert-500 text-white hover:bg-notpurple-600 flex-1"
                 data-testid="sign-in-button"
-                isLoading={isIssueLoading}
+                isLoading={isLoading}
                 type="button"
                 variant="shadow"
-                onClick={handleLogin}
+                isDisabled={!email || !/^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z0-9]{2,}$/i.test(email)}
+                onPress={handleLogin}
               >
                 Sign In
               </Button>
             </div>
           )}
         </form>
-        {(issueError || verifyError) && <p className="!text-ualert-500 mt-2">{issueError || verifyError}</p>}
       </div>
       {notification && <Notification message={notification} />}
     </section>

@@ -52,7 +52,6 @@ export const AccountRegistration: React.FC<AccountRegistrationProps> = ({
         if (result.signed_agreement_id) {
           setBridgeToSAccepted(true);
           setIsOTPModalOpen(true);
-          console.log("Terms accepted");
         }
       } catch (error) {
         console.error("Error accepting terms:", error);
@@ -60,14 +59,9 @@ export const AccountRegistration: React.FC<AccountRegistrationProps> = ({
     }
   };
 
-  // Function to handle OTP verification success
   const handleOTPVerified = () => {
     setIsOTPModalOpen(false);
-    console.log("OTP verification success");
     setIsOTPVerified(true);
-
-    //onKYCDone();
-    return null;
   };
 
   const handleRainAcceptToS = async () => {
