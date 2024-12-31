@@ -191,12 +191,8 @@ test.describe("Onboarding Flow", () => {
     await page.getByTestId("otp-modal").waitFor({ state: "visible" });
 
     // Enter OTP
-    await page.getByTestId("otp-input-0").fill("1");
-    await page.getByTestId("otp-input-1").fill("2");
-    await page.getByTestId("otp-input-2").fill("3");
-    await page.getByTestId("otp-input-3").fill("4");
-    await page.getByTestId("otp-input-4").fill("5");
-    await page.getByTestId("otp-input-5").fill("6");
+    const otpInput = page.getByTestId("otp-input-container").locator("input");
+    await otpInput.fill("123456");
 
     // Set auth cookie from verification
     await setupAuthCookie(page);
