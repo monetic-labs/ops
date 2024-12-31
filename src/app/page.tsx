@@ -24,7 +24,7 @@ export default function Home() {
   const userId = jwtDecode<JwtPayload>(token).userId;
 
   return (
-    <section className="flex flex-col items-center justify-center gap-4">
+    <section className="flex flex-col items-center justify-center">
       <div className="flex flex-col sm:flex-row gap-4 w-full max-w-7xl justify-between mb-8">
         <AccountMeta />
       </div>

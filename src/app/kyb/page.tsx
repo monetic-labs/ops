@@ -19,6 +19,8 @@ export default function KYB() {
       window.open(complianceStatus.link, "_blank");
     }
   };
+  
+  // TODO: display the UBO KYC information (individual to user)
 
   return (
     <section className="flex flex-col items-center justify-center gap-8 py-16 px-4 max-w-4xl mx-auto">
