@@ -6,10 +6,12 @@ import { Avatar } from "@nextui-org/avatar";
 import { useRouter } from "next/navigation";
 import NextLink from "next/link";
 import { LogOut, Settings, User, Backpack } from "lucide-react";
+import { Button } from "@nextui-org/button";
 
 import { ThemeSwitch } from "@/components/theme-switch";
 import pylon from "@/libs/pylon-sdk";
 import { useAccounts } from "@/contexts/AccountContext";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface UserInfoProps {
   userName?: string;
@@ -23,15 +25,7 @@ const UserInfo = ({ userName, orgName }: UserInfoProps) => (
   </div>
 );
 
-export const Navbar = () => {
-  const router = useRouter();
-  const { merchant, user } = useAccounts();
-
-  const handleSignOut = async () => {
-    await pylon.logout();
-    router.refresh();
-  };
-
+const AuthenticatedNav = ({ user, merchant, handleSignOut }: any) => {
   const dropdownItems = (
     <>
       <DropdownItem
@@ -65,24 +59,7 @@ export const Navbar = () => {
   );
 
   return (
-    <NextUINavbar
-      classNames={{
-        base: "bg-charyo-900/70 text-notpurple-500 backdrop-blur-lg border-none",
-        wrapper: "px-4",
-      }}
-      maxWidth="xl"
-      position="sticky"
-    >
-      {/* Logo */}
-      <NavbarContent className="basis-1/5 sm:basis-full" justify="start">
-        <NavbarBrand as="li" className="gap-3 max-w-fit">
-          <NextLink className="flex justify-start items-center gap-1" href="/">
-            <Backpack className="text-notpurple-500" size={24} strokeWidth={1.5} />
-            <p className="font-bold text-inherit">Backpack Services</p>
-          </NextLink>
-        </NavbarBrand>
-      </NavbarContent>
-
+    <>
       {/* Desktop Menu */}
       <NavbarContent className="hidden sm:flex basis-1/5 sm:basis-full" justify="end">
         <NavbarItem className="hidden sm:flex gap-4 items-center">
@@ -115,6 +92,56 @@ export const Navbar = () => {
           </DropdownMenu>
         </Dropdown>
       </NavbarContent>
+    </>
+  );
+};
+
+const UnauthenticatedNav = () => (
+  <NavbarContent justify="end">
+    <NavbarItem>
+      <ThemeSwitch />
+    </NavbarItem>
+  </NavbarContent>
+);
+
+export const Navbar = () => {
+  const router = useRouter();
+  const { merchant, user } = useAccounts();
+  const { isAuthenticated } = useAuth();
+
+  const handleSignOut = async () => {
+    await pylon.logout();
+    router.refresh();
+  };
+
+  return (
+    <NextUINavbar
+      classNames={{
+        base: "bg-charyo-900/70 text-notpurple-500 backdrop-blur-lg border-none",
+        wrapper: "px-4",
+      }}
+      maxWidth="xl"
+      position="sticky"
+    >
+      {/* Logo */}
+      <NavbarContent className="basis-1/5 sm:basis-full" justify="start">
+        <NavbarBrand as="li" className="gap-3 max-w-fit">
+          <NextLink className="flex justify-start items-center gap-1" href="/">
+            <Backpack className="text-notpurple-500" size={24} strokeWidth={1.5} />
+            <p className="font-bold text-inherit">Backpack Services</p>
+          </NextLink>
+        </NavbarBrand>
+      </NavbarContent>
+
+      {isAuthenticated ? (
+        <AuthenticatedNav 
+          user={user} 
+          merchant={merchant} 
+          handleSignOut={handleSignOut} 
+        />
+      ) : (
+        <UnauthenticatedNav />
+      )}
     </NextUINavbar>
   );
 };

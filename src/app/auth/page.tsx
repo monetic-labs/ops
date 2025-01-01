@@ -164,7 +164,6 @@ export default function AuthPage() {
                   variant="flat"
                   onPress={handleResendOTP}
                   isDisabled={isLoading || (!canResend && shouldEnableTimer)}
-                  isLoading={isLoading}
                 >
                   {!canResend && shouldEnableTimer ? `Resend in ${resendTimer}s` : "Resend OTP"}
                 </Button>
