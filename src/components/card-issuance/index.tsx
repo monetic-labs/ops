@@ -7,6 +7,7 @@ import CreateCardModal from "@/components/card-issuance/card-create";
 
 import CardListTable from "./card-list";
 import TransactionListTable from "./transactions";
+import { PlusIcon } from "lucide-react";
 
 type CardServicesTabsProps = {
   handleSubTabChange: (key: string) => void;
@@ -39,7 +40,7 @@ export default function CardServicesTabs({ handleSubTabChange }: CardServicesTab
             <Tab key={tab.id} title={tab.label} />
           ))}
         </Tabs>
-        <Button color="default" onPress={() => setIsCreateModalOpen(true)}>
+        <Button startContent={<PlusIcon size={18} />} color="default" onPress={() => setIsCreateModalOpen(true)}>
           Create Card
         </Button>
       </div>

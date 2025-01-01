@@ -1,13 +1,12 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Card, CardBody, CardHeader } from "@nextui-org/card";
-import { Divider } from "@nextui-org/divider";
+import { Card, CardBody } from "@nextui-org/card";
 import { Tab, Tabs } from "@nextui-org/tabs";
 import { useRouter, useSearchParams } from "next/navigation";
+import { Tooltip } from "@nextui-org/tooltip";
 import {
   BridgeComplianceKycStatus as BridgeKybStatus,
-  BridgeComplianceTosStatus as BridgeTosStatus,
   CardCompanyStatus as RainKybStatus,
 } from "@backpack-fux/pylon-sdk";
 
@@ -24,25 +23,19 @@ export default function MerchantServicesTabs({ userId }: { userId: string }) {
   const { complianceStatus } = useGetComplianceStatus();
   const router = useRouter();
   const searchParams = useSearchParams();
-  const initialTab = searchParams.get("tab") || tabsConfig[0].id;
+  const initialTab = searchParams?.get("tab") || tabsConfig[0].id;
   const [selectedService, setSelectedService] = useState<string>(initialTab);
 
   const handleTabChange = (key: string) => {
-    const params = new URLSearchParams(searchParams.toString());
-
+    const params = new URLSearchParams(searchParams?.toString() || "");
     params.set("tab", key);
-    // Clear subtab when main tab changes
     params.delete("subtab");
-    // Important: Update the URL first
     router.push(`/?${params.toString()}`);
-    // Then update the state
     setSelectedService(key);
   };
 
-  // TODO
   const handleSubTabChange = (key: string) => {
-    const params = new URLSearchParams(searchParams.toString());
-
+    const params = new URLSearchParams(searchParams?.toString() || "");
     params.set("subtab", key);
     router.push(`/?${params.toString()}`);
   };
@@ -60,40 +53,15 @@ export default function MerchantServicesTabs({ userId }: { userId: string }) {
   const renderTabContent = (tabId: string) => {
     switch (tabId) {
       case "card-issuance":
-        return (
-          <>
-            <CardServicesTabs handleSubTabChange={(subtab) => handleSubTabChange(subtab)} />
-            <Divider className="my-4" />
-          </>
-        );
+        return <CardServicesTabs handleSubTabChange={handleSubTabChange} />;
       case "bill-pay":
-        return (
-          <>
-            <BillPayTabs handleSubTabChange={(subtab) => handleSubTabChange(subtab)} />
-            <Divider className="my-4" />
-          </>
-        );
+        return <BillPayTabs handleSubTabChange={handleSubTabChange} />;
       case "back-office":
-        return (
-          <>
-            <BackOfficeTabs handleSubTabChange={(subtab) => handleSubTabChange(subtab)} />
-            <Divider className="my-4" />
-          </>
-        );
+        return <BackOfficeTabs handleSubTabChange={handleSubTabChange} />;
       case "users":
-        return (
-          <>
-            <UserTab userId={userId} />
-            <Divider className="my-4" />
-          </>
-        );
+        return <UserTab userId={userId} />;
       case "widget-mgmt":
-        return (
-          <>
-            <WidgetManagement />
-            <Divider className="my-4" />
-          </>
-        );
+        return <WidgetManagement />;
       case "compliance":
         return <ComplianceTable />;
       default:
@@ -103,30 +71,62 @@ export default function MerchantServicesTabs({ userId }: { userId: string }) {
 
   return (
     <div className="w-full">
-      <Tabs
-        aria-label="Service options"
-        classNames={{
-          base: "w-full overflow-x-auto sm:overflow-x-visible",
-          tabList: "bg-charyo-500/60 backdrop-blur-sm border-none",
-          tab: "flex-grow sm:flex-grow-0",
-          tabContent: "text-notpurple-500/60",
-        }}
-        selectedKey={selectedService}
-        onSelectionChange={(key) => handleTabChange(key as string)}
-      >
-        {tabsConfig.map((tab) => (
-          <Tab key={tab.id} title={tab.label}>
-            <Card className="bg-charyo-500/60 backdrop-blur-sm">
-              <CardHeader className="flex flex-col items-start">
-                <h3 className="text-lg font-semibold">{tab.label} Services</h3>
-                <p className="text-small text-notpurple-500">{tab.content}</p>
-              </CardHeader>
-              <Divider />
-              <CardBody>{renderTabContent(tab.id)}</CardBody>
-            </Card>
-          </Tab>
-        ))}
-      </Tabs>
+      <Card className="bg-charyo-500/60 backdrop-blur-sm">
+        <CardBody className="p-0">
+          <Tabs
+            aria-label="Service options"
+            variant="underlined"
+            classNames={{
+              base: "w-full",
+              tabList: "w-full relative px-6 py-2 border-b border-divider gap-6",
+              cursor: "w-full bg-notpurple-500",
+              tab: "max-w-fit px-0 h-12",
+              tabContent: "text-default-500 text-sm group-data-[selected=true]:text-notpurple-500",
+              panel: "p-0",
+            }}
+            selectedKey={selectedService}
+            onSelectionChange={(key) => handleTabChange(key as string)}
+          >
+            {tabsConfig.map((tab) => (
+              <Tab
+                key={tab.id}
+                title={
+                  <Tooltip
+                    content={tab.content}
+                    classNames={{
+                      content: "text-default-500 rounded-lg shadow-xl bg-background/90 text-sm",
+                    }}
+                    delay={0}
+                    closeDelay={0}
+                    motionProps={{
+                      variants: {
+                        exit: {
+                          opacity: 0,
+                          transition: {
+                            duration: 0.1,
+                            ease: "easeIn",
+                          },
+                        },
+                        enter: {
+                          opacity: 1,
+                          transition: {
+                            duration: 0.15,
+                            ease: "easeOut",
+                          },
+                        },
+                      },
+                    }}
+                  >
+                    <span className="cursor-pointer">{tab.label}</span>
+                  </Tooltip>
+                }
+              >
+                <div className="px-6 py-4">{renderTabContent(tab.id)}</div>
+              </Tab>
+            ))}
+          </Tabs>
+        </CardBody>
+      </Card>
     </div>
   );
 }

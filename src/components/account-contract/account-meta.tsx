@@ -27,6 +27,7 @@ export default function AccountOverview() {
   const [isAddFundsOpen, setIsAddFundsOpen] = useState(false);
   const [isWithdrawFundsOpen, setIsWithdrawFundsOpen] = useState(false);
   const [isTransferOpen, setIsTransferOpen] = useState(false);
+  const [isPortfolioOpen, setIsPortfolioOpen] = useState(false);
 
   const { available, pending, spent, isLoading } = useAccountContracts();
 
@@ -100,6 +101,8 @@ export default function AccountOverview() {
               subtitle="Last 30 days"
               trend="up"
               trendColor="success"
+              onClick={() => setIsPortfolioOpen(true)}
+              isHoverable
             />
             <AccountCard
               variant="overview"
@@ -151,6 +154,10 @@ export default function AccountOverview() {
       <AddFundsModal isOpen={isAddFundsOpen} onClose={() => setIsAddFundsOpen(false)} />
       <WithdrawFundsModal isOpen={isWithdrawFundsOpen} onClose={() => setIsWithdrawFundsOpen(false)} />
       <TransferModal isOpen={isTransferOpen} onClose={() => setIsTransferOpen(false)} />
+      <PortfolioModal 
+        isOpen={isPortfolioOpen} 
+        onClose={() => setIsPortfolioOpen(false)} 
+      />
     </Card>
   );
 }

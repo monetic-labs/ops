@@ -12,10 +12,7 @@ export const formatNumericInput = (value: string) => {
   if (parts.length > 2 || parts[1]?.length > 2) return undefined;
 
   if (numericValue === "" || /^\d*\.?\d{0,2}$/.test(numericValue)) {
-    const formattedValue = [
-      parts[0]?.replace(/\B(?=(\d{3})+(?!\d))/g, ""),
-      parts[1]
-    ].filter(Boolean).join(".");
+    const formattedValue = [parts[0]?.replace(/\B(?=(\d{3})+(?!\d))/g, ""), parts[1]].filter(Boolean).join(".");
 
     return value.endsWith(".") ? formattedValue + "." : formattedValue;
   }
@@ -30,4 +27,4 @@ export const displayAmount = (amount: string) => {
         .map((part, index) => (index === 0 ? part.replace(/\B(?=(\d{3})+(?!\d))/g, ",") : part))
         .join(".")
     : "";
-}; 
+};

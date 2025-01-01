@@ -8,6 +8,7 @@ interface BaseCardProps {
   disabled?: boolean;
   isLoading?: boolean;
   comingSoon?: boolean;
+  isHoverable?: boolean;
 }
 
 interface FundCardProps extends BaseCardProps {
@@ -42,7 +43,12 @@ type CardProps = FundCardProps | AccountCardProps | OverviewCardProps;
 export function AccountCard(props: CardProps) {
   if (props.variant === "fund") {
     return (
-      <div className="cursor-pointer" onClick={props.onClick}>
+      <button
+        className="w-full text-left cursor-pointer"
+        onClick={props.onClick}
+        disabled={props.disabled}
+        aria-label={`Fund card for ${props.title}`}
+      >
         <Card className="bg-charyo-500/60">
           <CardBody>
             <div className="flex items-center">
@@ -56,23 +62,79 @@ export function AccountCard(props: CardProps) {
             </h4>
           </CardBody>
         </Card>
-      </div>
+      </button>
     );
   }
 
   if (props.variant === "overview") {
-    return (
-      <div
-        className={`p-3 rounded-lg ${
-          props.isTotal
-            ? "col-span-2 md:col-span-1 bg-gradient-to-br from-primary/10 to-primary/5 border border-primary/10"
-            : props.trendColor === "success"
-              ? "bg-success/5 border border-success/10"
-              : props.trendColor === "danger"
-                ? "bg-danger/5 border border-danger/10"
-                : "bg-default-100/5 border border-default/10"
-        }`}
+    const baseClasses = `p-3 rounded-lg transition-all duration-200 ${
+      props.isTotal
+        ? "col-span-2 md:col-span-1 bg-gradient-to-br from-primary/10 to-primary/5 border border-primary/10"
+        : props.trendColor === "success"
+          ? "bg-success/5 border border-success/10"
+          : props.trendColor === "danger"
+            ? "bg-danger/5 border border-danger/10"
+            : "bg-default-100/5 border border-default/10"
+    }`;
+
+    const hoverClasses = props.isHoverable
+      ? props.trendColor === "success"
+        ? "hover:bg-success/10 hover:border-success/20 cursor-pointer"
+        : props.trendColor === "danger"
+          ? "hover:bg-danger/10 hover:border-danger/20 cursor-pointer"
+          : "hover:bg-default-200/10 hover:border-default/20 cursor-pointer"
+      : "";
+
+    return props.onClick ? (
+      <button
+        className={`${baseClasses} ${hoverClasses} w-full text-left`}
+        onClick={props.onClick}
+        disabled={props.disabled}
+        aria-label={`Overview card for ${props.title}`}
       >
+        <div className="flex items-center justify-between mb-1">
+          <span className="text-xs text-default-600">{props.title}</span>
+          {props.trend && (
+            props.trend === "up" ? (
+              <ArrowUpRight
+                className={`w-3 h-3 ${
+                  props.trendColor === "success"
+                    ? "text-success/70"
+                    : props.trendColor === "danger"
+                      ? "text-danger/70"
+                      : "text-default/70"
+                }`}
+              />
+            ) : (
+              <ArrowDownRight
+                className={`w-3 h-3 ${
+                  props.trendColor === "success"
+                    ? "text-success/70"
+                    : props.trendColor === "danger"
+                      ? "text-danger/70"
+                      : "text-default/70"
+                }`}
+              />
+            )
+          )}
+        </div>
+        <p
+          className={`text-lg md:text-xl font-bold ${
+            props.isTotal
+              ? "text-white"
+              : props.trendColor === "success"
+                ? "text-success/80"
+                : props.trendColor === "danger"
+                  ? "text-danger/80"
+                  : "text-default/80"
+          }`}
+        >
+          {props.value}
+        </p>
+        {props.subtitle && <p className="text-xs text-default-500 mt-1">{props.subtitle}</p>}
+      </button>
+    ) : (
+      <div className={baseClasses}>
         <div className="flex items-center justify-between mb-1">
           <span className="text-xs text-default-600">{props.title}</span>
           {props.trend &&

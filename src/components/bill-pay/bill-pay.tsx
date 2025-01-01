@@ -13,6 +13,7 @@ import { MOCK_SETTLEMENT_ADDRESS } from "@/utils/constants";
 import CreateBillPayModal from "./bill-actions/create";
 import Transfers from "./transfers-tab";
 import Contacts from "./contacts-tab";
+import { PlusIcon } from "lucide-react";
 
 type BillPayTabsProps = {
   handleSubTabChange: (key: string) => void;

@@ -2,24 +2,22 @@ export const tabsConfig = [
   {
     id: "bill-pay",
     label: "Bill Pay",
-    content: "Here you can manage payments for bills, vendors, and more.",
+    content: "Send and manage payments to vendors and service providers.",
   },
   {
     id: "back-office",
     label: "Back Office",
-    content:
-      "However you create value, you need a way to accept receive payments for it. You manage that stream of value here.",
+    content: "Manage your payment streams and revenue collection.",
   },
   {
     id: "card-issuance",
     label: "Card Issuance",
-    content:
-      "Now that your value streams and bills are managed, we need a way for you to use your money. You can issue cards for your needs from here.",
+    content: "Issue and manage payment cards for your business expenses.",
   },
   {
     id: "users",
-    label: "User",
-    content: "Create roles for the various different ways you need others to assist in your operations.",
+    label: "Team Access",
+    content: "Manage user access and roles for your organization.",
   },
 ];
 
@@ -38,17 +36,14 @@ export const backOfficeConfig = [
   {
     id: "payments",
     label: "Payments",
-    content: "This is where you manage your payments",
   },
   {
     id: "create-orders",
     label: "Create Orders",
-    content: "This is where you create orders",
   },
   {
     id: "widget-mgmt",
     label: "Widget Management",
-    content: "This is where you manage your widgets",
   },
 ];
 

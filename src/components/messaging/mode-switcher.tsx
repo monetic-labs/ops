@@ -24,7 +24,7 @@ export const ModeSwitcher: React.FC = () => {
   );
 
   useEffect(() => {
-    const urlMode = searchParams.get("mode") as MessageMode;
+    const urlMode = searchParams?.get("mode") as MessageMode;
 
     if (urlMode && urlMode !== mode) {
       console.log("Syncing mode with URL:", urlMode);

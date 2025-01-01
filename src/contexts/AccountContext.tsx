@@ -13,10 +13,20 @@ export interface Account {
   isCreateAccount?: boolean;
 }
 
+interface User {
+  name: string;
+}
+
+interface Merchant {
+  name: string;
+}
+
 interface AccountContextType {
   accounts: Account[];
   getEnabledAccounts: () => Account[];
   getAccountById: (id: string) => Account | undefined;
+  user?: User;
+  merchant?: Merchant;
 }
 
 const AccountContext = createContext<AccountContextType | undefined>(undefined);
@@ -60,8 +70,12 @@ export function AccountProvider({ children }: { children: ReactNode }) {
   const getEnabledAccounts = () => accounts.filter((acc) => !acc.disabled);
   const getAccountById = (id: string) => accounts.find((acc) => acc.id === id);
 
+  // Mock data for now - replace with real data later
+  const user = { name: "John Doe" };
+  const merchant = { name: "Acme Corp" };
+
   return (
-    <AccountContext.Provider value={{ accounts, getEnabledAccounts, getAccountById }}>
+    <AccountContext.Provider value={{ accounts, getEnabledAccounts, getAccountById, user, merchant }}>
       {children}
     </AccountContext.Provider>
   );
