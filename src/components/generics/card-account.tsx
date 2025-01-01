@@ -181,8 +181,8 @@ export function AccountCard(props: CardProps) {
   const Icon = props.icon;
 
   return (
-    <div
-      className={`p-3 rounded-lg transition-all ${
+    <button
+      className={`w-full text-left p-3 rounded-lg transition-all ${
         props.isCreateAccount
           ? "border border-dashed border-default-300 hover:border-primary/50"
           : "border border-default-200 bg-white/5 backdrop-blur-sm"
@@ -194,6 +194,9 @@ export function AccountCard(props: CardProps) {
             : ""
       }`}
       onClick={props.onClick}
+      disabled={props.disabled}
+      aria-label={`${props.isCreateAccount ? 'Create new account' : `${props.name} account`}`}
+      type="button"
     >
       <div>
         <div className="flex items-center justify-between">
@@ -227,7 +230,7 @@ export function AccountCard(props: CardProps) {
           )}
         </div>
       </div>
-    </div>
+    </button>
   );
 }
 
