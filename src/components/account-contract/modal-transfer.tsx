@@ -2,12 +2,13 @@ import { useState } from "react";
 import { Modal, ModalBody, ModalContent } from "@nextui-org/modal";
 import { Button } from "@nextui-org/button";
 import { Divider } from "@nextui-org/divider";
-import { ArrowDownIcon, XIcon } from "lucide-react";
+import { ArrowDownIcon, XIcon, InfoIcon } from "lucide-react";
 import { AccountSelectionModal } from "../generics/modal-account-select";
 import { useAccounts, Account } from "@/contexts/AccountContext";
 import { BalanceDisplay } from "@/components/generics/balance-display";
 import { formatUSD } from "@/utils/formatters/currency";
 import { MoneyInput } from "../generics/money-input";
+import { Tooltip } from "@nextui-org/tooltip";
 
 interface TransferModalProps {
   isOpen: boolean;
@@ -156,6 +157,18 @@ export default function TransferModal({ isOpen, onClose }: TransferModalProps) {
                 <>
                   <Divider className="my-4 bg-[#1a1a1a]" />
                   <div className="space-y-3 px-1">
+                    <div className="flex justify-between">
+                      <div className="flex items-center gap-2">
+                        <span className="text-gray-400">Estimated Time</span>
+                        <Tooltip
+                          content="Internal transfers may vary with network activity but usually complete within 1 minute"
+                          className="bg-[#1a1a1a] text-white"
+                        >
+                          <InfoIcon size={14} className="text-gray-400 cursor-help" />
+                        </Tooltip>
+                      </div>
+                      <span className="text-white font-medium">Instant</span>
+                    </div>
                     <div className="flex justify-between">
                       <span className="text-gray-400">Transfer Fee</span>
                       <span className="text-white font-medium">$0.00</span>
