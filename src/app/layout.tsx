@@ -8,6 +8,7 @@ import { fontSans } from "@/config/fonts";
 import { siteConfig } from "@/config/site";
 
 import { Providers } from "./providers";
+import { AccountProvider } from "@/contexts/AccountContext";
 
 export const metadata: Metadata = {
   title: {
@@ -32,23 +33,25 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html suppressHydrationWarning lang="en">
       <head />
       <body className={clsx("min-h-screen bg-background font-sans antialiased", fontSans.variable)}>
-        <Providers themeProps={{ attribute: "class", defaultTheme: "dark" }}>
-          <div className="relative flex flex-col h-screen">
-            <Navbar />
-            <main className="container mx-auto max-w-7xl pt-8 px-6 flex-grow">{children}</main>
-            <footer className="w-full flex items-center justify-center py-3">
-              <Link
-                isExternal
-                className="flex items-center gap-1 text-current"
-                href="https://backpack.network"
-                title="Backpack"
-              >
-                <span className="text-default-600">Version</span>
-                <p className="text-primary">{siteConfig.version}</p>
-              </Link>
-            </footer>
-          </div>
-        </Providers>
+        <AccountProvider>
+          <Providers themeProps={{ attribute: "class", defaultTheme: "dark" }}>
+            <div className="relative flex flex-col h-screen">
+              <Navbar />
+              <main className="container mx-auto max-w-7xl pt-8 px-6 flex-grow">{children}</main>
+              <footer className="w-full flex items-center justify-center py-3">
+                <Link
+                  isExternal
+                  className="flex items-center gap-1 text-current"
+                  href="https://backpack.network"
+                  title="Backpack"
+                >
+                  <span className="text-default-600">Version</span>
+                  <p className="text-primary">{siteConfig.version}</p>
+                </Link>
+              </footer>
+            </div>
+          </Providers>
+        </AccountProvider>
       </body>
     </html>
   );

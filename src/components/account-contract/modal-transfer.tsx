@@ -1,171 +1,217 @@
 import { useState } from "react";
-import { Modal, ModalBody, ModalContent, ModalHeader } from "@nextui-org/modal";
-import { Autocomplete, AutocompleteItem } from "@nextui-org/autocomplete";
-import { Input } from "@nextui-org/input";
+import { Modal, ModalBody, ModalContent } from "@nextui-org/modal";
+import { Button } from "@nextui-org/button";
 import { Divider } from "@nextui-org/divider";
-import ModalFooterWithSupport from "../generics/footer-modal-support";
+import { ArrowDownIcon, XIcon } from "lucide-react";
+import { AccountSelectionModal } from "../generics/modal-account-select";
+import { useAccounts, Account } from "@/contexts/AccountContext";
+import { BalanceDisplay } from "@/components/generics/balance-display";
+import { formatUSD } from "@/utils/formatters/currency";
+import { MoneyInput } from "../generics/money-input";
 
 interface TransferModalProps {
   isOpen: boolean;
   onClose: () => void;
 }
 
-interface Account {
-  id: string;
-  name: string;
-  currency: string;
-  balance?: number;
-}
-
 export default function TransferModal({ isOpen, onClose }: TransferModalProps) {
-  const [fromAccount, setFromAccount] = useState("");
-  const [toAccount, setToAccount] = useState("");
+  const { getEnabledAccounts } = useAccounts();
+  const [fromAccount, setFromAccount] = useState<Account | null>(null);
+  const [toAccount, setToAccount] = useState<Account | null>(null);
   const [amount, setAmount] = useState("");
+  const [isFromAccountModalOpen, setIsFromAccountModalOpen] = useState(false);
+  const [isToAccountModalOpen, setIsToAccountModalOpen] = useState(false);
 
-  const accounts: Account[] = [
-    {
-      id: "settlement",
-      name: "Settlement",
-      currency: "USD",
-      balance: 456104.2,
-    },
-    {
-      id: "rain",
-      name: "Rain Card",
-      currency: "USD",
-      balance: 31383.43,
-    },
-  ];
+  const resetForm = () => {
+    setFromAccount(null);
+    setToAccount(null);
+    setAmount("");
+  };
+
+  const handleClose = () => {
+    resetForm();
+    onClose();
+  };
 
   const handleTransfer = async () => {
+    if (!fromAccount || !toAccount) return;
     console.log("Transfer:", {
-      fromAccount,
-      toAccount,
+      fromAccount: fromAccount.id,
+      toAccount: toAccount.id,
       amount: parseFloat(amount).toFixed(2),
     });
     onClose();
   };
 
-  const selectedFromAccount = accounts.find((acc) => acc.id === fromAccount);
-  const availableToAccounts = accounts.filter((acc) => acc.id !== fromAccount);
-
-  const formatUSD = (value: number) => {
-    return new Intl.NumberFormat("en-US", {
-      style: "currency",
-      currency: "USD",
-    }).format(value);
+  const handleFromAccountSelect = (account: Account) => {
+    if (account.id === toAccount?.id) {
+      setToAccount(null);
+    }
+    setFromAccount(account);
   };
 
-  const handleAmountChange = (value: string) => {
-    const numericValue = value.replace(/[^\d.]/g, "");
-    const parts = numericValue.split(".");
-    if (parts.length > 2) return;
-    if (parts[1]?.length > 2) return;
+  const handleToAccountSelect = (account: Account) => {
+    if (account.id === fromAccount?.id) {
+      setFromAccount(null);
+    }
+    setToAccount(account);
+  };
 
-    if (numericValue === "" || /^\d*\.?\d{0,2}$/.test(numericValue)) {
-      setAmount(numericValue);
+  const handleSetMaxAmount = () => {
+    if (fromAccount?.balance) {
+      const maxAmount = fromAccount.balance.toString();
+      setAmount(maxAmount);
     }
   };
 
+  const isAmountValid = () => {
+    if (!amount || !fromAccount) return false;
+    const numericAmount = parseFloat(amount);
+    return numericAmount > 0 && numericAmount <= (fromAccount.balance || 0);
+  };
+
   return (
-    <Modal isOpen={isOpen} onClose={onClose} size="md">
-      <ModalContent>
-        <ModalHeader>Transfer Between Accounts</ModalHeader>
-        <ModalBody>
-          <div className="space-y-4">
-            <Autocomplete
-              label="From Account"
-              placeholder="Select source account"
-              selectedKey={fromAccount}
-              onSelectionChange={(value) => {
-                setFromAccount(value as string);
-                if (value === toAccount) {
-                  setToAccount("");
-                }
-              }}
-            >
-              {accounts.map((account) => (
-                <AutocompleteItem key={account.id} textValue={account.name} value={account.id}>
-                  <div className="flex justify-between items-center">
-                    <span>{account.name}</span>
-                    <span className="text-default-400">{formatUSD(account.balance || 0)}</span>
-                  </div>
-                </AutocompleteItem>
-              ))}
-            </Autocomplete>
-
-            <Autocomplete
-              label="To Account"
-              placeholder="Select destination account"
-              selectedKey={toAccount}
-              isDisabled={!fromAccount}
-              onSelectionChange={(value) => setToAccount(value as string)}
-            >
-              {availableToAccounts.map((account) => (
-                <AutocompleteItem key={account.id} textValue={account.name} value={account.id}>
-                  <div className="flex justify-between items-center">
-                    <span>{account.name}</span>
-                    <span className="text-default-400">{formatUSD(account.balance || 0)}</span>
-                  </div>
-                </AutocompleteItem>
-              ))}
-            </Autocomplete>
-
-            <Input
-              label="Amount"
-              placeholder="0.00"
-              value={amount}
-              startContent={
-                <div className="pointer-events-none flex items-center">
-                  <span className="text-default-400 text-small">$</span>
-                </div>
-              }
-              type="text"
-              inputMode="decimal"
-              isDisabled={!fromAccount || !toAccount}
-              onChange={(e) => handleAmountChange(e.target.value)}
-            />
-
-            <Divider />
-
-            {fromAccount && toAccount && amount && (
-              <div className="p-4 rounded-md space-y-4 font-mono bg-default-50">
-                <h4 className="font-semibold text-lg">Transfer Details</h4>
-                <div className="space-y-2">
-                  <div className="flex justify-between">
-                    <span>Available Balance:</span>
-                    <span>{formatUSD(selectedFromAccount?.balance || 0)}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span>Transfer Amount:</span>
-                    <span>{formatUSD(parseFloat(amount) || 0)}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span>Fee:</span>
-                    <span>{formatUSD(0)}</span>
-                  </div>
-                </div>
-              </div>
-            )}
+    <>
+      <Modal
+        isOpen={isOpen}
+        onClose={handleClose}
+        size="sm"
+        classNames={{
+          base: "bg-[#0A0A0A]",
+          wrapper: "bg-black/80",
+          body: "p-0",
+        }}
+        hideCloseButton
+      >
+        <ModalContent>
+          <div className="flex items-center justify-between px-5 py-4 border-b border-[#1a1a1a]">
+            <h3 className="text-xl font-normal text-white">Transfer Between Accounts</h3>
+            <div className="flex items-center gap-3">
+              <Button
+                isIconOnly
+                variant="light"
+                onClick={handleClose}
+                className="text-gray-400 hover:text-white transition-colors"
+              >
+                <XIcon size={18} />
+              </Button>
+            </div>
           </div>
-        </ModalBody>
-        <ModalFooterWithSupport
-          actions={[
-            { label: "Cancel", onClick: onClose },
-            {
-              label: "Confirm Transfer",
-              onClick: handleTransfer,
-              isDisabled:
-                !fromAccount ||
-                !toAccount ||
-                !amount ||
-                parseFloat(amount) <= 0 ||
-                (selectedFromAccount && parseFloat(amount) > (selectedFromAccount.balance || 0)),
-            },
-          ]}
-          onSupportClick={() => {}}
-        />
-      </ModalContent>
-    </Modal>
+
+          <ModalBody className="p-4">
+            <div className="space-y-3">
+              <div className="rounded-2xl bg-[#141414] p-4 border border-[#1a1a1a] hover:border-[#2a2a2a] transition-colors">
+                <div className="flex justify-between mb-2">
+                  <span className="text-sm text-gray-400">From</span>
+                  {fromAccount && <BalanceDisplay balance={fromAccount.balance || 0} onClick={handleSetMaxAmount} />}
+                </div>
+                <div className="flex items-center gap-3">
+                  <MoneyInput
+                    value={amount}
+                    onChange={setAmount}
+                    isError={Boolean(fromAccount && parseFloat(amount) > (fromAccount.balance || 0))}
+                  />
+                  <Button
+                    className="h-11 px-4 bg-[#1a1a1a] hover:bg-[#222222] text-white border border-[#2a2a2a] transition-all duration-200"
+                    radius="lg"
+                    onClick={() => setIsFromAccountModalOpen(true)}
+                  >
+                    {fromAccount ? fromAccount.name : "Select Account"}
+                  </Button>
+                </div>
+                {fromAccount && parseFloat(amount) > (fromAccount.balance || 0) && (
+                  <div className="mt-2 text-sm text-red-500">Insufficient balance</div>
+                )}
+              </div>
+
+              <div className="flex justify-center -my-2 z-10">
+                <Button
+                  isIconOnly
+                  className="bg-[#0A0A0A] border border-[#1a1a1a] w-8 h-8 text-gray-400 hover:text-white hover:border-[#2a2a2a] transition-all duration-200"
+                  radius="full"
+                  onClick={() => {
+                    const temp = fromAccount;
+                    setFromAccount(toAccount);
+                    setToAccount(temp);
+                  }}
+                >
+                  <ArrowDownIcon size={16} />
+                </Button>
+              </div>
+
+              <div className="rounded-2xl bg-[#141414] p-4 border border-[#1a1a1a] hover:border-[#2a2a2a] transition-colors">
+                <div className="flex justify-between mb-2">
+                  <span className="text-sm text-gray-400">To</span>
+                  {toAccount && <BalanceDisplay balance={toAccount.balance || 0} />}
+                </div>
+                <Button
+                  className="w-full h-14 bg-[#1a1a1a] hover:bg-[#222222] text-white border border-[#2a2a2a] transition-all duration-200"
+                  onClick={() => setIsToAccountModalOpen(true)}
+                >
+                  {toAccount ? toAccount.name : "Select Account"}
+                </Button>
+              </div>
+
+              {fromAccount && toAccount && amount && (
+                <>
+                  <Divider className="my-4 bg-[#1a1a1a]" />
+                  <div className="space-y-3 px-1">
+                    <div className="flex justify-between">
+                      <span className="text-gray-400">Transfer Fee</span>
+                      <span className="text-white font-medium">$0.00</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-400">Expected Output</span>
+                      <span
+                        className={`font-medium ${
+                          fromAccount && parseFloat(amount) > (fromAccount.balance || 0) ? "text-red-500" : "text-white"
+                        }`}
+                      >
+                        {formatUSD(parseFloat(amount) || 0)}
+                      </span>
+                    </div>
+                  </div>
+                </>
+              )}
+            </div>
+          </ModalBody>
+
+          <div className="p-4 pt-2">
+            <Button
+              className="w-full h-12 text-base font-medium bg-[#2152ff] hover:bg-[#1a47ff] text-white transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+              size="lg"
+              isDisabled={!fromAccount || !toAccount || !amount || !isAmountValid()}
+              onClick={handleTransfer}
+            >
+              {!fromAccount || !toAccount
+                ? "Select Accounts"
+                : !amount
+                  ? "Enter Amount"
+                  : !isAmountValid()
+                    ? "Insufficient Balance"
+                    : "Confirm Transfer"}
+            </Button>
+          </div>
+        </ModalContent>
+      </Modal>
+
+      <AccountSelectionModal
+        isOpen={isFromAccountModalOpen}
+        onClose={() => setIsFromAccountModalOpen(false)}
+        accounts={getEnabledAccounts().filter((acc) => acc.id !== toAccount?.id)}
+        onSelect={handleFromAccountSelect}
+        selectedAccountId={fromAccount?.id}
+        title="Select Source Account"
+      />
+
+      <AccountSelectionModal
+        isOpen={isToAccountModalOpen}
+        onClose={() => setIsToAccountModalOpen(false)}
+        accounts={getEnabledAccounts().filter((acc) => acc.id !== fromAccount?.id)}
+        onSelect={handleToAccountSelect}
+        selectedAccountId={toAccount?.id}
+        title="Select Destination Account"
+      />
+    </>
   );
 }
