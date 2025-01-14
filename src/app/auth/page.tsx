@@ -6,14 +6,18 @@ import { Input } from "@nextui-org/input";
 import { useRouter } from "next/navigation";
 import { Spinner } from "@nextui-org/spinner";
 import { InputOtp } from "@nextui-org/input-otp";
-
 import { PressEvent } from "@react-types/shared";
-
 import { useOTP } from "@/hooks/auth/useOTP";
 import Notification from "@/components/generics/notification";
 import { title, subtitle } from "@/components/primitives";
 import { OTP_CODE_LENGTH as OTP_LENGTH } from "@/utils/constants";
 import { isLocal, isTesting } from "@/utils/helpers";
+import { MetaTransaction } from "abstractionkit";
+import { WebAuthnHelper } from "@/utils/webauthn";
+import { SafeAccountHelper } from "@/utils/safeAccount";
+
+// App constants
+const APP_NAME = "Backpack Staging";
 
 export default function AuthPage() {
   const [email, setEmail] = useState("");
@@ -37,11 +41,45 @@ export default function AuthPage() {
 
   const handleSignUp = async (e: MouseEvent) => {
     e.preventDefault();
-    router.push(`/onboard?email=${encodeURIComponent(email)}`);
+
+    try {
+      // // Step 1: Initialize WebAuthn and create passkey
+      // const webauthnHelper = new WebAuthnHelper();
+      // const { publicKeyCoordinates } = await webauthnHelper.createPasskey(APP_NAME, window.location.hostname);
+
+      // // Step 2: Initialize Safe account
+      // const safeHelper = new SafeAccountHelper(publicKeyCoordinates);
+      // const accountAddress = safeHelper.getAddress();
+
+      // // Step 3: Create and sponsor deployment transaction
+      // const deploymentTx: MetaTransaction = {
+      //   to: accountAddress,
+      //   value: BigInt(0),
+      //   data: "0x",
+      // };
+      // const userOperation = await safeHelper.createSponsoredUserOp(deploymentTx);
+
+      // // Step 4: Sign and send the user operation
+      // const userOpHash = safeHelper.getUserOpHash(userOperation);
+      // const signature = await webauthnHelper.signMessage(userOpHash);
+      // const receipt = await safeHelper.signAndSendUserOp(userOperation, signature);
+
+      // console.log("Account created successfully:", {
+      //   address: accountAddress,
+      //   receipt,
+      // });
+
+      // return receipt;
+      router.push(`/onboard?email=${encodeURIComponent(email)}`);
+    } catch (error) {
+      console.error("Failed to create account:", error);
+      throw error;
+    }
   };
 
   const handleLogin = async (e: PressEvent) => {
     try {
+      // TODO: login with passkey
       const response = await issueOTP(email);
       if (response === 200) {
         setShowOtpInput(true);

@@ -2,7 +2,7 @@ import { AppKitNetwork, base, baseSepolia } from "@reown/appkit/networks";
 import { createAppKit, Metadata } from "@reown/appkit";
 
 import { isLocal, isProduction, isStaging, isTesting } from "@/utils/helpers";
-import { getChain } from "@/config/web3";
+import { chain } from "@/config/web3";
 
 const projectId = process.env.NEXT_PUBLIC_REOWN_PROJECT_ID;
 
@@ -26,7 +26,7 @@ const metadata: Metadata = {
 };
 
 const mapChainToAppKitNetwork = (): [AppKitNetwork, ...AppKitNetwork[]] => {
-  switch (getChain().id) {
+  switch (chain.id) {
     case 84532:
       return [baseSepolia];
     case 8453:
