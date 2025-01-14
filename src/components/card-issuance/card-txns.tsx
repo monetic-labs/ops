@@ -86,7 +86,7 @@ export default function TransactionDetailsModal({ isOpen, onClose, transaction }
             <Divider />
             <ModalFooter className="flex flex-col items-center">
               <p className="text-sm text-gray-500 mb-2">Thank you for your business!</p>
-              <Button onPress={onClose} className="bg-ualert-500">
+              <Button className="bg-ualert-500" onPress={onClose}>
                 Close
               </Button>
             </ModalFooter>

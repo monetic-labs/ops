@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import { Autocomplete, AutocompleteItem } from "@nextui-org/autocomplete";
 import { Tooltip } from "@nextui-org/tooltip";
 import { Control, Controller, FieldValues, Path } from "react-hook-form";
@@ -42,17 +42,17 @@ export const AutocompleteInput = <T extends FieldValues>({
             <Autocomplete
               data-testid={testid}
               {...field}
+              defaultItems={filteredItems}
+              errorMessage={errorMessage}
+              isInvalid={!!errorMessage}
               isReadOnly={isReadOnly}
               label={label}
               placeholder={placeholder}
-              defaultItems={filteredItems}
-              onSelectionChange={(value) => field.onChange(value)}
               selectedKey={field.value}
-              errorMessage={errorMessage}
-              isInvalid={!!errorMessage}
+              onSelectionChange={(value) => field.onChange(value)}
             >
               {(item) => (
-                <AutocompleteItem key={item.value} value={item.value}>
+                <AutocompleteItem key={item.value} data-testid={`${testid}-item`} value={item.value}>
                   {item.label}
                 </AutocompleteItem>
               )}

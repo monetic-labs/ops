@@ -2,7 +2,6 @@ import { Button } from "@nextui-org/button";
 import { Chip } from "@nextui-org/chip";
 import { Input } from "@nextui-org/input";
 import { Modal, ModalBody, ModalContent, ModalHeader } from "@nextui-org/modal";
-import { Progress } from "@nextui-org/progress";
 import { Snippet } from "@nextui-org/snippet";
 import { useEffect, useState } from "react";
 import {
@@ -11,14 +10,16 @@ import {
   MerchantCardGetOutput,
   UpdateMerchantCardDataInput,
 } from "@backpack-fux/pylon-sdk";
-import pylon from "@/libs/pylon-sdk";
-import { formatAmountUSD } from "@/utils/helpers";
 import { z } from "zod";
 import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { limitCyclesObject, limitStatesObject, UpateCardSchema } from "@/data";
-import { FormInput } from "../generics/form-input";
 import { Select, SelectItem } from "@nextui-org/select";
+
+import pylon from "@/libs/pylon-sdk";
+import { formatAmountUSD } from "@/utils/helpers";
+import { limitCyclesObject, limitStatesObject, UpateCardSchema } from "@/data";
+
+import { FormInput } from "../generics/form-input";
 
 type HybridCard = MerchantCardGetOutput["cards"][number] & {
   avatar?: string;
@@ -110,6 +111,7 @@ export default function CardDetailsModal({ isOpen, onClose, card: propsCard }: C
       limitFrequency: card.limitFrequency,
     },
   });
+
   return (
     <Modal
       isOpen={isOpen}
@@ -125,15 +127,15 @@ export default function CardDetailsModal({ isOpen, onClose, card: propsCard }: C
           </ModalHeader>
           <ModalBody>
             <FormInput
-              data-testid="card-limitAmount"
               about="Limit Amount"
               control={control}
+              data-testid="card-limitAmount"
               errorMessage={errors.limitAmount?.message}
               label="Limit amount"
+              min={1}
               name="limitAmount"
               placeholder="Limit amount"
               type="number"
-              min={1}
             />
 
             <Controller
@@ -143,15 +145,15 @@ export default function CardDetailsModal({ isOpen, onClose, card: propsCard }: C
                 return (
                   <div>
                     <Select
-                      value={field.value}
-                      onChange={field.onChange}
                       data-testid="card-limitFrequency"
+                      defaultSelectedKeys={[card.limitFrequency]}
                       label="Card limit cycle"
                       placeholder="Select card limit cycle"
-                      defaultSelectedKeys={[card.limitFrequency]}
+                      value={field.value}
+                      onChange={field.onChange}
                     >
                       {limitCyclesObject.map((t) => (
-                        <SelectItem value={t.value} key={t.value} data-testid={t.value}>
+                        <SelectItem key={t.value} data-testid={t.value} value={t.value}>
                           {t.label}
                         </SelectItem>
                       ))}
@@ -171,15 +173,15 @@ export default function CardDetailsModal({ isOpen, onClose, card: propsCard }: C
                 return (
                   <div>
                     <Select
-                      value={field.value}
-                      onChange={field.onChange}
                       data-testid="card-status"
+                      defaultSelectedKeys={[card.status]}
                       label="Status"
                       placeholder="Select status"
-                      defaultSelectedKeys={[card.status]}
+                      value={field.value}
+                      onChange={field.onChange}
                     >
                       {limitStatesObject.map((t) => (
-                        <SelectItem value={t.value} key={t.value} data-testid={t.value}>
+                        <SelectItem key={t.value} data-testid={t.value} value={t.value}>
                           {t.label}
                         </SelectItem>
                       ))}
@@ -202,9 +204,9 @@ export default function CardDetailsModal({ isOpen, onClose, card: propsCard }: C
             </Button>
             <Button
               className={`bg-ualert-500 text-notpurple-500 w-full sm:w-auto `}
-              onClick={handleSubmit(handleEdit)}
               disabled={loading}
               isLoading={loading}
+              onClick={handleSubmit(handleEdit)}
             >
               Save
             </Button>

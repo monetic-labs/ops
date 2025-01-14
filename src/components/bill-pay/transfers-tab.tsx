@@ -2,11 +2,12 @@ import React, { useCallback, useEffect, useState } from "react";
 import { Chip } from "@nextui-org/chip";
 import { User } from "@nextui-org/user";
 import { Table, TableBody, TableCell, TableColumn, TableHeader, TableRow } from "@nextui-org/table";
+import { MerchantDisbursementEventGetOutput } from "@backpack-fux/pylon-sdk";
+
 import BillPayDetailsModal from "@/components/bill-pay/bill-actions/details";
 import { BillPay, billPayColumns, statusColorMap } from "@/data";
 import { getOpepenAvatar, getTimeAgo } from "@/utils/helpers";
 import { useGetTransfers } from "@/hooks/bill-pay/useGetTransfers";
-import { MerchantDisbursementEventGetOutput } from "@backpack-fux/pylon-sdk";
 
 export default function Transfers() {
   const { transfers, pagination, isLoading, error, fetchTransfers } = useGetTransfers({});
@@ -20,6 +21,7 @@ export default function Transfers() {
 
   useEffect(() => {
     const newAvatars: Record<string, string> = {};
+
     transfers.forEach((transfer) => {
       newAvatars[transfer.id] = getOpepenAvatar(transfer.contact.accountOwnerName, 32);
     });
@@ -83,15 +85,15 @@ export default function Transfers() {
           ))}
         </TableHeader>
         <TableBody
-          isLoading={isLoading}
           emptyContent={"No transfers found"}
+          isLoading={isLoading}
           onError={() => <div>Error fetching transfers</div>}
         >
           {transfers.map((transfer) => (
             <TableRow
               key={transfer.id}
-              onClick={() => handleRowSelect(transfer)}
               className="cursor-pointer transition-all hover:bg-gray-100 dark:hover:bg-charyo-500"
+              onClick={() => handleRowSelect(transfer)}
             >
               {billPayColumns.map((column) => (
                 <TableCell key={column.uid}>{renderCell(transfer, column.uid)}</TableCell>

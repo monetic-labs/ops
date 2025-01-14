@@ -1,0 +1,60 @@
+{
+    "goal": "optimize_for_speed",
+    "user_intent": "Complete transactions quickly, willing to pay premium within limits",
+    "preference_type": "speed_vs_cost",
+    "context": {
+        "domains": ["bill-pay", "card-services"],
+        "capabilities": ["transfers", "card-issuance"],
+        "priority": "speed"
+    },
+    "parameters": {
+        "cost_tolerance": {
+            "max_premium_percentage": 2.5,
+            "max_premium_absolute": 25.00,
+            "currency": "USD"
+        },
+        "speed_expectations": {
+            "target_completion_time": "1_minute",
+            "max_acceptable_time": "3_minutes"
+        }
+    },
+    "decision_rules": [
+        {
+            "condition": "transaction_amount <= 1000",
+            "action": "always_choose_fastest",
+            "max_fee": 15.00
+        },
+        {
+            "condition": "transaction_amount > 1000 && <= 5000",
+            "action": "evaluate_fee_threshold",
+            "max_fee_percentage": 1.5
+        },
+        {
+            "condition": "transaction_amount > 5000",
+            "action": "prompt_user_confirmation",
+            "threshold": "premium_exceeds_25_usd"
+        }
+    ],
+    "success_metrics": [
+        "Transaction completion within target time",
+        "Fee within acceptable range",
+        "No additional user confirmation needed"
+    ],
+    "override_triggers": [
+        {
+            "trigger": "unusual_amount",
+            "action": "force_user_confirmation",
+            "threshold": "200% of user's average transaction"
+        },
+        {
+            "trigger": "premium_exceeds_tolerance",
+            "action": "suggest_alternate_method",
+            "message": "Consider standard transfer to save ${premium_amount}"
+        }
+    ],
+    "related_preferences": [
+        "default_transfer_method",
+        "fee_notifications",
+        "confirmation_thresholds"
+    ]
+}

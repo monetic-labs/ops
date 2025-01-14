@@ -1,96 +1,78 @@
-import { useState, useRef, useCallback } from "react";
-
-import { useIssueOTP, useVerifyOTP } from "@/hooks/auth/useOTP";
-import { otpConfig } from "@/config/otp";
+import { useState, useRef, useCallback, useEffect } from "react";
+import { useOTP } from "@/hooks/auth/useOTP";
+import { OTP_CODE_LENGTH } from "@/utils/constants";
+import { isLocal, isTesting } from "@/utils/helpers";
 
 export const useSetupOTP = (initialEmail: string) => {
-  const [otp, setOtp] = useState("");
-  const [isOtpComplete, setIsOtpComplete] = useState(false);
-  const [otpSubmitted, setOtpSubmitted] = useState(false);
-  const { issueOTP, isLoading: isIssueLoading, error: issueError } = useIssueOTP();
-  const { verifyOTP, isLoading: isVerifyLoading, error: verifyError } = useVerifyOTP();
-  const otpInputs = useRef<(HTMLInputElement | null)[]>([]);
+  const otpInputRef = useRef<HTMLInputElement>(null);
+  const { issueOTP, verifyOTP, isLoading, error, otp, setOTP, resetState } = useOTP(otpInputRef);
+  const [resendTimer, setResendTimer] = useState(0);
+  const [canResend, setCanResend] = useState(true);
+  const shouldEnableTimer = !isLocal && !isTesting;
 
-  const initiateOTP = useCallback(
-    async (email: string) => {
-      try {
-        const response = await issueOTP(email);
-
-        if (response) {
-          console.log("OTP issued successfully");
-
-          return true;
-        } else {
-          console.error("Failed to issue OTP");
-
-          return false;
+  const initiateOTP = useCallback(async () => {
+    try {
+      const response = await issueOTP(initialEmail);
+      if (response === 200) {
+        if (shouldEnableTimer) {
+          setCanResend(false);
+          setResendTimer(30);
         }
-      } catch (error) {
-        console.error("Error issuing OTP:", error);
-
-        return false;
+        return true;
       }
-    },
-    [issueOTP]
-  );
+      return false;
+    } catch (error) {
+      console.error("Error issuing OTP:", error);
+      return false;
+    }
+  }, [initialEmail, issueOTP, shouldEnableTimer]);
 
-  const handleOtpChange = useCallback(
-    (index: number, value: string) => {
-      const newOtp = otp.split("");
-
-      newOtp[index] = value;
-      const updatedOtp = newOtp.join("");
-
-      setOtp(updatedOtp);
-
-      if (value !== "" && index < otpConfig.length - 1) {
-        otpInputs.current[index + 1]?.focus();
+  const handleVerify = useCallback(async () => {
+    if (otp.length === OTP_CODE_LENGTH) {
+      const success = await verifyOTP({ email: initialEmail, otp });
+      if (success) {
+        resetState();
+        return true;
       }
-
-      if (updatedOtp.length === otpConfig.length) {
-        setIsOtpComplete(true);
-        setTimeout(() => setIsOtpComplete(false), 1000);
-        handleVerify(updatedOtp);
-      } else {
-        setIsOtpComplete(false);
-      }
-    },
-    [otp]
-  );
-
-  const handleVerify = useCallback(
-    async (otpValue: string) => {
-      if (otpValue.length === otpConfig.length) {
-        setOtpSubmitted(true);
-        const response = await verifyOTP({ email: initialEmail, otp: otpValue });
-
-        if (response) {
-          console.log("OTP verified successfully");
-          // Handle successful verification (e.g., move to next step)
-        }
-        setOtp("");
-        otpInputs.current[0]?.focus();
-        setTimeout(() => setOtpSubmitted(false), 2000);
-      }
-    },
-    [initialEmail, verifyOTP]
-  );
+    }
+    return false;
+  }, [initialEmail, otp, verifyOTP, resetState]);
 
   const handleResendOTP = useCallback(async () => {
-    await issueOTP(initialEmail);
-  }, [initialEmail, issueOTP]);
+    if (canResend) {
+      if (shouldEnableTimer) {
+        setCanResend(false);
+        setResendTimer(30);
+      }
+      resetState();
+      return initiateOTP();
+    }
+  }, [canResend, shouldEnableTimer, resetState, initiateOTP]);
+
+  // Timer effect
+  useEffect(() => {
+    if (resendTimer > 0) {
+      const timer = setInterval(() => {
+        setResendTimer((prev) => prev - 1);
+      }, 1000);
+
+      return () => clearInterval(timer);
+    } else {
+      setCanResend(true);
+    }
+  }, [resendTimer]);
 
   return {
     otp,
-    isOtpComplete,
-    otpSubmitted,
-    otpInputs,
-    handleOtpChange,
+    setOTP,
+    isLoading,
+    error,
+    otpInputRef,
     handleVerify,
     handleResendOTP,
-    isIssueLoading,
-    issueError,
-    verifyError,
     initiateOTP,
+    canResend,
+    resendTimer,
+    shouldEnableTimer,
   };
 };

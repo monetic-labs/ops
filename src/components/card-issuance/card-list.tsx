@@ -1,12 +1,14 @@
 import { Chip } from "@nextui-org/chip";
 import { User } from "@nextui-org/user";
 import React, { useCallback, useState } from "react";
+import { MerchantCardGetOutput } from "@backpack-fux/pylon-sdk";
+import { AsyncListData, useAsyncList } from "@react-stately/data";
+
 import CardDetailsModal from "@/components/card-issuance/card-details";
 import { formatNumber, getOpepenAvatar } from "@/utils/helpers";
-import { InfiniteTableWithExternalList } from "../generics/table-infinite";
-import { MerchantCardGetOutput } from "@backpack-fux/pylon-sdk";
 import pylon from "@/libs/pylon-sdk";
-import { AsyncListData, useAsyncList } from "@react-stately/data";
+
+import { InfiniteTableWithExternalList } from "../generics/table-infinite";
 
 type HybridCard = MerchantCardGetOutput["cards"][number] & {
   avatar?: string;
@@ -65,11 +67,13 @@ export default function CardListTable() {
         const { cards, meta } = await (cursor && cursor?.length > 1
           ? pylon.getCards({ after: cursor })
           : pylon.getCards({}));
+
         if (meta.endCursor) {
           setHasMore(true);
         } else {
           setHasMore(false);
         }
+
         return {
           items: cards.map((t) => ({
             ...t,
@@ -84,6 +88,7 @@ export default function CardListTable() {
       } catch (error) {
         console.log(error);
         setHasMore(false);
+
         return { items: [], cursor: "" };
       }
     },
@@ -100,9 +105,6 @@ export default function CardListTable() {
   return (
     <>
       <InfiniteTableWithExternalList
-        hasMore={hasMore}
-        setHasMore={setHasMore}
-        list={list as AsyncListData<HybridCard>}
         columns={[
           { name: "CARD NAME", uid: "displayName" },
           { name: "HOLDER", uid: "holder" },
@@ -110,7 +112,10 @@ export default function CardListTable() {
           { name: "LIMIT", uid: "limit" },
           { name: "STATUS", uid: "status" },
         ]}
+        hasMore={hasMore}
+        list={list as AsyncListData<HybridCard>}
         renderCell={renderCell}
+        setHasMore={setHasMore}
         onRowSelect={handleRowSelect}
       />
 

@@ -1,6 +1,6 @@
 import { createIcon } from "opepen-standard";
+
 import { ChainAddress, OrderID } from "@/types";
-import { ISO3166Alpha2Country } from "@backpack-fux/pylon-sdk";
 import { PostcodeLookupResult } from "@/hooks/generics/usePostcodeLookup";
 
 export const isLocal = process.env.NEXT_PUBLIC_NODE_ENV === "development";
@@ -89,6 +89,11 @@ export const formattedDate = (timestamp: string): string => {
   return date.toLocaleString("en-GB", options);
 };
 
+/**
+ * Converts a timestamp to a human-readable relative time string
+ * @param timestamp - ISO timestamp string
+ * @returns Formatted string like "2 hours ago"
+ */
 export const getTimeAgo = (timestamp: string): string => {
   const now = new Date();
   const date = new Date(timestamp);
@@ -115,22 +120,44 @@ export const getTimeAgo = (timestamp: string): string => {
   return `${diffInDays} day${diffInDays !== 1 ? "s" : ""} ago`;
 };
 
+/**
+ * Combines first and last name into a full name
+ * @param firstName - Person's first name
+ * @param lastName - Person's last name
+ * @returns Combined full name string
+ */
 export const getFullName = (firstName: string, lastName: string) => {
   return `${firstName} ${lastName}`;
 };
 
+/**
+ * Formats a number using US locale formatting
+ * @param value - Number to format
+ * @returns Formatted number string
+ */
 export const formatNumber = (value: number) => {
   return new Intl.NumberFormat("en-US", {
     currency: "USD",
   }).format(value);
 };
 
+/**
+ * Formats a number as USD currency
+ * @param value - Number to format as currency
+ * @returns Formatted currency string
+ */
 export const formatAmountUSD = (value: number) => {
   return new Intl.NumberFormat("en-US", { currency: "USD" }).format(value);
 };
 
+/**
+ * Formats a decimal number string to always have 2 decimal places
+ * @param value - Decimal number string
+ * @returns Formatted string with exactly 2 decimal places
+ */
 export const formatDecimals = (value: string): string => {
   const [whole, decimal = ""] = value.split(".");
   const truncatedDecimal = decimal.slice(0, 2).padEnd(2, "0");
+
   return `${whole}.${truncatedDecimal}`;
 };

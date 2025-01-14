@@ -1,6 +1,5 @@
 import { useState } from "react";
 import {
-  Address,
   BridgeAddress,
   DisbursementMethod,
   FiatCurrency,
@@ -8,6 +7,7 @@ import {
   Network,
   StableCurrency,
 } from "@backpack-fux/pylon-sdk";
+
 import pylon from "@/libs/pylon-sdk";
 
 export const useNewDisbursement = () => {
@@ -59,7 +59,9 @@ export const useNewDisbursement = () => {
           ach_reference: achReference,
         },
       });
+
       setDisbursement(response);
+
       return response;
     } catch (error) {
       setError(error);

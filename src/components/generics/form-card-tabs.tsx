@@ -39,6 +39,7 @@ export const FormCardTabs = <T,>({
       <Tabs
         aria-label="Dynamic Tabs"
         className="max-w-md"
+        data-testid="form-card-tabs"
         selectedKey={selectedTab.toString()}
         onSelectionChange={(key) => setSelectedTab(parseInt(key.toString()))}
       >
@@ -52,13 +53,23 @@ export const FormCardTabs = <T,>({
       <div className="flex justify-between mt-4">
         <div className="space-x-2">
           <Tooltip content="Add another user">
-            <Button className="text-notpurple-500" variant="light" onClick={onAdd}>
+            <Button
+              className="text-notpurple-500"
+              data-testid="form-card-tabs-add-button"
+              variant="light"
+              onClick={onAdd}
+            >
               Add
             </Button>
           </Tooltip>
           {fields.length > 1 && (
             <Tooltip content="Remove selected user">
-              <Button className="text-notpurple-500" variant="light" onClick={() => onRemove?.(selectedTab)}>
+              <Button
+                className="text-notpurple-500"
+                data-testid="form-card-tabs-remove-button"
+                variant="light"
+                onClick={() => onRemove?.(selectedTab)}
+              >
                 Remove
               </Button>
             </Tooltip>
@@ -68,7 +79,11 @@ export const FormCardTabs = <T,>({
           <Button className="text-notpurple-500" variant="light" onClick={onCancel}>
             Cancel
           </Button>
-          <Button className="bg-ualert-500 text-notpurple-100" onClick={onSubmit}>
+          <Button
+            className="bg-ualert-500 text-notpurple-100"
+            data-testid="form-card-tabs-submit-button"
+            onClick={onSubmit}
+          >
             Submit
           </Button>
         </div>

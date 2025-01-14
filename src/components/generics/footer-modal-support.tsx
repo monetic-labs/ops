@@ -1,7 +1,12 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { Button } from "@nextui-org/button";
 import { ModalFooter } from "@nextui-org/modal";
 import { Switch } from "@nextui-org/switch";
+import { Kbd } from "@nextui-org/kbd";
+import { Tooltip } from "@nextui-org/tooltip";
+
+import { useShortcuts } from "./shortcuts-provider";
+import { useSupportScreenshot } from "@/hooks/messaging/useSupportService";
 
 interface ActionButton {
   label: string;
@@ -24,25 +29,60 @@ export default function ModalFooterWithSupport({
   isNewSender,
   actions,
 }: ModalFooterWithSupportProps) {
+  const shortcuts = useShortcuts();
+  const { captureScreenshot } = useSupportScreenshot();
+
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if ((event.metaKey || event.ctrlKey) && event.key === "k") {
+        event.preventDefault();
+        shortcuts.toggleChat();
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, []);
+
+  const handleSupportClick = async () => {
+    try {
+      await captureScreenshot();
+      shortcuts.openChat();
+      onSupportClick();
+    } catch (error) {
+      console.error("Error in support flow:", error);
+      shortcuts.openChat();
+      onSupportClick();
+    }
+  };
+
   return (
     <>
-      <ModalFooter className="flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-2">
-        <Button
-          variant="light"
-          className="text-notpurple-500 w-2/3 sm:w-auto mx-auto sm:mx-0 order-2 sm:order-none"
-          onPress={onSupportClick}
-        >
-          Support
-        </Button>
+      <ModalFooter className="flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-2 max-h-[50vh] overflow-y-auto">
+        <Tooltip content="When you hit support, a screenshot of the current page will be sent to the support team so we can get immediately into helping you.">
+          <Button
+            className="text-notpurple-500 w-2/3 sm:w-auto mx-auto sm:mx-0 order-2 sm:order-none"
+            variant="light"
+            onPress={handleSupportClick}
+          >
+            Support
+            <div className="hidden sm:flex items-center gap-1 text-xs">
+              <Kbd className="px-2 py-0.5" keys={["command"]}>
+                K
+              </Kbd>
+            </div>
+          </Button>
+        </Tooltip>
         <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto order-1 sm:order-none">
           {onNewSenderChange && isNewSender !== undefined && (
             <div className="flex flex-row items-center gap-2 justify-between px-2">
               <span className="items-center font-mono">New Sender?</span>
               <Switch
                 defaultSelected
-                data-testid="new-sender-toggle"
-                color="secondary"
                 aria-label="New Customer"
+                color="secondary"
+                data-testid="new-sender-toggle"
                 isSelected={isNewSender}
                 onValueChange={onNewSenderChange}
               />
@@ -51,12 +91,10 @@ export default function ModalFooterWithSupport({
           {actions.map((action, index) => (
             <Button
               key={index}
-              data-testid={`${action.label.toLowerCase()}-modal-button`}
-              className={`bg-ualert-500 text-notpurple-500 w-full sm:w-auto ${action.className || ""}`}
-              onPress={action.onClick}
-              isLoading={action.isLoading}
-              isDisabled={action.isDisabled}
               aria-label={action.label}
+              className={`bg-ualert-500 text-notpurple-500 w-full sm:w-auto ${action.className || ""}`}
+              data-testid={`${action.label.toLowerCase()}-modal-button`}
+              isDisabled={action.isDisabled}
             >
               {action.label}
             </Button>

@@ -2,18 +2,18 @@ import React, { useEffect, useState } from "react";
 import { useFieldArray, useForm } from "react-hook-form";
 import { useRouter } from "next/navigation";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { PersonRole } from "@backpack-fux/pylon-sdk";
 
 import { FormCardTabs } from "@/components/generics/form-card-tabs";
 import { FormInput } from "@/components/generics/form-input";
 import { emailRegex } from "@/types/validations/auth";
 import { companyAccountUsersSchema, phoneRegex } from "@/types/validations/onboard";
-
-import { AutocompleteInput } from "../generics/autocomplete-input";
 import { CompanyAccountUsersSchema } from "@/types/validations/onboard";
 import { TabData } from "@/hooks/generics/useDynamicTabs";
 import { useDynamicTabs } from "@/hooks/generics/useDynamicTabs";
+
+import { AutocompleteInput } from "../generics/autocomplete-input";
 import { handleEmailChange, handlePhoneNumberChange } from "../generics/form-input-handlers";
-import { PersonRole } from "@backpack-fux/pylon-sdk";
 
 const userRoles = [
   { label: "Owner", value: "owner" },
@@ -91,7 +91,7 @@ export const FormAccountUsers: React.FC<{
       lastName: "",
       email: "",
       phoneNumber: "",
-      role: "representative",
+      role: fields.length === 0 ? "owner" : "representative",
       bridgeUserRole: PersonRole.SUPER_ADMIN,
     });
     addTab({
@@ -122,6 +122,7 @@ export const FormAccountUsers: React.FC<{
     <div className="space-y-4">
       <FormInput
         control={control}
+        data-testid={`account-users-first-name-input-${index}`}
         errorMessage={errors.representatives?.[index]?.firstName?.message}
         label="First Name"
         maxLength={25}
@@ -130,6 +131,7 @@ export const FormAccountUsers: React.FC<{
       />
       <FormInput
         control={control}
+        data-testid={`account-users-last-name-input-${index}`}
         errorMessage={errors.representatives?.[index]?.lastName?.message}
         label="Last Name"
         maxLength={25}
@@ -139,6 +141,7 @@ export const FormAccountUsers: React.FC<{
       <FormInput
         about="Use the email for the primary contact for this company."
         control={control}
+        data-testid={`account-users-email-input-${index}`}
         errorMessage={errors.representatives?.[index]?.email?.message}
         label="Email"
         name={`representatives.${index}.email`}
@@ -151,6 +154,7 @@ export const FormAccountUsers: React.FC<{
             setValue,
             (value) => {
               const newEmailInputs = [...emailInputs];
+
               newEmailInputs[index] = value as string;
               setEmailInputs(newEmailInputs);
             },
@@ -160,10 +164,11 @@ export const FormAccountUsers: React.FC<{
       />
       <FormInput
         control={control}
+        data-testid={`account-users-phone-number-input-${index}`}
         errorMessage={errors.representatives?.[index]?.phoneNumber?.message}
         label="Phone Number"
-        name={`representatives.${index}.phoneNumber`}
         maxLength={10}
+        name={`representatives.${index}.phoneNumber`}
         pattern={phoneRegex.source}
         placeholder="0701234567"
         value={phoneNumberInputs[index]}
@@ -173,6 +178,7 @@ export const FormAccountUsers: React.FC<{
             setValue,
             (value) => {
               const newPhoneNumberInputs = [...phoneNumberInputs];
+
               newPhoneNumberInputs[index] = value as string;
               setPhoneNumberInputs(newPhoneNumberInputs);
             },
@@ -182,23 +188,25 @@ export const FormAccountUsers: React.FC<{
       />
       {index === 0 ? (
         <FormInput
+          disabled
           isReadOnly
           control={control}
+          data-testid={`account-users-role-input-${index}`}
           label="Role"
           name={`representatives.${index}.role`}
           value="Owner"
-          disabled
         />
       ) : (
         <AutocompleteInput
+          about="Select the role for this user"
           control={control}
           errorMessage={errors.representatives?.[index]?.role?.message}
+          filterItems={(items) => items.filter((item) => item.value !== "owner")}
+          items={userRoles}
           label="Role"
           name={`representatives.${index}.role`}
           placeholder="Select user role"
-          items={userRoles}
-          about="Select the role for this user"
-          filterItems={(items) => items.filter((item) => item.value !== "owner")}
+          testid={`account-users-role-input-${index}`}
         />
       )}
     </div>

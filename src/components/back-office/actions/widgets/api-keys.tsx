@@ -1,13 +1,12 @@
 import { useState, useEffect } from "react";
-import { Modal, ModalBody, ModalFooter, ModalHeader, ModalContent } from "@nextui-org/modal";
+import { Modal, ModalBody, ModalHeader, ModalContent } from "@nextui-org/modal";
 import { Button } from "@nextui-org/button";
 import { TableColumn, TableCell, Table, TableBody, TableHeader, TableRow } from "@nextui-org/table";
-import { useApiService } from "@/hooks/widgets/useApiService";
 import { Input } from "@nextui-org/input";
-import ModalFooterWithSupport from "@/components/generics/footer-modal-support";
-import { Chip } from "@nextui-org/chip";
-import { FormButton } from "@/components/generics/form-button";
 import { Snippet } from "@nextui-org/snippet";
+
+import { useApiService } from "@/hooks/widgets/useApiService";
+import ModalFooterWithSupport from "@/components/generics/footer-modal-support";
 
 interface GenerateApiKeysModalProps {
   isOpen: boolean;
@@ -51,11 +50,12 @@ export default function GenerateApiKeysModal({ isOpen, onClose }: GenerateApiKey
 
   const truncateKey = (key: string): string => {
     if (key.length <= 10) return key;
+
     return `${key.slice(0, 5)}....${key.slice(-4)}`;
   };
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} size="2xl">
+    <Modal isOpen={isOpen} size="2xl" onClose={onClose}>
       <ModalContent>
         <ModalHeader className="flex flex-col gap-1">API Keys</ModalHeader>
         <ModalBody>
@@ -94,7 +94,7 @@ export default function GenerateApiKeysModal({ isOpen, onClose }: GenerateApiKey
             <Input placeholder="Enter key name" value={newKeyName} onChange={(e) => setNewKeyName(e.target.value)} />
           </div>
         </ModalBody>
-        <ModalFooterWithSupport onSupportClick={handleSupportClick} actions={footerActions} />
+        <ModalFooterWithSupport actions={footerActions} onSupportClick={handleSupportClick} />
       </ModalContent>
     </Modal>
   );

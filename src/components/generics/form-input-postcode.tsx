@@ -2,11 +2,11 @@
 
 import React, { useEffect } from "react";
 import { Control, FieldValues, Path, useController } from "react-hook-form";
+import { Tooltip } from "@nextui-org/tooltip";
 
 import { usePostcodeLookup } from "@/hooks/generics/usePostcodeLookup";
 import { FormInput } from "@/components/generics/form-input";
 import { postcodeRegex } from "@/types/validations/onboard";
-import { Tooltip } from "@nextui-org/tooltip";
 
 interface PostcodeInputProps<T extends FieldValues> {
   name: Path<T>;
@@ -17,6 +17,7 @@ interface PostcodeInputProps<T extends FieldValues> {
   about?: string;
   watchPostcode?: string;
   onLookupComplete?: (result: any) => void;
+  testId?: string;
 }
 
 export const PostcodeInput = <T extends FieldValues>({
@@ -27,14 +28,15 @@ export const PostcodeInput = <T extends FieldValues>({
   errorMessage,
   onLookupComplete,
   watchPostcode,
+  testId,
   ...props
 }: PostcodeInputProps<T>) => {
-  
   const { lookup, isLoading, error, result } = usePostcodeLookup();
   const { field } = useController({ name, control });
 
   const handlePostcodeChange = async (value: string) => {
-    const numericValue = value.replace(/\D/g, '');
+    const numericValue = value.replace(/\D/g, "");
+
     field.onChange(numericValue);
 
     if (numericValue.length === 5) {
@@ -61,36 +63,47 @@ export const PostcodeInput = <T extends FieldValues>({
           <FormInput
             className="text-notpurple-500"
             control={control}
+            data-testid={testId}
+            inputMode="numeric"
             label="Postcode"
             maxLength={5}
             minLength={5}
-            type="text"
-            inputMode="numeric"
             name={name}
             pattern={postcodeRegex.source}
             placeholder="12345"
-            onChange={(e) => handlePostcodeChange(e.target.value)}
+            type="text"
             value={watchPostcode}
+            onChange={(e) => handlePostcodeChange(e.target.value)}
             {...props}
           />
         </div>
         <div className="w-3/4 flex space-x-4 mb-1 ">
           <div className="w-1/3">
             <p className="text-sm text-notpurple-100 mb-1">City</p>
-            <p className="text-sm text-notpurple-300">{result?.city || "-"}</p>
+            <p className="text-sm text-notpurple-300" data-testid={`${testId}-city`}>
+              {result?.city || "-"}
+            </p>
           </div>
           <div className="w-1/3">
             <p className="text-sm text-notpurple-100 mb-1">State</p>
-            <p className="text-sm text-notpurple-300">{result?.state || "-"}</p>
+            <p className="text-sm text-notpurple-300" data-testid={`${testId}-state`}>
+              {result?.state || "-"}
+            </p>
           </div>
           <div className="w-1/3">
             <p className="text-sm text-notpurple-100 mb-1">Country</p>
-            <p className="text-sm text-notpurple-300">{result?.country || "-"}</p>
+            <p className="text-sm text-notpurple-300" data-testid={`${testId}-country`}>
+              {result?.country || "-"}
+            </p>
           </div>
         </div>
       </div>
       <div className="h-4">
-        {isLoading && <p className="text-sm text-notpurple-300">Loading...</p>}
+        {isLoading && (
+          <p className="text-sm text-notpurple-300" data-testid={`${testId}-loading`}>
+            Loading...
+          </p>
+        )}
         {error && <p className="text-sm text-ualert-500">{error}</p>}
       </div>
     </div>

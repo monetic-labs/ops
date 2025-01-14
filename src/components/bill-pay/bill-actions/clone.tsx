@@ -3,7 +3,6 @@ import { Input } from "@nextui-org/input";
 import { Modal, ModalBody, ModalContent, ModalFooter, ModalHeader } from "@nextui-org/modal";
 import { Select, SelectItem } from "@nextui-org/select";
 import { useState } from "react";
-
 import { DisbursementMethod, MerchantDisbursementEventGetOutput, StableCurrency } from "@backpack-fux/pylon-sdk";
 
 interface BillPayCloneModalProps {
@@ -30,8 +29,8 @@ export default function BillPayCloneModal({ isOpen, onClose, billPay, onSave }: 
         <ModalHeader>Clone Bill Pay</ModalHeader>
         <ModalBody>
           <Input
-            label="Vendor"
             isDisabled
+            label="Vendor"
             value={clonedBillPay.contact.accountOwnerName}
             onChange={(e) =>
               setClonedBillPay({
@@ -41,8 +40,8 @@ export default function BillPayCloneModal({ isOpen, onClose, billPay, onSave }: 
             }
           />
           <Select
-            label="Payment Method"
             isDisabled
+            label="Payment Method"
             selectedKeys={clonedBillPay.paymentMethod}
             selectionMode="single"
             onChange={(e) =>
@@ -70,8 +69,8 @@ export default function BillPayCloneModal({ isOpen, onClose, billPay, onSave }: 
             }
           />
           <Input
-            label="Currency"
             isDisabled
+            label="Currency"
             value={clonedBillPay.currencyIn}
             onChange={(e) =>
               setClonedBillPay({
@@ -81,8 +80,8 @@ export default function BillPayCloneModal({ isOpen, onClose, billPay, onSave }: 
             }
           />
           <Input
-            label="Receiving Bank Name"
             isDisabled
+            label="Receiving Bank Name"
             value={clonedBillPay.contact.bankName}
             onChange={(e) =>
               setClonedBillPay({
@@ -95,8 +94,8 @@ export default function BillPayCloneModal({ isOpen, onClose, billPay, onSave }: 
             }
           />
           <Input
-            label="Routing Number"
             isDisabled
+            label="Routing Number"
             value={clonedBillPay.contact.routingNumber}
             onChange={(e) =>
               setClonedBillPay({
@@ -109,8 +108,8 @@ export default function BillPayCloneModal({ isOpen, onClose, billPay, onSave }: 
             }
           />
           <Input
-            label="Account Number"
             isDisabled
+            label="Account Number"
             value={clonedBillPay.contact.accountNumber}
             onChange={(e) =>
               setClonedBillPay({

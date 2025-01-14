@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback } from "react";
 
 export type TabData = {
   key: string;
@@ -12,27 +12,19 @@ export function useDynamicTabs(initialTabs: TabData[]) {
   const [activeTab, setActiveTab] = useState<string>(initialTabs[0].key);
 
   const addTab = useCallback((newTab: TabData) => {
-    setTabs(prevTabs => [...prevTabs, newTab]);
+    setTabs((prevTabs) => [...prevTabs, newTab]);
   }, []);
 
   const removeTabs = useCallback((tabKeysToRemove: string[]) => {
-    setTabs(prevTabs => prevTabs.filter(tab => !tabKeysToRemove.includes(tab.key)));
+    setTabs((prevTabs) => prevTabs.filter((tab) => !tabKeysToRemove.includes(tab.key)));
   }, []);
 
   const updateTabCompletion = useCallback((tabKey: string, isCompleted: boolean) => {
-    setTabs(prevTabs => 
-      prevTabs.map(tab => 
-        tab.key === tabKey ? { ...tab, isCompleted } : tab
-      )
-    );
+    setTabs((prevTabs) => prevTabs.map((tab) => (tab.key === tabKey ? { ...tab, isCompleted } : tab)));
   }, []);
 
   const updateTabTitle = useCallback((tabKey: string, newTitle: string) => {
-    setTabs(prevTabs => 
-      prevTabs.map(tab => 
-        tab.key === tabKey ? { ...tab, title: newTitle } : tab
-      )
-    );
+    setTabs((prevTabs) => prevTabs.map((tab) => (tab.key === tabKey ? { ...tab, title: newTitle } : tab)));
   }, []);
 
   return {

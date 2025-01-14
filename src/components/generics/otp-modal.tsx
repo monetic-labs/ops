@@ -1,10 +1,9 @@
 import React, { useEffect, useRef, useState } from "react";
 import { Button } from "@nextui-org/button";
-import { Input } from "@nextui-org/input";
 import { Modal, ModalContent, ModalHeader, ModalBody, ModalFooter } from "@nextui-org/modal";
-import { VerifyOTP } from "@backpack-fux/pylon-sdk";
-import { useVerifyOTP } from "@/hooks/auth/useOTP";
-import { useIssueOTP } from "@/hooks/auth/useOTP";
+import { InputOtp } from "@nextui-org/input-otp";
+
+import { useOTP } from "@/hooks/auth/useOTP";
 import { OTP_CODE_LENGTH } from "@/utils/constants";
 
 interface OTPVerificationModalProps {
@@ -15,113 +14,60 @@ interface OTPVerificationModalProps {
 }
 
 export const OTPVerificationModal: React.FC<OTPVerificationModalProps> = ({ isOpen, onClose, onVerified, email }) => {
-  const [otp, setOtp] = useState("");
-  const [error, setError] = useState("");
-  const [isOtpComplete, setIsOtpComplete] = useState(false);
-  const otpInputs = useRef<(HTMLInputElement | null)[]>([]);
-  const { issueOTP, isLoading: isIssueLoading } = useIssueOTP();
-  const { verifyOTP, isLoading: isVerifyLoading } = useVerifyOTP();
+  const otpInputRef = useRef<HTMLInputElement>(null);
+  const { issueOTP, verifyOTP, isLoading, error: otpError, otp, setOTP, resetState } = useOTP(otpInputRef);
 
   useEffect(() => {
-    if (isOpen) {
-      handleIssueOTP();
-    }
-  }, [isOpen]);
+    let mounted = true;
 
-  const handleIssueOTP = async () => {
-    try {
-      await issueOTP(email);
-      setError("");
-    } catch (err) {
-      setError("Failed to send OTP. Please try again.");
-    }
-  };
-
-  const handleOtpChange = (index: number, value: string) => {
-    const newOtp = otp.split("");
-    newOtp[index] = value;
-    const updatedOtp = newOtp.join("");
-    setOtp(updatedOtp);
-
-    if (value !== "" && index < OTP_CODE_LENGTH - 1) {
-      otpInputs.current[index + 1]?.focus();
+    if (isOpen && mounted) {
+      issueOTP(email);
     }
 
-    if (updatedOtp.length === OTP_CODE_LENGTH) {
-      setIsOtpComplete(true);
-      handleVerify(updatedOtp);
-    } else {
-      setIsOtpComplete(false);
-    }
-  };
+    return () => {
+      mounted = false;
+      resetState();
+    };
+  }, [isOpen, email, issueOTP, resetState]);
 
-  const handleVerify = async (otpValue: string) => {
-    try {
-      const verified = await verifyOTP({ email, otp: otpValue });
-      if (verified) {
-        onVerified();
-        onClose();
-      } else {
-        setError("Invalid OTP. Please try again.");
-      }
-    } catch (err) {
-      setError("An error occurred. Please try again.");
-    }
-    setOtp("");
-    otpInputs.current[0]?.focus();
-  };
-
-  const handlePaste = (e: React.ClipboardEvent) => {
-    e.preventDefault();
-    const pasteData = e.clipboardData.getData("text");
-    if (pasteData.length === OTP_CODE_LENGTH) {
-      setOtp(pasteData);
-      pasteData.split("").forEach((char, i) => {
-        if (otpInputs.current[i]) {
-          otpInputs.current[i]!.value = char;
-        }
-      });
-      handleVerify(pasteData);
+  const handleVerify = async () => {
+    const success = await verifyOTP({ email, otp });
+    if (success) {
+      onVerified();
+      resetState();
     }
   };
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose}>
+    <Modal data-testid="otp-modal" isOpen={isOpen} onClose={onClose}>
       <ModalContent>
-        <ModalHeader>Verify Email</ModalHeader>
+        <ModalHeader>Enter OTP</ModalHeader>
         <ModalBody>
-          <p>Please enter the OTP sent to {email}</p>
-          <div className="flex justify-center space-x-2">
-            {Array.from({ length: OTP_CODE_LENGTH }).map((_, index) => (
-              <input
-                key={index}
-                ref={(el) => {
-                  otpInputs.current[index] = el;
-                }}
-                className={`w-10 h-12 text-center text-xl border-2 rounded-md bg-charyo-500 text-white 
-                  ${isOtpComplete ? "animate-flash border-ualert-500" : "border-gray-300"}
-                  focus:border-ualert-500 focus:outline-none`}
-                maxLength={1}
-                type="text"
-                value={otp[index] || ""}
-                onChange={(e) => handleOtpChange(index, e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === "Backspace" && !otp[index] && index > 0) {
-                    otpInputs.current[index - 1]?.focus();
-                  }
-                }}
-                onPaste={handlePaste}
-              />
-            ))}
-          </div>
-          {error && <p className="text-ualert-500 mt-2">{error}</p>}
+          <InputOtp
+            ref={otpInputRef}
+            length={OTP_CODE_LENGTH}
+            value={otp}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setOTP(e.target.value)}
+            onValueChange={setOTP}
+            onComplete={handleVerify}
+            size="lg"
+            variant="faded"
+            classNames={{
+              input: "w-10 h-12 text-center text-xl text-white",
+              base: "flex justify-center space-x-2",
+            }}
+            isDisabled={isLoading}
+            errorMessage={otpError}
+            isInvalid={otpError !== null}
+            data-testid="otp-input-container"
+          />
         </ModalBody>
         <ModalFooter>
-          <Button className="text-notpurple-500" variant="light" onPress={onClose}>
+          <Button color="danger" variant="light" onPress={onClose}>
             Cancel
           </Button>
-          <Button className="bg-ualert-500" onPress={handleIssueOTP} isLoading={isIssueLoading}>
-            Resend OTP
+          <Button color="primary" isLoading={isLoading} onPress={handleVerify}>
+            Verify
           </Button>
         </ModalFooter>
       </ModalContent>

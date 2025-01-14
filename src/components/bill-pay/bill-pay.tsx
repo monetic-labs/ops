@@ -1,16 +1,19 @@
 import { useState } from "react";
 import { Tabs, Tab } from "@nextui-org/tabs";
-import Contacts from "./contacts-tab";
-import Transfers from "./transfers-tab";
-import { billPayConfig, BillPayId } from "@/config/tabs";
 import { Button } from "@nextui-org/button";
-import CreateBillPayModal from "./bill-actions/create";
 import { useAppKitAccount } from "@reown/appkit/react";
+import { Address } from "viem";
+
+import { billPayConfig, BillPayId } from "@/config/tabs";
 import { DEFAULT_NEW_BILL_PAY } from "@/types/bill-pay";
 import { NewBillPay, ExistingBillPay } from "@/types/bill-pay";
-import { Address } from "viem";
 import { isTesting } from "@/utils/helpers";
 import { MOCK_SETTLEMENT_ADDRESS } from "@/utils/constants";
+
+import CreateBillPayModal from "./bill-actions/create";
+import Transfers from "./transfers-tab";
+import Contacts from "./contacts-tab";
+import { PlusIcon } from "lucide-react";
 
 type BillPayTabsProps = {
   handleSubTabChange: (key: string) => void;
@@ -54,21 +57,21 @@ export default function BillPayTabs({ handleSubTabChange }: BillPayTabsProps) {
             <Tab key={tab.id} title={tab.label} />
           ))}
         </Tabs>
-        <Button data-testid="create-transfer-button" color="default" onPress={() => setIsCreateModalOpen(true)}>
+        <Button color="default" data-testid="create-transfer-button" onPress={() => setIsCreateModalOpen(true)}>
           Create Transfer
         </Button>
       </div>
       <div className="mt-4">{renderTabContent(selectedService)}</div>
       <CreateBillPayModal
+        billPay={billPay}
         isOpen={isCreateModalOpen}
+        isWalletConnected={isConnected}
+        setBillPay={setBillPay}
+        settlementAddress={settlementAddress as Address}
         onClose={() => {
           setIsCreateModalOpen(false);
           setBillPay(DEFAULT_NEW_BILL_PAY);
         }}
-        billPay={billPay}
-        setBillPay={setBillPay}
-        isWalletConnected={isConnected}
-        settlementAddress={settlementAddress as Address}
         onSave={(newBillPay) => {
           console.log("Creating transfer:", newBillPay);
         }}

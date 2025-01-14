@@ -1,5 +1,4 @@
-import React, { useState } from 'react';
-import { Button } from "@nextui-org/button";
+import React, { useState } from "react";
 import { Tooltip } from "@nextui-org/tooltip";
 import { Snippet } from "@nextui-org/snippet";
 
@@ -21,12 +20,7 @@ export default function IDSnippet({ id, label = "ID" }: IDSnippetProps) {
     <div className="flex items-center space-x-2">
       <span className="text-sm text-gray-500">{label}:</span>
       <Tooltip content={copied ? "Copied!" : "Click to copy"} placement="top">
-        <Snippet
-          symbol=""
-          variant="flat"
-          color="default"
-          onCopy={handleCopy}
-        >
+        <Snippet color="default" symbol="" variant="flat" onCopy={handleCopy}>
           {id}
         </Snippet>
       </Tooltip>

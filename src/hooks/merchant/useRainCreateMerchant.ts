@@ -1,7 +1,7 @@
 import { useState } from "react";
-import pylon from "@/libs/pylon-sdk";
 import { MerchantRainCompanyCreateOutput, MerchantRainCompanyCreateInput } from "@backpack-fux/pylon-sdk";
-import { merchantConfig } from "@/config/merchant";
+
+import pylon from "@/libs/pylon-sdk";
 
 export const useRainCreateMerchant = () => {
   const [isLoading, setIsLoading] = useState(false);
@@ -19,7 +19,6 @@ export const useRainCreateMerchant = () => {
       const createRainMerchant: MerchantRainCompanyCreateInput = {
         initialUser: {
           ...data.initialUser,
-          iovationBlackbox: merchantConfig.iovationBlackbox,
         },
         name: data.name,
         entity: data.entity,
@@ -35,6 +34,7 @@ export const useRainCreateMerchant = () => {
 
       setIsLoading(false);
       setData(response);
+
       return response;
     } catch (err) {
       setIsLoading(false);

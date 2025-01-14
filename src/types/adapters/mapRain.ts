@@ -1,18 +1,19 @@
 // mappers/rainMapper.ts
 
 import {
-  CompanyAccountSchema,
-  CompanyDetailsSchema,
-  CompanyAccountUsersSchema,
-  CompanyUserDetailsSchema,
-} from "@/types/validations/onboard";
-import {
   RainAddress,
   RainPerson,
   RainEntity,
   RainInitialUser,
   MerchantRainCompanyCreateInput,
 } from "@backpack-fux/pylon-sdk";
+
+import {
+  CompanyAccountSchema,
+  CompanyDetailsSchema,
+  CompanyAccountUsersSchema,
+  CompanyUserDetailsSchema,
+} from "@/types/validations/onboard";
 
 function formatSSN(ssn: string): string {
   return ssn.replace(/-/g, "");
@@ -30,7 +31,7 @@ export function mapToRainMerchantCreateDto(
   }
 ): MerchantRainCompanyCreateInput {
   const { company } = accountData;
-  const { walletAddress, companyEIN, companyType, companyDescription } = detailsData;
+  const { walletAddress, companyEIN, companyType, companyDescription, companyRegistrationNumber } = detailsData;
   const { representatives } = usersData;
   const { userDetails } = userDetailsData;
 
@@ -50,6 +51,7 @@ export function mapToRainMerchantCreateDto(
     name: company.name,
     type: companyType,
     description: companyDescription,
+    registrationNumber: companyRegistrationNumber,
     taxId: companyEIN,
     website: company.website,
     expectedSpend: additionalData.expectedSpend,
@@ -58,12 +60,12 @@ export function mapToRainMerchantCreateDto(
   // We use role to map which user object but the service doesn't want it, we use this to manage that
   type RainPersonWithRole = RainPerson & {
     role: "owner" | "representative" | "beneficial-owner";
-    //role: string;
   };
 
   // Map representatives to RainPersonDto[]
   const rainRepresentatives: RainPersonWithRole[] = representatives.map((rep, index) => {
     const userDetail = userDetails[index]; // Assuming the order matches
+
     return {
       id: additionalData.id,
       firstName: rep.firstName,
@@ -104,6 +106,7 @@ export function mapToRainMerchantCreateDto(
   // If there are no representatives, use the initial user as a representative
   if (representatives.length === 0) {
     const { isTermsOfServiceAccepted, role, walletAddress, ...initialUserWithoutExtra } = initialUser;
+
     representativesWithoutRole = [initialUserWithoutExtra];
   }
   // Construct the final RainMerchantCreateDto object

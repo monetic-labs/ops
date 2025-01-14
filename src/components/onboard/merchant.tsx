@@ -431,8 +431,8 @@ export const KYBMerchantForm = ({ initialEmail }: { initialEmail: string }) => {
         className="bg-charyo-500"
         selectedKeys={[currentStep.toString()]}
         onSelectionChange={(keys) => {
-          if (keys.size > 0) {
-            setCurrentStep(Number(Array.from(keys)[0]));
+          if (Array.isArray(keys) && keys.length > 0) {
+            setCurrentStep(Number(keys[0]));
           }
         }}
       >

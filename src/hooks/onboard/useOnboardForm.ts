@@ -2,32 +2,38 @@ import { useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { MerchantCreateOutput } from "@backpack-fux/pylon-sdk";
 
-import { useFormState } from './useFormState';
-import { useTabManagement } from './useTabManagement';
-import { useMerchantCreateAPIs } from './useMerchantCreateAPIs';
-import { useIpAddress } from './useIpAddress';
-
 import { mapToBridgeMerchantCreateDto } from "@/types/adapters/mapBridge";
 import { mapToRainMerchantCreateDto } from "@/types/adapters/mapRain";
-import { CompanyAccountSchema, CompanyAccountUsersSchema, CompanyDetailsSchema, CompanyUserDetailsSchema } from "@/types/validations/onboard";
+import {
+  CompanyAccountSchema,
+  CompanyAccountUsersSchema,
+  CompanyDetailsSchema,
+  CompanyUserDetailsSchema,
+} from "@/types/validations/onboard";
 import { merchantConfig } from "@/config/merchant";
+
+import { useFormState } from "./useFormState";
+import { useTabManagement } from "./useTabManagement";
+import { useMerchantCreateAPIs } from "./useMerchantCreateAPIs";
+import { useIpAddress } from "./useIpAddress";
 
 export const useOnboardForm = (initialEmail: string) => {
   const router = useRouter();
-  const { formData, updateFormData, stepCompletion, setStepCompletion, synchronizeUserDetails } = useFormState(initialEmail);
+  const { formData, updateFormData, stepCompletion, setStepCompletion, synchronizeUserDetails } =
+    useFormState(initialEmail);
   const { tabs, activeTab, setActiveTab, updateTabCompletion, updateTabTitle, addTab, removeTabs } = useTabManagement();
   const [userCount, setUserCount] = useState(1);
-  
+
   const [tosLink, setTosLink] = useState<string | null>(null);
-  const { 
-    createBridgeMerchant, 
-    createRainMerchant, 
-    isCreatingMerchant, 
-    createMerchantError, 
-    createMerchantData, 
-    isCreatingRainMerchant, 
-    createRainMerchantError, 
-    createRainMerchantData 
+  const {
+    createBridgeMerchant,
+    createRainMerchant,
+    isCreatingMerchant,
+    createMerchantError,
+    createMerchantData,
+    isCreatingRainMerchant,
+    createRainMerchantError,
+    createRainMerchantData,
   } = useMerchantCreateAPIs();
   const [merchantResponse, setMerchantResponse] = useState<MerchantCreateOutput | null>(null);
   const [isRainToSAccepted, setIsRainToSAccepted] = useState(false);
@@ -72,10 +78,16 @@ export const useOnboardForm = (initialEmail: string) => {
     const bridgeData = mapToBridgeMerchantCreateDto(
       updatedFormData.companyAccount,
       updatedFormData.companyDetails,
-      updatedFormData.accountUsers 
+      updatedFormData.accountUsers
     );
+
     try {
-      const { success: bridgeSuccess, data: bridgeResponse, error: bridgeError } = await createBridgeMerchant(bridgeData);
+      const {
+        success: bridgeSuccess,
+        data: bridgeResponse,
+        error: bridgeError,
+      } = await createBridgeMerchant(bridgeData);
+
       if (bridgeSuccess) {
         setMerchantResponse(bridgeResponse);
         setTosLink(bridgeResponse?.data.tosLink || "");
@@ -93,7 +105,7 @@ export const useOnboardForm = (initialEmail: string) => {
   const handleStep5 = async () => {
     const additionalData = {
       isTermsOfServiceAccepted: true,
-      expectedSpend: '100000',
+      expectedSpend: "100000",
       id: merchantConfig.id,
     };
     const rainData = mapToRainMerchantCreateDto(
@@ -103,14 +115,20 @@ export const useOnboardForm = (initialEmail: string) => {
       { userDetails: formData.userDetails },
       additionalData
     );
+
     try {
       const response = await createRainMerchant(rainData);
+
       updateTabCompletion("register-account", true);
+
       return { success: true, data: response };
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'An unexpected error occurred while creating the merchant.';
+      const errorMessage =
+        err instanceof Error ? err.message : "An unexpected error occurred while creating the merchant.";
+
       setRainError(errorMessage);
-      return { success: false, error: { message: errorMessage, code: 'UNKNOWN_ERROR' } };
+
+      return { success: false, error: { message: errorMessage, code: "UNKNOWN_ERROR" } };
     }
   };
 
@@ -118,14 +136,15 @@ export const useOnboardForm = (initialEmail: string) => {
     setIsRainToSAccepted(true);
     try {
       const result = await handleStep5();
-      console.log('Rain merchant creation result:', result);
+
+      console.log("Rain merchant creation result:", result);
       if (!result.success) {
-        setRainToSError(result.error?.message || 'Unknown error');
+        setRainToSError(result.error?.message || "Unknown error");
         setIsRainToSAccepted(false);
       }
     } catch (error) {
-      console.error('Error in handleRainToSAccepted:', error);
-      setRainToSError('An unexpected error occurred');
+      console.error("Error in handleRainToSAccepted:", error);
+      setRainToSError("An unexpected error occurred");
       setIsRainToSAccepted(false);
     }
   }, [handleStep5]);
@@ -148,47 +167,63 @@ export const useOnboardForm = (initialEmail: string) => {
           break;
         case 5:
           const stepResult = await handleStep5();
+
           if (stepResult.success) {
-            console.log('Rain merchant created successfully:', stepResult.data);
+            console.log("Rain merchant created successfully:", stepResult.data);
           } else {
-            console.error('Failed to create Rain merchant:', stepResult.error);
-            setRainError(stepResult.error?.message || 'Unknown error');
+            console.error("Failed to create Rain merchant:", stepResult.error);
+            setRainError(stepResult.error?.message || "Unknown error");
           }
           break;
         default:
           console.error("Invalid step number");
+
           return;
       }
     },
-    [formData, updateFormData, createBridgeMerchant, createRainMerchant, isRainToSAccepted, setActiveTab, updateTabCompletion, setRainError]
+    [
+      formData,
+      updateFormData,
+      createBridgeMerchant,
+      createRainMerchant,
+      isRainToSAccepted,
+      setActiveTab,
+      updateTabCompletion,
+      setRainError,
+    ]
   );
 
-  const adjustUserDetailsTabs = useCallback((representatives: any[]) => {
-    const userDetailsTabs = tabs.filter(tab => tab.key.startsWith('user-details-'));
-    const currentUserCount = userDetailsTabs.length;
-    const newUserCount = representatives.length;
+  const adjustUserDetailsTabs = useCallback(
+    (representatives: any[]) => {
+      const userDetailsTabs = tabs.filter((tab) => tab.key.startsWith("user-details-"));
+      const currentUserCount = userDetailsTabs.length;
+      const newUserCount = representatives.length;
 
-    if (newUserCount > currentUserCount) {
-      // Add new tabs
-      for (let i = currentUserCount; i < newUserCount; i++) {
-        const rep = representatives[i];
-        addTab({
-          key: `user-details-${i}`,
-          title: `${rep.firstName} ${rep.lastName}`,
-          isCompleted: false
-        });
+      if (newUserCount > currentUserCount) {
+        // Add new tabs
+        for (let i = currentUserCount; i < newUserCount; i++) {
+          const rep = representatives[i];
+
+          addTab({
+            key: `user-details-${i}`,
+            title: `${rep.firstName} ${rep.lastName}`,
+            isCompleted: false,
+          });
+        }
+      } else if (newUserCount < currentUserCount) {
+        // Remove excess tabs
+        const tabsToRemove = userDetailsTabs.slice(newUserCount).map((tab) => tab.key);
+
+        removeTabs(tabsToRemove);
       }
-    } else if (newUserCount < currentUserCount) {
-      // Remove excess tabs
-      const tabsToRemove = userDetailsTabs.slice(newUserCount).map(tab => tab.key);
-      removeTabs(tabsToRemove);
-    }
 
-    // Update titles for existing tabs
-    representatives.forEach((rep, index) => {
-      updateTabTitle(`user-details-${index}`, `${rep.firstName} ${rep.lastName}`);
-    });
-  }, [tabs, addTab, removeTabs, updateTabTitle]);
+      // Update titles for existing tabs
+      representatives.forEach((rep, index) => {
+        updateTabTitle(`user-details-${index}`, `${rep.firstName} ${rep.lastName}`);
+      });
+    },
+    [tabs, addTab, removeTabs, updateTabTitle]
+  );
 
   return {
     tabs,
@@ -215,6 +250,6 @@ export const useOnboardForm = (initialEmail: string) => {
     rainToSError,
     isCreatingRainMerchant,
     createRainMerchantError,
-    createRainMerchantData
+    createRainMerchantData,
   };
 };

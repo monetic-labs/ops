@@ -1,0 +1,3 @@
+[install.scopes."@hookform/resolvers"]
+url = "https://registry.npmjs.org"
+token = "$NPM_TOKEN"

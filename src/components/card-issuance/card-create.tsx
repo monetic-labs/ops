@@ -1,12 +1,12 @@
 import React, { useMemo, useState } from "react";
 import { Select, SelectItem } from "@nextui-org/select";
-import { FormModal } from "@/components/generics/form-modal";
 import { CardType } from "@backpack-fux/pylon-sdk";
-import pylon from "@/libs/pylon-sdk";
 import { z } from "zod";
 import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { FormInput } from "../generics/form-input";
+import { Button } from "@nextui-org/button";
+import { CardStatus, ISO3166Alpha2Country } from "@backpack-fux/pylon-sdk";
+
 import {
   CreateCardSchema,
   CreateCardModalProps,
@@ -16,8 +16,10 @@ import {
   cardDeliveryCountries,
   getRegionsForCountry,
 } from "@/data";
-import { Button } from "@nextui-org/button";
-import { CardStatus, ISO3166Alpha2Country } from "@backpack-fux/pylon-sdk";
+import pylon from "@/libs/pylon-sdk";
+import { FormModal } from "@/components/generics/form-modal";
+
+import { FormInput } from "../generics/form-input";
 
 export default function CreateCardModal({ isOpen, onClose }: CreateCardModalProps) {
   const [error, setError] = useState<string | null>();
@@ -59,6 +61,7 @@ export default function CreateCardModal({ isOpen, onClose }: CreateCardModalProp
     try {
       setLoading(true);
       const data = getValues();
+
       await pylon.createPhysicalCard({
         displayName: data.displayName,
         limit: { amount: data.limitAmount, frequency: data.limitFrequency },
@@ -117,54 +120,54 @@ export default function CreateCardModal({ isOpen, onClose }: CreateCardModalProp
   const regions = useMemo(() => getRegionsForCountry(country), [country]);
 
   return (
-    <FormModal isOpen={isOpen} onClose={onClose} title="Create New Card" onSubmit={() => {}} isValid={true}>
+    <FormModal isOpen={isOpen} isValid={true} title="Create New Card" onClose={onClose} onSubmit={() => {}}>
       <>
         <Select
           data-testid="card-selector"
+          defaultSelectedKeys={[CardType.VIRTUAL]}
           label="Card Type"
           placeholder="Select card type"
           value={cardType}
           onChange={(e) => setCardType(e.target.value as CardType)}
-          defaultSelectedKeys={[CardType.VIRTUAL]}
         >
-          <SelectItem value={CardType.VIRTUAL} key={CardType.VIRTUAL}>
+          <SelectItem key={CardType.VIRTUAL} value={CardType.VIRTUAL}>
             Virtual
           </SelectItem>
-          <SelectItem data-testid="card-physical" key={CardType.PHYSICAL} value={CardType.PHYSICAL}>
+          <SelectItem key={CardType.PHYSICAL} data-testid="card-physical" value={CardType.PHYSICAL}>
             Physical
           </SelectItem>
         </Select>
         <FormInput
-          data-testid="card-displayName"
           about="Enter card name"
           control={controlFirstForm}
+          data-testid="card-displayName"
           errorMessage={firstFormErrors.displayName?.message}
           label="Card Name"
           name="displayName"
           placeholder="Enter card name"
         />
         <FormInput
-          data-testid="card-firstName"
           about="Enter card holder's first name"
           control={controlFirstForm}
+          data-testid="card-firstName"
           errorMessage={firstFormErrors.ownerFirstName?.message}
           label="Card holder's first name"
           name="ownerFirstName"
           placeholder="Enter card holder's first name"
         />
         <FormInput
-          data-testid="card-lastName"
           about="Enter card holder's last name"
           control={controlFirstForm}
+          data-testid="card-lastName"
           errorMessage={firstFormErrors.ownerLastName?.message}
           label="Card holder's last name"
           name="ownerLastName"
           placeholder="Enter card holder's last name"
         />
         <FormInput
-          data-testid="card-email"
           about="Enter card holder's email"
           control={controlFirstForm}
+          data-testid="card-email"
           errorMessage={firstFormErrors.ownerEmail?.message}
           label="Card holder's email"
           name="ownerEmail"
@@ -172,15 +175,15 @@ export default function CreateCardModal({ isOpen, onClose }: CreateCardModalProp
           type="email"
         />
         <FormInput
-          data-testid="card-limitAmount"
           about="Limit Amount"
           control={controlFirstForm}
+          data-testid="card-limitAmount"
           errorMessage={firstFormErrors.limitAmount?.message}
           label="Enter limit amount"
+          min={1}
           name="limitAmount"
           placeholder="Enter limit amount"
           type="number"
-          min={1}
         />
 
         <Controller
@@ -190,14 +193,14 @@ export default function CreateCardModal({ isOpen, onClose }: CreateCardModalProp
             return (
               <div>
                 <Select
-                  value={field.value}
-                  onChange={field.onChange}
                   data-testid="card-limitCycle"
                   label="Card limit cycle"
                   placeholder="Select card limit cycle"
+                  value={field.value}
+                  onChange={field.onChange}
                 >
                   {limitCyclesObject.map((t) => (
-                    <SelectItem value={t.value} key={t.value} data-testid={t.value}>
+                    <SelectItem key={t.value} data-testid={t.value} value={t.value}>
                       {t.label}
                     </SelectItem>
                   ))}
@@ -214,27 +217,27 @@ export default function CreateCardModal({ isOpen, onClose }: CreateCardModalProp
           <>
             <p>Shipping Details</p>
             <FormInput
-              data-testid="card-address"
               about="Enter address line 1"
               control={control}
+              data-testid="card-address"
               errorMessage={errors.street1?.message}
               label="Address Line 1"
               name="street1"
               placeholder="Enter address line 1"
             />
             <FormInput
-              data-testid="card-address2"
               about="Enter address line 2 (optional)"
               control={control}
+              data-testid="card-address2"
               errorMessage={errors.street2?.message}
               label="Address Line 2"
               name="street2"
               placeholder="Enter address line 2 (optional)"
             />
             <FormInput
-              data-testid="card-city"
               about="Enter city"
               control={control}
+              data-testid="card-city"
               errorMessage={errors.city?.message}
               label="City"
               name="city"
@@ -242,9 +245,9 @@ export default function CreateCardModal({ isOpen, onClose }: CreateCardModalProp
             />
 
             <FormInput
-              data-testid="card-postalCode"
               about="Enter postal code"
               control={control}
+              data-testid="card-postalCode"
               errorMessage={errors.postalCode?.message}
               label="Postal Code"
               name="postalCode"
@@ -258,14 +261,14 @@ export default function CreateCardModal({ isOpen, onClose }: CreateCardModalProp
                 return (
                   <div>
                     <Select
-                      value={field.value}
-                      onChange={field.onChange}
                       data-testid="card-country"
                       label="Country"
                       placeholder="Select country"
+                      value={field.value}
+                      onChange={field.onChange}
                     >
                       {cardDeliveryCountries.map((t) => (
-                        <SelectItem value={t.value} key={t.value} data-testid={t.value}>
+                        <SelectItem key={t.value} data-testid={t.value} value={t.value}>
                           {t.label}
                         </SelectItem>
                       ))}
@@ -285,14 +288,14 @@ export default function CreateCardModal({ isOpen, onClose }: CreateCardModalProp
                 return (
                   <div>
                     <Select
-                      value={field.value}
-                      onChange={field.onChange}
                       data-testid="card-region"
                       label="Region"
                       placeholder="Select region"
+                      value={field.value}
+                      onChange={field.onChange}
                     >
                       {regions.map((t) => (
-                        <SelectItem value={t.value} key={t.value} data-testid={t.value}>
+                        <SelectItem key={t.value} data-testid={t.value} value={t.value}>
                           {t.label}
                         </SelectItem>
                       ))}
@@ -304,23 +307,23 @@ export default function CreateCardModal({ isOpen, onClose }: CreateCardModalProp
             />
 
             <FormInput
-              data-testid="card-phoneNumber"
               about="Enter phone number"
               control={control}
+              data-testid="card-phoneNumber"
               errorMessage={errors.phoneNumber?.message}
               label="Phone Number"
               name="phoneNumber"
               placeholder="Enter phone number"
             />
             <FormInput
-              data-testid="card-phoneCountryCode"
               about="Enter phone country code"
               control={control}
+              data-testid="card-phoneCountryCode"
               errorMessage={errors.phoneCountryCode?.message}
               label="Phone Country Code"
+              maxLength={3}
               name="phoneCountryCode"
               placeholder="Enter phone country code (e.g., 1)"
-              maxLength={3}
             />
             <Controller
               control={control}
@@ -329,14 +332,14 @@ export default function CreateCardModal({ isOpen, onClose }: CreateCardModalProp
                 return (
                   <div>
                     <Select
-                      value={field.value}
-                      onChange={field.onChange}
                       data-testid="card-shippingMethod"
                       label="Shipping method"
                       placeholder="Select shipping method"
+                      value={field.value}
+                      onChange={field.onChange}
                     >
                       {shippingMethodOptions.map((t) => (
-                        <SelectItem value={t.value} key={t.value} data-testid={t.value}>
+                        <SelectItem key={t.value} data-testid={t.value} value={t.value}>
                           {t.label}
                         </SelectItem>
                       ))}
@@ -353,16 +356,16 @@ export default function CreateCardModal({ isOpen, onClose }: CreateCardModalProp
         {error ? <p className="text-danger-300">{error}</p> : null}
         <div className="flex justify-between">
           <Button
-            data-testid="card-createButton"
             className={`bg-ualert-500 text-notpurple-500 w-full sm:w-auto`}
+            data-testid="card-createButton"
+            isDisabled={loading}
+            isLoading={loading}
             onPress={() => {
               if (loading) return;
               setError(null);
 
               handleFirstFormSubmit(onSubmitFirstForm)();
             }}
-            isLoading={loading}
-            isDisabled={loading}
           >
             Create Card
           </Button>

@@ -9,7 +9,7 @@ import { KYBMerchantForm } from "@/components/onboard/merchant";
 // This function is used to render the onboarding page and allows us to get the email from the query params submitted from the auth input
 function OnboardContent() {
   const searchParams = useSearchParams();
-  const email = searchParams.get("email") || "";
+  const email = searchParams?.get("email") || "";
   const router = useRouter();
 
   const onCancel = () => {

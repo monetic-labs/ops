@@ -2,10 +2,11 @@ import React, { useCallback, useEffect, useState } from "react";
 import { Chip } from "@nextui-org/chip";
 import { User } from "@nextui-org/user";
 import { Table, TableBody, TableCell, TableColumn, TableHeader, TableRow } from "@nextui-org/table";
+import { MerchantDisbursementCreateOutput } from "@backpack-fux/pylon-sdk";
+
 import { contactColumns } from "@/data";
 import { getOpepenAvatar } from "@/utils/helpers";
 import { useGetContacts } from "@/hooks/bill-pay/useGetContacts";
-import { MerchantDisbursementCreateOutput } from "@backpack-fux/pylon-sdk";
 
 export default function Contacts() {
   const { contacts, pagination, isLoading, error, fetchContacts } = useGetContacts();
@@ -17,6 +18,7 @@ export default function Contacts() {
 
   useEffect(() => {
     const newAvatars: Record<string, string> = {};
+
     contacts.forEach((contact) => {
       newAvatars[contact.id] = getOpepenAvatar(contact.accountOwnerName, 32);
     });
@@ -72,8 +74,8 @@ export default function Contacts() {
         ))}
       </TableHeader>
       <TableBody
-        isLoading={isLoading}
         emptyContent={"No contacts found"}
+        isLoading={isLoading}
         onError={() => <div>Error fetching contacts</div>}
       >
         {contacts.map((contact) => (
