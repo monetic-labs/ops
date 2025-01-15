@@ -11,7 +11,7 @@ import {
 } from "@backpack-fux/pylon-sdk";
 
 import WidgetManagement from "@/components/back-office/widget-tab";
-import BackOfficeTabs from "@/components/back-office/back-office";
+import RevenueStreamsTabs from "@/components/back-office/back-office";
 import BillPayTabs from "@/components/bill-pay/bill-pay";
 import CardServicesTabs from "@/components/card-issuance";
 import ComplianceTable from "@/components/compliance/compliance";
@@ -19,6 +19,7 @@ import UserTab from "@/components/users/users";
 import { tabsConfig } from "@/config/tabs";
 import { useGetComplianceStatus } from "@/hooks/merchant/useGetComplianceStatus";
 import { components } from "@/styles/theme/components";
+import clsx from "clsx";
 
 export default function MerchantServicesTabs({ userId }: { userId: string }) {
   const { complianceStatus } = useGetComplianceStatus();
@@ -58,7 +59,7 @@ export default function MerchantServicesTabs({ userId }: { userId: string }) {
       case "bill-pay":
         return <BillPayTabs handleSubTabChange={handleSubTabChange} />;
       case "back-office":
-        return <BackOfficeTabs handleSubTabChange={handleSubTabChange} />;
+        return <RevenueStreamsTabs handleSubTabChange={handleSubTabChange} />;
       case "users":
         return <UserTab userId={userId} />;
       case "widget-mgmt":
@@ -72,7 +73,9 @@ export default function MerchantServicesTabs({ userId }: { userId: string }) {
 
   return (
     <div className="w-full">
-      <Card className={components.card.base}>
+      <Card
+        classNames={components.card.tabs.classNames}
+      >
         <CardBody className="p-0">
           <Tabs
             aria-label="Service options"

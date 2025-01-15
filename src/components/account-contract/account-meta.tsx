@@ -16,10 +16,11 @@ import {
 import useAccountContracts from "@/hooks/account-contracts/useAccountContracts";
 import AddFundsModal from "@/components/account-contract/modal-add-funds";
 import WithdrawFundsModal from "@/components/account-contract/modal-withdraw-funds";
-import { FundCard } from "@/components/generics/card-account";
 import PortfolioModal from "@/components/account-contract/modal-portfolio";
 import { AccountCard } from "@/components/generics/card-account";
 import TransferModal from "@/components/account-contract/modal-transfer";
+import { components } from "@/styles/theme/components";
+import clsx from "clsx";
 
 // TODO: We need to record internal transfers between accounts in a movements/transactions system
 
@@ -77,7 +78,15 @@ export default function AccountOverview() {
   const isPositiveChange = netChange >= 0;
 
   return (
-    <Card className="w-full max-w-7xl mx-auto bg-background/60 dark:bg-background/50">
+    <Card 
+      classNames={{
+        base: clsx(
+          "w-full max-w-7xl mx-auto bg-background/60 dark:bg-background/50",
+          "border border-black dark:border-white/20"
+        ),
+        body: "p-0"
+      }}
+    >
       {/* Overview Section */}
       <div className="p-3">
         <div className="flex justify-between items-center mb-2">
@@ -91,6 +100,8 @@ export default function AccountOverview() {
             value="$487,487.63"
             subtitle="USD"
             isTotal
+            onPress={() => setIsPortfolioOpen(true)}
+            isHoverable
           />
 
           <div className="col-span-2 md:col-span-3 grid grid-cols-3 gap-2">
@@ -101,7 +112,7 @@ export default function AccountOverview() {
               subtitle="Last 30 days"
               trend="up"
               trendColor="success"
-              onClick={() => setIsPortfolioOpen(true)}
+              onPress={() => setIsPortfolioOpen(true)}
               isHoverable
             />
             <AccountCard
@@ -111,6 +122,8 @@ export default function AccountOverview() {
               subtitle="Last 30 days"
               trend="down"
               trendColor="danger"
+              onPress={() => setIsPortfolioOpen(true)}
+              isHoverable
             />
             <AccountCard
               variant="overview"
@@ -118,6 +131,8 @@ export default function AccountOverview() {
               value="+$5,000"
               trend="up"
               trendColor="success"
+              onPress={() => setIsPortfolioOpen(true)}
+              isHoverable
             />
           </div>
         </div>
@@ -141,11 +156,16 @@ export default function AccountOverview() {
               disabled={account.disabled}
               comingSoon={account.comingSoon}
               isCreateAccount={account.isCreateAccount}
-              onClick={() => 
-                !account.disabled && 
-                !account.isCreateAccount && 
-                setIsTransferOpen(true)
-              }
+              onPress={() => {
+                if (!account.disabled && !account.isCreateAccount) {
+                  if (account.id === "settlement") {
+                    setIsTransferOpen(true);
+                  } else if (account.id === "rain") {
+                    setIsTransferOpen(true);
+                  }
+                }
+              }}
+              isHoverable={!account.disabled && !account.isCreateAccount}
             />
           ))}
         </div>

@@ -51,7 +51,7 @@ export default function AccountSelectionModal({
                     ? "bg-[#1a1a1a] border-[#2a2a2a]"
                     : "bg-[#141414] border-[#1a1a1a] hover:border-[#2a2a2a] hover:bg-[#181818]"
                 }`}
-                onClick={() => {
+                onPress={() => {
                   onSelect(account);
                   onClose();
                 }}

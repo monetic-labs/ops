@@ -166,10 +166,10 @@ export const FormCompanyInfo: React.FC<{
           />
         </div>
         <div className="flex justify-end space-x-4">
-          <Button className="text-notpurple-500" variant="light" onClick={onCancel}>
+          <Button className="text-notpurple-500" variant="light" onPress={onCancel}>
             Cancel
           </Button>
-          <FormButton data-testid="company-account-submit-button" type="submit" onClick={onFormSubmit}>
+          <FormButton data-testid="company-account-submit-button" type="submit" onPress={() => onFormSubmit()}>
             Submit
           </FormButton>
         </div>

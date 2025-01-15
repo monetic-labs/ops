@@ -141,7 +141,7 @@ export const FormCompanyDetails: React.FC<{
           placeholder="Describe your company"
         />
         <div className="flex justify-end space-x-4">
-          <FormButton data-testid="company-details-submit-button" type="submit" onClick={onFormSubmit}>
+          <FormButton data-testid="company-details-submit-button" type="submit" onPress={() => onFormSubmit()}>
             Submit
           </FormButton>
         </div>

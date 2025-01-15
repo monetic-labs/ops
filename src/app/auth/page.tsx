@@ -35,8 +35,7 @@ export default function AuthPage() {
   const [canResend, setCanResend] = useState(true);
   const shouldEnableTimer = !isLocal && !isTesting;
 
-  const handleSignUp = async (e: MouseEvent) => {
-    e.preventDefault();
+  const handleSignUp = async (e: PressEvent) => {
     router.push(`/onboard?email=${encodeURIComponent(email)}`);
   };
 
@@ -177,7 +176,7 @@ export default function AuthPage() {
                 data-testid="sign-up-button"
                 type="submit"
                 variant="shadow"
-                onClick={handleSignUp}
+                onPress={handleSignUp}
               >
                 Sign Up
               </Button>

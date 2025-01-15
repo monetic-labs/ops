@@ -9,6 +9,7 @@ import { BalanceDisplay } from "@/components/generics/balance-display";
 import { formatUSD } from "@/utils/formatters/currency";
 import { MoneyInput } from "../generics/money-input";
 import { Tooltip } from "@nextui-org/tooltip";
+import { components } from "@/styles/theme/components";
 
 interface TransferModalProps {
   isOpen: boolean;
@@ -78,59 +79,59 @@ export default function TransferModal({ isOpen, onClose }: TransferModalProps) {
         onClose={handleClose}
         size="sm"
         classNames={{
-          base: "bg-[#0A0A0A]",
-          wrapper: "bg-black/80",
-          body: "p-0",
+          wrapper: components.modal.base.wrapper,
+          base: components.modal.base.base,
+          body: components.modal.base.body,
         }}
         hideCloseButton
       >
         <ModalContent>
-          <div className="flex items-center justify-between px-5 py-4 border-b border-[#1a1a1a]">
-            <h3 className="text-xl font-normal text-white">Transfer Between Accounts</h3>
+          <div className={components.modal.transfer.header.wrapper}>
+            <h3 className={components.modal.transfer.header.title}>Transfer Between Accounts</h3>
             <div className="flex items-center gap-3">
               <Button
                 isIconOnly
                 variant="light"
-                onClick={handleClose}
-                className="text-gray-400 hover:text-white transition-colors"
+                onPress={handleClose}
+                className={components.modal.transfer.header.closeButton}
               >
                 <XIcon size={18} />
               </Button>
             </div>
           </div>
 
-          <ModalBody className="p-4">
-            <div className="space-y-3">
-              <div className="rounded-2xl bg-[#141414] p-4 border border-[#1a1a1a] hover:border-[#2a2a2a] transition-colors">
-                <div className="flex justify-between mb-2">
-                  <span className="text-sm text-gray-400">From</span>
+          <ModalBody className={components.modal.transfer.content.wrapper}>
+            <div className={components.modal.transfer.content.section}>
+              <div className={components.modal.transfer.accountSection.wrapper}>
+                <div className={components.modal.transfer.accountSection.header.wrapper}>
+                  <span className={components.modal.transfer.accountSection.header.label}>From</span>
                   {fromAccount && <BalanceDisplay balance={fromAccount.balance || 0} onClick={handleSetMaxAmount} />}
                 </div>
-                <div className="flex items-center gap-3">
+                <div className={components.modal.transfer.accountSection.input.wrapper}>
                   <MoneyInput
                     value={amount}
                     onChange={setAmount}
                     isError={Boolean(fromAccount && parseFloat(amount) > (fromAccount.balance || 0))}
                   />
                   <Button
-                    className="h-11 px-4 bg-[#1a1a1a] hover:bg-[#222222] text-white border border-[#2a2a2a] transition-all duration-200"
+                    className={components.modal.transfer.accountSection.input.button}
                     radius="lg"
-                    onClick={() => setIsFromAccountModalOpen(true)}
+                    onPress={() => setIsFromAccountModalOpen(true)}
                   >
                     {fromAccount ? fromAccount.name : "Select Account"}
                   </Button>
                 </div>
                 {fromAccount && parseFloat(amount) > (fromAccount.balance || 0) && (
-                  <div className="mt-2 text-sm text-red-500">Insufficient balance</div>
+                  <div className={components.modal.transfer.accountSection.error}>Insufficient balance</div>
                 )}
               </div>
 
-              <div className="flex justify-center -my-2 z-10">
+              <div className={components.modal.transfer.swapButton.wrapper}>
                 <Button
                   isIconOnly
-                  className="bg-[#0A0A0A] border border-[#1a1a1a] w-8 h-8 text-gray-400 hover:text-white hover:border-[#2a2a2a] transition-all duration-200"
+                  className={components.modal.transfer.swapButton.button}
                   radius="full"
-                  onClick={() => {
+                  onPress={() => {
                     const temp = fromAccount;
                     setFromAccount(toAccount);
                     setToAccount(temp);
@@ -140,14 +141,14 @@ export default function TransferModal({ isOpen, onClose }: TransferModalProps) {
                 </Button>
               </div>
 
-              <div className="rounded-2xl bg-[#141414] p-4 border border-[#1a1a1a] hover:border-[#2a2a2a] transition-colors">
-                <div className="flex justify-between mb-2">
-                  <span className="text-sm text-gray-400">To</span>
+              <div className={components.modal.transfer.accountSection.wrapper}>
+                <div className={components.modal.transfer.accountSection.header.wrapper}>
+                  <span className={components.modal.transfer.accountSection.header.label}>To</span>
                   {toAccount && <BalanceDisplay balance={toAccount.balance || 0} />}
                 </div>
                 <Button
-                  className="w-full h-14 bg-[#1a1a1a] hover:bg-[#222222] text-white border border-[#2a2a2a] transition-all duration-200"
-                  onClick={() => setIsToAccountModalOpen(true)}
+                  className={components.modal.transfer.accountSection.input.button}
+                  onPress={() => setIsToAccountModalOpen(true)}
                 >
                   {toAccount ? toAccount.name : "Select Account"}
                 </Button>
@@ -155,31 +156,27 @@ export default function TransferModal({ isOpen, onClose }: TransferModalProps) {
 
               {fromAccount && toAccount && amount && (
                 <>
-                  <Divider className="my-4 bg-[#1a1a1a]" />
-                  <div className="space-y-3 px-1">
-                    <div className="flex justify-between">
+                  <Divider className={components.modal.transfer.divider} />
+                  <div className={components.modal.transfer.details.wrapper}>
+                    <div className={components.modal.transfer.details.row}>
                       <div className="flex items-center gap-2">
-                        <span className="text-gray-400">Estimated Time</span>
+                        <span className={components.modal.transfer.details.label}>Estimated Time</span>
                         <Tooltip
                           content="Internal transfers may vary with network activity but usually complete within 1 minute"
-                          className="bg-[#1a1a1a] text-white"
+                          className={components.modal.transfer.details.tooltip}
                         >
-                          <InfoIcon size={14} className="text-gray-400 cursor-help" />
+                          <InfoIcon size={14} className={components.modal.transfer.details.icon} />
                         </Tooltip>
                       </div>
-                      <span className="text-white font-medium">Instant</span>
+                      <span className={components.modal.transfer.details.value}>Instant</span>
                     </div>
-                    <div className="flex justify-between">
-                      <span className="text-gray-400">Transfer Fee</span>
-                      <span className="text-white font-medium">$0.00</span>
+                    <div className={components.modal.transfer.details.row}>
+                      <span className={components.modal.transfer.details.label}>Transfer Fee</span>
+                      <span className={components.modal.transfer.details.value}>$0.00</span>
                     </div>
-                    <div className="flex justify-between">
-                      <span className="text-gray-400">Expected Output</span>
-                      <span
-                        className={`font-medium ${
-                          fromAccount && parseFloat(amount) > (fromAccount.balance || 0) ? "text-red-500" : "text-white"
-                        }`}
-                      >
+                    <div className={components.modal.transfer.details.row}>
+                      <span className={components.modal.transfer.details.label}>Expected Output</span>
+                      <span className={components.modal.transfer.details.value}>
                         {formatUSD(parseFloat(amount) || 0)}
                       </span>
                     </div>
@@ -189,12 +186,12 @@ export default function TransferModal({ isOpen, onClose }: TransferModalProps) {
             </div>
           </ModalBody>
 
-          <div className="p-4 pt-2">
+          <div className={components.modal.transfer.footer.wrapper}>
             <Button
-              className="w-full h-12 text-base font-medium bg-[#2152ff] hover:bg-[#1a47ff] text-white transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+              className={components.modal.transfer.footer.button}
               size="lg"
               isDisabled={!fromAccount || !toAccount || !amount || !isAmountValid()}
-              onClick={handleTransfer}
+              onPress={handleTransfer}
             >
               {!fromAccount || !toAccount
                 ? "Select Accounts"

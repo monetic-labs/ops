@@ -98,7 +98,7 @@ export const AccountRegistration: React.FC<AccountRegistrationProps> = ({
         className="w-full bg-ualert-500 text-notpurple-100"
         data-testid="bill-pay-agreement-button"
         isDisabled={isBridgeToSAccepted}
-        onClick={handleBridgeAcceptToS}
+        onPress={handleBridgeAcceptToS}
       >
         {isBridgeToSAccepted ? "Terms Accepted" : "Accept Terms"}
       </Button>
@@ -126,7 +126,7 @@ export const AccountRegistration: React.FC<AccountRegistrationProps> = ({
         className="w-full bg-ualert-500 text-notpurple-100"
         data-testid="card-program-agreement-button"
         isDisabled={isRainToSAccepted}
-        onClick={handleRainAcceptToS}
+        onPress={handleRainAcceptToS}
       >
         {isRainToSAccepted ? "Terms Accepted" : "Accept Terms"}
       </Button>
@@ -146,7 +146,7 @@ export const AccountRegistration: React.FC<AccountRegistrationProps> = ({
           {accordionItems}
         </Accordion>
         <div className="flex justify-between mt-4">
-          <Button className="text-notpurple-500" variant="light" onClick={onCancel}>
+          <Button className="text-notpurple-500" variant="light" onPress={onCancel}>
             Cancel
           </Button>
           <Button
@@ -154,7 +154,7 @@ export const AccountRegistration: React.FC<AccountRegistrationProps> = ({
             data-testid="finish-kyb-button"
             isDisabled={!isBridgeToSAccepted || !isRainToSAccepted || !isOTPVerified}
             variant="solid"
-            onClick={handleKYB}
+            onPress={handleKYB}
           >
             Finish KYB
           </Button>

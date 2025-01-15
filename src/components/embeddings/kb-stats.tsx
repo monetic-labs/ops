@@ -63,7 +63,7 @@ const KnowledgeBaseStats = () => {
     return (
       <div className="p-4 bg-ualert-500/20 rounded">
         <div className="text-ualert-500">{error}</div>
-        <Button className="mt-2" color="primary" size="sm" onClick={fetchStats}>
+        <Button className="mt-2" color="primary" size="sm" onPress={fetchStats}>
           Retry
         </Button>
       </div>

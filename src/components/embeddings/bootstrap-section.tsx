@@ -21,7 +21,7 @@ export const BootstrapSection = () => {
       <CardBody>
         <div className="space-y-4">
           <div className="flex items-center space-x-4">
-            <FormButton className="w-full" disabled={isBootstrapping} onClick={runBootstrap}>
+            <FormButton className="w-full" disabled={isBootstrapping} onPress={runBootstrap}>
               {isBootstrapping ? <Spinner color="current" size="sm" /> : "Bootstrap Knowledge Base"}
             </FormButton>
             {bootstrapStatus?.type && (

@@ -193,7 +193,7 @@ export default function CreateOrders() {
             />
             {touched.amount && validationErrors.amount && <p className="text-ualert-500">{validationErrors.amount}</p>}
           </div>
-          <Button isDisabled={Object.keys(validationErrors).length > 0} onClick={handleCreateOrder}>
+          <Button isDisabled={Object.keys(validationErrors).length > 0} onPress={handleCreateOrder}>
             {isLoading ? "Creating..." : "Create Order"}
           </Button>
           {error && <p className="text-ualert-500">{error}</p>}
@@ -215,7 +215,7 @@ export default function CreateOrders() {
                     {order.id}
                   </Snippet>
                   <p className="mt-2">Expires in {<Countdown expiresAt={order.expiresAt} />}</p>
-                  <Button className="absolute top-0 right-0 bg-ualert-500" onClick={() => handleDeleteOrder(order.id)}>
+                  <Button className="absolute top-0 right-0 bg-ualert-500" onPress={() => handleDeleteOrder(order.id)}>
                     Delete
                   </Button>
                 </div>

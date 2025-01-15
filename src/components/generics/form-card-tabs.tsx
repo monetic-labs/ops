@@ -57,7 +57,7 @@ export const FormCardTabs = <T,>({
               className="text-notpurple-500"
               data-testid="form-card-tabs-add-button"
               variant="light"
-              onClick={onAdd}
+              onPress={onAdd}
             >
               Add
             </Button>
@@ -68,7 +68,7 @@ export const FormCardTabs = <T,>({
                 className="text-notpurple-500"
                 data-testid="form-card-tabs-remove-button"
                 variant="light"
-                onClick={() => onRemove?.(selectedTab)}
+                onPress={() => onRemove?.(selectedTab)}
               >
                 Remove
               </Button>
@@ -76,13 +76,13 @@ export const FormCardTabs = <T,>({
           )}
         </div>
         <div className="space-x-2">
-          <Button className="text-notpurple-500" variant="light" onClick={onCancel}>
+          <Button className="text-notpurple-500" variant="light" onPress={onCancel}>
             Cancel
           </Button>
           <Button
             className="bg-ualert-500 text-notpurple-100"
             data-testid="form-card-tabs-submit-button"
-            onClick={onSubmit}
+            onPress={onSubmit}
           >
             Submit
           </Button>

@@ -30,7 +30,7 @@ export const ThemeSwitch: FC<ThemeSwitchProps> = ({ className }) => {
       variant="light"
       isIconOnly
       aria-label={`Switch to ${isDark ? "light" : "dark"} mode`}
-      onClick={() => setTheme(isDark ? "light" : "dark")}
+      onPress={() => setTheme(isDark ? "light" : "dark")}
     >
       {isDark ? <SunFilledIcon size={22} /> : <MoonFilledIcon size={22} />}
     </Button>

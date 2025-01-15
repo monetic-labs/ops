@@ -196,7 +196,7 @@ export default function CardDetailsModal({ isOpen, onClose, card: propsCard }: C
           <div className="flex items-center px-6 mb-6 mt-4 justify-end">
             <Button
               className={`text-notpurple-500 w-full sm:w-auto mr-4 `}
-              onClick={() => {
+              onPress={() => {
                 setIsEditing(false);
               }}
             >
@@ -206,7 +206,7 @@ export default function CardDetailsModal({ isOpen, onClose, card: propsCard }: C
               className={`bg-ualert-500 text-notpurple-500 w-full sm:w-auto `}
               disabled={loading}
               isLoading={loading}
-              onClick={handleSubmit(handleEdit)}
+              onPress={() => handleSubmit(handleEdit)()}
             >
               Save
             </Button>

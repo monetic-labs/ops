@@ -52,7 +52,7 @@ const AuthenticatedNav = ({ user, merchant, handleSignOut }: any) => {
         className="text-danger"
         color="danger"
         startContent={<LogOut className="w-4 h-4" />}
-        onClick={handleSignOut}
+        onPress={handleSignOut}
       >
         Sign Out
       </DropdownItem>
