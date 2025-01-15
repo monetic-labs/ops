@@ -36,10 +36,23 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={clsx("min-h-screen bg-background font-sans antialiased", fontSans.variable)}>
+      <head />
+      <body className={clsx(
+        "min-h-screen font-sans antialiased",
+        "bg-background text-foreground",
+        "transition-colors duration-300",
+        fontSans.variable
+      )}>
         <AuthProvider token={authToken?.value}>
           <AccountProvider>
-            <Providers themeProps={{ attribute: "class", defaultTheme: "dark" }}>
+            <Providers themeProps={{ 
+              attribute: "class",
+              defaultTheme: "dark",
+              enableSystem: true,
+              forcedTheme: undefined,
+              storageKey: "backpack-theme",
+              themes: ["light", "dark"]
+            }}>
               <div className="relative flex flex-col h-screen">
                 <Navbar />
                 <main className="container mx-auto max-w-7xl pt-8 px-6 flex-grow">{children}</main>

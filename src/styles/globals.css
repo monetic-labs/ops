@@ -2,15 +2,41 @@
 @tailwind components;
 @tailwind utilities;
 
-body {
-  background-image: url('/bg-celestial.png');
-  background-repeat: repeat;
-  background-size: cover;
-  background-attachment: fixed;
-  background-position: center;
-  min-height: 100vh;
-  overflow-x: hidden;
-  background-color: #000;
+@layer base {
+  :root {
+    /* Light mode variables */
+    --background: 255 255 255;
+    --foreground: 0 0 0;
+    --navbar-background: 255 255 255;
+    --navbar-foreground: 0 0 0;
+    --card-background: 255 255 255;
+    --card-foreground: 0 0 0;
+  }
+
+  .dark {
+    /* Dark mode variables */
+    --background: 0 0 0;
+    --foreground: 255 255 255;
+    --navbar-background: 31 31 31; /* charyo-900 */
+    --navbar-foreground: 249 248 252; /* notpurple-500 */
+    --card-background: 24 24 27; /* #18181b */
+    --card-foreground: 249 248 252; /* notpurple-500 */
+  }
+}
+
+@layer components {
+  /* Base styles */
+  .navbar-base {
+    @apply fixed top-0 w-full z-50 backdrop-blur-lg border-none shadow-md;
+    background-color: rgb(var(--navbar-background) / 0.9);
+    color: rgb(var(--navbar-foreground));
+  }
+
+  .card-base {
+    background-color: rgb(var(--card-background));
+    color: rgb(var(--card-foreground));
+    @apply shadow-lg backdrop-blur-sm;
+  }
 }
 
 @keyframes flash {

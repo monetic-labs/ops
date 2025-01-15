@@ -12,6 +12,7 @@ import { ThemeSwitch } from "@/components/theme-switch";
 import pylon from "@/libs/pylon-sdk";
 import { useAccounts } from "@/contexts/AccountContext";
 import { useAuth } from "@/contexts/AuthContext";
+import { components } from "@/styles/theme/components";
 
 interface UserInfoProps {
   userName?: string;
@@ -117,8 +118,8 @@ export const Navbar = () => {
   return (
     <NextUINavbar
       classNames={{
-        base: "bg-charyo-900/70 text-notpurple-500 backdrop-blur-lg border-none",
-        wrapper: "px-4",
+        base: components.navbar.base,
+        wrapper: components.navbar.wrapper,
       }}
       maxWidth="xl"
       position="sticky"

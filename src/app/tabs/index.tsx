@@ -18,6 +18,7 @@ import ComplianceTable from "@/components/compliance/compliance";
 import UserTab from "@/components/users/users";
 import { tabsConfig } from "@/config/tabs";
 import { useGetComplianceStatus } from "@/hooks/merchant/useGetComplianceStatus";
+import { components } from "@/styles/theme/components";
 
 export default function MerchantServicesTabs({ userId }: { userId: string }) {
   const { complianceStatus } = useGetComplianceStatus();
@@ -71,7 +72,7 @@ export default function MerchantServicesTabs({ userId }: { userId: string }) {
 
   return (
     <div className="w-full">
-      <Card className="bg-charyo-500/60 backdrop-blur-sm">
+      <Card className={components.card.base}>
         <CardBody className="p-0">
           <Tabs
             aria-label="Service options"
@@ -79,9 +80,9 @@ export default function MerchantServicesTabs({ userId }: { userId: string }) {
             classNames={{
               base: "w-full",
               tabList: "w-full relative px-6 py-2 border-b border-divider gap-6",
-              cursor: "w-full bg-notpurple-500",
+              cursor: "w-full bg-black dark:bg-notpurple-500",
               tab: "max-w-fit px-0 h-12",
-              tabContent: "text-default-500 text-sm group-data-[selected=true]:text-notpurple-500",
+              tabContent: "text-default-600 text-sm group-data-[selected=true]:text-black dark:group-data-[selected=true]:text-notpurple-500",
               panel: "p-0",
             }}
             selectedKey={selectedService}
