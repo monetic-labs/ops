@@ -4,8 +4,8 @@ import { DisbursementMethod, ISO3166Alpha2State, ISO3166Alpha3Country } from "@b
 import { BASE_USDC } from "@/utils/constants";
 import { isLocal } from "@/utils/helpers";
 
-import { NewBillPay } from "../bill-pay";
-import { ExistingBillPay } from "../bill-pay";
+import { NewBillPay } from "@/types/bill-pay";
+import { ExistingBillPay } from "@/types/bill-pay";
 
 export enum FieldLabel {
   ACCOUNT_HOLDER = "Account Holder",

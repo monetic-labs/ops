@@ -2,21 +2,16 @@
 
 import { Suspense } from "react";
 import { useSearchParams } from "next/navigation";
+import { OnboardForm } from "@/components/onboard/onboard-form";
 
-import { KYBMerchantForm } from "@/components/onboard/merchant";
-
-function OnboardContent() {
+export default function OnboardPage() {
   const searchParams = useSearchParams();
   const email = searchParams?.get("email") || "";
 
-  return <KYBMerchantForm initialEmail={email} />;
-}
-
-export default function OnboardPage() {
   return (
     <section className="relative">
       <Suspense fallback={<div>Loading...</div>}>
-        <OnboardContent />
+        <OnboardForm email={email} />
       </Suspense>
     </section>
   );

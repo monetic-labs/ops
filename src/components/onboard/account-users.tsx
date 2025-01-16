@@ -4,7 +4,8 @@ import { Button } from "@nextui-org/button";
 import { Checkbox } from "@nextui-org/checkbox";
 import { useFormContext, useFieldArray } from "react-hook-form";
 
-import { FormField, UserRole } from "./merchant";
+import { FormField } from "./form-fields";
+import { UserRole } from "@/validations/onboard/schemas";
 
 // Helper function for class names
 const cn = (...classes: string[]) => classes.filter(Boolean).join(" ");
