@@ -1,7 +1,9 @@
 "use client";
 
 import React, { useCallback, useEffect, useRef, useState } from "react";
+
 import { useResizePanel } from "@/hooks/messaging/useResizePanel";
+
 import { ChatHeader } from "./header";
 import { ChatBody } from "./body";
 import { ChatFooter } from "./footer";
@@ -29,6 +31,7 @@ export const ChatPane: React.FC<ChatPaneProps> = ({ isOpen, onClose }) => {
       const timer = setTimeout(() => {
         inputRef.current?.focus();
       }, 100);
+
       return () => clearTimeout(timer);
     }
   }, [isOpen]);
@@ -40,7 +43,9 @@ export const ChatPane: React.FC<ChatPaneProps> = ({ isOpen, onClose }) => {
         onClose();
       }
     };
+
     window.addEventListener("keydown", handleKeyDown);
+
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [isOpen, isResizing, onClose]);
 

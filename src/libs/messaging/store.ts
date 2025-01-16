@@ -32,7 +32,7 @@ interface UIState {
 interface MessageState {
   mode: MessageMode;
   messages: {
-    bot: Message[];    // Messages for OpenAI bot service
+    bot: Message[]; // Messages for OpenAI bot service
     support: Message[]; // Messages for Telegram support service
   };
   inputValues: {
@@ -175,15 +175,18 @@ export const useMessagingStore = create<MessagingStore>()(
       },
       actions: {
         ui: {
-          togglePane: () => set((state) => ({
-            ui: { ...state.ui, isOpen: !state.ui.isOpen },
-          })),
-          setWidth: (width) => set((state) => ({
-            ui: { ...state.ui, width },
-          })),
-          setResizing: (isResizing) => set((state) => ({
-            ui: { ...state.ui, isResizing },
-          })),
+          togglePane: () =>
+            set((state) => ({
+              ui: { ...state.ui, isOpen: !state.ui.isOpen },
+            })),
+          setWidth: (width) =>
+            set((state) => ({
+              ui: { ...state.ui, width },
+            })),
+          setResizing: (isResizing) =>
+            set((state) => ({
+              ui: { ...state.ui, isResizing },
+            })),
         },
         message: {
           setMode: (mode: MessageMode) =>
@@ -250,8 +253,8 @@ export const useMessagingStore = create<MessagingStore>()(
                 ...state.message,
                 inputValues: {
                   ...state.message.inputValues,
-                  [mode]: value
-                }
+                  [mode]: value,
+                },
               },
             })),
           setPendingMessage: (message: Message | null) =>
@@ -270,17 +273,19 @@ export const useMessagingStore = create<MessagingStore>()(
             })),
         },
         mention: {
-          setMentionState: (updates) => set((state) => ({
-            mention: { ...state.mention, ...updates },
-          })),
-          resetMentionState: () => set((state) => ({
-            mention: {
-              isOpen: false,
-              searchText: "",
-              selectedIndex: 0,
-              position: { top: 0, left: 0 },
-            },
-          })),
+          setMentionState: (updates) =>
+            set((state) => ({
+              mention: { ...state.mention, ...updates },
+            })),
+          resetMentionState: () =>
+            set((state) => ({
+              mention: {
+                isOpen: false,
+                searchText: "",
+                selectedIndex: 0,
+                position: { top: 0, left: 0 },
+              },
+            })),
         },
         connection: {
           connect: async () => {
@@ -308,9 +313,10 @@ export const useMessagingStore = create<MessagingStore>()(
               connection: { ...state.connection, status: "disconnected" },
             }));
           },
-          setError: (error) => set((state) => ({
-            connection: { ...state.connection, error },
-          })),
+          setError: (error) =>
+            set((state) => ({
+              connection: { ...state.connection, error },
+            })),
         },
       },
       initialized: false,
@@ -353,6 +359,7 @@ export const resetMessagingStore = () => {
 // Add a selector to get current mode's messages
 export const useCurrentModeMessages = () => {
   const { mode, messages } = useMessagingStore((state) => state.message);
+
   return messages[mode];
 };
 

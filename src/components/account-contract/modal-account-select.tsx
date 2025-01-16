@@ -1,5 +1,6 @@
 import { Modal, ModalContent, ModalHeader, ModalBody } from "@nextui-org/modal";
 import { Button } from "@nextui-org/button";
+
 import { BalanceDisplay } from "@/components/generics/balance-display";
 
 interface Account {
@@ -28,14 +29,14 @@ export default function AccountSelectionModal({
 }: AccountSelectionModalProps) {
   return (
     <Modal
-      isOpen={isOpen}
-      onClose={onClose}
-      size="sm"
       classNames={{
         base: "bg-[#0A0A0A]",
         wrapper: "bg-black/80",
         body: "p-0",
       }}
+      isOpen={isOpen}
+      size="sm"
+      onClose={onClose}
     >
       <ModalContent>
         <ModalHeader className="px-5 py-4 text-xl font-normal text-white border-b border-[#1a1a1a]">

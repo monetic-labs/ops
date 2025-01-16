@@ -76,7 +76,7 @@ export interface MessageService {
   isTyping?: boolean;
   isLoading: boolean;
   inputValue: string;
-  setInputValue: (value: string) => Promise<void>; 
+  setInputValue: (value: string) => Promise<void>;
   sendMessage: (text: string) => Promise<void>;
   handleSubmit: (e: React.FormEvent) => Promise<void>;
   getUserId: () => string;

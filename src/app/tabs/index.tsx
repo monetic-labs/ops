@@ -28,6 +28,7 @@ export default function MerchantServicesTabs({ userId }: { userId: string }) {
 
   const handleTabChange = (key: string) => {
     const params = new URLSearchParams(searchParams?.toString() || "");
+
     params.set("tab", key);
     params.delete("subtab");
     router.push(`/?${params.toString()}`);
@@ -36,6 +37,7 @@ export default function MerchantServicesTabs({ userId }: { userId: string }) {
 
   const handleSubTabChange = (key: string) => {
     const params = new URLSearchParams(searchParams?.toString() || "");
+
     params.set("subtab", key);
     router.push(`/?${params.toString()}`);
   };
@@ -75,7 +77,6 @@ export default function MerchantServicesTabs({ userId }: { userId: string }) {
         <CardBody className="p-0">
           <Tabs
             aria-label="Service options"
-            variant="underlined"
             classNames={{
               base: "w-full",
               tabList: "w-full relative px-6 py-2 border-b border-divider gap-6",
@@ -85,6 +86,7 @@ export default function MerchantServicesTabs({ userId }: { userId: string }) {
               panel: "p-0",
             }}
             selectedKey={selectedService}
+            variant="underlined"
             onSelectionChange={(key) => handleTabChange(key as string)}
           >
             {tabsConfig.map((tab) => (
@@ -92,12 +94,12 @@ export default function MerchantServicesTabs({ userId }: { userId: string }) {
                 key={tab.id}
                 title={
                   <Tooltip
-                    content={tab.content}
                     classNames={{
                       content: "text-default-500 rounded-lg shadow-xl bg-background/90 text-sm",
                     }}
-                    delay={0}
                     closeDelay={0}
+                    content={tab.content}
+                    delay={0}
                     motionProps={{
                       variants: {
                         exit: {

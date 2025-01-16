@@ -24,6 +24,7 @@ test.describe("Login Flow", () => {
     // Handle OTP
     await page.getByTestId("otp-input-container").waitFor({ state: "visible" });
     const otpInput = page.getByTestId("otp-input-container").locator("input");
+
     await otpInput.fill("123456");
 
     // Set auth cookie and verify page reload

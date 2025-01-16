@@ -74,7 +74,6 @@ export interface TransactionHistory {
   };
 }
 
-
 export interface TransactionContext {
   amount: number;
   availableMethods: TransferMethod[];

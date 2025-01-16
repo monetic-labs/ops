@@ -3,7 +3,6 @@ import io, { Socket } from "socket.io-client";
 
 const baseUrl = process.env.NEXT_PUBLIC_PYLON_BASE_URL;
 
-
 export const useWebSocket = ({ handleMessage }: { handleMessage: (...args: any[]) => void }) => {
   const wsRef = useRef<Socket>();
 
@@ -20,6 +19,7 @@ export const useWebSocket = ({ handleMessage }: { handleMessage: (...args: any[]
 
     wsRef.current.on("connect_error", console.log);
     wsRef.current.on("telegramMessage", handleMessage);
+
     return () => {
       wsRef.current?.close();
       wsRef.current = null as any;

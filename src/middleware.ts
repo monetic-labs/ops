@@ -16,6 +16,7 @@ export async function middleware(request: NextRequest) {
     if (!isAuthRoute && !isOnboardRoute) {
       return NextResponse.rewrite(new URL("/auth", request.url));
     }
+
     return NextResponse.next();
   }
 
@@ -29,6 +30,7 @@ export async function middleware(request: NextRequest) {
 
     if (!complianceResponse.ok) {
       console.error("Failed to fetch compliance status");
+
       return NextResponse.next();
     }
 
@@ -52,6 +54,7 @@ export async function middleware(request: NextRequest) {
     }
   } catch (error) {
     console.error("Middleware error:", error);
+
     return NextResponse.next();
   }
 

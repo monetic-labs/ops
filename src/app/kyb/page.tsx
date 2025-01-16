@@ -19,7 +19,7 @@ export default function KYB() {
       window.open(complianceStatus.link, "_blank");
     }
   };
-  
+
   // TODO: display the UBO KYC information (individual to user)
 
   return (

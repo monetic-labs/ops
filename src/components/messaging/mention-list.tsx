@@ -2,8 +2,6 @@ import { useMemo } from "react";
 import React from "react";
 
 import { MentionOption } from "@/types/messaging";
-import { Graph } from "@/knowledge-base/v0/graph/graph";
-import graphData from "@/knowledge-base/v0/graph/graph.json";
 
 interface MentionListProps {
   options: MentionOption[];
@@ -28,6 +26,7 @@ export const MentionList = React.memo<MentionListProps>(
 
       return options.filter((option) => {
         const searchLower = searchText.toLowerCase();
+
         return (
           option.label.toLowerCase().includes(searchLower) ||
           (option.description && option.description.toLowerCase().includes(searchLower))
@@ -72,9 +71,7 @@ export const MentionList = React.memo<MentionListProps>(
                 </span>
               </div>
 
-              {option.description && (
-                <span className="text-sm text-gray-400">{option.description}</span>
-              )}
+              {option.description && <span className="text-sm text-gray-400">{option.description}</span>}
             </button>
           ))
         )}

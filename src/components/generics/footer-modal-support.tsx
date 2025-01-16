@@ -5,8 +5,9 @@ import { Switch } from "@nextui-org/switch";
 import { Kbd } from "@nextui-org/kbd";
 import { Tooltip } from "@nextui-org/tooltip";
 
-import { useShortcuts } from "./shortcuts-provider";
 import { useSupportScreenshot } from "@/hooks/messaging/useSupportService";
+
+import { useShortcuts } from "./shortcuts-provider";
 
 interface ActionButton {
   label: string;

@@ -17,6 +17,6 @@ declare module "@/data/postcodes-map.json" {
     radius?: number;
   }
 
-  const value: { [postcode: string]: PostcodeMap };
+  const value: Record<string, PostcodeMap>;
   export default value;
 }

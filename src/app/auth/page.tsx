@@ -6,7 +6,6 @@ import { Input } from "@nextui-org/input";
 import { useRouter } from "next/navigation";
 import { Spinner } from "@nextui-org/spinner";
 import { InputOtp } from "@nextui-org/input-otp";
-
 import { PressEvent } from "@react-types/shared";
 
 import { useOTP } from "@/hooks/auth/useOTP";
@@ -43,6 +42,7 @@ export default function AuthPage() {
   const handleLogin = async (e: PressEvent) => {
     try {
       const response = await issueOTP(email);
+
       if (response === 200) {
         setShowOtpInput(true);
         if (shouldEnableTimer) {
@@ -64,8 +64,10 @@ export default function AuthPage() {
 
   const handleVerify = async (otpValue?: string) => {
     const valueToVerify = otpValue || otp;
+
     if (email && valueToVerify.length === OTP_LENGTH) {
       const success = await verifyOTP({ email, otp: valueToVerify });
+
       if (success) {
         router.refresh();
       }
@@ -130,40 +132,40 @@ export default function AuthPage() {
               <div className="flex flex-col items-center justify-center">
                 <InputOtp
                   ref={otpInputRef}
-                  length={OTP_LENGTH}
-                  value={otp}
-                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => setOTP(e.target.value)}
-                  onValueChange={setOTP}
-                  onComplete={handleVerify}
-                  size={window.innerWidth < 640 ? "sm" : "lg"}
-                  variant="faded"
                   classNames={{
                     input: "w-10 h-12 text-center text-xl text-white",
                     base: "flex justify-center space-x-2",
                   }}
-                  isDisabled={isLoading}
-                  errorMessage={otpError}
-                  isInvalid={otpError !== null}
                   data-testid="otp-input-container"
+                  errorMessage={otpError}
+                  isDisabled={isLoading}
+                  isInvalid={otpError !== null}
+                  length={OTP_LENGTH}
+                  size={window.innerWidth < 640 ? "sm" : "lg"}
+                  value={otp}
+                  variant="faded"
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => setOTP(e.target.value)}
+                  onComplete={handleVerify}
+                  onValueChange={setOTP}
                 />
               </div>
               <div className="flex gap-2 justify-between">
                 <Button
                   className="bg-notpurple-500/30 text-white hover:bg-gray-600"
+                  disabled={isLoading}
                   type="button"
                   variant="flat"
                   onPress={handleCancel}
-                  disabled={isLoading}
                 >
                   Cancel
                 </Button>
                 <Button
                   className="bg-ualert-500 text-white hover:bg-ualert-600"
                   data-testid="resend-otp-button"
+                  isDisabled={isLoading || (!canResend && shouldEnableTimer)}
                   type="button"
                   variant="flat"
                   onPress={handleResendOTP}
-                  isDisabled={isLoading || (!canResend && shouldEnableTimer)}
                 >
                   {!canResend && shouldEnableTimer ? `Resend in ${resendTimer}s` : "Resend OTP"}
                 </Button>
@@ -184,10 +186,10 @@ export default function AuthPage() {
               <Button
                 className="bg-ualert-500 text-white hover:bg-notpurple-600 flex-1"
                 data-testid="sign-in-button"
+                isDisabled={!email || !/^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z0-9]{2,}$/i.test(email)}
                 isLoading={isLoading}
                 type="button"
                 variant="shadow"
-                isDisabled={!email || !/^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z0-9]{2,}$/i.test(email)}
                 onPress={handleLogin}
               >
                 Sign In

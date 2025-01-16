@@ -1,13 +1,13 @@
 import { useState } from "react";
 import { Button } from "@nextui-org/button";
 import { Tab, Tabs } from "@nextui-org/tabs";
+import { PlusIcon } from "lucide-react";
 
 import { cardServicesConfig } from "@/config/tabs";
 import CreateCardModal from "@/components/card-issuance/card-create";
 
 import CardListTable from "./card-list";
 import TransactionListTable from "./transactions";
-import { PlusIcon } from "lucide-react";
 
 type CardServicesTabsProps = {
   handleSubTabChange: (key: string) => void;
@@ -40,7 +40,7 @@ export default function CardServicesTabs({ handleSubTabChange }: CardServicesTab
             <Tab key={tab.id} title={tab.label} />
           ))}
         </Tabs>
-        <Button startContent={<PlusIcon size={18} />} color="default" onPress={() => setIsCreateModalOpen(true)}>
+        <Button color="default" startContent={<PlusIcon size={18} />} onPress={() => setIsCreateModalOpen(true)}>
           Create Card
         </Button>
       </div>

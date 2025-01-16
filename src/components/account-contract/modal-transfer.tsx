@@ -3,12 +3,14 @@ import { Modal, ModalBody, ModalContent } from "@nextui-org/modal";
 import { Button } from "@nextui-org/button";
 import { Divider } from "@nextui-org/divider";
 import { ArrowDownIcon, XIcon, InfoIcon } from "lucide-react";
-import { AccountSelectionModal } from "../generics/modal-account-select";
+import { Tooltip } from "@nextui-org/tooltip";
+
 import { useAccounts, Account } from "@/contexts/AccountContext";
 import { BalanceDisplay } from "@/components/generics/balance-display";
 import { formatUSD } from "@/utils/formatters/currency";
+
+import { AccountSelectionModal } from "../generics/modal-account-select";
 import { MoneyInput } from "../generics/money-input";
-import { Tooltip } from "@nextui-org/tooltip";
 
 interface TransferModalProps {
   isOpen: boolean;
@@ -61,6 +63,7 @@ export default function TransferModal({ isOpen, onClose }: TransferModalProps) {
   const handleSetMaxAmount = () => {
     if (fromAccount?.balance) {
       const maxAmount = fromAccount.balance.toString();
+
       setAmount(maxAmount);
     }
   };
@@ -68,21 +71,22 @@ export default function TransferModal({ isOpen, onClose }: TransferModalProps) {
   const isAmountValid = () => {
     if (!amount || !fromAccount) return false;
     const numericAmount = parseFloat(amount);
+
     return numericAmount > 0 && numericAmount <= (fromAccount.balance || 0);
   };
 
   return (
     <>
       <Modal
-        isOpen={isOpen}
-        onClose={handleClose}
-        size="sm"
+        hideCloseButton
         classNames={{
           base: "bg-[#0A0A0A]",
           wrapper: "bg-black/80",
           body: "p-0",
         }}
-        hideCloseButton
+        isOpen={isOpen}
+        size="sm"
+        onClose={handleClose}
       >
         <ModalContent>
           <div className="flex items-center justify-between px-5 py-4 border-b border-[#1a1a1a]">
@@ -90,9 +94,9 @@ export default function TransferModal({ isOpen, onClose }: TransferModalProps) {
             <div className="flex items-center gap-3">
               <Button
                 isIconOnly
+                className="text-gray-400 hover:text-white transition-colors"
                 variant="light"
                 onClick={handleClose}
-                className="text-gray-400 hover:text-white transition-colors"
               >
                 <XIcon size={18} />
               </Button>
@@ -108,9 +112,9 @@ export default function TransferModal({ isOpen, onClose }: TransferModalProps) {
                 </div>
                 <div className="flex items-center gap-3">
                   <MoneyInput
+                    isError={Boolean(fromAccount && parseFloat(amount) > (fromAccount.balance || 0))}
                     value={amount}
                     onChange={setAmount}
-                    isError={Boolean(fromAccount && parseFloat(amount) > (fromAccount.balance || 0))}
                   />
                   <Button
                     className="h-11 px-4 bg-[#1a1a1a] hover:bg-[#222222] text-white border border-[#2a2a2a] transition-all duration-200"
@@ -132,6 +136,7 @@ export default function TransferModal({ isOpen, onClose }: TransferModalProps) {
                   radius="full"
                   onClick={() => {
                     const temp = fromAccount;
+
                     setFromAccount(toAccount);
                     setToAccount(temp);
                   }}
@@ -161,10 +166,10 @@ export default function TransferModal({ isOpen, onClose }: TransferModalProps) {
                       <div className="flex items-center gap-2">
                         <span className="text-gray-400">Estimated Time</span>
                         <Tooltip
-                          content="Internal transfers may vary with network activity but usually complete within 1 minute"
                           className="bg-[#1a1a1a] text-white"
+                          content="Internal transfers may vary with network activity but usually complete within 1 minute"
                         >
-                          <InfoIcon size={14} className="text-gray-400 cursor-help" />
+                          <InfoIcon className="text-gray-400 cursor-help" size={14} />
                         </Tooltip>
                       </div>
                       <span className="text-white font-medium">Instant</span>
@@ -192,8 +197,8 @@ export default function TransferModal({ isOpen, onClose }: TransferModalProps) {
           <div className="p-4 pt-2">
             <Button
               className="w-full h-12 text-base font-medium bg-[#2152ff] hover:bg-[#1a47ff] text-white transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
-              size="lg"
               isDisabled={!fromAccount || !toAccount || !amount || !isAmountValid()}
+              size="lg"
               onClick={handleTransfer}
             >
               {!fromAccount || !toAccount
@@ -209,21 +214,21 @@ export default function TransferModal({ isOpen, onClose }: TransferModalProps) {
       </Modal>
 
       <AccountSelectionModal
-        isOpen={isFromAccountModalOpen}
-        onClose={() => setIsFromAccountModalOpen(false)}
         accounts={getEnabledAccounts().filter((acc) => acc.id !== toAccount?.id)}
-        onSelect={handleFromAccountSelect}
+        isOpen={isFromAccountModalOpen}
         selectedAccountId={fromAccount?.id}
         title="Select Source Account"
+        onClose={() => setIsFromAccountModalOpen(false)}
+        onSelect={handleFromAccountSelect}
       />
 
       <AccountSelectionModal
-        isOpen={isToAccountModalOpen}
-        onClose={() => setIsToAccountModalOpen(false)}
         accounts={getEnabledAccounts().filter((acc) => acc.id !== fromAccount?.id)}
-        onSelect={handleToAccountSelect}
+        isOpen={isToAccountModalOpen}
         selectedAccountId={toAccount?.id}
         title="Select Destination Account"
+        onClose={() => setIsToAccountModalOpen(false)}
+        onSelect={handleToAccountSelect}
       />
     </>
   );

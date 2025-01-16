@@ -1,22 +1,17 @@
 "use client";
 
 import { useState } from "react";
-import { Card, CardBody, CardHeader } from "@nextui-org/card";
-import { Button } from "@nextui-org/button";
+import { Card } from "@nextui-org/card";
 import {
   PlusCircleIcon,
-  ArrowUpRight,
-  ArrowDownRight,
   Building2, // For Settlement
   CreditCard, // For Rain Card
-  PiggyBank, // For Savings
-  FolderPlus, // For Create Account
+  PiggyBank, // For Create Account
 } from "lucide-react";
 
 import useAccountContracts from "@/hooks/account-contracts/useAccountContracts";
 import AddFundsModal from "@/components/account-contract/modal-add-funds";
 import WithdrawFundsModal from "@/components/account-contract/modal-withdraw-funds";
-import { FundCard } from "@/components/generics/card-account";
 import PortfolioModal from "@/components/account-contract/modal-portfolio";
 import { AccountCard } from "@/components/generics/card-account";
 import TransferModal from "@/components/account-contract/modal-transfer";
@@ -85,40 +80,28 @@ export default function AccountOverview() {
         </div>
 
         <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
-          <AccountCard
-            variant="overview"
-            title="Total Balance"
-            value="$487,487.63"
-            subtitle="USD"
-            isTotal
-          />
+          <AccountCard isTotal subtitle="USD" title="Total Balance" value="$487,487.63" variant="overview" />
 
           <div className="col-span-2 md:col-span-3 grid grid-cols-3 gap-2">
             <AccountCard
-              variant="overview"
-              title="Income"
-              value="+$12,000"
+              isHoverable
               subtitle="Last 30 days"
+              title="Income"
               trend="up"
               trendColor="success"
+              value="+$12,000"
+              variant="overview"
               onClick={() => setIsPortfolioOpen(true)}
-              isHoverable
             />
             <AccountCard
-              variant="overview"
-              title="Expenses"
-              value="-$7,000"
               subtitle="Last 30 days"
+              title="Expenses"
               trend="down"
               trendColor="danger"
-            />
-            <AccountCard
+              value="-$7,000"
               variant="overview"
-              title="Net Change"
-              value="+$5,000"
-              trend="up"
-              trendColor="success"
             />
+            <AccountCard title="Net Change" trend="up" trendColor="success" value="+$5,000" variant="overview" />
           </div>
         </div>
       </div>
@@ -133,19 +116,15 @@ export default function AccountOverview() {
           {accounts.map((account) => (
             <AccountCard
               key={account.id}
-              variant="account"
-              name={account.name}
-              icon={account.icon}
               balance={account.balance}
+              comingSoon={account.comingSoon}
               currency={account.currency}
               disabled={account.disabled}
-              comingSoon={account.comingSoon}
+              icon={account.icon}
               isCreateAccount={account.isCreateAccount}
-              onClick={() => 
-                !account.disabled && 
-                !account.isCreateAccount && 
-                setIsTransferOpen(true)
-              }
+              name={account.name}
+              variant="account"
+              onClick={() => !account.disabled && !account.isCreateAccount && setIsTransferOpen(true)}
             />
           ))}
         </div>
@@ -154,10 +133,7 @@ export default function AccountOverview() {
       <AddFundsModal isOpen={isAddFundsOpen} onClose={() => setIsAddFundsOpen(false)} />
       <WithdrawFundsModal isOpen={isWithdrawFundsOpen} onClose={() => setIsWithdrawFundsOpen(false)} />
       <TransferModal isOpen={isTransferOpen} onClose={() => setIsTransferOpen(false)} />
-      <PortfolioModal 
-        isOpen={isPortfolioOpen} 
-        onClose={() => setIsPortfolioOpen(false)} 
-      />
+      <PortfolioModal isOpen={isPortfolioOpen} onClose={() => setIsPortfolioOpen(false)} />
     </Card>
   );
 }

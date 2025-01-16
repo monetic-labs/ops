@@ -2,6 +2,7 @@
 
 import React from "react";
 import { motion, useScroll, useTransform } from "framer-motion";
+
 import { useWindowSize } from "@/hooks/useWindowSize";
 
 const bgCelestial = "/bg-celestial.png";
@@ -17,11 +18,7 @@ const ScrollBackground: React.FC = () => {
   const y = useTransform(scrollY, [0, height], [0, yRange]);
 
   // Scale slightly larger to prevent edges
-  const scale = useTransform(
-    scrollY,
-    [0, height],
-    [1.05, 1.1]
-  );
+  const scale = useTransform(scrollY, [0, height], [1.05, 1.1]);
 
   return (
     <motion.div

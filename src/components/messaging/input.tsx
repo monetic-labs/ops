@@ -3,11 +3,12 @@
 
 import React, { useCallback, forwardRef } from "react";
 
-import { useMessagingState, useMessagingActions, useCurrentModeMessages, useMessagingStore } from "@/libs/messaging/store";
+import { useMessagingState, useMessagingActions } from "@/libs/messaging/store";
 import { useAgentService } from "@/hooks/messaging/useAgentService";
 import { useMentions } from "@/hooks/messaging/useMentions";
 import { useSupportService } from "@/hooks/messaging/useSupportService";
 import { MentionOption } from "@/types/messaging";
+
 import { MentionList } from "./mention-list";
 
 export const MessageInput = forwardRef<HTMLInputElement>((_, ref) => {
@@ -15,33 +16,30 @@ export const MessageInput = forwardRef<HTMLInputElement>((_, ref) => {
   const {
     message: { setInputValue },
   } = useMessagingActions();
-  
+
   // Services
   const agentService = useAgentService();
   const supportService = useSupportService();
-  const activeService = mode === 'support' ? supportService : agentService;
+  const activeService = mode === "support" ? supportService : agentService;
 
   // Mentions
-  const { 
+  const {
     options: mentionOptions,
     mentionState,
     setMentionState,
     handleKeyDown: handleMentionKeyDown,
     handleSelectMention,
-    handleInputChange: handleMentionInputChange
+    handleInputChange: handleMentionInputChange,
   } = useMentions();
 
   const handleChange = useCallback(
     async (e: React.ChangeEvent<HTMLInputElement>) => {
       const newValue = e.target.value;
+
       await activeService.setInputValue(newValue);
 
       // Handle mentions
-      handleMentionInputChange(
-        newValue, 
-        e.target.selectionStart || 0,
-        e.target
-      );
+      handleMentionInputChange(newValue, e.target.selectionStart || 0, e.target);
     },
     [activeService, handleMentionInputChange]
   );
@@ -52,23 +50,26 @@ export const MessageInput = forwardRef<HTMLInputElement>((_, ref) => {
       const cursorPos = (document.querySelector('[data-testid="chat-input"]') as HTMLInputElement)?.selectionStart || 0;
       const textBeforeCursor = currentInput.slice(0, cursorPos);
       const textAfterCursor = currentInput.slice(cursorPos);
-      
+
       // Find the last @ symbol before cursor
-      const lastAtIndex = textBeforeCursor.lastIndexOf('@');
+      const lastAtIndex = textBeforeCursor.lastIndexOf("@");
+
       if (lastAtIndex === -1) return;
-      
+
       const selectedMention = handleSelectMention(option);
-      
+
       // Replace the text between @ and cursor with the mention
-      const newValue = textBeforeCursor.slice(0, lastAtIndex) + selectedMention.insertText + ' ' + textAfterCursor;
-      
+      const newValue = textBeforeCursor.slice(0, lastAtIndex) + selectedMention.insertText + " " + textAfterCursor;
+
       await activeService.setInputValue(newValue);
-      
+
       // Set cursor position after the inserted mention
       setTimeout(() => {
         const input = document.querySelector('[data-testid="chat-input"]') as HTMLInputElement;
+
         if (input) {
           const newCursorPos = lastAtIndex + selectedMention.insertText.length + 1;
+
           input.setSelectionRange(newCursorPos, newCursorPos);
           input.focus();
         }
@@ -81,6 +82,7 @@ export const MessageInput = forwardRef<HTMLInputElement>((_, ref) => {
     (e: React.KeyboardEvent) => {
       if (mentionState.isOpen) {
         const result = handleMentionKeyDown(e);
+
         if (result) {
           handleMentionSelect(result.option);
         }
@@ -89,17 +91,16 @@ export const MessageInput = forwardRef<HTMLInputElement>((_, ref) => {
     [mentionState.isOpen, handleMentionKeyDown, handleMentionSelect]
   );
 
-  const handleSubmit = useCallback(async (e: React.FormEvent) => {
-    e.preventDefault();
-    await activeService.handleSubmit(e);
-  }, [activeService]);
+  const handleSubmit = useCallback(
+    async (e: React.FormEvent) => {
+      e.preventDefault();
+      await activeService.handleSubmit(e);
+    },
+    [activeService]
+  );
 
   return (
-    <form 
-      className="flex items-center p-4 relative" 
-      data-testid="chat-input-form" 
-      onSubmit={handleSubmit}
-    >
+    <form className="flex items-center p-4 relative" data-testid="chat-input-form" onSubmit={handleSubmit}>
       <div className="relative flex-1">
         <input
           ref={ref}

@@ -12,7 +12,7 @@ import { Address } from "viem";
 import { Button } from "@nextui-org/button";
 
 import { useExistingDisbursement } from "@/hooks/bill-pay/useExistingDisbursement";
-import { modal } from "@/context/reown";
+import { modal } from "@/contexts/reown";
 import TransferStatusView, { TransferStatus } from "@/components/generics/transfer-status";
 import { buildTransfer } from "@/utils/reown";
 import { useBalance } from "@/hooks/account-contracts/useBalance";

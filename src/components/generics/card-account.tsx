@@ -44,17 +44,17 @@ export function AccountCard(props: CardProps) {
   if (props.variant === "fund") {
     return (
       <button
-        className="w-full text-left cursor-pointer"
-        onClick={props.onClick}
-        disabled={props.disabled}
         aria-label={`Fund card for ${props.title}`}
+        className="w-full text-left cursor-pointer"
+        disabled={props.disabled}
+        onClick={props.onClick}
       >
         <Card className="bg-charyo-500/60">
           <CardBody>
             <div className="flex items-center">
               <h3 className="text-lg font-semibold">{props.title}</h3>
               <Tooltip content={props.description} placement="top">
-                <InfoIcon size={16} className="ml-2 text-default-500" />
+                <InfoIcon className="ml-2 text-default-500" size={16} />
               </Tooltip>
             </div>
             <h4 className="text-2xl font-bold my-2">
@@ -87,15 +87,15 @@ export function AccountCard(props: CardProps) {
 
     return props.onClick ? (
       <button
-        className={`${baseClasses} ${hoverClasses} w-full text-left`}
-        onClick={props.onClick}
-        disabled={props.disabled}
         aria-label={`Overview card for ${props.title}`}
+        className={`${baseClasses} ${hoverClasses} w-full text-left`}
+        disabled={props.disabled}
+        onClick={props.onClick}
       >
         <div className="flex items-center justify-between mb-1">
           <span className="text-xs text-default-600">{props.title}</span>
-          {props.trend && (
-            props.trend === "up" ? (
+          {props.trend &&
+            (props.trend === "up" ? (
               <ArrowUpRight
                 className={`w-3 h-3 ${
                   props.trendColor === "success"
@@ -115,8 +115,7 @@ export function AccountCard(props: CardProps) {
                       : "text-default/70"
                 }`}
               />
-            )
-          )}
+            ))}
         </div>
         <p
           className={`text-lg md:text-xl font-bold ${
@@ -182,6 +181,7 @@ export function AccountCard(props: CardProps) {
 
   return (
     <button
+      aria-label={`${props.isCreateAccount ? "Create new account" : `${props.name} account`}`}
       className={`w-full text-left p-3 rounded-lg transition-all ${
         props.isCreateAccount
           ? "border border-dashed border-default-300 hover:border-primary/50"
@@ -193,10 +193,9 @@ export function AccountCard(props: CardProps) {
             ? "opacity-60"
             : ""
       }`}
-      onClick={props.onClick}
       disabled={props.disabled}
-      aria-label={`${props.isCreateAccount ? 'Create new account' : `${props.name} account`}`}
       type="button"
+      onClick={props.onClick}
     >
       <div>
         <div className="flex items-center justify-between">

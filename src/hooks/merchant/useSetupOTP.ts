@@ -1,4 +1,5 @@
 import { useState, useRef, useCallback, useEffect } from "react";
+
 import { useOTP } from "@/hooks/auth/useOTP";
 import { OTP_CODE_LENGTH } from "@/utils/constants";
 import { isLocal, isTesting } from "@/utils/helpers";
@@ -13,16 +14,20 @@ export const useSetupOTP = (initialEmail: string) => {
   const initiateOTP = useCallback(async () => {
     try {
       const response = await issueOTP(initialEmail);
+
       if (response === 200) {
         if (shouldEnableTimer) {
           setCanResend(false);
           setResendTimer(30);
         }
+
         return true;
       }
+
       return false;
     } catch (error) {
       console.error("Error issuing OTP:", error);
+
       return false;
     }
   }, [initialEmail, issueOTP, shouldEnableTimer]);
@@ -30,11 +35,14 @@ export const useSetupOTP = (initialEmail: string) => {
   const handleVerify = useCallback(async () => {
     if (otp.length === OTP_CODE_LENGTH) {
       const success = await verifyOTP({ email: initialEmail, otp });
+
       if (success) {
         resetState();
+
         return true;
       }
     }
+
     return false;
   }, [initialEmail, otp, verifyOTP, resetState]);
 
@@ -45,6 +53,7 @@ export const useSetupOTP = (initialEmail: string) => {
         setResendTimer(30);
       }
       resetState();
+
       return initiateOTP();
     }
   }, [canResend, shouldEnableTimer, resetState, initiateOTP]);
