@@ -23,7 +23,7 @@ export const getFieldsForStep = (step: number): (keyof FormData)[] => {
     case 4:
       return ["users"];
     case 5:
-      return ["acceptedBillPay", "acceptedCardProgram", "acceptedTerms"];
+      return ["acceptedTerms"];
     default:
       return [];
   }

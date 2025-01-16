@@ -1,4 +1,5 @@
 import { createIcon } from "opepen-standard";
+import { Address } from "viem";
 
 export const isLocal = process.env.NEXT_PUBLIC_NODE_ENV === "development";
 export const isTesting = process.env.NEXT_PUBLIC_NODE_ENV === "ci";
@@ -91,4 +92,14 @@ export const formatDecimals = (value: string): string => {
   const truncatedDecimal = decimal.slice(0, 2).padEnd(2, "0");
 
   return `${whole}.${truncatedDecimal}`;
+};
+
+export const truncateAddress = (address: Address): string => {
+  if (address.length <= 10) return address;
+
+  return `${address.slice(0, 5)}....${address.slice(-4)}`;
+};
+
+export const formatUSPhoneNumber = (phoneNumber: string): string => {
+  return phoneNumber.replace(/(\d{3})(\d{3})(\d{4})/, "($1) $2-$3");
 };

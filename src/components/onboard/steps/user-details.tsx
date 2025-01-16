@@ -1,58 +1,176 @@
 "use client";
 
-import { useFormContext } from "react-hook-form";
+import { useFormContext, Controller } from "react-hook-form";
 import { FormField } from "../form-fields";
 import { FormData } from "@/validations/onboard/schemas";
-
+import { Select, SelectItem } from "@nextui-org/select";
+import { Divider } from "@nextui-org/divider";
+import postcodeMap from "@/data/postcodes-map.json";
+import { ChangeEvent } from "react";
+import { Input } from "@nextui-org/input";
+import { SharedSelection } from "@nextui-org/system";
 export const UserDetailsStep = () => {
-  const { watch } = useFormContext<FormData>();
+  const {
+    watch,
+    setValue,
+    control,
+    formState: { errors },
+  } = useFormContext<FormData>();
   const users = watch("users");
 
   return (
-    <div className="space-y-4">
-      {users.map((_: unknown, index: number) => (
-        <div key={index} className="space-y-4">
-          <FormField label="First Name" name={`users.${index}.firstName`} placeholder="Enter first name" />
-          <FormField label="Last Name" name={`users.${index}.lastName`} placeholder="Enter last name" />
-          <FormField label="Email" name={`users.${index}.email`} placeholder="Enter email" type="email" />
-          <FormField
-            label="Phone Number"
-            name={`users.${index}.phoneNumber`}
-            placeholder="Enter phone number"
-            type="tel"
+    <div className="mb-8 space-y-8">
+      {users.map((user: any, index: number) => (
+        <div key={index} className="space-y-4 p-4 border border-default-200 rounded-lg">
+          <div className="flex justify-between items-center">
+            <h2 className="text-lg font-bold">
+              Person {index + 1}: {watch(`users.${index}.firstName`)} {watch(`users.${index}.lastName`)}
+            </h2>
+            <div className="text-sm text-default-400">
+              {watch(`users.${index}.roles`).map((role: string) => (
+                <span key={role} className="mr-2">
+                  {role
+                    .split("_")
+                    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+                    .join(" ")}
+                </span>
+              ))}
+            </div>
+          </div>
+
+          <Select
+            isRequired
+            errorMessage={errors?.users?.[index]?.countryOfIssue?.message}
+            isInvalid={!!errors?.users?.[index]?.countryOfIssue}
+            label="Country of Issue (for ID)"
+            placeholder="Select country"
+            selectedKeys={watch(`users.${index}.countryOfIssue`) ? [watch(`users.${index}.countryOfIssue`)] : []}
+            onSelectionChange={(keys: SharedSelection) => {
+              const selected = Array.from(keys)[0];
+              setValue(`users.${index}.countryOfIssue`, selected as string, { shouldValidate: true });
+            }}
+          >
+            <SelectItem key="usa" value="usa">
+              USA
+            </SelectItem>
+            <SelectItem key="canada" value="canada">
+              Canada
+            </SelectItem>
+          </Select>
+
+          <Controller
+            control={control}
+            name={`users.${index}.birthDate`}
+            render={({ field }) => (
+              <Input
+                {...field}
+                errorMessage={errors?.users?.[index]?.birthDate?.message}
+                isInvalid={!!errors?.users?.[index]?.birthDate}
+                label="Birth Date"
+                placeholder="YYYY-MM-DD"
+                type="date"
+              />
+            )}
           />
-          <FormField label="Country of Issue" name={`users.${index}.countryOfIssue`} placeholder="Enter country" />
-          <FormField label="Birth Date" name={`users.${index}.birthDate`} placeholder="YYYY-MM-DD" type="date" />
-          <FormField
-            label="Social Security Number"
+
+          <Controller
+            control={control}
             name={`users.${index}.socialSecurityNumber`}
-            placeholder="XXX-XX-XXXX"
+            render={({ field }) => (
+              <Input
+                {...field}
+                errorMessage={errors?.users?.[index]?.socialSecurityNumber?.message}
+                isInvalid={!!errors?.users?.[index]?.socialSecurityNumber}
+                label="Social Security Number"
+                maxLength={9}
+                placeholder="XXX-XX-XXXX"
+              />
+            )}
           />
-          <FormField
-            label="Street Address 1"
+
+          <div className="grid grid-cols-3 gap-4">
+            <Controller
+              control={control}
+              name={`users.${index}.postcode`}
+              render={({ field }) => (
+                <Input
+                  {...field}
+                  errorMessage={errors?.users?.[index]?.postcode?.message}
+                  isInvalid={!!errors?.users?.[index]?.postcode}
+                  label="Postcode"
+                  maxLength={5}
+                  placeholder="12345"
+                  onChange={(e: ChangeEvent<HTMLInputElement>) => {
+                    field.onChange(e);
+                    const postcodeValue = e.target.value;
+                    if (postcodeValue && postcodeMap[postcodeValue]) {
+                      const data = postcodeMap[postcodeValue];
+                      setValue(`users.${index}.city`, data.city || "", { shouldValidate: true });
+                      setValue(`users.${index}.state`, data.stateAbbreviation || "", { shouldValidate: true });
+                    }
+                  }}
+                />
+              )}
+            />
+            <Controller
+              control={control}
+              name={`users.${index}.city`}
+              render={({ field }) => (
+                <Input
+                  {...field}
+                  errorMessage={errors?.users?.[index]?.city?.message}
+                  isDisabled={true}
+                  isInvalid={!!errors?.users?.[index]?.city}
+                  label="City"
+                  placeholder="New York"
+                />
+              )}
+            />
+            <Controller
+              control={control}
+              name={`users.${index}.state`}
+              render={({ field }) => (
+                <Input
+                  {...field}
+                  errorMessage={errors?.users?.[index]?.state?.message}
+                  isDisabled={true}
+                  isInvalid={!!errors?.users?.[index]?.state}
+                  label="State"
+                  placeholder="NY"
+                />
+              )}
+            />
+          </div>
+
+          <Controller
+            control={control}
             name={`users.${index}.streetAddress1`}
-            placeholder="Enter street address"
+            render={({ field }) => (
+              <Input
+                {...field}
+                errorMessage={errors?.users?.[index]?.streetAddress1?.message}
+                isInvalid={!!errors?.users?.[index]?.streetAddress1}
+                label="Street Address 1"
+                placeholder="123 Main St"
+              />
+            )}
           />
-          <FormField
-            isOptional
-            label="Street Address 2"
+
+          <Controller
+            control={control}
             name={`users.${index}.streetAddress2`}
-            placeholder="Enter suite, unit, etc."
+            render={({ field }) => (
+              <Input
+                {...field}
+                errorMessage={errors?.users?.[index]?.streetAddress2?.message}
+                isInvalid={!!errors?.users?.[index]?.streetAddress2}
+                label="Street Address 2"
+                placeholder="Apt 4B"
+              />
+            )}
           />
-          <FormField label="Postcode" maxLength={5} name={`users.${index}.postcode`} placeholder="Enter postcode" />
-          <FormField
-            isDisabled
-            label="City"
-            name={`users.${index}.city`}
-            placeholder="City will be filled automatically"
-          />
-          <FormField
-            isDisabled
-            label="State"
-            maxLength={2}
-            name={`users.${index}.state`}
-            placeholder="State will be filled automatically"
-          />
+
+          {index < users.length - 1 && <Divider className="my-4" />}
         </div>
       ))}
     </div>

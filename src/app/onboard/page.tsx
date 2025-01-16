@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense } from "react";
+import { Suspense, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
 import { OnboardForm } from "@/components/onboard/onboard-form";
 
@@ -11,7 +11,7 @@ export default function OnboardPage() {
   return (
     <section className="relative">
       <Suspense fallback={<div>Loading...</div>}>
-        <OnboardForm email={email} />
+        <OnboardForm key={email} email={email} />
       </Suspense>
     </section>
   );

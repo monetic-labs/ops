@@ -1,9 +1,10 @@
 "use client";
 
 import { useFormContext } from "react-hook-form";
-import { CheckCircle } from "lucide-react";
+import { CheckCircle, Edit } from "lucide-react";
 import { Button } from "@nextui-org/button";
 import { FormData } from "@/validations/onboard/schemas";
+import { formatUSPhoneNumber, truncateAddress } from "@/utils/helpers";
 
 export const ReviewStep = ({ onStepChange }: { onStepChange: (step: number) => void }) => {
   const { watch } = useFormContext<FormData>();
@@ -16,19 +17,20 @@ export const ReviewStep = ({ onStepChange }: { onStepChange: (step: number) => v
       size="sm"
       variant="light"
     >
+      <Edit className="text-[#E31B88] hover:text-[#cc0077]" size={16} />
       Edit
     </Button>
   );
 
   return (
-    <div className="space-y-8">
+    <div className="mb-8 space-y-8">
       {/* Company Information */}
       <div className="space-y-4">
         <div className="flex items-center justify-between">
           <h3 className="text-lg font-semibold">Company Information</h3>
           <EditButton step={1} />
         </div>
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-2 gap-4 rounded-lg border border-default-200 p-4">
           <div>
             <p className="text-sm text-default-500">Company Name</p>
             <p>{formData.companyName}</p>
@@ -62,10 +64,10 @@ export const ReviewStep = ({ onStepChange }: { onStepChange: (step: number) => v
           <h3 className="text-lg font-semibold">Company Details</h3>
           <EditButton step={2} />
         </div>
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-2 gap-4 rounded-lg border border-default-200 p-4">
           <div>
             <p className="text-sm text-default-500">Settlement Address</p>
-            <p>{formData.settlementAddress}</p>
+            <p>{truncateAddress(formData.settlementAddress)}</p>
           </div>
           <div>
             <p className="text-sm text-default-500">Registration Number</p>
@@ -115,7 +117,7 @@ export const ReviewStep = ({ onStepChange }: { onStepChange: (step: number) => v
                 </div>
                 <div>
                   <p className="text-sm text-default-500">Phone</p>
-                  <p>{user.phoneNumber}</p>
+                  <p>{user.phoneNumber.length === 9 ? formatUSPhoneNumber(user.phoneNumber) : user.phoneNumber}</p>
                 </div>
                 <div>
                   <p className="text-sm text-default-500">Roles</p>
@@ -146,15 +148,7 @@ export const ReviewStep = ({ onStepChange }: { onStepChange: (step: number) => v
           <h3 className="text-lg font-semibold">Terms and Conditions</h3>
           <EditButton step={5} />
         </div>
-        <div className="space-y-2">
-          <div className="flex items-center gap-2">
-            <CheckCircle className="h-4 w-4 text-green-500" />
-            <p>Rain Card Agreement accepted</p>
-          </div>
-          <div className="flex items-center gap-2">
-            <CheckCircle className="h-4 w-4 text-green-500" />
-            <p>Bill Pay Agreement accepted</p>
-          </div>
+        <div className="rounded-lg border border-default-200 p-4">
           <div className="flex items-center gap-2">
             <CheckCircle className="h-4 w-4 text-green-500" />
             <p>All terms and conditions accepted</p>

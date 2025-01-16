@@ -12,7 +12,7 @@ import pylon from "@/libs/pylon-sdk";
 
 const orderSchema = z.object({
   email: z.string().email("Invalid email address"),
-  phone: z.string().min(10, "Phone number must be at least 10 digits"),
+  phone: z.string().min(9, "Phone number must be at least 9 digits"),
   amount: z.string().regex(/^\d+(\.\d{1,2})?$/, "Invalid amount"),
 });
 

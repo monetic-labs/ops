@@ -100,7 +100,7 @@ export const userDetailsSchema = z.object({
     .string()
     .min(1, "Phone number is required")
     .regex(/^\d+$/, "Phone number can only contain digits")
-    .min(10, "Phone number must be at least 10 digits")
+    .min(9, "Phone number must be at least 9 digits")
     .max(15, "Phone number cannot exceed 15 digits"),
   roles: z
     .array(z.enum([UserRole.BENEFICIAL_OWNER, UserRole.REPRESENTATIVE]))
@@ -166,12 +166,6 @@ export const accountUsersSchema = z.object({
 });
 
 export const termsSchema = z.object({
-  acceptedBillPay: z.boolean().refine((val) => val === true, {
-    message: "You must accept the Bill Pay Agreement",
-  }),
-  acceptedCardProgram: z.boolean().refine((val) => val === true, {
-    message: "You must accept the Card Program Agreement",
-  }),
   acceptedTerms: z.boolean().refine((val) => val === true, {
     message: "You must accept all terms and conditions",
   }),

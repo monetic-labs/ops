@@ -2,6 +2,31 @@
 
 import { Input } from "@nextui-org/input";
 import { useFormContext } from "react-hook-form";
+import { schema } from "@/validations/onboard/schemas";
+import { z } from "zod";
+
+// Helper function to check if a field is optional in the schema
+const isFieldOptional = (fieldPath: string) => {
+  try {
+    const pathParts = fieldPath.split(".");
+    let currentSchema: any = schema;
+
+    // Navigate through nested schemas
+    for (const part of pathParts) {
+      if (currentSchema.shape) {
+        currentSchema = currentSchema.shape[part];
+      } else if (Array.isArray(currentSchema)) {
+        currentSchema = currentSchema[parseInt(part)];
+      }
+    }
+
+    // Check if the field is optional
+    return currentSchema instanceof z.ZodOptional;
+  } catch (e) {
+    // If we can't determine from schema, default to required
+    return false;
+  }
+};
 
 export const FormField = ({
   name,
@@ -32,6 +57,9 @@ export const FormField = ({
 
   const error = getNestedError(name);
   const errorMessage = error?.message;
+
+  // Determine if field is required based on schema or explicit isOptional prop
+  const isRequired = !isOptional && !isFieldOptional(name);
 
   // Handle value formatting if provided
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -65,6 +93,7 @@ export const FormField = ({
     <Input
       {...props}
       {...inputProps}
+      isRequired={isRequired}
       classNames={{
         ...props.classNames,
         input: `${props.classNames?.input || ""} ${error ? "border-red-500" : ""}`,
@@ -74,7 +103,7 @@ export const FormField = ({
       label={
         <>
           {label}
-          {isOptional && <span className="text-xs text-default-400 ml-1">(Optional)</span>}
+          {!isRequired && <span className="text-xs text-default-400 ml-1">(Optional)</span>}
         </>
       }
     />

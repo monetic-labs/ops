@@ -36,7 +36,7 @@ const getFieldsForStep = (step: number): (keyof FormData)[] => {
     case 4:
       return ["users"];
     case 5:
-      return ["acceptedBillPay", "acceptedCardProgram", "acceptedTerms"];
+      return ["acceptedTerms"];
     default:
       return [];
   }
@@ -94,7 +94,7 @@ const StepNavigation = ({
   isSubmitting?: boolean;
   isValid?: boolean;
 }) => (
-  <div className="flex justify-end space-x-4">
+  <div className="mt-8 flex justify-end space-x-4">
     {!isFirstStep && (
       <Button variant="bordered" onClick={onPrevious}>
         Previous
@@ -116,7 +116,7 @@ const StepNavigation = ({
         isDisabled={isSubmitting || !isValid}
         type="submit"
       >
-        Submit
+        Submit Application
       </Button>
     )}
   </div>
