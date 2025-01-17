@@ -9,6 +9,16 @@ import postcodeMap from "@/data/postcodes-map.json";
 import { ChangeEvent } from "react";
 import { Input } from "@nextui-org/input";
 import { SharedSelection } from "@nextui-org/system";
+import { ISO3166Alpha2Country } from "@backpack-fux/pylon-sdk";
+
+const formatSSN = (value: string) => {
+  if (!value) return "";
+  const digits = value.replace(/\D/g, "");
+  if (digits.length <= 3) return digits;
+  if (digits.length <= 5) return `${digits.slice(0, 3)}-${digits.slice(3)}`;
+  return `${digits.slice(0, 3)}-${digits.slice(3, 5)}-${digits.slice(5)}`;
+};
+
 export const UserDetailsStep = () => {
   const {
     watch,
@@ -47,15 +57,14 @@ export const UserDetailsStep = () => {
             selectedKeys={watch(`users.${index}.countryOfIssue`) ? [watch(`users.${index}.countryOfIssue`)] : []}
             onSelectionChange={(keys: SharedSelection) => {
               const selected = Array.from(keys)[0];
-              setValue(`users.${index}.countryOfIssue`, selected as string, { shouldValidate: true });
+              setValue(`users.${index}.countryOfIssue`, selected as ISO3166Alpha2Country, { shouldValidate: true });
             }}
           >
-            <SelectItem key="usa" value="usa">
-              USA
-            </SelectItem>
-            <SelectItem key="canada" value="canada">
-              Canada
-            </SelectItem>
+            {Object.values(ISO3166Alpha2Country).map((country) => (
+              <SelectItem key={country} value={country}>
+                {country}
+              </SelectItem>
+            ))}
           </Select>
 
           <Controller
@@ -82,8 +91,15 @@ export const UserDetailsStep = () => {
                 errorMessage={errors?.users?.[index]?.socialSecurityNumber?.message}
                 isInvalid={!!errors?.users?.[index]?.socialSecurityNumber}
                 label="Social Security Number"
-                maxLength={9}
+                maxLength={11}
                 placeholder="XXX-XX-XXXX"
+                value={field.value ? formatSSN(field.value) : ""}
+                onChange={(e) => {
+                  const digits = e.target.value.replace(/\D/g, "");
+                  if (digits.length <= 9) {
+                    field.onChange(digits);
+                  }
+                }}
               />
             )}
           />

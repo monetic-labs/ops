@@ -3,7 +3,9 @@
 import { useFormContext, Controller } from "react-hook-form";
 import { FormField } from "../form-fields";
 import { Select, SelectItem } from "@nextui-org/select";
-import { CardCompanyType } from "@/validations/onboard/schemas";
+import { CardCompanyType } from "@backpack-fux/pylon-sdk";
+import { Input } from "@nextui-org/input";
+import { formatCompanyType, formatEIN } from "@/utils/helpers";
 
 export const CompanyAccountStep = () => {
   const {
@@ -29,7 +31,27 @@ export const CompanyAccountStep = () => {
           name="companyRegistrationNumber"
           placeholder="1234567"
         />
-        <FormField label="Company Tax ID" maxLength={10} name="companyTaxId" placeholder="12-3456789" />
+        <Controller
+          control={control}
+          name="companyTaxId"
+          render={({ field, fieldState: { error } }) => (
+            <Input
+              {...field}
+              errorMessage={error?.message}
+              isInvalid={!!error}
+              label="Company Tax ID"
+              maxLength={10}
+              placeholder="12-3456789"
+              value={field.value ? formatEIN(field.value) : ""}
+              onChange={(e) => {
+                const digits = e.target.value.replace(/\D/g, "");
+                if (digits.length <= 9) {
+                  field.onChange(digits);
+                }
+              }}
+            />
+          )}
+        />
         <Controller
           control={control}
           name="companyType"
@@ -44,30 +66,11 @@ export const CompanyAccountStep = () => {
               selectedKeys={companyType ? [companyType] : []}
               onChange={(e) => field.onChange(e.target.value)}
             >
-              <SelectItem key="sole_proprietorship" value={CardCompanyType.SOLE_PROPRIETORSHIP}>
-                Sole Proprietorship
-              </SelectItem>
-              <SelectItem key="llc" value={CardCompanyType.LLC}>
-                Limited Liability Company (LLC)
-              </SelectItem>
-              <SelectItem key="c_corp" value={CardCompanyType.C_CORP}>
-                C Corporation
-              </SelectItem>
-              <SelectItem key="s_corp" value={CardCompanyType.S_CORP}>
-                S Corporation
-              </SelectItem>
-              <SelectItem key="partnership" value={CardCompanyType.PARTNERSHIP}>
-                Partnership
-              </SelectItem>
-              <SelectItem key="lp" value={CardCompanyType.LP}>
-                Limited Partnership (LP)
-              </SelectItem>
-              <SelectItem key="llp" value={CardCompanyType.LLP}>
-                Limited Liability Partnership (LLP)
-              </SelectItem>
-              <SelectItem key="nonprofit" value={CardCompanyType.NONPROFIT}>
-                Nonprofit Corporation
-              </SelectItem>
+              {Object.values(CardCompanyType).map((type) => (
+                <SelectItem key={type} value={type}>
+                  {formatCompanyType(type)}
+                </SelectItem>
+              ))}
             </Select>
           )}
         />

@@ -10,10 +10,12 @@ import { Circle, CheckCircle } from "lucide-react";
 import { schema, FormData, UserRole } from "@/validations/onboard/schemas";
 import { CompanyDetailsStep } from "./steps/company-details";
 import { CompanyAccountStep } from "./steps/company-account";
-import { AccountUsers } from "./account-users";
+import { AccountUsers } from "./steps/account-users";
 import { TermsStep } from "./steps/terms";
 import { ReviewStep } from "./steps/review";
 import { UserDetailsStep } from "./steps/user-details";
+import pylon from "@/libs/pylon-sdk";
+import { ISO3166Alpha2Country, ISO3166Alpha3Country } from "@backpack-fux/pylon-sdk";
 
 // Helper function to get fields for current step
 const getFieldsForStep = (step: number): (keyof FormData)[] => {
@@ -50,9 +52,12 @@ const getDefaultValues = (email: string): Partial<FormData> => ({
       firstName: "",
       lastName: "",
       email: email,
-      phoneNumber: "",
+      phoneNumber: {
+        extension: "",
+        number: "",
+      },
       roles: [UserRole.BENEFICIAL_OWNER, UserRole.REPRESENTATIVE],
-      countryOfIssue: "",
+      countryOfIssue: ISO3166Alpha2Country.US,
       birthDate: "",
       socialSecurityNumber: "",
       postcode: "",
@@ -147,7 +152,100 @@ export function OnboardForm({ email }: { email: string }) {
     try {
       // Handle form submission
       console.log(data);
-      // Add your API call here
+      // Call Backpack Pylon SDK
+      const response = await pylon.createMerchant({
+        walletAddress: data.settlementAddress,
+        company: {
+          name: data.companyName,
+          email: data.companyEmail,
+          website: data.companyWebsite,
+          type: data.companyType,
+          registrationNumber: data.companyRegistrationNumber,
+          taxId: data.companyTaxId,
+          description: data.companyDescription,
+          registeredAddress: {
+            street1: data.streetAddress1,
+            street2: data.streetAddress2,
+            city: data.city,
+            postcode: data.postcode,
+            state: data.state,
+            country: ISO3166Alpha2Country.US,
+          },
+          controlOwner: {
+            firstName: data.users[0].firstName,
+            lastName: data.users[0].lastName,
+            email: data.users[0].email,
+            phoneCountryCode: data.users[0].phoneNumber.extension,
+            phoneNumber: data.users[0].phoneNumber.number,
+            birthDate: data.users[0].birthDate,
+            nationalId: data.users[0].socialSecurityNumber,
+            countryOfIssue: data.users[0].countryOfIssue,
+            isTermsOfServiceAccepted: data.acceptedTerms,
+            role: "owner",
+            address: {
+              line1: data.users[0].streetAddress1,
+              line2: data.users[0].streetAddress2,
+              city: data.users[0].city,
+              region: data.users[0].state,
+              postalCode: data.users[0].postcode,
+              countryCode: ISO3166Alpha2Country.US,
+              country: ISO3166Alpha3Country.USA,
+            },
+          },
+          ultimateBeneficialOwners: data.users
+            .filter((user) => user.roles.includes(UserRole.BENEFICIAL_OWNER))
+            .map((user) => ({
+              firstName: user.firstName,
+              lastName: user.lastName,
+              email: user.email,
+              phoneCountryCode: user.phoneNumber.extension,
+              phoneNumber: user.phoneNumber.number,
+              nationalId: user.socialSecurityNumber,
+              countryOfIssue: user.countryOfIssue,
+              birthDate: user.birthDate,
+              address: {
+                line1: user.streetAddress1,
+                line2: user.streetAddress2,
+                city: user.city,
+                region: user.state,
+                postalCode: user.postcode,
+                countryCode: ISO3166Alpha2Country.US,
+                country: ISO3166Alpha3Country.USA,
+              },
+            })),
+          representatives: data.users
+            .filter((user) => user.roles.includes(UserRole.REPRESENTATIVE))
+            .map((user) => ({
+              firstName: user.firstName,
+              lastName: user.lastName,
+              email: user.email,
+              phoneCountryCode: user.phoneNumber.extension,
+              phoneNumber: user.phoneNumber.number,
+              nationalId: user.socialSecurityNumber,
+              countryOfIssue: user.countryOfIssue,
+              birthDate: user.birthDate,
+              address: {
+                line1: user.streetAddress1,
+                line2: user.streetAddress2,
+                city: user.city,
+                region: user.state,
+                postalCode: user.postcode,
+                countryCode: ISO3166Alpha2Country.US,
+                country: ISO3166Alpha3Country.USA,
+              },
+            })),
+        },
+        users: [
+          {
+            firstName: data.users[0].firstName,
+            lastName: data.users[0].lastName,
+            email: data.users[0].email,
+            phoneNumber: data.users[0].phoneNumber.extension + data.users[0].phoneNumber.number,
+            // role: data.users[0].roles[0],
+          },
+        ],
+      });
+      console.log(response);
     } catch (error: any) {
       // Handle API errors by setting form errors
       if (error.response?.data?.errors) {
@@ -173,7 +271,7 @@ export function OnboardForm({ email }: { email: string }) {
           person1.firstName?.length >= 2 &&
           person1.lastName?.length >= 2 &&
           person1.email &&
-          person1.phoneNumber?.length >= 9;
+          person1.phoneNumber?.number?.length >= 9;
 
         if (!isValidPerson1) {
           setError("users", {

@@ -100,6 +100,41 @@ export const truncateAddress = (address: Address): string => {
   return `${address.slice(0, 5)}....${address.slice(-4)}`;
 };
 
-export const formatUSPhoneNumber = (phoneNumber: string): string => {
-  return phoneNumber.replace(/(\d{3})(\d{3})(\d{4})/, "($1) $2-$3");
+export const formatPhoneNumber = (value: string, extension?: string) => {
+  if (!value) return "";
+  const digits = value.replace(/\D/g, "");
+  if (digits.length <= 3) return `(${digits}`;
+  if (digits.length <= 6) return `(${digits.slice(0, 3)}) ${digits.slice(3)}`;
+  return `${extension ? `+${extension} ` : ""}(${digits.slice(0, 3)}) ${digits.slice(3, 6)}-${digits.slice(6)}`;
+};
+
+export const formatEIN = (value: string) => {
+  if (!value) return "";
+  const digits = value.replace(/\D/g, "");
+  if (digits.length <= 2) return digits;
+  return `${digits.slice(0, 2)}-${digits.slice(2)}`;
+};
+
+// CardCompanyType enum from pylon-sdk
+export const formatCompanyType = (value: string) => {
+  switch (value) {
+    case "sole_proprietorship":
+      return "Sole Proprietorship";
+    case "llc":
+      return "Limited Liability Company (LLC)";
+    case "c_corp":
+      return "C Corporation";
+    case "s_corp":
+      return "S Corporation";
+    case "partnership":
+      return "Partnership";
+    case "lp":
+      return "Limited Partnership (LP)";
+    case "llp":
+      return "Limited Liability Partnership (LLP)";
+    case "nonprofit":
+      return "Nonprofit Corporation";
+    default:
+      throw new Error("Invalid company type");
+  }
 };

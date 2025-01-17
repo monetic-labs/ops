@@ -1,24 +1,13 @@
 import { z } from "zod";
 import { isAddress } from "viem";
 import postcodeMap from "@/data/postcodes-map.json";
+import { CardCompanyType, ISO3166Alpha2Country } from "@backpack-fux/pylon-sdk";
 
 // Add validation patterns
 const birthdayRegex = /^\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$/;
 const phoneRegex = /^[0-9]{9,15}$/;
 const ssnRegex = /^(?:\d{3}-?\d{2}-?\d{4})$/;
 const postcodeRegex = /^[0-9]{5}$/;
-
-// Define company types enum
-export const CardCompanyType = {
-  SOLE_PROPRIETORSHIP: "sole_proprietorship",
-  LLC: "llc",
-  C_CORP: "c_corp",
-  S_CORP: "s_corp",
-  PARTNERSHIP: "partnership",
-  LP: "lp",
-  LLP: "llp",
-  NONPROFIT: "nonprofit",
-} as const;
 
 // Update the role enum
 export const UserRole = {
@@ -42,8 +31,7 @@ export const companyDetailsSchema = z.object({
         .string()
         .min(1, "Website is required")
         .regex(/^[a-z0-9]+([\-\.]{1}[a-z0-9]+)*\.[a-z]{2,}$/, "Please enter a valid domain")
-    )
-    .optional(),
+    ),
   postcode: z
     .string()
     .regex(postcodeRegex, "Please enter a valid postal code")
@@ -65,22 +53,12 @@ export const companyAccountSchema = z.object({
     .min(1, "Registration number is required")
     .max(12, "Registration number cannot exceed 12 characters")
     .regex(/^\d+$/, "Please enter a valid registration number"),
-  companyTaxId: z.string().regex(/^\d{2}-\d{7}$/, "Please enter a valid Tax ID (XX-XXXXXXX)"),
-  companyType: z.enum(
-    [
-      CardCompanyType.SOLE_PROPRIETORSHIP,
-      CardCompanyType.LLC,
-      CardCompanyType.C_CORP,
-      CardCompanyType.S_CORP,
-      CardCompanyType.PARTNERSHIP,
-      CardCompanyType.LP,
-      CardCompanyType.LLP,
-      CardCompanyType.NONPROFIT,
-    ],
-    {
-      errorMap: () => ({ message: "Please select a valid company type" }),
-    }
-  ),
+  companyTaxId: z
+    .string()
+    .min(1, "Tax ID is required")
+    .transform((val) => val.replace(/\D/g, ""))
+    .refine((val) => /^\d{9}$/.test(val), "Please enter a valid Tax ID (XX-XXXXXXX)"),
+  companyType: z.enum(Object.values(CardCompanyType) as [CardCompanyType, ...CardCompanyType[]]),
   companyDescription: z.string().max(100, "Description cannot exceed 100 characters").optional(),
 });
 
@@ -96,16 +74,18 @@ export const userDetailsSchema = z.object({
     .max(50, "Last name cannot exceed 50 characters")
     .regex(/^[a-zA-Z\s-']+$/, "Last name can only contain letters, spaces, hyphens, and apostrophes"),
   email: z.string().email("Please enter a valid email").max(50, "Email cannot exceed 50 characters"),
-  phoneNumber: z
-    .string()
-    .min(1, "Phone number is required")
-    .regex(/^\d+$/, "Phone number can only contain digits")
-    .min(9, "Phone number must be at least 9 digits")
-    .max(15, "Phone number cannot exceed 15 digits"),
+  phoneNumber: z.object({
+    extension: z.string(),
+    number: z
+      .string()
+      .min(1, "Phone number is required")
+      .transform((val) => val.replace(/\D/g, ""))
+      .refine((val) => /^\d{10}$/.test(val), "Please enter a valid 10-digit phone number"),
+  }),
   roles: z
     .array(z.enum([UserRole.BENEFICIAL_OWNER, UserRole.REPRESENTATIVE]))
     .min(1, "At least one role must be selected"),
-  countryOfIssue: z.string().min(1, "Country is required"),
+  countryOfIssue: z.enum(Object.values(ISO3166Alpha2Country) as [ISO3166Alpha2Country, ...ISO3166Alpha2Country[]]),
   birthDate: z
     .string()
     .min(1, "Birth date is required")

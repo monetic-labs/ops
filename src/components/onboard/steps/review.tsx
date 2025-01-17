@@ -4,7 +4,7 @@ import { useFormContext } from "react-hook-form";
 import { CheckCircle, Edit } from "lucide-react";
 import { Button } from "@nextui-org/button";
 import { FormData } from "@/validations/onboard/schemas";
-import { formatUSPhoneNumber, truncateAddress } from "@/utils/helpers";
+import { formatCompanyType, formatEIN, formatPhoneNumber, truncateAddress } from "@/utils/helpers";
 
 export const ReviewStep = ({ onStepChange }: { onStepChange: (step: number) => void }) => {
   const { watch } = useFormContext<FormData>();
@@ -75,20 +75,15 @@ export const ReviewStep = ({ onStepChange }: { onStepChange: (step: number) => v
           </div>
           <div>
             <p className="text-sm text-default-500">Tax ID</p>
-            <p>{formData.companyTaxId}</p>
+            <p>{formatEIN(formData.companyTaxId)}</p>
           </div>
           <div>
             <p className="text-sm text-default-500">Company Type</p>
-            <p>
-              {formData.companyType
-                .split("_")
-                .map((word: string) => word.charAt(0).toUpperCase() + word.slice(1))
-                .join(" ")}
-            </p>
+            <p>{formatCompanyType(formData.companyType)}</p>
           </div>
           {formData.companyDescription && (
             <div className="col-span-2">
-              <p className="text-sm text-default-500">Description</p>
+              <p className="text-sm text-default-500">Company Description</p>
               <p>{formData.companyDescription}</p>
             </div>
           )}
@@ -117,7 +112,7 @@ export const ReviewStep = ({ onStepChange }: { onStepChange: (step: number) => v
                 </div>
                 <div>
                   <p className="text-sm text-default-500">Phone</p>
-                  <p>{user.phoneNumber.length === 9 ? formatUSPhoneNumber(user.phoneNumber) : user.phoneNumber}</p>
+                  <p>{formatPhoneNumber(user.phoneNumber.number, user.phoneNumber.extension)}</p>
                 </div>
                 <div>
                   <p className="text-sm text-default-500">Roles</p>

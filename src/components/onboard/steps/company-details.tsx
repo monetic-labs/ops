@@ -78,7 +78,7 @@ export const CompanyDetailsStep = () => {
             {...field}
             errorMessage={errors?.companyWebsite?.message?.toString()}
             isInvalid={!!errors?.companyWebsite}
-            label="Company Website (Optional)"
+            label="Company Website"
             placeholder="example.com"
             startContent={
               <div className="pointer-events-none flex items-center">

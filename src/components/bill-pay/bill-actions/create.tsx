@@ -16,7 +16,7 @@ import { modal } from "@/contexts/reown";
 import TransferStatusView, { TransferStatus } from "@/components/generics/transfer-status";
 import { buildTransfer } from "@/utils/reown";
 import { useBalance } from "@/hooks/account-contracts/useBalance";
-import { validateBillPay } from "@/types/validations/bill-pay";
+import { validateBillPay } from "@/validations/bill-pay";
 import {
   DEFAULT_EXISTING_BILL_PAY,
   DEFAULT_NEW_BILL_PAY,

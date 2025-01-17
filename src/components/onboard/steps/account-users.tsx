@@ -3,9 +3,12 @@
 import { Button } from "@nextui-org/button";
 import { Checkbox } from "@nextui-org/checkbox";
 import { useFormContext, useFieldArray } from "react-hook-form";
+import { Controller } from "react-hook-form";
+import { Input } from "@nextui-org/input";
 
-import { FormField } from "./form-fields";
+import { FormField } from "../form-fields";
 import { UserRole } from "@/validations/onboard/schemas";
+import { formatPhoneNumber } from "@/utils/helpers";
 
 // Helper function for class names
 const cn = (...classes: string[]) => classes.filter(Boolean).join(" ");
@@ -117,11 +120,34 @@ export const AccountUsers = () => {
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <FormField label="Email" name={`users.${index}.email`} placeholder="rick@example.com" type="email" />
-                  <FormField
-                    label="Phone Number"
+                  <Controller
+                    control={control}
                     name={`users.${index}.phoneNumber`}
-                    placeholder="1234567890"
-                    type="tel"
+                    render={({ field, fieldState: { error } }) => (
+                      <Input
+                        {...field}
+                        errorMessage={error?.message}
+                        isInvalid={!!error}
+                        label="Phone Number"
+                        placeholder="(234) 567-8901"
+                        startContent={
+                          <div className="pointer-events-none flex items-center">
+                            <span className="text-default-400 text-small">+1</span>
+                          </div>
+                        }
+                        type="tel"
+                        value={field.value?.number ? formatPhoneNumber(field.value.number) : ""}
+                        onChange={(e) => {
+                          const digits = e.target.value.replace(/\D/g, "");
+                          if (digits.length <= 10) {
+                            field.onChange({
+                              extension: "1",
+                              number: digits,
+                            });
+                          }
+                        }}
+                      />
+                    )}
                   />
                 </div>
               </div>
