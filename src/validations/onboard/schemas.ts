@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { Address, isAddress } from "viem";
 import postcodeMap from "@/data/postcodes-map.json";
-import { CardCompanyType, ISO3166Alpha2Country } from "@backpack-fux/pylon-sdk";
+import { CardCompanyType, ISO3166Alpha2Country, PersonRole } from "@backpack-fux/pylon-sdk";
 
 // Add validation patterns
 const birthdayRegex = /^\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$/;
@@ -130,6 +130,11 @@ export const userDetailsSchema = z.object({
     .min(1, "Postcode is required")
     .regex(postcodeRegex, "Please enter a valid postal code")
     .refine((val) => postcodeMap[val] !== undefined, "Postcode not found"),
+  hasDashboardAccess: z.boolean().default(false),
+  dashboardRole: z
+    .enum(Object.values(PersonRole) as [PersonRole, ...PersonRole[]])
+    .optional()
+    .refine((val) => val !== undefined, "Dashboard role is required when access is granted"),
 });
 
 export const accountUsersSchema = z.object({

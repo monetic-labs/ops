@@ -1,10 +1,10 @@
 "use client";
 
 import { useFormContext } from "react-hook-form";
-import { CheckCircle, Edit } from "lucide-react";
+import { CheckCircle, Edit, UserRound } from "lucide-react";
 import { Button } from "@nextui-org/button";
 import { FormData } from "@/validations/onboard/schemas";
-import { formatCompanyType, formatEIN, formatPhoneNumber, truncateAddress } from "@/utils/helpers";
+import { formatCompanyType, formatEIN, formatPersonRole, formatPhoneNumber, truncateAddress } from "@/utils/helpers";
 
 export const ReviewStep = ({ onStepChange }: { onStepChange: (step: number) => void }) => {
   const { watch } = useFormContext<FormData>();
@@ -122,13 +122,19 @@ export const ReviewStep = ({ onStepChange }: { onStepChange: (step: number) => v
                         key={role}
                         className="inline-flex items-center gap-1 rounded-full bg-default-100 px-2 py-1 text-xs"
                       >
-                        <CheckCircle className="h-3 w-3" />
+                        <CheckCircle className="h-3 w-3 text-default-500" />
                         {role
                           .split("_")
                           .map((word: string) => word.charAt(0).toUpperCase() + word.slice(1))
                           .join(" ")}
                       </span>
                     ))}
+                    {user.dashboardRole && (
+                      <span className="inline-flex items-center gap-1 rounded-full bg-default-100 px-2 py-1 text-xs">
+                        <UserRound className="h-3 w-3 text-default-500" />
+                        {formatPersonRole(user.dashboardRole)}
+                      </span>
+                    )}
                   </div>
                 </div>
               </div>

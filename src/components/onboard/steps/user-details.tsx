@@ -9,7 +9,9 @@ import postcodeMap from "@/data/postcodes-map.json";
 import { ChangeEvent } from "react";
 import { Input } from "@nextui-org/input";
 import { SharedSelection } from "@nextui-org/system";
-import { ISO3166Alpha2Country } from "@backpack-fux/pylon-sdk";
+import { ISO3166Alpha2Country, PersonRole } from "@backpack-fux/pylon-sdk";
+import { Checkbox } from "@nextui-org/checkbox";
+import { formatPersonRole } from "@/utils/helpers";
 
 const formatSSN = (value: string) => {
   if (!value) return "";
@@ -186,7 +188,63 @@ export const UserDetailsStep = () => {
             )}
           />
 
-          {index < users.length - 1 && <Divider className="my-4" />}
+          <div className="space-y-4">
+            <Controller
+              control={control}
+              name={`users.${index}.hasDashboardAccess`}
+              render={({ field }) => (
+                <Checkbox
+                  isSelected={index === 0 ? true : field.value}
+                  isDisabled={index === 0}
+                  onValueChange={(checked) => {
+                    field.onChange(checked);
+                    if (!checked) {
+                      setValue(`users.${index}.dashboardRole`, PersonRole.SUPER_ADMIN);
+                    }
+                  }}
+                >
+                  Grant dashboard access to this user
+                </Checkbox>
+              )}
+            />
+
+            {(index === 0 || watch(`users.${index}.hasDashboardAccess`)) && (
+              <Controller
+                control={control}
+                name={`users.${index}.dashboardRole`}
+                render={({ field, fieldState: { error } }) => (
+                  <>
+                    <Select
+                      isRequired
+                      isDisabled={index === 0}
+                      errorMessage={error?.message}
+                      isInvalid={!!error}
+                      label="Dashboard Role"
+                      placeholder="Select role"
+                      description={
+                        index > 0 && watch(`users.${index}.hasDashboardAccess`)
+                          ? "An email notification will be sent to their inbox for onboarding"
+                          : "First user must be a Super Admin"
+                      }
+                      selectedKeys={index === 0 ? [PersonRole.SUPER_ADMIN] : field.value ? [field.value] : []}
+                      onSelectionChange={(keys: SharedSelection) => {
+                        const selected = Array.from(keys)[0];
+                        field.onChange(selected as PersonRole);
+                      }}
+                    >
+                      {Object.values(PersonRole)
+                        .filter((role) => role !== PersonRole.DEVELOPER && role !== PersonRole.BOOKKEEPER)
+                        .map((role) => (
+                          <SelectItem key={role} value={role}>
+                            {formatPersonRole(role)}
+                          </SelectItem>
+                        ))}
+                    </Select>
+                  </>
+                )}
+              />
+            )}
+          </div>
         </div>
       ))}
     </div>

@@ -138,3 +138,10 @@ export const formatCompanyType = (value: string) => {
       throw new Error("Invalid company type");
   }
 };
+
+export const formatPersonRole = (value: string) => {
+  return value
+    .split("_")
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+    .join(" ");
+};
