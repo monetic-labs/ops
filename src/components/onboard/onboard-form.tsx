@@ -15,7 +15,7 @@ import { TermsStep } from "./steps/terms";
 import { ReviewStep } from "./steps/review";
 import { UserDetailsStep } from "./steps/user-details";
 import pylon from "@/libs/pylon-sdk";
-import { ISO3166Alpha2Country, ISO3166Alpha3Country } from "@backpack-fux/pylon-sdk";
+import { ISO3166Alpha2Country, ISO3166Alpha3Country, PersonRole } from "@backpack-fux/pylon-sdk";
 
 // Helper function to get fields for current step
 const getFieldsForStep = (step: number): (keyof FormData)[] => {
@@ -153,7 +153,7 @@ export function OnboardForm({ email }: { email: string }) {
       // Handle form submission
       console.log(data);
       // Call Backpack Pylon SDK
-      const response = await pylon.createMerchant({
+      const merchantData = {
         walletAddress: data.settlementAddress,
         company: {
           name: data.companyName,
@@ -181,7 +181,7 @@ export function OnboardForm({ email }: { email: string }) {
             nationalId: data.users[0].socialSecurityNumber,
             countryOfIssue: data.users[0].countryOfIssue,
             isTermsOfServiceAccepted: data.acceptedTerms,
-            role: "owner",
+            role: PersonRole.SUPER_ADMIN,
             address: {
               line1: data.users[0].streetAddress1,
               line2: data.users[0].streetAddress2,
@@ -235,17 +235,10 @@ export function OnboardForm({ email }: { email: string }) {
               },
             })),
         },
-        users: [
-          {
-            firstName: data.users[0].firstName,
-            lastName: data.users[0].lastName,
-            email: data.users[0].email,
-            phoneNumber: data.users[0].phoneNumber.extension + data.users[0].phoneNumber.number,
-            // role: data.users[0].roles[0],
-          },
-        ],
-      });
-      console.log(response);
+      };
+      console.log(merchantData);
+      // const response = await pylon.createMerchant(merchantData);
+      // console.log(response);
     } catch (error: any) {
       // Handle API errors by setting form errors
       if (error.response?.data?.errors) {
@@ -277,6 +270,31 @@ export function OnboardForm({ email }: { email: string }) {
           setError("users", {
             type: "manual",
             message: "Please fill out all required fields for Person 1",
+          });
+          return;
+        }
+
+        // Check for duplicate emails and phone numbers
+        const emails = users.map((user) => user.email);
+        const phoneNumbers = users.map((user) => user.phoneNumber?.number).filter(Boolean);
+
+        const hasDuplicateEmails = new Set(emails).size !== emails.length;
+        const hasDuplicatePhones = new Set(phoneNumbers).size !== phoneNumbers.length;
+
+        if (hasDuplicateEmails || hasDuplicatePhones) {
+          users.forEach((_, index) => {
+            if (hasDuplicateEmails) {
+              setError(`users.${index}.email`, {
+                type: "manual",
+                message: "Email address must be unique",
+              });
+            }
+            if (hasDuplicatePhones) {
+              setError(`users.${index}.phoneNumber`, {
+                type: "manual",
+                message: "Phone number must be unique",
+              });
+            }
           });
           return;
         }

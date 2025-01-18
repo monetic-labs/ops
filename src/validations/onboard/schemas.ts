@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { isAddress } from "viem";
+import { Address, isAddress } from "viem";
 import postcodeMap from "@/data/postcodes-map.json";
 import { CardCompanyType, ISO3166Alpha2Country } from "@backpack-fux/pylon-sdk";
 
@@ -47,7 +47,8 @@ export const companyAccountSchema = z.object({
     .string()
     .min(42, "Settlement address must be 42 characters")
     .max(42, "Settlement address must be 42 characters")
-    .refine((val) => isAddress(val), "Please enter a valid hex address"),
+    .refine((val) => isAddress(val), "Please enter a valid hex address")
+    .transform((val) => val as Address),
   companyRegistrationNumber: z
     .string()
     .min(1, "Registration number is required")
@@ -142,7 +143,15 @@ export const accountUsersSchema = z.object({
     .refine(
       (users) => users.some((user) => user.roles.includes(UserRole.REPRESENTATIVE)),
       "At least one Representative is required"
-    ),
+    )
+    .refine((users) => {
+      const emails = users.map((user) => user.email);
+      return new Set(emails).size === emails.length;
+    }, "Each user must have a unique email address")
+    .refine((users) => {
+      const phoneNumbers = users.map((user) => user.phoneNumber.number).filter(Boolean);
+      return new Set(phoneNumbers).size === phoneNumbers.length;
+    }, "Each user must have a unique phone number"),
 });
 
 export const termsSchema = z.object({

@@ -1,5 +1,5 @@
 import { createIcon } from "opepen-standard";
-import { Address } from "viem";
+import type { Address } from "viem";
 
 export const isLocal = process.env.NEXT_PUBLIC_NODE_ENV === "development";
 export const isTesting = process.env.NEXT_PUBLIC_NODE_ENV === "ci";
