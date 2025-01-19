@@ -1,8 +1,8 @@
 import type { NextRequest } from "next/server";
-
 import { NextResponse } from "next/server";
-
 import { MERCHANT_COOKIE_NAME } from "./utils/constants";
+import pylon from "@/libs/pylon-sdk";
+import { BridgeComplianceKycStatus, CardCompanyStatus } from "@backpack-fux/pylon-sdk";
 
 export async function middleware(request: NextRequest) {
   const authToken = request.cookies.get(MERCHANT_COOKIE_NAME);
@@ -22,21 +22,19 @@ export async function middleware(request: NextRequest) {
 
   // Case 2: Logged in - Check compliance status
   try {
-    const complianceResponse = await fetch(`${request.nextUrl.origin}/api/check-compliance`, {
-      headers: {
-        Cookie: `${MERCHANT_COOKIE_NAME}=${authToken.value}`,
-      },
-    });
+    const complianceResponse = await pylon.getComplianceStatus();
+    const cardCompanyResponse = await pylon.getCardCompanyStatus();
+    const complianceStatus = { ...complianceResponse, ...cardCompanyResponse };
 
-    if (!complianceResponse.ok) {
+    if (!complianceResponse || !cardCompanyResponse) {
       console.error("Failed to fetch compliance status");
 
       return NextResponse.next();
     }
 
-    const complianceStatus = await complianceResponse.json();
     const isFullyApproved =
-      complianceStatus.kycStatus?.toUpperCase() === "APPROVED" && complianceStatus.status?.toUpperCase() === "APPROVED";
+      complianceStatus.kycStatus === BridgeComplianceKycStatus.APPROVED &&
+      complianceStatus.status === CardCompanyStatus.APPROVED;
 
     // Case 2a: Not fully approved - must complete KYB
     if (!isFullyApproved && !isKybRoute) {

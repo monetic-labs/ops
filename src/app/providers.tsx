@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { ThemeProvider as NextThemesProvider } from "next-themes";
 import { ThemeProviderProps } from "next-themes/dist/types";
 import { NextUIProvider } from "@nextui-org/system";
-import { PylonProvider } from "@backpack-fux/pylon-sdk";
+// import { PylonProvider } from "@backpack-fux/pylon-sdk";
 
 import pylonInstance from "@/libs/pylon-sdk";
 import PageWithScrollBackground from "@/styles/framer-motion/scroll-wrapper";
@@ -29,16 +29,16 @@ export function Providers({ children, themeProps, userId }: ProvidersProps) {
   };
 
   return (
-    <PylonProvider pylon={pylonInstance}>
-      <NextUIProvider navigate={router.push}>
-        <NextThemesProvider {...themeProps}>
-          <MessagingProvider userId={userId || "default-user"}>
-            <ShortcutsProvider initialValue={shortcutsInitialValue}>
-              <PageWithScrollBackground>{children}</PageWithScrollBackground>
-            </ShortcutsProvider>
-          </MessagingProvider>
-        </NextThemesProvider>
-      </NextUIProvider>
-    </PylonProvider>
+    // <PylonProvider pylon={pylonInstance}>
+    <NextUIProvider navigate={router.push}>
+      <NextThemesProvider {...themeProps}>
+        <MessagingProvider userId={userId || "default-user"}>
+          <ShortcutsProvider initialValue={shortcutsInitialValue}>
+            <PageWithScrollBackground>{children}</PageWithScrollBackground>
+          </ShortcutsProvider>
+        </MessagingProvider>
+      </NextThemesProvider>
+    </NextUIProvider>
+    // </PylonProvider>
   );
 }
