@@ -157,6 +157,7 @@ export function OnboardForm({ email }: { email: string }) {
       // Call Backpack Pylon SDK
       const merchantData = {
         walletAddress: data.settlementAddress,
+        isTermsOfServiceAccepted: data.acceptedTerms,
         company: {
           name: data.companyName,
           email: data.companyEmail,
@@ -174,27 +175,28 @@ export function OnboardForm({ email }: { email: string }) {
             country: ISO3166Alpha2Country.US,
           },
         },
-        controlOwner: {
-          firstName: data.users[0].firstName,
-          lastName: data.users[0].lastName,
-          email: data.users[0].email,
-          phoneCountryCode: data.users[0].phoneNumber.extension,
-          phoneNumber: data.users[0].phoneNumber.number,
-          birthDate: data.users[0].birthDate,
-          nationalId: data.users[0].socialSecurityNumber,
-          countryOfIssue: data.users[0].countryOfIssue,
-          isTermsOfServiceAccepted: data.acceptedTerms,
-          role: PersonRole.SUPER_ADMIN,
-          address: {
-            line1: data.users[0].streetAddress1,
-            line2: data.users[0].streetAddress2 ?? undefined,
-            city: data.users[0].city,
-            region: data.users[0].state,
-            postalCode: data.users[0].postcode,
-            countryCode: ISO3166Alpha2Country.US,
-            country: ISO3166Alpha3Country.USA,
-          },
-        },
+        users: data.users
+          .filter((user) => user.hasDashboardAccess)
+          .map((user) => ({
+            firstName: user.firstName,
+            lastName: user.lastName,
+            email: user.email,
+            phoneCountryCode: user.phoneNumber.extension,
+            phoneNumber: user.phoneNumber.number,
+            birthDate: user.birthDate,
+            nationalId: user.socialSecurityNumber,
+            countryOfIssue: user.countryOfIssue,
+            role: user.dashboardRole,
+            address: {
+              line1: user.streetAddress1,
+              line2: user.streetAddress2 ?? undefined,
+              city: user.city,
+              region: user.state,
+              postalCode: user.postcode,
+              countryCode: ISO3166Alpha2Country.US,
+              country: ISO3166Alpha3Country.USA,
+            },
+          })),
         ultimateBeneficialOwners: data.users
           .filter((user) => user.roles.includes(UserRole.BENEFICIAL_OWNER))
           .map((user) => ({
