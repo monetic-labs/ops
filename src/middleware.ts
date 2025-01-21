@@ -1,8 +1,7 @@
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 import { MERCHANT_COOKIE_NAME } from "./utils/constants";
-import pylon from "@/libs/pylon-sdk";
-import { BridgeComplianceKycStatus, CardCompanyStatus } from "@backpack-fux/pylon-sdk";
+import { BridgeComplianceKycStatus, CardCompanyStatus, RainComplianceKybStatus } from "@backpack-fux/pylon-sdk";
 
 export async function middleware(request: NextRequest) {
   const authToken = request.cookies.get(MERCHANT_COOKIE_NAME);
@@ -16,43 +15,44 @@ export async function middleware(request: NextRequest) {
     if (!isAuthRoute && !isOnboardRoute) {
       return NextResponse.rewrite(new URL("/auth", request.url));
     }
-
     return NextResponse.next();
   }
 
-  // Case 2: Logged in - Check compliance status
+  // Case 2: Logged in - First check auth/onboard routes
+  if (isAuthRoute || isOnboardRoute) {
+    return NextResponse.redirect(new URL("/", request.url));
+  }
+
+  // Case 3: Logged in - Check compliance status
   try {
-    const complianceResponse = await pylon.getComplianceStatus();
-    const cardCompanyResponse = await pylon.getCardCompanyStatus();
-    const complianceStatus = { ...complianceResponse, ...cardCompanyResponse };
+    const complianceResponse = await fetch(`${request.nextUrl.origin}/api/check-compliance`, {
+      headers: {
+        Cookie: `${MERCHANT_COOKIE_NAME}=${authToken.value}`,
+      },
+    });
 
-    if (!complianceResponse || !cardCompanyResponse) {
+    if (!complianceResponse.ok) {
       console.error("Failed to fetch compliance status");
-
       return NextResponse.next();
     }
 
-    const isFullyApproved =
-      complianceStatus.kycStatus === BridgeComplianceKycStatus.APPROVED &&
-      complianceStatus.status === CardCompanyStatus.APPROVED;
+    const complianceStatus = await complianceResponse.json();
 
-    // Case 2a: Not fully approved - must complete KYB
+    const isFullyApproved =
+      complianceStatus?.kycStatus.toUpperCase() === BridgeComplianceKycStatus.APPROVED.toUpperCase() &&
+      complianceStatus?.rainKybStatus.toUpperCase() === RainComplianceKybStatus.APPROVED.toUpperCase();
+
+    // Case 3a: Not fully approved - must complete KYB
     if (!isFullyApproved && !isKybRoute) {
       return NextResponse.redirect(new URL("/kyb", request.url));
     }
 
-    // Case 2b: Fully approved
-    if (isFullyApproved) {
-      if (isAuthRoute || isOnboardRoute || isKybRoute) {
-        return NextResponse.redirect(new URL("/", request.url));
-      }
-      if (isHomePage) {
-        return NextResponse.rewrite(new URL("/", request.url));
-      }
+    // Case 3b: Fully approved
+    if (isFullyApproved && isKybRoute) {
+      return NextResponse.redirect(new URL("/", request.url));
     }
   } catch (error) {
     console.error("Middleware error:", error);
-
     return NextResponse.next();
   }
 

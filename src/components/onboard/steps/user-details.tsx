@@ -203,7 +203,7 @@ export const UserDetailsStep = () => {
                     }
                   }}
                 >
-                  Grant dashboard access to this user
+                  Grant dashboard access to this person
                 </Checkbox>
               )}
             />
@@ -223,8 +223,8 @@ export const UserDetailsStep = () => {
                       placeholder="Select role"
                       description={
                         index > 0 && watch(`users.${index}.hasDashboardAccess`)
-                          ? "An email notification will be sent to their inbox for onboarding"
-                          : "First user must be a Super Admin"
+                          ? `An email notification will be sent to ${watch(`users.${index}.email`)} for onboarding`
+                          : "You must be a Super Admin"
                       }
                       selectedKeys={index === 0 ? [PersonRole.SUPER_ADMIN] : field.value ? [field.value] : []}
                       onSelectionChange={(keys: SharedSelection) => {

@@ -13,6 +13,7 @@ import Notification from "@/components/generics/notification";
 import { title, subtitle } from "@/components/primitives";
 import { OTP_CODE_LENGTH as OTP_LENGTH } from "@/utils/constants";
 import { isLocal, isTesting } from "@/utils/helpers";
+import { OTPModal } from "@/components/generics/otp-modal";
 
 export default function AuthPage() {
   const [email, setEmail] = useState("");
@@ -128,49 +129,22 @@ export default function AuthPage() {
             onChange={(e) => setEmail(e.target.value)}
           />
           {showOtpInput && (
-            <>
-              <div className="flex flex-col items-center justify-center">
-                <InputOtp
-                  ref={otpInputRef}
-                  classNames={{
-                    input: "w-10 h-12 text-center text-xl text-white",
-                    base: "flex justify-center space-x-2",
-                  }}
-                  data-testid="otp-input-container"
-                  errorMessage={otpError}
-                  isDisabled={isLoading}
-                  isInvalid={otpError !== null}
-                  length={OTP_LENGTH}
-                  size={window.innerWidth < 640 ? "sm" : "lg"}
-                  value={otp}
-                  variant="faded"
-                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => setOTP(e.target.value)}
-                  onComplete={handleVerify}
-                  onValueChange={setOTP}
-                />
-              </div>
-              <div className="flex gap-2 justify-between">
-                <Button
-                  className="bg-notpurple-500/30 text-white hover:bg-gray-600"
-                  disabled={isLoading}
-                  type="button"
-                  variant="flat"
-                  onPress={handleCancel}
-                >
-                  Cancel
-                </Button>
-                <Button
-                  className="bg-ualert-500 text-white hover:bg-ualert-600"
-                  data-testid="resend-otp-button"
-                  isDisabled={isLoading || (!canResend && shouldEnableTimer)}
-                  type="button"
-                  variant="flat"
-                  onPress={handleResendOTP}
-                >
-                  {!canResend && shouldEnableTimer ? `Resend in ${resendTimer}s` : "Resend OTP"}
-                </Button>
-              </div>
-            </>
+            <OTPModal
+              isOpen={showOtpInput}
+              email={email}
+              otp={otp}
+              otpError={otpError}
+              isLoading={isLoading}
+              canResend={canResend}
+              resendTimer={resendTimer}
+              shouldEnableTimer={shouldEnableTimer}
+              otpInputRef={otpInputRef}
+              onOTPChange={(e) => setOTP(e.target.value)}
+              onOTPComplete={handleVerify}
+              onResend={handleResendOTP}
+              onValueChange={setOTP}
+              onClose={handleCancel}
+            />
           )}
           {!showOtpInput && (
             <div className="flex gap-2">

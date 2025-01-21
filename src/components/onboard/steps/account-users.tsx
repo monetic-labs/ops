@@ -64,7 +64,7 @@ const RoleCheckbox = ({
 export const AccountUsers = () => {
   const {
     control,
-    formState: { errors, submitCount },
+    formState: { errors },
     watch,
     setValue,
   } = useFormContext();
@@ -76,12 +76,9 @@ export const AccountUsers = () => {
 
   // Check if we have at least one of each role
   const allUsers = watch("users") || [];
-  const hasBeneficialOwner = allUsers.some((user: any) => user.roles?.includes(UserRole.BENEFICIAL_OWNER));
-  const hasRepresentative = allUsers.some((user: any) => user.roles?.includes(UserRole.REPRESENTATIVE));
+  const hasBeneficialOwner = allUsers.some((user: any) => user.roles.includes(UserRole.BENEFICIAL_OWNER));
+  const hasRepresentative = allUsers.some((user: any) => user.roles.includes(UserRole.REPRESENTATIVE));
   const hasError = !hasBeneficialOwner || !hasRepresentative;
-
-  // Only show role validation errors after attempting to proceed
-  const showRoleValidation = submitCount > 0;
 
   return (
     <div className="space-y-8">
@@ -159,7 +156,7 @@ export const AccountUsers = () => {
                   <RoleCheckbox
                     description="Has 25% or more ownership stake in the company"
                     examples="e.g. Founder, Major Shareholder"
-                    hasError={!isFirstPerson && showRoleValidation && hasError && !hasBeneficialOwner}
+                    hasError={!isFirstPerson && hasError && !hasBeneficialOwner}
                     isDisabled={isFirstPerson}
                     isSelected={isFirstPerson ? true : userRoles.includes(UserRole.BENEFICIAL_OWNER)}
                     role={UserRole.BENEFICIAL_OWNER}
@@ -176,7 +173,7 @@ export const AccountUsers = () => {
                   <RoleCheckbox
                     description="Authorized to act or speak for or in support of the company"
                     examples="e.g. CEO, CFO, COO, Managing Director, Attorney"
-                    hasError={!isFirstPerson && showRoleValidation && hasError && !hasRepresentative}
+                    hasError={!isFirstPerson && hasError && !hasRepresentative}
                     isDisabled={isFirstPerson}
                     isSelected={isFirstPerson ? true : userRoles.includes(UserRole.REPRESENTATIVE)}
                     role={UserRole.REPRESENTATIVE}
@@ -191,7 +188,7 @@ export const AccountUsers = () => {
                     }}
                   />
                 </div>
-                {!isFirstPerson && userRoles.length === 0 && showRoleValidation && (
+                {!isFirstPerson && userRoles.length === 0 && (
                   <p className="text-red-500 text-sm">At least one role should be selected</p>
                 )}
               </div>
@@ -200,7 +197,7 @@ export const AccountUsers = () => {
         );
       })}
 
-      {showRoleValidation && hasError && !hasRepresentative && (
+      {hasError && !hasRepresentative && (
         <p className="text-red-500 text-sm">At least one Representative is required</p>
       )}
 

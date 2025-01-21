@@ -46,7 +46,7 @@ export default function MerchantServicesTabs({ userId }: { userId: string }) {
     if (
       complianceStatus &&
       complianceStatus.kycStatus !== BridgeKybStatus.APPROVED &&
-      complianceStatus.status !== RainKybStatus.APPROVED
+      complianceStatus.rainKybStatus !== RainKybStatus.APPROVED
     ) {
       router.push("/kyb");
     }
