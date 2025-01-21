@@ -268,26 +268,29 @@ export function OnboardForm({ email }: { email: string }) {
         },
         users: data.users
           .filter((user) => user.hasDashboardAccess)
-          .map((user) => ({
-            firstName: user.firstName,
-            lastName: user.lastName,
-            email: user.email,
-            phoneCountryCode: user.phoneNumber.extension,
-            phoneNumber: user.phoneNumber.number,
-            birthDate: user.birthDate,
-            nationalId: user.socialSecurityNumber,
-            countryOfIssue: user.countryOfIssue,
-            role: user.dashboardRole,
-            address: {
-              line1: user.streetAddress1,
-              line2: user.streetAddress2 || undefined,
-              city: user.city,
-              region: user.state,
-              postalCode: user.postcode,
-              countryCode: ISO3166Alpha2Country.US,
-              country: ISO3166Alpha3Country.USA,
-            },
-          })),
+          .map((user) => {
+            const role = user.dashboardRole as PersonRole;
+            return {
+              firstName: user.firstName,
+              lastName: user.lastName,
+              email: user.email,
+              phoneCountryCode: user.phoneNumber.extension,
+              phoneNumber: user.phoneNumber.number,
+              birthDate: user.birthDate,
+              nationalId: user.socialSecurityNumber,
+              countryOfIssue: user.countryOfIssue,
+              role,
+              address: {
+                line1: user.streetAddress1,
+                line2: user.streetAddress2 || undefined,
+                city: user.city,
+                region: user.state,
+                postalCode: user.postcode,
+                countryCode: ISO3166Alpha2Country.US,
+                country: ISO3166Alpha3Country.USA,
+              },
+            };
+          }),
       });
       console.log("response: ", response);
 
