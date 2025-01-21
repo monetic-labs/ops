@@ -57,7 +57,7 @@ export function OTPModal({
         <ModalBody>
           <div className="flex flex-col items-center gap-6">
             <p className="text-default-500 text-center">
-              We've sent a verification code to {email}. Please enter it below to complete your registration.
+              We&apos;ve sent a verification code to {email}. Please enter it below to complete your registration.
             </p>
             <InputOtp
               ref={otpInputRef}

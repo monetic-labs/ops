@@ -98,7 +98,7 @@ export const FormField = ({
         ...props.classNames,
         input: `${props.classNames?.input || ""} ${error ? "border-red-500" : ""}`,
       }}
-      errorMessage={errorMessage}
+      errorMessage={errorMessage?.replace(/'/g, "&apos;")}
       isInvalid={!!error}
       label={
         <>

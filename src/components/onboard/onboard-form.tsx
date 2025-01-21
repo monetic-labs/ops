@@ -8,6 +8,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Circle, CheckCircle } from "lucide-react";
 import { Modal, ModalContent, ModalHeader, ModalBody, ModalFooter } from "@nextui-org/modal";
 import { Input } from "@nextui-org/input";
+import { Spinner } from "@nextui-org/spinner";
 import { useSetupOTP } from "@/hooks/merchant/useSetupOTP";
 import { OTP_CODE_LENGTH } from "@/utils/constants";
 
@@ -131,8 +132,9 @@ const StepNavigation = ({
         color="default"
         isDisabled={isSubmitting || !isValid}
         type="submit"
+        startContent={<Spinner size="sm" color="current" />}
       >
-        Submit Application
+        {isSubmitting ? "Submitting..." : "Submit Application"}
       </Button>
     )}
   </div>
@@ -181,7 +183,8 @@ export function OnboardForm({ email }: { email: string }) {
       // Handle form submission
       console.log("data: ", data);
 
-      const merchantData = {
+      // Call Backpack Pylon SDK
+      const response = await pylon.createMerchant({
         settlementAddress: data.settlementAddress,
         isTermsOfServiceAccepted: data.acceptedTerms,
         company: {
@@ -285,16 +288,12 @@ export function OnboardForm({ email }: { email: string }) {
               country: ISO3166Alpha3Country.USA,
             },
           })),
-      };
-      console.log("merchantData: ", merchantData);
-
-      // Call Backpack Pylon SDK
-      const response = await pylon.createMerchant(merchantData);
+      });
       console.log("response: ", response);
 
       if (response) {
         // Get the control owner's email
-        const controlOwnerEmail = merchantData.company.controlOwner.email;
+        const controlOwnerEmail = data.users[0].email;
         setShowOTPModal(true);
         await issueOTP(controlOwnerEmail);
         if (shouldEnableTimer) {

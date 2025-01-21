@@ -3,7 +3,7 @@
 import React, { useRef, useState, MouseEvent, useEffect } from "react";
 import { Button } from "@nextui-org/button";
 import { Input } from "@nextui-org/input";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Spinner } from "@nextui-org/spinner";
 import { InputOtp } from "@nextui-org/input-otp";
 import { PressEvent } from "@react-types/shared";
@@ -16,9 +16,11 @@ import { isLocal, isTesting } from "@/utils/helpers";
 import { OTPModal } from "@/components/generics/otp-modal";
 
 export default function AuthPage() {
-  const [email, setEmail] = useState("");
+  const searchParams = useSearchParams();
+  const [email, setEmail] = useState(searchParams?.get("invite") || null);
   const [showOtpInput, setShowOtpInput] = useState(false);
   const otpInputRef = useRef<HTMLInputElement>(null);
+
   const {
     issueOTP,
     verifyOTP,
@@ -35,13 +37,29 @@ export default function AuthPage() {
   const [canResend, setCanResend] = useState(true);
   const shouldEnableTimer = !isLocal && !isTesting;
 
+  useEffect(() => {
+    const inviteEmail = searchParams?.get("invite");
+    if (inviteEmail) {
+      setEmail(inviteEmail);
+      handleLogin();
+    }
+  }, [searchParams]);
+
   const handleSignUp = async (e: MouseEvent) => {
     e.preventDefault();
-    router.push(`/onboard?email=${encodeURIComponent(email)}`);
+    if (email) {
+      router.push(`/onboard?email=${encodeURIComponent(email)}`);
+    } else {
+      router.push(`/onboard`);
+    }
   };
 
-  const handleLogin = async (e: PressEvent) => {
+  const handleLogin = async () => {
     try {
+      if (!email) {
+        setNotification("Please enter an email address");
+        return;
+      }
       const response = await issueOTP(email);
 
       if (response === 200) {
@@ -57,7 +75,11 @@ export default function AuthPage() {
         setNotification("New User Detected. Redirecting to registration...");
         setTimeout(() => {
           setNotification(null);
-          router.push(`/onboard?email=${encodeURIComponent(email)}`);
+          if (email) {
+            router.push(`/onboard?email=${encodeURIComponent(email)}`);
+          } else {
+            router.push(`/onboard`);
+          }
         }, 3000);
       }
     }
@@ -125,13 +147,13 @@ export default function AuthPage() {
             label="Email"
             placeholder="Enter your email"
             type="email"
-            value={email}
+            value={email || ""}
             onChange={(e) => setEmail(e.target.value)}
           />
           {showOtpInput && (
             <OTPModal
               isOpen={showOtpInput}
-              email={email}
+              email={email || ""}
               otp={otp}
               otpError={otpError}
               isLoading={isLoading}
