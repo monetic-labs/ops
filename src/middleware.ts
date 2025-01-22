@@ -1,59 +1,49 @@
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 import { MERCHANT_COOKIE_NAME } from "./utils/constants";
-import { BridgeComplianceKycStatus, CardCompanyStatus, RainComplianceKybStatus } from "@backpack-fux/pylon-sdk";
+import { BridgeComplianceKycStatus, RainComplianceKybStatus } from "@backpack-fux/pylon-sdk";
 
 export async function middleware(request: NextRequest) {
   const authToken = request.cookies.get(MERCHANT_COOKIE_NAME);
-  const isAuthRoute = request.nextUrl.pathname.startsWith("/auth");
-  const isOnboardRoute = request.nextUrl.pathname.startsWith("/onboard");
-  const isKybRoute = request.nextUrl.pathname.startsWith("/kyb");
-  const isHomePage = request.nextUrl.pathname === "/";
+  const pathname = request.nextUrl.pathname;
 
-  // Case 1: Not logged in
-  if (!authToken) {
-    if (!isAuthRoute && !isOnboardRoute) {
-      return NextResponse.rewrite(new URL("/auth", request.url));
-    }
+  // Skip middleware for auth routes
+  if (pathname.startsWith("/auth") || pathname.startsWith("/onboard")) {
     return NextResponse.next();
   }
 
-  // Case 2: Logged in - First check auth/onboard routes
-  if (isAuthRoute || isOnboardRoute) {
-    return NextResponse.redirect(new URL("/", request.url));
-  }
+  // Check compliance status only for authenticated routes
+  if (authToken && !pathname.startsWith("/api")) {
+    try {
+      const complianceResponse = await fetch(`${request.nextUrl.origin}/api/check-compliance`, {
+        headers: {
+          Cookie: `${MERCHANT_COOKIE_NAME}=${authToken.value}`,
+        },
+      });
 
-  // Case 3: Logged in - Check compliance status
-  try {
-    const complianceResponse = await fetch(`${request.nextUrl.origin}/api/check-compliance`, {
-      headers: {
-        Cookie: `${MERCHANT_COOKIE_NAME}=${authToken.value}`,
-      },
-    });
+      if (!complianceResponse.ok) {
+        console.error("Failed to fetch compliance status");
+        return NextResponse.next();
+      }
 
-    if (!complianceResponse.ok) {
-      console.error("Failed to fetch compliance status");
+      const complianceStatus = await complianceResponse.json();
+      const isFullyApproved =
+        complianceStatus?.kycStatus.toUpperCase() === BridgeComplianceKycStatus.APPROVED.toUpperCase() &&
+        complianceStatus?.rainKybStatus.toUpperCase() === RainComplianceKybStatus.APPROVED.toUpperCase();
+
+      // Redirect to KYB if not fully approved (except if already on KYB page)
+      if (!isFullyApproved && !pathname.startsWith("/kyb")) {
+        return NextResponse.redirect(new URL("/kyb", request.url));
+      }
+
+      // Redirect to home if fully approved and trying to access KYB
+      if (isFullyApproved && pathname.startsWith("/kyb")) {
+        return NextResponse.redirect(new URL("/", request.url));
+      }
+    } catch (error) {
+      console.error("Middleware error:", error);
       return NextResponse.next();
     }
-
-    const complianceStatus = await complianceResponse.json();
-
-    const isFullyApproved =
-      complianceStatus?.kycStatus.toUpperCase() === BridgeComplianceKycStatus.APPROVED.toUpperCase() &&
-      complianceStatus?.rainKybStatus.toUpperCase() === RainComplianceKybStatus.APPROVED.toUpperCase();
-
-    // Case 3a: Not fully approved - must complete KYB
-    if (!isFullyApproved && !isKybRoute) {
-      return NextResponse.redirect(new URL("/kyb", request.url));
-    }
-
-    // Case 3b: Fully approved
-    if (isFullyApproved && isKybRoute) {
-      return NextResponse.redirect(new URL("/", request.url));
-    }
-  } catch (error) {
-    console.error("Middleware error:", error);
-    return NextResponse.next();
   }
 
   return NextResponse.next();
@@ -67,9 +57,7 @@ export const config = {
      * - _next/static (static files)
      * - _next/image (image optimization files)
      * - favicon.ico (favicon file)
-     * - bg-celestial.png (background image)
-     * - bg-celestial-mobile.png (background image)
      */
-    "/((?!api|_next/static|_next/image|favicon.ico|bg-celestial.png|bg-celestial-mobile.png).*)",
+    "/((?!api|_next/static|_next/image|favicon.ico).*)",
   ],
 };

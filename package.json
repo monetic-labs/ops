@@ -12,8 +12,7 @@
     "start": "next start",
     "lint": "eslint . --ext .ts,.tsx -c .eslintrc.json --fix",
     "unfuck": "rm -rf .next && rm -rf node_modules && rm -rf package-lock.json rm -rf bun.lockb && bun i",
-    "postcode:build": "node scripts/convert-csv.js",
-    "postcode:map": "node scripts/preprocess-postcodes.js",
+    "postcode:process": "node scripts/process-postcodes.ts",
     "upload-docs": "bun run scripts/upload-docs.ts"
   },
   "dependencies": {

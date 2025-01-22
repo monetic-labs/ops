@@ -3,7 +3,7 @@ import { cookies } from "next/headers";
 import { jwtDecode } from "jwt-decode";
 
 import { MERCHANT_COOKIE_NAME } from "@/utils/constants";
-import MerchantServicesTabs from "@/app/tabs";
+import MerchantServicesTabs from "@/app/(protected)/tabs";
 import AccountMeta from "@/components/account-contract/account-meta";
 
 type JwtPayload = {

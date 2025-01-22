@@ -8,6 +8,7 @@ import {
   SafeAccountV0_3_0 as SafeAccount,
 } from "abstractionkit";
 import { Hex } from "viem";
+import { isLocal } from "./helpers";
 
 interface SignatureType {
   r: bigint;
@@ -17,17 +18,14 @@ interface SignatureType {
 export class WebAuthnHelper {
   private credential: P256Credential | null = null;
   private webauthPublicKey: WebauthnPublicKey | null = null;
+  private static appName: string = `Backpack${!isLocal ? " Staging" : ""}`;
+  private static hostname: string = window.location.hostname;
 
   /**
    * Creates a new WebAuthn credential
-   * @param name - Name for the credential
-   * @param hostname - Hostname for the Relying Party ID
    * @returns WebauthnPublicKey for use with Safe
    */
-  async createPasskey(
-    name: string,
-    hostname: string
-  ): Promise<{
+  async createPasskey(): Promise<{
     id: P256Credential["id"];
     publicKey: Hex;
     publicKeyCoordinates: WebauthnPublicKey;
@@ -35,16 +33,16 @@ export class WebAuthnHelper {
     clientDataJSON: string;
   }> {
     this.credential = await createCredential({
-      name,
+      name: WebAuthnHelper.appName,
       challenge: createChallenge, // TODO: get challenge from server
       authenticatorSelection: {
-        authenticatorAttachment: "platform",
+        authenticatorAttachment: "cross-platform",
         residentKey: "required",
         userVerification: "required",
       },
       rp: {
-        id: hostname,
-        name,
+        id: WebAuthnHelper.hostname,
+        name: WebAuthnHelper.appName,
       },
     });
     if (!this.credential) throw new CredentialCreationFailedError();
@@ -69,18 +67,78 @@ export class WebAuthnHelper {
   }
 
   /**
+   * Logs in with an existing passkey
+   * @returns The credential and public key if successful
+   */
+  async loginWithPasskey(): Promise<{
+    id: string;
+    publicKey: Hex;
+    publicKeyCoordinates: WebauthnPublicKey;
+  }> {
+    try {
+      // Use ox's sign function which will prompt for an existing credential
+      const challenge = createChallenge;
+      const {
+        raw: credential,
+        signature,
+        metadata,
+      } = await sign({
+        challenge: OxHex.fromBytes(challenge),
+        userVerification: "required",
+      });
+
+      // The credential ID from the response
+      const credentialId = credential.id;
+
+      // Collect all data needed for server verification
+      const authData = {
+        credentialId,
+        authenticatorData: metadata.authenticatorData,
+        clientDataJSON: metadata.clientDataJSON,
+        signature: {
+          r: signature.r.toString(),
+          s: signature.s.toString(),
+        },
+        challenge: OxHex.fromBytes(challenge), // Send the original challenge for verification
+      };
+
+      // TODO: Send authData to server
+      // const response = await fetch('/api/auth/verify-passkey', {
+      //   method: 'POST',
+      //   headers: { 'Content-Type': 'application/json' },
+      //   body: JSON.stringify(authData)
+      // });
+      // const { publicKey, publicKeyCoordinates } = await response.json();
+
+      // For now, throw error since we need server implementation
+      throw new Error(
+        "Server integration needed: Send the following data to server for verification:\n" +
+          JSON.stringify(authData, null, 2)
+      );
+    } catch (error) {
+      console.error("Error logging in with passkey:", error);
+      throw new Error("Failed to authenticate with passkey");
+    }
+  }
+
+  /**
    * Signs a message using the stored credential
    * @param message - Message to sign (typically a userOpHash)
    * @returns SignerSignaturePair for use with Safe
    */
-  async signMessage(message: string): Promise<SignerSignaturePair> {
+  async signMessage(message: Hex): Promise<SignerSignaturePair> {
     if (!this.credential || !this.webauthPublicKey) {
-      throw new Error("No credential available. Call createPasskey first.");
+      // Try to login with passkey if no credential is available
+      await this.loginWithPasskey();
+
+      if (!this.credential || !this.webauthPublicKey) {
+        throw new Error("No credential available. Please create or use a passkey first.");
+      }
     }
 
     // Get signature and WebAuthn data using ox
     const { signature, metadata } = await sign({
-      challenge: message as `0x${string}`,
+      challenge: message,
       credentialId: this.credential.id,
       userVerification: "required",
     });

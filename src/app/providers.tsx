@@ -8,7 +8,6 @@ import { NextUIProvider } from "@nextui-org/system";
 // import { PylonProvider } from "@backpack-fux/pylon-sdk";
 
 import pylonInstance from "@/libs/pylon-sdk";
-import PageWithScrollBackground from "@/styles/framer-motion/scroll-wrapper";
 import { MessagingProvider } from "@/components/messaging/messaging-provider";
 import { ShortcutsProvider } from "@/components/generics/shortcuts-provider";
 
@@ -33,9 +32,7 @@ export function Providers({ children, themeProps, userId }: ProvidersProps) {
     <NextUIProvider navigate={router.push}>
       <NextThemesProvider {...themeProps}>
         <MessagingProvider userId={userId || "default-user"}>
-          <ShortcutsProvider initialValue={shortcutsInitialValue}>
-            <PageWithScrollBackground>{children}</PageWithScrollBackground>
-          </ShortcutsProvider>
+          <ShortcutsProvider initialValue={shortcutsInitialValue}>{children}</ShortcutsProvider>
         </MessagingProvider>
       </NextThemesProvider>
     </NextUIProvider>

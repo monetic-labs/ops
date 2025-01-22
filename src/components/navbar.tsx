@@ -6,7 +6,6 @@ import { useRouter } from "next/navigation";
 import NextLink from "next/link";
 import { LogOut, Settings, User, Backpack } from "lucide-react";
 
-import { ThemeSwitch } from "@/components/theme-switch";
 import pylon from "@/libs/pylon-sdk";
 import { useAccounts } from "@/contexts/AccountContext";
 import { useAuth } from "@/contexts/AuthContext";
@@ -61,7 +60,7 @@ const AuthenticatedNav = ({ user, merchant, handleSignOut }: any) => {
       {/* Desktop Menu */}
       <NavbarContent className="hidden sm:flex basis-1/5 sm:basis-full" justify="end">
         <NavbarItem className="hidden sm:flex gap-4 items-center">
-          <ThemeSwitch />
+          {/* <ThemeSwitch /> */}
           <Dropdown placement="bottom-end">
             <DropdownTrigger>
               <button className="flex items-center gap-2 hover:opacity-80 transition-opacity">
@@ -96,9 +95,7 @@ const AuthenticatedNav = ({ user, merchant, handleSignOut }: any) => {
 
 const UnauthenticatedNav = () => (
   <NavbarContent justify="end">
-    <NavbarItem>
-      <ThemeSwitch />
-    </NavbarItem>
+    <NavbarItem>{/* <ThemeSwitch /> */}</NavbarItem>
   </NavbarContent>
 );
 

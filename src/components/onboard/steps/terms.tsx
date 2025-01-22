@@ -30,22 +30,38 @@ export const TermsStep = () => {
 
   return (
     <div className="mb-8 space-y-6">
-      <div className="space-y-4">
+      <div className="flex justify-between">
         <Checkbox
           {...register("acceptedTerms")}
           classNames={{
-            base: errors.acceptedTerms ? "border-red-500" : "",
             wrapper:
-              "before:border-[#E31B88] group-data-[selected=true]:before:border-[#E31B88] group-data-[selected=true]:before:bg-[#E31B88]",
+              "before:border-ualert-500 group-data-[selected=true]:before:border-ualert-500 group-data-[selected=true]:before:bg-ualert-500 group-data-[selected=true]:after:bg-ualert-500",
           }}
           icon={<CustomCheckIcon className="text-white" />}
           size="lg"
           onValueChange={handleAcceptTerms}
-        >
-          I acknowledge and accept all terms and conditions for Backpack, including but not limited to, the Rain Card
-          and Bill Pay services.
-        </Checkbox>
-        {errors.acceptedTerms && <p className="text-red-500 text-sm">{errors.acceptedTerms.message?.toString()}</p>}
+        />
+        <div>
+          I acknowledge and accept the{" "}
+          <span
+            className="text-ualert-500 underline cursor-pointer z-10"
+            onClick={(e) => {
+              window.open("https://backpack.com/terms-and-conditions", "_blank");
+            }}
+          >
+            terms and conditions
+          </span>{" "}
+          as well as{" "}
+          <span
+            className="text-ualert-500 underline cursor-pointer z-10"
+            onClick={(e) => {
+              window.open("https://backpack.com/privacy-policy", "_blank");
+            }}
+          >
+            privacy policy
+          </span>{" "}
+          for Backpack, including but not limited to, the Rain Card and Bill Pay services.
+        </div>
       </div>
     </div>
   );
