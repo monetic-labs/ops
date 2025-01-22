@@ -20,13 +20,7 @@ const AuthContext = createContext<AuthContextType>({
   isAuthenticated: false,
 });
 
-export function AuthProvider({ 
-  children, 
-  token 
-}: { 
-  children: ReactNode;
-  token?: string;
-}) {
+export function AuthProvider({ children, token }: { children: ReactNode; token?: string }) {
   let contextValue: AuthContextType = {
     isAuthenticated: false,
   };
@@ -34,21 +28,18 @@ export function AuthProvider({
   if (token) {
     try {
       const decoded = jwtDecode<JwtPayload>(token);
+
       contextValue = {
         isAuthenticated: true,
         userId: decoded.userId,
         merchantId: decoded.merchantId,
       };
     } catch (error) {
-      console.error('Failed to decode JWT:', error);
+      console.error("Failed to decode JWT:", error);
     }
   }
 
-  return (
-    <AuthContext.Provider value={contextValue}>
-      {children}
-    </AuthContext.Provider>
-  );
+  return <AuthContext.Provider value={contextValue}>{children}</AuthContext.Provider>;
 }
 
-export const useAuth = () => useContext(AuthContext); 
+export const useAuth = () => useContext(AuthContext);

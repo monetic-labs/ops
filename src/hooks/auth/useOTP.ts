@@ -1,5 +1,6 @@
 import { useState, useCallback } from "react";
 import { VerifyOTP } from "@backpack-fux/pylon-sdk";
+
 import pylon from "@/libs/pylon-sdk";
 
 interface OTPState {
@@ -18,7 +19,7 @@ export function useOTP(inputRef: React.RefObject<HTMLInputElement>) {
   });
 
   const setOTP = useCallback((value: string) => {
-    setState(prev => ({
+    setState((prev) => ({
       ...prev,
       otp: value,
       error: null,
@@ -26,48 +27,50 @@ export function useOTP(inputRef: React.RefObject<HTMLInputElement>) {
   }, []);
 
   const issueOTP = useCallback(async (email: string) => {
-    setState(prev => ({ ...prev, isLoading: true, error: null }));
+    setState((prev) => ({ ...prev, isLoading: true, error: null }));
     try {
       const response = await pylon.initiateLoginOTP({ email });
-      setState(prev => ({
+
+      setState((prev) => ({
         ...prev,
         otpSent: response.statusCode === 200,
       }));
+
       return response.statusCode;
     } catch (err: any) {
       if (err.response?.status === 404) {
         throw { statusCode: 404, message: "User not found" };
       }
-      setState(prev => ({
+      setState((prev) => ({
         ...prev,
         error: err.message || "Failed to send OTP",
       }));
       throw err;
     } finally {
-      setState(prev => ({ ...prev, isLoading: false }));
+      setState((prev) => ({ ...prev, isLoading: false }));
     }
   }, []);
 
   const verifyOTP = useCallback(async (data: VerifyOTP) => {
-    setState(prev => ({ ...prev, isLoading: true, error: null }));
+    setState((prev) => ({ ...prev, isLoading: true, error: null }));
     try {
       const response = await pylon.verifyLoginOTP(data);
       const isValid = Boolean(response.data.message);
 
       if (isValid) {
-        setState(prev => ({
+        setState((prev) => ({
           ...prev,
           isLoading: true,
         }));
       } else {
-        setState(prev => ({
+        setState((prev) => ({
           ...prev,
           error: "Incorrect OTP",
           isLoading: false,
         }));
 
         setTimeout(() => {
-          setState(prev => ({
+          setState((prev) => ({
             ...prev,
             otp: "",
             error: null,
@@ -78,11 +81,12 @@ export function useOTP(inputRef: React.RefObject<HTMLInputElement>) {
 
       return isValid;
     } catch (err) {
-      setState(prev => ({
+      setState((prev) => ({
         ...prev,
         error: "Incorrect OTP",
         isLoading: false,
       }));
+
       return false;
     }
   }, []);

@@ -6,7 +6,7 @@ import { useMessagingStore, useMessagingActions } from "@/libs/messaging/store";
 /**
  * Custom hook that provides chat functionality with an AI agent.
  * Manages message state, handles message sending, and processes AI responses.
- * 
+ *
  * @returns {Object} An object containing chat state and methods:
  *   - type: The AI provider type ('openai')
  *   - model: The OpenAI model being used
@@ -25,11 +25,11 @@ export const useAgentService = () => {
     api: "/api/messaging/agent/chat",
     id: state.userId || "default-user",
     initialMessages: state.messages.bot
-      .filter(msg => msg.type === 'user' || msg.type === 'bot')
-      .map(msg => ({
+      .filter((msg) => msg.type === "user" || msg.type === "bot")
+      .map((msg) => ({
         id: msg.id,
-        role: msg.type === 'bot' ? 'assistant' : 'user',
-        content: msg.text
+        role: msg.type === "bot" ? "assistant" : "user",
+        content: msg.text,
       })),
     onFinish: (message) => {
       messageActions.appendMessage({
@@ -54,7 +54,7 @@ export const useAgentService = () => {
   });
 
   const setInputValue = async (value: string) => {
-    await messageActions.setInputValue({ mode: 'bot', value });
+    await messageActions.setInputValue({ mode: "bot", value });
   };
 
   const sendMessage = async (text: string) => {
@@ -74,10 +74,10 @@ export const useAgentService = () => {
       await chatHelpers.append({
         id: messageId,
         content: text,
-        role: 'user',
+        role: "user",
       });
       messageActions.updateMessage(messageId, { status: "sent" });
-      await setInputValue(''); // Clear input after sending
+      await setInputValue(""); // Clear input after sending
     } catch (error) {
       console.error("Failed to get AI response:", error);
       messageActions.updateMessage(messageId, { status: "error" });
@@ -87,6 +87,7 @@ export const useAgentService = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const text = state.inputValues.bot;
+
     if (!text.trim()) return;
     await sendMessage(text.trim());
   };

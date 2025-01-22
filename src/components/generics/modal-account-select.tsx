@@ -1,4 +1,5 @@
 import { Modal, ModalBody, ModalContent } from "@nextui-org/modal";
+
 import { Account } from "@/contexts/AccountContext";
 
 interface AccountSelectionModalProps {
@@ -16,17 +17,17 @@ export function AccountSelectionModal({
   accounts,
   onSelect,
   selectedAccountId,
-  title
+  title,
 }: AccountSelectionModalProps) {
   return (
     <Modal
-      isOpen={isOpen}
-      onClose={onClose}
-      size="sm"
       classNames={{
         base: "bg-[#0A0A0A]",
         wrapper: "bg-black/80",
       }}
+      isOpen={isOpen}
+      size="sm"
+      onClose={onClose}
     >
       <ModalContent>
         <ModalBody className="p-4">
@@ -48,9 +49,7 @@ export function AccountSelectionModal({
                 <div className="flex items-center justify-between">
                   <span className="text-white">{account.name}</span>
                   {account.balance !== undefined && (
-                    <span className="text-gray-400">
-                      ${account.balance.toLocaleString()}
-                    </span>
+                    <span className="text-gray-400">${account.balance.toLocaleString()}</span>
                   )}
                 </div>
               </button>
@@ -60,4 +59,4 @@ export function AccountSelectionModal({
       </ModalContent>
     </Modal>
   );
-} 
+}

@@ -192,6 +192,7 @@ test.describe("Onboarding Flow", () => {
 
     // Enter OTP
     const otpInput = page.getByTestId("otp-input-container").locator("input");
+
     await otpInput.fill("123456");
 
     // Set auth cookie from verification

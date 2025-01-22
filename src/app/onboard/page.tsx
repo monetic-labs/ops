@@ -1,29 +1,17 @@
 "use client";
 
-import { Suspense } from "react";
+import { Suspense, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
-import { useRouter } from "next/navigation";
-
-import { MerchantOnboard } from "@/components/onboard/merchant";
-
-// This function is used to render the onboarding page and allows us to get the email from the query params submitted from the auth input
-function OnboardContent() {
-  const searchParams = useSearchParams();
-  const email = searchParams?.get("email") || "";
-  const router = useRouter();
-
-  const onCancel = () => {
-    router.push("/");
-  };
-
-  return <MerchantOnboard initialEmail={email} onCancel={onCancel} />;
-}
+import { OnboardForm } from "@/components/onboard/onboard-form";
 
 export default function OnboardPage() {
+  const searchParams = useSearchParams();
+  const email = searchParams?.get("email") || "";
+
   return (
     <section className="relative">
       <Suspense fallback={<div>Loading...</div>}>
-        <OnboardContent />
+        <OnboardForm key={email} email={email} />
       </Suspense>
     </section>
   );

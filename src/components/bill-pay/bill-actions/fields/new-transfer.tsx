@@ -10,8 +10,8 @@ import { Avatar } from "@nextui-org/avatar";
 import { getRegion } from "iso3166-helper";
 
 import { NewBillPay } from "@/types/bill-pay";
-import { getValidationProps } from "@/types/validations/bill-pay";
-import { FieldLabel } from "@/types/validations/bill-pay";
+import { getValidationProps } from "@/validations/bill-pay";
+import { FieldLabel } from "@/validations/bill-pay";
 import { useCountries } from "@/hooks/bill-pay/useCountries";
 
 type NewTransferFieldsProps = {

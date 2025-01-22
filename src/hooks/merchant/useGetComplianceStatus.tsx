@@ -10,16 +10,13 @@ export function useGetComplianceStatus() {
 
   useEffect(() => {
     async function checkCompliance() {
-      const [complianceStatus, rainCardCompany] = await Promise.all([
+      const [bridgeComplianceStatus, rainComplianceStatus] = await Promise.all([
         pylon.getComplianceStatus(),
         pylon.getCardCompanyStatus(),
       ]);
-
-      console.log("bridgeTosStatus", complianceStatus.tosStatus);
-      console.log("bridgeKybStatus", complianceStatus.kycStatus);
-      console.log("rainKybStatus", rainCardCompany.status);
-
-      setComplianceStatus({ ...complianceStatus, ...rainCardCompany });
+      const complianceStatus = { ...bridgeComplianceStatus, ...rainComplianceStatus };
+      console.log("complianceStatus", complianceStatus);
+      setComplianceStatus(complianceStatus);
     }
     checkCompliance();
   }, []);

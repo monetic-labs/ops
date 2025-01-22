@@ -10,7 +10,7 @@ export interface EnergyTypeProfile {
     confirmation_threshold: "low" | "medium" | "high";
   };
   optimal_capabilities: string[];
-  speech_patterns: string[]; // optional for now 
+  speech_patterns: string[]; // optional for now
 }
 
 export interface EnergyTypePreference {

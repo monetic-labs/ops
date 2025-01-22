@@ -7,15 +7,16 @@ interface BalanceDisplayProps {
   prefix?: string;
 }
 
-export function BalanceDisplay({ 
-  balance, 
-  onClick, 
+export function BalanceDisplay({
+  balance,
+  onClick,
   className = "text-sm text-gray-400 hover:text-white",
-  prefix = "Balance: "
+  prefix = "Balance: ",
 }: BalanceDisplayProps) {
   return (
-    <button onClick={onClick} className={`${className} transition-colors`}>
-      {prefix}{formatUSD(balance)}
+    <button className={`${className} transition-colors`} onClick={onClick}>
+      {prefix}
+      {formatUSD(balance)}
     </button>
   );
-} 
+}

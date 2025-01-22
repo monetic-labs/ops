@@ -12,11 +12,11 @@ import { Address } from "viem";
 import { Button } from "@nextui-org/button";
 
 import { useExistingDisbursement } from "@/hooks/bill-pay/useExistingDisbursement";
-import { modal } from "@/context/reown";
+import { modal } from "@/contexts/reown";
 import TransferStatusView, { TransferStatus } from "@/components/generics/transfer-status";
 import { buildTransfer } from "@/utils/reown";
 import { useBalance } from "@/hooks/account-contracts/useBalance";
-import { validateBillPay } from "@/types/validations/bill-pay";
+import { validateBillPay } from "@/validations/bill-pay";
 import {
   DEFAULT_EXISTING_BILL_PAY,
   DEFAULT_NEW_BILL_PAY,

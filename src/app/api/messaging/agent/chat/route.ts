@@ -1,7 +1,8 @@
+import type { Message as AIMessage } from "ai";
+
 import { openai } from "@ai-sdk/openai";
 import { convertToCoreMessages, streamText } from "ai";
 import { PineconeNotFoundError, PineconeConnectionError } from "@pinecone-database/pinecone/dist/errors";
-import type { Message as AIMessage } from 'ai';
 
 import { getEmbedding } from "@/libs/openai/embedding";
 import { pinecone } from "@/libs/pinecone/pinecone";
@@ -11,7 +12,7 @@ export const runtime = "edge";
 
 interface ChatRequestBody {
   messages: {
-    role: 'user' | 'assistant' | 'system' | 'function' | 'data' | 'tool';
+    role: "user" | "assistant" | "system" | "function" | "data" | "tool";
     content: string;
     id?: string;
   }[];
@@ -25,9 +26,10 @@ const processVectorMatches = (matches: any[]) => {
   return matches
     .map((match) => {
       try {
-        const contentStr = typeof match.metadata?.content === "string"
-          ? match.metadata.content
-          : JSON.stringify(match.metadata?.content);
+        const contentStr =
+          typeof match.metadata?.content === "string"
+            ? match.metadata.content
+            : JSON.stringify(match.metadata?.content);
 
         const parsed = JSON.parse(contentStr);
         const content = JSON.parse(parsed.content);
@@ -39,8 +41,9 @@ const processVectorMatches = (matches: any[]) => {
         console.error("Error parsing metadata:", {
           error: e,
           matchId: match.id,
-          hasMetadata: !!match.metadata
+          hasMetadata: !!match.metadata,
         });
+
         return null;
       }
     })
@@ -53,7 +56,7 @@ const processVectorMatches = (matches: any[]) => {
  */
 const createFallbackResponse = async (messages: AIMessage[], userId: string) => {
   console.log("Using fallback response for userId:", userId);
-  
+
   const result = await streamText({
     messages: convertToCoreMessages(messages),
     model: openai(OPENAI_MODELS.chat.fallback),
@@ -65,25 +68,27 @@ const createFallbackResponse = async (messages: AIMessage[], userId: string) => 
 
 export async function POST(req: Request) {
   try {
-    const { messages, userId = "default-user" } = await req.json() as ChatRequestBody;
-    
+    const { messages, userId = "default-user" } = (await req.json()) as ChatRequestBody;
+
     if (!messages?.length) {
       return new Response("No messages provided", { status: 400 });
     }
 
     const lastMessage = messages[messages.length - 1];
+
     console.log("Processing chat request:", {
       userId,
       messageCount: messages.length,
-      lastMessage: lastMessage.content
+      lastMessage: lastMessage.content,
     });
 
     // Get embedding for the query
     const queryEmbedding = await getEmbedding(lastMessage.content);
+
     console.log("Query context:", {
       userId,
       vectorLength: queryEmbedding.length,
-      namespace: RETRIEVAL_CONFIG.pinecone.namespace
+      namespace: RETRIEVAL_CONFIG.pinecone.namespace,
     });
 
     try {
@@ -112,6 +117,7 @@ export async function POST(req: Request) {
       // Handle vector store errors gracefully
       if (error instanceof PineconeConnectionError || error instanceof PineconeNotFoundError) {
         console.error("Falling back to default context due to Pinecone error:", error);
+
         return createFallbackResponse(messages as AIMessage[], userId);
       }
       throw error;
@@ -119,12 +125,13 @@ export async function POST(req: Request) {
   } catch (error) {
     console.error("Chat API error:", {
       error,
-      type: error instanceof Error ? error.constructor.name : typeof error
+      type: error instanceof Error ? error.constructor.name : typeof error,
     });
 
     if (error instanceof Error) {
       return new Response(`Error: ${error.message}`, { status: 500 });
     }
+
     return new Response("An unexpected error occurred", { status: 500 });
   }
 }

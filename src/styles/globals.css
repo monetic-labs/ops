@@ -3,7 +3,7 @@
 @tailwind utilities;
 
 body {
-  background-image: url('/bg-celestial.png');
+  background-image: url("/bg-celestial.png");
   background-repeat: repeat;
   background-size: cover;
   background-attachment: fixed;
@@ -14,8 +14,15 @@ body {
 }
 
 @keyframes flash {
-  0%, 50%, 100% { border-color: theme('colors.ualert.500'); }
-  25%, 75% { border-color: transparent; }
+  0%,
+  50%,
+  100% {
+    border-color: theme("colors.ualert.500");
+  }
+  25%,
+  75% {
+    border-color: transparent;
+  }
 }
 
 .animate-flash {
@@ -43,7 +50,10 @@ body {
   opacity: 0;
   max-height: 0;
   overflow: hidden;
-  transition: opacity 0.3s ease-in-out, max-height 0.3s ease-in-out, margin 0.3s ease-in-out;
+  transition:
+    opacity 0.3s ease-in-out,
+    max-height 0.3s ease-in-out,
+    margin 0.3s ease-in-out;
 }
 
 .fade-in.show {
@@ -80,12 +90,12 @@ body {
   body {
     background-attachment: fixed;
   }
-  
+
   /* Prevent iOS Safari elastic scrolling from breaking the background */
   html {
     height: -webkit-fill-available;
   }
-  
+
   body {
     min-height: -webkit-fill-available;
   }

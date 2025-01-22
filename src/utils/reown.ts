@@ -2,8 +2,8 @@ import type UniversalProvider from "@walletconnect/universal-provider";
 
 import { encodeFunctionData, Address, parseUnits, Hex } from "viem";
 
-import { modal } from "@/context/reown";
-import { chain, publicClient } from "@/config/web3";
+import { modal } from "@/contexts/reown";
+import { publicClient, chain } from "@/config/web3";
 import { TransferStatus } from "@/components/generics/transfer-status";
 
 import { BASE_USDC } from "./constants";

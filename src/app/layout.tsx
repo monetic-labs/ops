@@ -7,11 +7,12 @@ import { cookies } from "next/headers";
 import { Navbar } from "@/components/navbar";
 import { fontSans } from "@/config/fonts";
 import { siteConfig } from "@/config/site";
-import { Providers } from "./providers";
 import { AccountProvider } from "@/contexts/AccountContext";
 import { DiscordIcon, GithubIcon, TwitterIcon } from "@/components/icons";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { MERCHANT_COOKIE_NAME } from "@/utils/constants";
+
+import { Providers } from "./providers";
 
 export const metadata: Metadata = {
   title: {
@@ -35,7 +36,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   const authToken = cookies().get(MERCHANT_COOKIE_NAME);
 
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html suppressHydrationWarning lang="en">
       <body className={clsx("min-h-screen bg-background font-sans antialiased", fontSans.variable)}>
         <AuthProvider token={authToken?.value}>
           <AccountProvider>

@@ -37,6 +37,5 @@ export const MessagingProvider = ({ children, userId, initialMode = "bot" }: Mes
     };
   }, [connect, setMode, setWidth, setActiveService, initialMode]);
 
-
   return <>{children}</>;
 };

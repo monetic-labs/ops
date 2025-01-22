@@ -1,9 +1,10 @@
 // src/hooks/messaging/useSupportService.ts
+import { useCallback } from "react";
+import html2canvas from "html2canvas";
+
 import { useMessagingStore, useMessagingActions } from "@/libs/messaging/store";
 import { SupportMessageService } from "@/types/messaging";
-import { useCallback } from "react";
 import pylon from "@/libs/pylon-sdk";
-import html2canvas from "html2canvas";
 
 const baseUrl = process.env.NEXT_PUBLIC_PYLON_BASE_URL;
 
@@ -68,6 +69,7 @@ export const useSupportScreenshot = () => {
       return true;
     } catch (error) {
       console.error("Error capturing screenshot:", error);
+
       return false;
     }
   }, []);
@@ -79,46 +81,56 @@ export const useSupportScreenshot = () => {
 
 export const useSupportService = (): SupportMessageService => {
   const { message: messageActions } = useMessagingActions();
-  const state = useMessagingStore(state => state.message);
+  const state = useMessagingStore((state) => state.message);
 
-  const setInputValue = useCallback(async (value: string) => {
-    await messageActions.setInputValue({ mode: 'support', value });
-  }, [messageActions]);
+  const setInputValue = useCallback(
+    async (value: string) => {
+      await messageActions.setInputValue({ mode: "support", value });
+    },
+    [messageActions]
+  );
 
-  const sendMessage = useCallback(async (text: string) => {
-    if (!text.trim()) return;
+  const sendMessage = useCallback(
+    async (text: string) => {
+      if (!text.trim()) return;
 
-    try {
-      const messageId = crypto.randomUUID();
-      
-      messageActions.appendMessage({
-        id: messageId,
-        text,
-        type: 'user',
-        timestamp: Date.now(),
-        status: 'sending'
-      });
+      try {
+        const messageId = crypto.randomUUID();
 
-      // Send via Pylon SDK
-      const success = await pylon.createTelegramMessage({ text });
+        messageActions.appendMessage({
+          id: messageId,
+          text,
+          type: "user",
+          timestamp: Date.now(),
+          status: "sending",
+        });
 
-      if (success) {
-        messageActions.updateMessage(messageId, { status: 'sent' });
-        await setInputValue(''); // Clear input after sending
-      } else {
-        messageActions.updateMessage(messageId, { status: 'error' });
+        // Send via Pylon SDK
+        const success = await pylon.createTelegramMessage({ text });
+
+        if (success) {
+          messageActions.updateMessage(messageId, { status: "sent" });
+          await setInputValue(""); // Clear input after sending
+        } else {
+          messageActions.updateMessage(messageId, { status: "error" });
+        }
+      } catch (error) {
+        console.error("Failed to send message:", error);
       }
-    } catch (error) {
-      console.error('Failed to send message:', error);
-    }
-  }, [messageActions, setInputValue]);
+    },
+    [messageActions, setInputValue]
+  );
 
-  const handleSubmit = useCallback(async (e: React.FormEvent) => {
-    e.preventDefault();
-    const text = state.inputValues.support;
-    if (!text.trim()) return;
-    await sendMessage(text.trim());
-  }, [state.inputValues.support, sendMessage]);
+  const handleSubmit = useCallback(
+    async (e: React.FormEvent) => {
+      e.preventDefault();
+      const text = state.inputValues.support;
+
+      if (!text.trim()) return;
+      await sendMessage(text.trim());
+    },
+    [state.inputValues.support, sendMessage]
+  );
 
   return {
     type: "telegram" as const,
@@ -130,6 +142,6 @@ export const useSupportService = (): SupportMessageService => {
     setInputValue,
     sendMessage,
     handleSubmit,
-    getUserId: () => state.userId || 'default-user'
+    getUserId: () => state.userId || "default-user",
   };
 };

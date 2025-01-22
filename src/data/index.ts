@@ -220,15 +220,23 @@ export interface Payment {
   createdAt: string;
   actions: string;
 }
-export interface User {
-  id: string;
-  fullName: string;
-  role: string;
+
+export type User = {
+  id: number;
+  firstName: string;
+  lastName: string;
   email: string;
-  phone: string;
-  status: string;
-  actions: string;
-}
+  phoneNumber: string;
+  role: "representative" | "ultimate_beneficiary";
+  countryOfIssue?: string;
+  birthDate?: string;
+  socialSecurityNumber?: string;
+  postcode?: string;
+  city?: string;
+  state?: string;
+  streetAddress1?: string;
+  streetAddress2?: string;
+};
 
 export const billPayColumns: readonly Column<BillPay>[] = [
   { name: "VENDOR", uid: "accountOwnerName" },

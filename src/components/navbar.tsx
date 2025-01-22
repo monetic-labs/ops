@@ -1,12 +1,10 @@
 "use client";
-import { Link } from "@nextui-org/link";
 import { NavbarBrand, NavbarContent, NavbarItem, Navbar as NextUINavbar } from "@nextui-org/navbar";
 import { Dropdown, DropdownTrigger, DropdownMenu, DropdownItem } from "@nextui-org/dropdown";
 import { Avatar } from "@nextui-org/avatar";
 import { useRouter } from "next/navigation";
 import NextLink from "next/link";
 import { LogOut, Settings, User, Backpack } from "lucide-react";
-import { Button } from "@nextui-org/button";
 
 import { ThemeSwitch } from "@/components/theme-switch";
 import pylon from "@/libs/pylon-sdk";
@@ -30,19 +28,19 @@ const AuthenticatedNav = ({ user, merchant, handleSignOut }: any) => {
     <>
       <DropdownItem
         key="profile"
-        startContent={<User className="w-4 h-4" />}
-        description="Coming Soon"
         isReadOnly
         className="opacity-50"
+        description="Coming Soon"
+        startContent={<User className="w-4 h-4" />}
       >
         Profile
       </DropdownItem>
       <DropdownItem
         key="settings"
-        startContent={<Settings className="w-4 h-4" />}
-        description="Coming Soon"
         isReadOnly
         className="opacity-50"
+        description="Coming Soon"
+        startContent={<Settings className="w-4 h-4" />}
       >
         Settings
       </DropdownItem>
@@ -67,8 +65,8 @@ const AuthenticatedNav = ({ user, merchant, handleSignOut }: any) => {
           <Dropdown placement="bottom-end">
             <DropdownTrigger>
               <button className="flex items-center gap-2 hover:opacity-80 transition-opacity">
-                <Avatar name={user?.name || merchant?.name} size="sm" className="bg-notpurple-500/20" />
-                <UserInfo userName={user?.name} orgName={merchant?.name} />
+                <Avatar className="bg-notpurple-500/20" name={user?.name || merchant?.name} size="sm" />
+                <UserInfo orgName={merchant?.name} userName={user?.name} />
               </button>
             </DropdownTrigger>
             <DropdownMenu aria-label="User menu" variant="flat">
@@ -82,11 +80,11 @@ const AuthenticatedNav = ({ user, merchant, handleSignOut }: any) => {
       <NavbarContent className="sm:hidden" justify="end">
         <Dropdown placement="bottom-end">
           <DropdownTrigger>
-            <Avatar name={user?.name || merchant?.name} size="sm" className="bg-notpurple-500/20 cursor-pointer" />
+            <Avatar className="bg-notpurple-500/20 cursor-pointer" name={user?.name || merchant?.name} size="sm" />
           </DropdownTrigger>
-          <DropdownMenu aria-label="Mobile user menu" variant="flat" className="w-[280px]">
+          <DropdownMenu aria-label="Mobile user menu" className="w-[280px]" variant="flat">
             <DropdownItem key="user-info" isReadOnly className="h-14 gap-2">
-              <UserInfo userName={user?.name} orgName={merchant?.name} />
+              <UserInfo orgName={merchant?.name} userName={user?.name} />
             </DropdownItem>
             {dropdownItems}
           </DropdownMenu>
@@ -134,11 +132,7 @@ export const Navbar = () => {
       </NavbarContent>
 
       {isAuthenticated ? (
-        <AuthenticatedNav 
-          user={user} 
-          merchant={merchant} 
-          handleSignOut={handleSignOut} 
-        />
+        <AuthenticatedNav handleSignOut={handleSignOut} merchant={merchant} user={user} />
       ) : (
         <UnauthenticatedNav />
       )}

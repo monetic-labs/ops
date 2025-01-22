@@ -7,7 +7,7 @@ import { Eye, EyeOff } from "lucide-react";
 
 import { useGetContacts } from "@/hooks/bill-pay/useGetContacts";
 import { DEFAULT_EXISTING_BILL_PAY, DEFAULT_NEW_BILL_PAY, ExistingBillPay, NewBillPay } from "@/types/bill-pay";
-import { FieldLabel, getValidationProps } from "@/types/validations/bill-pay";
+import { FieldLabel, getValidationProps } from "@/validations/bill-pay";
 
 type ExistingTransferFieldsProps = {
   billPay: ExistingBillPay;

@@ -3,7 +3,7 @@
 import React, { useRef, useState, MouseEvent, useEffect } from "react";
 import { Button } from "@nextui-org/button";
 import { Input } from "@nextui-org/input";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Spinner } from "@nextui-org/spinner";
 import { InputOtp } from "@nextui-org/input-otp";
 import { PressEvent } from "@react-types/shared";
@@ -18,11 +18,14 @@ import { SafeAccountHelper } from "@/utils/safeAccount";
 
 // App constants
 const APP_NAME = "Backpack Staging";
+import { OTPModal } from "@/components/generics/otp-modal";
 
 export default function AuthPage() {
-  const [email, setEmail] = useState("");
+  const searchParams = useSearchParams();
+  const [email, setEmail] = useState(searchParams?.get("invite") || null);
   const [showOtpInput, setShowOtpInput] = useState(false);
   const otpInputRef = useRef<HTMLInputElement>(null);
+
   const {
     issueOTP,
     verifyOTP,
@@ -39,10 +42,17 @@ export default function AuthPage() {
   const [canResend, setCanResend] = useState(true);
   const shouldEnableTimer = !isLocal && !isTesting;
 
+  useEffect(() => {
+    const inviteEmail = searchParams?.get("invite");
+    if (inviteEmail) {
+      setEmail(inviteEmail);
+      handleLogin();
+    }
+  }, [searchParams]);
+
   const handleSignUp = async (e: MouseEvent) => {
     e.preventDefault();
 
-    try {
       // // Step 1: Initialize WebAuthn and create passkey
       // const webauthnHelper = new WebAuthnHelper();
       // const { publicKeyCoordinates } = await webauthnHelper.createPasskey(APP_NAME, window.location.hostname);
@@ -70,17 +80,23 @@ export default function AuthPage() {
       // });
 
       // return receipt;
-      router.push(`/onboard?email=${encodeURIComponent(email)}`);
-    } catch (error) {
-      console.error("Failed to create account:", error);
-      throw error;
-    }
+
+    // if (email) {
+    //   router.push(`/onboard?email=${encodeURIComponent(email)}`);
+    // } else {
+    //   router.push(`/onboard`);
+    // }
   };
 
-  const handleLogin = async (e: PressEvent) => {
+  const handleLogin = async () => {
     try {
       // TODO: login with passkey
+      if (!email) {
+        setNotification("Please enter an email address");
+        return;
+      }
       const response = await issueOTP(email);
+
       if (response === 200) {
         setShowOtpInput(true);
         if (shouldEnableTimer) {
@@ -94,7 +110,11 @@ export default function AuthPage() {
         setNotification("New User Detected. Redirecting to registration...");
         setTimeout(() => {
           setNotification(null);
-          router.push(`/onboard?email=${encodeURIComponent(email)}`);
+          if (email) {
+            router.push(`/onboard?email=${encodeURIComponent(email)}`);
+          } else {
+            router.push(`/onboard`);
+          }
         }, 3000);
       }
     }
@@ -102,8 +122,10 @@ export default function AuthPage() {
 
   const handleVerify = async (otpValue?: string) => {
     const valueToVerify = otpValue || otp;
+
     if (email && valueToVerify.length === OTP_LENGTH) {
       const success = await verifyOTP({ email, otp: valueToVerify });
+
       if (success) {
         router.refresh();
       }
@@ -160,53 +182,26 @@ export default function AuthPage() {
             label="Email"
             placeholder="Enter your email"
             type="email"
-            value={email}
+            value={email || ""}
             onChange={(e) => setEmail(e.target.value)}
           />
           {showOtpInput && (
-            <>
-              <div className="flex flex-col items-center justify-center">
-                <InputOtp
-                  ref={otpInputRef}
-                  length={OTP_LENGTH}
-                  value={otp}
-                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => setOTP(e.target.value)}
-                  onValueChange={setOTP}
-                  onComplete={handleVerify}
-                  size={window.innerWidth < 640 ? "sm" : "lg"}
-                  variant="faded"
-                  classNames={{
-                    input: "w-10 h-12 text-center text-xl text-white",
-                    base: "flex justify-center space-x-2",
-                  }}
-                  isDisabled={isLoading}
-                  errorMessage={otpError}
-                  isInvalid={otpError !== null}
-                  data-testid="otp-input-container"
-                />
-              </div>
-              <div className="flex gap-2 justify-between">
-                <Button
-                  className="bg-notpurple-500/30 text-white hover:bg-gray-600"
-                  type="button"
-                  variant="flat"
-                  onPress={handleCancel}
-                  disabled={isLoading}
-                >
-                  Cancel
-                </Button>
-                <Button
-                  className="bg-ualert-500 text-white hover:bg-ualert-600"
-                  data-testid="resend-otp-button"
-                  type="button"
-                  variant="flat"
-                  onPress={handleResendOTP}
-                  isDisabled={isLoading || (!canResend && shouldEnableTimer)}
-                >
-                  {!canResend && shouldEnableTimer ? `Resend in ${resendTimer}s` : "Resend OTP"}
-                </Button>
-              </div>
-            </>
+            <OTPModal
+              isOpen={showOtpInput}
+              email={email || ""}
+              otp={otp}
+              otpError={otpError}
+              isLoading={isLoading}
+              canResend={canResend}
+              resendTimer={resendTimer}
+              shouldEnableTimer={shouldEnableTimer}
+              otpInputRef={otpInputRef}
+              onOTPChange={(e) => setOTP(e.target.value)}
+              onOTPComplete={handleVerify}
+              onResend={handleResendOTP}
+              onValueChange={setOTP}
+              onClose={handleCancel}
+            />
           )}
           {!showOtpInput && (
             <div className="flex gap-2">
@@ -222,10 +217,10 @@ export default function AuthPage() {
               <Button
                 className="bg-ualert-500 text-white hover:bg-notpurple-600 flex-1"
                 data-testid="sign-in-button"
+                isDisabled={!email || !/^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z0-9]{2,}$/i.test(email)}
                 isLoading={isLoading}
                 type="button"
                 variant="shadow"
-                isDisabled={!email || !/^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z0-9]{2,}$/i.test(email)}
                 onPress={handleLogin}
               >
                 Sign In

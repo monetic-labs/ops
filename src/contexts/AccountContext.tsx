@@ -1,7 +1,6 @@
 "use client";
 import { createContext, useContext, ReactNode } from "react";
 import { Building2, CreditCard, PiggyBank, PlusCircle } from "lucide-react";
-import { useAuth } from "./AuthContext";
 
 export interface Account {
   id: string;
@@ -75,19 +74,19 @@ export function AccountProvider({ children }: { children: ReactNode }) {
   // Mock data for now - replace with real data later
   const user = { name: "John Doe" };
   const merchant = { name: "Acme Corp" };
-  
+
   // For now, we'll consider the user authenticated if we have both user and merchant data
   const isAuthenticated = Boolean(user && merchant);
 
   return (
-    <AccountContext.Provider 
-      value={{ 
-        accounts, 
-        getEnabledAccounts, 
-        getAccountById, 
-        user, 
+    <AccountContext.Provider
+      value={{
+        accounts,
+        getEnabledAccounts,
+        getAccountById,
+        user,
         merchant,
-        isAuthenticated 
+        isAuthenticated,
       }}
     >
       {children}
@@ -97,8 +96,10 @@ export function AccountProvider({ children }: { children: ReactNode }) {
 
 export const useAccounts = () => {
   const context = useContext(AccountContext);
+
   if (context === undefined) {
     throw new Error("useAccounts must be used within an AccountProvider");
   }
+
   return context;
 };

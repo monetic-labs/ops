@@ -2,28 +2,30 @@
 
 import React, { useRef, useEffect, useCallback } from "react";
 
-import { useCurrentModeMessages, useMessagingActions, useMessagingState } from "@/libs/messaging/store";
+import { useCurrentModeMessages, useMessagingActions } from "@/libs/messaging/store";
+import { useWebSocket } from "@/hooks/messaging/useWebSocket";
 
 import { MessageBubble } from "./message-bubble";
-import { useWebSocket } from "@/hooks/messaging/useWebSocket";
 
 export const ChatBody: React.FC = () => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const messages = useCurrentModeMessages();
   const { appendMessage } = useMessagingActions().message;
 
-
   // Receive Telegram Support Messages
-  const handleWebSocketMessage = useCallback((message: any) => {
-    console.log('Received WebSocket message:', message);
-    appendMessage({
-      id: crypto.randomUUID(),
-      text: message.text || message,
-      type: 'support',
-      timestamp: Date.now(),
-      status: 'received'
-    });
-  }, [appendMessage]);
+  const handleWebSocketMessage = useCallback(
+    (message: any) => {
+      console.log("Received WebSocket message:", message);
+      appendMessage({
+        id: crypto.randomUUID(),
+        text: message.text || message,
+        type: "support",
+        timestamp: Date.now(),
+        status: "received",
+      });
+    },
+    [appendMessage]
+  );
 
   // Initialize WebSocket connection
   useWebSocket({ handleMessage: handleWebSocketMessage });
@@ -53,7 +55,6 @@ export const ChatBody: React.FC = () => {
       {messages.map((message) => (
         <MessageBubble key={message.id} contentTestId={`message-item`} data-testid="message-item" message={message} />
       ))}
-
 
       <div ref={messagesEndRef} data-testid="messages-end" />
     </div>

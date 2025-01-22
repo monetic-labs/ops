@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { MERCHANT_COOKIE_NAME } from "@/utils/constants";
-import axios from "axios";
 
 export const dynamic = "force-dynamic";
 
@@ -16,28 +15,28 @@ export async function GET(request: Request) {
     }
 
     const [complianceResponse, cardCompanyResponse] = await Promise.all([
-      axios.get(`${API_URL}/v1/bridge/compliance`, {
+      fetch(`${API_URL}/v1/bridge/compliance`, {
         headers: {
           "Content-Type": "application/json",
           Cookie: `${MERCHANT_COOKIE_NAME}=${authToken?.value}`,
         },
-        withCredentials: true,
+        credentials: "include",
       }),
-      axios.get(`${API_URL}/v1/merchant/company/rain/status`, {
+      fetch(`${API_URL}/v1/merchant/company/rain/status`, {
         headers: {
           "Content-Type": "application/json",
           Cookie: `${MERCHANT_COOKIE_NAME}=${authToken?.value}`,
         },
-        withCredentials: true,
+        credentials: "include",
       }),
     ]);
 
-    if (complianceResponse.status !== 200 || cardCompanyResponse.status !== 200) {
+    if (!complianceResponse.ok || !cardCompanyResponse.ok) {
       throw new Error(complianceResponse.statusText || "Failed to fetch compliance status");
     }
 
-    const complianceStatus = complianceResponse.data;
-    const cardCompanyStatus = cardCompanyResponse.data;
+    const complianceStatus = await complianceResponse.json();
+    const cardCompanyStatus = await cardCompanyResponse.json();
 
     return NextResponse.json({ ...complianceStatus.data, ...cardCompanyStatus.data });
   } catch (error) {

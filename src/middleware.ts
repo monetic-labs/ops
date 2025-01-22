@@ -1,8 +1,7 @@
 import type { NextRequest } from "next/server";
-
 import { NextResponse } from "next/server";
-
 import { MERCHANT_COOKIE_NAME } from "./utils/constants";
+import { BridgeComplianceKycStatus, CardCompanyStatus, RainComplianceKybStatus } from "@backpack-fux/pylon-sdk";
 
 export async function middleware(request: NextRequest) {
   const authToken = request.cookies.get(MERCHANT_COOKIE_NAME);
@@ -19,7 +18,12 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
-  // Case 2: Logged in - Check compliance status
+  // Case 2: Logged in - First check auth/onboard routes
+  if (isAuthRoute || isOnboardRoute) {
+    return NextResponse.redirect(new URL("/", request.url));
+  }
+
+  // Case 3: Logged in - Check compliance status
   try {
     const complianceResponse = await fetch(`${request.nextUrl.origin}/api/check-compliance`, {
       headers: {
@@ -33,22 +37,19 @@ export async function middleware(request: NextRequest) {
     }
 
     const complianceStatus = await complianceResponse.json();
-    const isFullyApproved =
-      complianceStatus.kycStatus?.toUpperCase() === "APPROVED" && complianceStatus.status?.toUpperCase() === "APPROVED";
 
-    // Case 2a: Not fully approved - must complete KYB
+    const isFullyApproved =
+      complianceStatus?.kycStatus.toUpperCase() === BridgeComplianceKycStatus.APPROVED.toUpperCase() &&
+      complianceStatus?.rainKybStatus.toUpperCase() === RainComplianceKybStatus.APPROVED.toUpperCase();
+
+    // Case 3a: Not fully approved - must complete KYB
     if (!isFullyApproved && !isKybRoute) {
       return NextResponse.redirect(new URL("/kyb", request.url));
     }
 
-    // Case 2b: Fully approved
-    if (isFullyApproved) {
-      if (isAuthRoute || isOnboardRoute || isKybRoute) {
-        return NextResponse.redirect(new URL("/", request.url));
-      }
-      if (isHomePage) {
-        return NextResponse.rewrite(new URL("/", request.url));
-      }
+    // Case 3b: Fully approved
+    if (isFullyApproved && isKybRoute) {
+      return NextResponse.redirect(new URL("/", request.url));
     }
   } catch (error) {
     console.error("Middleware error:", error);

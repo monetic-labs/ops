@@ -6,8 +6,6 @@ import { StatusCard } from "@/components/kyb-status/status-card";
 export default function KYB() {
   const { complianceStatus } = useGetComplianceStatus();
 
-  console.log(complianceStatus); // TODO: Remove
-
   const handleBridgeKYB = () => {
     if (complianceStatus?.kycLink) {
       window.open(complianceStatus.kycLink, "_blank");
@@ -15,38 +13,58 @@ export default function KYB() {
   };
 
   const handleRainKYB = () => {
-    if (complianceStatus?.link) {
-      window.open(complianceStatus.link, "_blank");
+    if (complianceStatus?.rainKybLink) {
+      window.open(complianceStatus.rainKybLink, "_blank");
     }
   };
-  
-  // TODO: display the UBO KYC information (individual to user)
+
+  // display the UBO KYC information (individual to user)
+  const handleRainKYC = () => {
+    if (complianceStatus?.rainKycLink) {
+      window.open(complianceStatus.rainKycLink, "_blank");
+    }
+  };
 
   return (
-    <section className="flex flex-col items-center justify-center gap-8 py-16 px-4 max-w-4xl mx-auto">
-      <div className="text-center mb-8 backdrop-blur-sm p-6 rounded-2xl bg-background/40">
-        <h1 className="text-4xl font-bold text-white mb-4 drop-shadow-md">KYB Verification Status</h1>
-        <p className="text-white/90 max-w-2xl mx-auto text-lg font-medium drop-shadow">
-          Complete your verification process with our trusted providers to access all features.
-        </p>
-      </div>
+    <section className="flex flex-col items-center justify-center">
+      <div className="w-full max-w-4xl backdrop-blur-md bg-background/40 rounded-3xl p-8 space-y-8">
+        {/* Header */}
+        <div className="text-center">
+          <h1 className="text-4xl font-bold text-white mb-4">Verification Status</h1>
+          <p className="text-white/90 max-w-2xl mx-auto text-lg font-medium">
+            Complete your business and personal verification to access all features.
+          </p>
+        </div>
 
-      <div className="grid md:grid-cols-2 gap-6 w-full">
-        <StatusCard provider="BRIDGE" status={complianceStatus?.kycStatus} onVerify={handleBridgeKYB} />
-        <StatusCard provider="RAIN" status={complianceStatus?.status} onVerify={handleRainKYB} />
-      </div>
+        {/* Business Verification Section */}
+        <div>
+          <h2 className="text-2xl font-semibold text-white mb-4">Business Verification (KYB)</h2>
+          <div className="grid md:grid-cols-2 gap-6">
+            <StatusCard provider="BRIDGE" status={complianceStatus?.kycStatus} onVerify={handleBridgeKYB} type="KYB" />
+            <StatusCard provider="RAIN" status={complianceStatus?.rainKybStatus} onVerify={handleRainKYB} type="KYB" />
+          </div>
+        </div>
 
-      <div className="mt-6 text-center text-sm text-white/80 backdrop-blur-sm bg-background/40 px-6 py-3 rounded-full">
-        Need help?{" "}
-        <button
-          className="underline hover:text-white"
-          onClick={() => {
-            // TODO: Add support link
-          }}
-        >
-          Contact our support team
-        </button>{" "}
-        for assistance with your verification process.
+        {/* Personal Verification Section */}
+        {complianceStatus?.rainKycStatus && (
+          <div>
+            <h2 className="text-2xl font-semibold text-white mb-4">Personal Verification (KYC)</h2>
+            <div className="grid md:grid-cols-2 gap-6">
+              <StatusCard
+                provider="RAIN"
+                status={complianceStatus?.rainKycStatus}
+                onVerify={handleRainKYC}
+                type="KYC"
+              />
+            </div>
+          </div>
+        )}
+
+        {/* Support Section */}
+        <div className="text-center text-white/80">
+          Need help? <button className="underline hover:text-white transition-colors">Contact our support team</button>{" "}
+          for assistance with your verification process.
+        </div>
       </div>
     </section>
   );

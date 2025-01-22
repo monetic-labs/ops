@@ -4,6 +4,8 @@ import {
   BridgeComplianceKycStatus as BridgeKybStatus,
   CardCompanyStatus as RainKybStatus,
 } from "@backpack-fux/pylon-sdk";
+import { Card, CardBody } from "@nextui-org/card";
+import { Button } from "@nextui-org/button";
 
 export enum ComplianceStatus {
   APPROVED = "Approved",
@@ -21,134 +23,122 @@ export enum ComplianceStatus {
   UNKNOWN = "Unknown",
 }
 
-interface StatusCardProps {
-  provider: "BRIDGE" | "RAIN"; // TODO: Get providers from SDK
-  status: BridgeKybStatus | RainKybStatus | undefined;
+export interface StatusCardProps {
+  provider: "BRIDGE" | "RAIN";
+  status?: BridgeKybStatus | RainKybStatus;
   onVerify: () => void;
+  type: "KYB" | "KYC";
 }
 
-// TODO: Add icons for each status
-export function StatusCard({ provider, status, onVerify }: StatusCardProps) {
-  const formatStatus = (status: BridgeKybStatus | RainKybStatus | undefined) => {
+export function StatusCard({ provider, status, onVerify, type }: StatusCardProps) {
+  const getStatusColor = () => {
+    if (!status) return "default";
     switch (status) {
       case BridgeKybStatus.APPROVED:
       case RainKybStatus.APPROVED:
-        return ComplianceStatus.APPROVED;
-      case BridgeKybStatus.REJECTED:
-      case RainKybStatus.DENIED:
-        return ComplianceStatus.REJECTED;
+        return "success";
       case BridgeKybStatus.PENDING:
       case RainKybStatus.PENDING:
-        return ComplianceStatus.PENDING;
-      case BridgeKybStatus.NOT_STARTED:
-      case RainKybStatus.NOT_STARTED:
-        return ComplianceStatus.NOT_STARTED;
-      case BridgeKybStatus.INCOMPLETE:
-        return ComplianceStatus.INCOMPLETE;
+        return "warning";
+      case BridgeKybStatus.REJECTED:
+      case RainKybStatus.DENIED:
+        return "danger";
+      default:
+        return "default";
+    }
+  };
+
+  const getStatusText = () => {
+    if (!status) return "Not Started";
+    switch (status) {
+      case BridgeKybStatus.APPROVED:
+      case RainKybStatus.APPROVED:
+        return "Approved";
+      case BridgeKybStatus.PENDING:
+      case RainKybStatus.PENDING:
+        return "Pending";
+      case BridgeKybStatus.REJECTED:
+      case RainKybStatus.DENIED:
+        return "Rejected";
       case BridgeKybStatus.AWAITING_UBO:
-        return ComplianceStatus.AWAITING_UBO;
+        return "Awaiting UBO";
       case BridgeKybStatus.MANUAL_REVIEW:
       case RainKybStatus.MANUAL_REVIEW:
-        return ComplianceStatus.MANUAL_REVIEW;
-      case BridgeKybStatus.UNDER_REVIEW:
-        return ComplianceStatus.UNDER_REVIEW;
+        return "Manual Review";
       case RainKybStatus.NEEDS_INFORMATION:
-        return ComplianceStatus.NEEDS_INFORMATION;
-      case RainKybStatus.NEEDS_VERIFICATION:
-        return ComplianceStatus.NEEDS_VERIFICATION;
+        return "Needs Information";
       case RainKybStatus.LOCKED:
-        return ComplianceStatus.LOCKED;
+        return "Locked";
       case RainKybStatus.CANCELED:
-        return ComplianceStatus.CANCELED;
+        return "Canceled";
+      case BridgeKybStatus.INCOMPLETE:
+        return "Incomplete";
+      case BridgeKybStatus.UNDER_REVIEW:
+        return "Under Review";
       default:
-        return ComplianceStatus.UNKNOWN;
+        return "Not Started";
     }
   };
 
-  const getStatusColor = (status: ComplianceStatus) => {
+  const getButtonText = () => {
+    if (!status) return "Start Verification";
     switch (status) {
-      case ComplianceStatus.APPROVED:
+      case BridgeKybStatus.APPROVED:
+      case RainKybStatus.APPROVED:
+        return "Completed";
+      case BridgeKybStatus.PENDING:
+      case RainKybStatus.PENDING:
+        return "Continue Verification";
+      case BridgeKybStatus.REJECTED:
+      case RainKybStatus.DENIED:
+        return "Retry Verification";
+      default:
+        return "Start Verification";
+    }
+  };
+
+  const getStatusStyles = () => {
+    const color = getStatusColor();
+    switch (color) {
+      case "success":
         return "text-green-500";
-      case ComplianceStatus.PENDING:
+      case "warning":
         return "text-yellow-500";
-      case ComplianceStatus.REJECTED:
+      case "danger":
         return "text-red-500";
-      case ComplianceStatus.NOT_STARTED:
-        return "text-gray-500";
-      case ComplianceStatus.INCOMPLETE:
-        return "text-orange-500";
-      case ComplianceStatus.AWAITING_UBO:
-        return "text-blue-500";
-      case ComplianceStatus.MANUAL_REVIEW:
-        return "text-purple-500";
-      case ComplianceStatus.UNDER_REVIEW:
-        return "text-indigo-500";
-      case ComplianceStatus.NEEDS_INFORMATION:
-        return "text-orange-500";
-      case ComplianceStatus.NEEDS_VERIFICATION:
-        return "text-red-500";
-      case ComplianceStatus.LOCKED:
-        return "text-gray-500";
-      case ComplianceStatus.CANCELED:
-        return "text-gray-500";
       default:
-        return "text-red-500";
-    }
-  };
-
-  // TODO: Add icons for each status
-  const getStatusIcon = (status: ComplianceStatus) => {
-    switch (status) {
-      case ComplianceStatus.APPROVED:
-        return <CheckCircle className="w-6 h-6 text-green-500" />;
-      case ComplianceStatus.PENDING:
-        return <Clock className="w-6 h-6 text-yellow-500" />;
-      case ComplianceStatus.REJECTED:
-        return <AlertCircle className="w-6 h-6 text-red-500" />;
-      case ComplianceStatus.NOT_STARTED:
-        return <Clock className="w-6 h-6 text-gray-500" />;
-      case ComplianceStatus.INCOMPLETE:
-        return <AlertCircle className="w-6 h-6 text-orange-500" />;
-      case ComplianceStatus.AWAITING_UBO:
-        return <Clock className="w-6 h-6 text-blue-500" />;
-      case ComplianceStatus.MANUAL_REVIEW:
-        return <Clock className="w-6 h-6 text-purple-500" />;
-      case ComplianceStatus.UNDER_REVIEW:
-        return <Clock className="w-6 h-6 text-indigo-500" />;
-      case ComplianceStatus.NEEDS_INFORMATION:
-        return <AlertCircle className="w-6 h-6 text-orange-500" />;
-      case ComplianceStatus.NEEDS_VERIFICATION:
-        return <AlertCircle className="w-6 h-6 text-red-500" />;
-      case ComplianceStatus.LOCKED:
-        return <Lock className="w-6 h-6 text-gray-500" />;
-      case ComplianceStatus.CANCELED:
-        return <X className="w-6 h-6 text-gray-500" />;
-      default:
-        return <AlertCircle className="w-6 h-6 text-red-500" />;
+        return "text-gray-500";
     }
   };
 
   return (
-    <div className="bg-white rounded-xl shadow-md p-6 transition-all duration-300 hover:shadow-lg">
-      <div className="flex items-center justify-between mb-4">
-        <h3 className="text-xl font-semibold text-gray-800">{provider}</h3>
-        {getStatusIcon(formatStatus(status))}
-      </div>
-
-      <div className="mb-4">
-        <span className="text-sm text-gray-500">Status</span>
-        <p className={`text-lg font-medium ${getStatusColor(formatStatus(status))}`}>
-          {status === undefined ? "Loading..." : formatStatus(status)}
-        </p>
-      </div>
-
-      <button
-        className="w-full flex items-center justify-center gap-2 bg-indigo-600 text-white py-2 px-4 rounded-lg hover:bg-indigo-700 transition-colors duration-300"
-        onClick={onVerify}
-      >
-        Start Verification
-        <ExternalLink className="w-4 h-4" />
-      </button>
-    </div>
+    <Card className="bg-[#1E1E1E] border border-white/10">
+      <CardBody className="p-4">
+        <div className="flex flex-col gap-4">
+          <div className="flex justify-between items-center">
+            <div>
+              <h3 className="text-xl font-semibold text-white">{provider}</h3>
+              <p className="text-sm text-gray-400">{type} Verification</p>
+            </div>
+            <div className={`${getStatusStyles()}`}>{getStatusText()}</div>
+          </div>
+          <Button
+            className="w-full bg-[#4B4B4B] hover:bg-[#5B5B5B] text-white"
+            endContent={
+              status === BridgeKybStatus.APPROVED || status === RainKybStatus.APPROVED ? (
+                <CheckCircle className="w-4 h-4" />
+              ) : (
+                <ExternalLink className="w-4 h-4" />
+              )
+            }
+            isDisabled={status === BridgeKybStatus.APPROVED || status === RainKybStatus.APPROVED}
+            size="lg"
+            onPress={onVerify}
+          >
+            {getButtonText()}
+          </Button>
+        </div>
+      </CardBody>
+    </Card>
   );
 }

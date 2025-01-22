@@ -1,76 +1,100 @@
-import React, { useEffect, useRef, useState } from "react";
-import { Button } from "@nextui-org/button";
-import { Modal, ModalContent, ModalHeader, ModalBody, ModalFooter } from "@nextui-org/modal";
-import { InputOtp } from "@nextui-org/input-otp";
+"use client";
 
-import { useOTP } from "@/hooks/auth/useOTP";
+import { Modal, ModalContent, ModalHeader, ModalBody, ModalFooter } from "@nextui-org/modal";
+import { Button } from "@nextui-org/button";
+import { InputOtp } from "@nextui-org/input-otp";
+import { RefObject, ChangeEvent } from "react";
 import { OTP_CODE_LENGTH } from "@/utils/constants";
 
-interface OTPVerificationModalProps {
+interface OTPModalProps {
   isOpen: boolean;
-  onClose: () => void;
-  onVerified: () => void;
   email: string;
+  otp: string;
+  otpError: string | null;
+  isLoading: boolean;
+  canResend: boolean;
+  resendTimer: number;
+  shouldEnableTimer: boolean;
+  otpInputRef: RefObject<HTMLInputElement>;
+  onOTPChange: (e: ChangeEvent<HTMLInputElement>) => void;
+  onOTPComplete: () => void;
+  onResend: () => void;
+  onValueChange: (value: string) => void;
+  onClose?: () => void;
 }
 
-export const OTPVerificationModal: React.FC<OTPVerificationModalProps> = ({ isOpen, onClose, onVerified, email }) => {
-  const otpInputRef = useRef<HTMLInputElement>(null);
-  const { issueOTP, verifyOTP, isLoading, error: otpError, otp, setOTP, resetState } = useOTP(otpInputRef);
-
-  useEffect(() => {
-    let mounted = true;
-
-    if (isOpen && mounted) {
-      issueOTP(email);
-    }
-
-    return () => {
-      mounted = false;
-      resetState();
-    };
-  }, [isOpen, email, issueOTP, resetState]);
-
-  const handleVerify = async () => {
-    const success = await verifyOTP({ email, otp });
-    if (success) {
-      onVerified();
-      resetState();
-    }
-  };
-
+export function OTPModal({
+  isOpen,
+  email,
+  otp,
+  otpError,
+  isLoading,
+  canResend,
+  resendTimer,
+  shouldEnableTimer,
+  otpInputRef,
+  onOTPChange,
+  onOTPComplete,
+  onResend,
+  onValueChange,
+  onClose,
+}: OTPModalProps) {
   return (
-    <Modal data-testid="otp-modal" isOpen={isOpen} onClose={onClose}>
+    <Modal
+      isOpen={isOpen}
+      hideCloseButton={!onClose}
+      isDismissable={!!onClose}
+      onClose={onClose}
+      classNames={{
+        base: "bg-background/80 backdrop-blur-md",
+        body: "py-6",
+      }}
+    >
       <ModalContent>
-        <ModalHeader>Enter OTP</ModalHeader>
+        <ModalHeader className="flex flex-col gap-1 text-center">
+          <h2 className="text-2xl font-bold">Verify Your Email</h2>
+        </ModalHeader>
         <ModalBody>
-          <InputOtp
-            ref={otpInputRef}
-            length={OTP_CODE_LENGTH}
-            value={otp}
-            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setOTP(e.target.value)}
-            onValueChange={setOTP}
-            onComplete={handleVerify}
-            size="lg"
-            variant="faded"
-            classNames={{
-              input: "w-10 h-12 text-center text-xl text-white",
-              base: "flex justify-center space-x-2",
-            }}
-            isDisabled={isLoading}
-            errorMessage={otpError}
-            isInvalid={otpError !== null}
-            data-testid="otp-input-container"
-          />
+          <div className="flex flex-col items-center gap-6">
+            <p className="text-default-500 text-center">
+              We&apos;ve sent a verification code to {email}. Please enter it below to complete your registration.
+            </p>
+            <InputOtp
+              ref={otpInputRef}
+              classNames={{
+                input: "w-12 h-12 text-center text-xl text-white",
+                base: "flex justify-center gap-2",
+              }}
+              data-testid="otp-input-container"
+              errorMessage={otpError}
+              isDisabled={isLoading}
+              isInvalid={!!otpError}
+              length={OTP_CODE_LENGTH}
+              size="lg"
+              value={otp}
+              variant="bordered"
+              onChange={onOTPChange}
+              onComplete={onOTPComplete}
+              onValueChange={onValueChange}
+            />
+          </div>
         </ModalBody>
-        <ModalFooter>
-          <Button color="danger" variant="light" onPress={onClose}>
-            Cancel
-          </Button>
-          <Button color="primary" isLoading={isLoading} onPress={handleVerify}>
-            Verify
-          </Button>
-        </ModalFooter>
+        {onClose && (
+          <ModalFooter className="flex justify-between w-full pt-0">
+            <Button color="danger" variant="light" onPress={onClose}>
+              Cancel
+            </Button>
+            <Button
+              color="primary"
+              isDisabled={isLoading || (!canResend && shouldEnableTimer)}
+              variant="light"
+              onPress={onResend}
+            >
+              {!canResend && shouldEnableTimer ? `Resend in ${resendTimer}s` : "Resend Code"}
+            </Button>
+          </ModalFooter>
+        )}
       </ModalContent>
     </Modal>
   );
-};
+}
