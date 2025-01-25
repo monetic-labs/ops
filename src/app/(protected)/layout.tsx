@@ -23,7 +23,7 @@ export default function ProtectedLayout({ children }: { children: React.ReactNod
   }
 
   return (
-    <>
+    <div className="flex flex-col min-h-screen">
       <Navbar />
       <main className="container mx-auto max-w-7xl pt-8 px-6 flex-grow">{children}</main>
       <footer className="w-full flex items-center justify-center py-3 gap-4">
@@ -37,6 +37,6 @@ export default function ProtectedLayout({ children }: { children: React.ReactNod
           <GithubIcon className="text-default-500" />
         </Link>
       </footer>
-    </>
+    </div>
   );
 }

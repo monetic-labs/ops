@@ -1,5 +1,5 @@
-import { Base64, Bytes, Hex as OxHex, PublicKey } from "ox";
-import { createChallenge, createCredential, CredentialCreationFailedError, sign, verify } from "ox/WebAuthnP256";
+import { Base64, Bytes, Hex as OxHex, PublicKey, type Signature } from "ox";
+import { createChallenge, createCredential, CredentialCreationFailedError, sign } from "ox/WebAuthnP256";
 import type { P256Credential, SignMetadata } from "ox/WebAuthnP256";
 import {
   type WebauthnPublicKey,
@@ -9,17 +9,26 @@ import {
 } from "abstractionkit";
 import { Hex } from "viem";
 import { isLocal } from "./helpers";
-
-interface SignatureType {
-  r: bigint;
-  s: bigint;
-}
+import pylon from "@/libs/pylon-sdk";
 
 export class WebAuthnHelper {
   private credential: P256Credential | null = null;
   private webauthPublicKey: WebauthnPublicKey | null = null;
-  private static appName: string = `Backpack${!isLocal ? " Staging" : ""}`;
-  private static hostname: string = window.location.hostname;
+  private static appName = `Backpack${!isLocal ? "" : " Staging"}`;
+  private hostName: string;
+
+  constructor(hostName: string) {
+    this.hostName = hostName;
+  }
+
+  /**
+   * Request a challenge from the server for registration
+   * @returns The challenge string
+   */
+  async requestChallenge(): Promise<string> {
+    const response = await pylon.generatePasskeyChallenge();
+    return response.challenge;
+  }
 
   /**
    * Creates a new WebAuthn credential
@@ -31,19 +40,30 @@ export class WebAuthnHelper {
     publicKeyCoordinates: WebauthnPublicKey;
     attestationObject: string;
     clientDataJSON: string;
+    challenge: string;
+    passkeyId: string;
   }> {
+    // const passkey = await this.checkCredentialExists();
+    // if (passkey) {
+    //   throw Error("Passkey credential already exists.");
+    // }
+
+    const challengeStr = await this.requestChallenge();
+    const challenge = Bytes.fromString(challengeStr);
+
     this.credential = await createCredential({
       name: WebAuthnHelper.appName,
-      challenge: createChallenge, // TODO: get challenge from server
+      challenge,
       authenticatorSelection: {
-        authenticatorAttachment: "cross-platform",
-        residentKey: "required",
+        authenticatorAttachment: "platform",
+        residentKey: "preferred",
         userVerification: "required",
       },
       rp: {
-        id: WebAuthnHelper.hostname,
+        id: this.hostName,
         name: WebAuthnHelper.appName,
       },
+      timeout: 8000, // 8 seconds
     });
     if (!this.credential) throw new CredentialCreationFailedError();
 
@@ -52,10 +72,23 @@ export class WebAuthnHelper {
 
     const response = this.credential.raw.response as AuthenticatorAttestationResponse;
 
-    /**
-     * in the schema, a certain unique passkey should be associated with a certain user id
-     * such that, only that passkey can be used to sign for that user id
-     */
+    const { metadata, signature } = await sign({
+      credentialId: this.credential.id,
+      rpId: this.hostName,
+      challenge: OxHex.fromBytes(challenge),
+    });
+
+    // Register passkey to server
+    const { passkeyId } = await pylon.registerPasskey({
+      credentialId: this.credential.id,
+      publicKey: PublicKey.toHex(this.credential.publicKey),
+      challenge: challengeStr,
+      metadata,
+      signature: {
+        r: signature.r.toString(),
+        s: signature.s.toString(),
+      },
+    });
 
     return {
       id: this.credential.id,
@@ -63,6 +96,8 @@ export class WebAuthnHelper {
       publicKeyCoordinates: this.webauthPublicKey,
       attestationObject: Base64.fromBytes(new Uint8Array(response.attestationObject)),
       clientDataJSON: Base64.fromString(new TextDecoder().decode(response.clientDataJSON)),
+      challenge: challengeStr,
+      passkeyId,
     };
   }
 
@@ -70,14 +105,12 @@ export class WebAuthnHelper {
    * Logs in with an existing passkey
    * @returns The credential and public key if successful
    */
-  async loginWithPasskey(): Promise<{
-    id: string;
-    publicKey: Hex;
-    publicKeyCoordinates: WebauthnPublicKey;
-  }> {
+  async loginWithPasskey(): Promise<WebauthnPublicKey> {
     try {
       // Use ox's sign function which will prompt for an existing credential
-      const challenge = createChallenge;
+      const challengeStr = await this.requestChallenge();
+      const challenge = Bytes.fromString(challengeStr);
+
       const {
         raw: credential,
         signature,
@@ -87,34 +120,21 @@ export class WebAuthnHelper {
         userVerification: "required",
       });
 
-      // The credential ID from the response
       const credentialId = credential.id;
-
-      // Collect all data needed for server verification
-      const authData = {
-        credentialId,
-        authenticatorData: metadata.authenticatorData,
-        clientDataJSON: metadata.clientDataJSON,
-        signature: {
-          r: signature.r.toString(),
-          s: signature.s.toString(),
-        },
-        challenge: OxHex.fromBytes(challenge), // Send the original challenge for verification
+      const serializedSignature = {
+        r: signature.r.toString(),
+        s: signature.s.toString(),
       };
 
-      // TODO: Send authData to server
-      // const response = await fetch('/api/auth/verify-passkey', {
-      //   method: 'POST',
-      //   headers: { 'Content-Type': 'application/json' },
-      //   body: JSON.stringify(authData)
-      // });
-      // const { publicKey, publicKeyCoordinates } = await response.json();
+      const { user, token, publicKey } = await pylon.authenticatePasskey({
+        credentialId,
+        challenge: challengeStr,
+        metadata,
+        signature: serializedSignature,
+      });
 
-      // For now, throw error since we need server implementation
-      throw new Error(
-        "Server integration needed: Send the following data to server for verification:\n" +
-          JSON.stringify(authData, null, 2)
-      );
+      const { x, y } = PublicKey.fromHex(publicKey as Hex);
+      return { x, y };
     } catch (error) {
       console.error("Error logging in with passkey:", error);
       throw new Error("Failed to authenticate with passkey");
@@ -126,7 +146,9 @@ export class WebAuthnHelper {
    * @param message - Message to sign (typically a userOpHash)
    * @returns SignerSignaturePair for use with Safe
    */
-  async signMessage(message: Hex): Promise<SignerSignaturePair> {
+  async signMessage(
+    message: Hex
+  ): Promise<SignerSignaturePair & { rawSignature: Signature.Signature<false>; metadata: SignMetadata }> {
     if (!this.credential || !this.webauthPublicKey) {
       // Try to login with passkey if no credential is available
       await this.loginWithPasskey();
@@ -150,6 +172,8 @@ export class WebAuthnHelper {
     return {
       signer: this.webauthPublicKey,
       signature: webauthnSignature,
+      rawSignature: signature,
+      metadata,
     };
   }
 
@@ -159,7 +183,10 @@ export class WebAuthnHelper {
    * @param signature - Signature object from ox
    * @returns WebauthnSignatureData formatted for Safe
    */
-  private createSafeWebAuthnSignatureData(metadata: SignMetadata, signature: SignatureType): WebauthnSignatureData {
+  private createSafeWebAuthnSignatureData(
+    metadata: SignMetadata,
+    signature: Signature.Signature<false>
+  ): WebauthnSignatureData {
     // Extract fields after the challenge from clientDataJSON using Safe's required format
     const match = metadata.clientDataJSON.match(/^\{"type":"webauthn.get","challenge":"[A-Za-z0-9\-_]{43}",(.*)\}$/);
     if (!match) {
@@ -176,5 +203,13 @@ export class WebAuthnHelper {
       // Use signature values directly from ox
       rs: [signature.r, signature.s],
     };
+  }
+
+  private async checkCredentialExists() {
+    // TODO: check passkeyId with pylon
+    return await sign({
+      challenge: OxHex.fromBytes(createChallenge),
+      userVerification: "required",
+    });
   }
 }

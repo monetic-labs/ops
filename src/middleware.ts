@@ -2,13 +2,21 @@ import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 import { MERCHANT_COOKIE_NAME } from "./utils/constants";
 import { BridgeComplianceKycStatus, RainComplianceKybStatus } from "@backpack-fux/pylon-sdk";
+import { LocalStorage } from "@/utils/localstorage"; // Import LocalStorage
 
 export async function middleware(request: NextRequest) {
   const authToken = request.cookies.get(MERCHANT_COOKIE_NAME);
   const pathname = request.nextUrl.pathname;
 
   // Skip middleware for auth routes
-  if (pathname.startsWith("/auth") || pathname.startsWith("/onboard")) {
+  const safeUser = LocalStorage.getSafeUser();
+
+  // Protect /onboard route by checking passkeyId and walletAddress
+  if (pathname.startsWith("/onboard") && !safeUser) {
+    return NextResponse.redirect(new URL("/auth", request.url)); // Redirect to auth if not set
+  }
+
+  if (pathname.startsWith("/auth")) {
     return NextResponse.next();
   }
 

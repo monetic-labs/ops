@@ -29,7 +29,7 @@ export function useOTP(inputRef: React.RefObject<HTMLInputElement>) {
   const issueOTP = useCallback(async (email: string) => {
     setState((prev) => ({ ...prev, isLoading: true, error: null }));
     try {
-      const response = await pylon.initiateLoginOTP({ email });
+      const response = await pylon.issueOTP({ email });
 
       setState((prev) => ({
         ...prev,
@@ -54,7 +54,7 @@ export function useOTP(inputRef: React.RefObject<HTMLInputElement>) {
   const verifyOTP = useCallback(async (data: VerifyOTP) => {
     setState((prev) => ({ ...prev, isLoading: true, error: null }));
     try {
-      const response = await pylon.verifyLoginOTP(data);
+      const response = await pylon.verifyOTP(data);
       const isValid = Boolean(response.data.message);
 
       if (isValid) {

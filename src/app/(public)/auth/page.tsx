@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Card, CardBody, CardHeader } from "@nextui-org/card";
 import { Button } from "@nextui-org/button";
 import { Divider } from "@nextui-org/divider";
@@ -9,6 +9,8 @@ import { useRouter } from "next/navigation";
 
 import { WebAuthnHelper } from "@/utils/webauthn";
 import { SafeAccountHelper } from "@/utils/safeAccount";
+import { LocalStorage } from "@/utils/localstorage";
+import pylon from "@/libs/pylon-sdk";
 
 const SecurityFeatures = () => (
   <div className="space-y-4 text-default-500">
@@ -44,28 +46,47 @@ const SecurityFeatures = () => (
 
 export default function AuthPage() {
   const [isLoading, setIsLoading] = useState(false);
+  const [isDisabled, setIsDisabled] = useState(false);
+  const [notification, setNotification] = useState<string | null>(null);
+
   const router = useRouter();
+
+  useEffect(() => {
+    const safeUser = LocalStorage.getSafeUser();
+    if (safeUser && safeUser.isLogin) {
+      setIsDisabled(safeUser.isLogin);
+    }
+  }, []);
 
   const handlePasskeyAuth = async (isLogin: boolean) => {
     setIsLoading(true);
     try {
-      const webauthnHelper = new WebAuthnHelper();
+      const webauthnHelper = new WebAuthnHelper(window.location.hostname);
 
       if (isLogin) {
-        // TODO: Login with passkey
-        const { signer, signature } = await webauthnHelper.signMessage("0xdeadbeef");
-
-        // router.refresh();
+        // Login with passkey
+        const publicKey = await webauthnHelper.loginWithPasskey();
+        const safeHelper = new SafeAccountHelper(publicKey);
+        const walletAddress = safeHelper.getAddress();
+        // TODO: pass in passkeyId from pylon
+        LocalStorage.setSafeUser(publicKey, walletAddress, "", true);
+        router.refresh();
       } else {
         // Create new passkey
-        const { publicKeyCoordinates } = await webauthnHelper.createPasskey();
+        const { publicKeyCoordinates, passkeyId } = await webauthnHelper.createPasskey();
         const safeHelper = new SafeAccountHelper(publicKeyCoordinates);
-        // router.push("/onboard");
+        const walletAddress = safeHelper.getAddress();
+        LocalStorage.setSafeUser(publicKeyCoordinates, walletAddress, passkeyId, false);
+        router.push("/onboard");
       }
     } catch (error) {
       console.error("Passkey error:", error);
 
-      // TODO: Show error notification
+      if (error instanceof Error) {
+        setNotification(error.message);
+      } else {
+        setNotification("An unknown error occurred");
+      }
     } finally {
       setIsLoading(false);
     }
@@ -81,7 +102,7 @@ export default function AuthPage() {
             </div>
             <h1 className="text-xl sm:text-2xl font-semibold text-white">Self Banking Portal</h1>
           </div>
-          <p className="text-white/60 text-sm sm:text-base">Welcome to the future of banking</p>
+          <p className="text-white/60 text-sm sm:text-base">Welcome to the future of banking, skeptic</p>
         </CardHeader>
         <CardBody className="px-6 pb-6 sm:px-8 flex flex-col items-center gap-6">
           {/* Sign In Section */}
@@ -112,11 +133,13 @@ export default function AuthPage() {
               className="w-full bg-white/10 hover:bg-white/20 text-white h-14"
               radius="lg"
               isLoading={isLoading}
+              isDisabled={isDisabled}
               onClick={() => handlePasskeyAuth(false)}
               startContent={!isLoading && <KeyRound className="w-5 h-5" />}
             >
               Create Passkey
             </Button>
+            {notification ? <div className="text-red-200 text-center"> {notification} </div> : undefined}
           </div>
         </CardBody>
       </Card>

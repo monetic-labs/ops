@@ -6,7 +6,6 @@ import { Spinner } from "@nextui-org/spinner";
 import { useForm, FormProvider } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { schema, FormData, UserRole } from "@/validations/onboard/schemas";
-import { OTP_CODE_LENGTH } from "@/utils/constants";
 import pylon from "@/libs/pylon-sdk";
 import { ISO3166Alpha2Country, ISO3166Alpha3Country, PersonRole } from "@backpack-fux/pylon-sdk";
 import { Accordion, AccordionItem } from "@nextui-org/accordion";
@@ -22,11 +21,14 @@ import { StepNavigation } from "./components/StepNavigation";
 import { CircleWithNumber, CheckCircleIcon } from "./components/StepIndicator";
 import { useOnboardOTP } from "./hooks/useOnboardOTP";
 import { useState } from "react";
+import { LocalStorage } from "@/utils/localstorage";
+import { SafeAccountHelper } from "@/utils/safeAccount";
 
 export default function OnboardPage() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const email = searchParams?.get("email") || "";
+  const safeUser = LocalStorage.getSafeUser();
   const [currentStep, setCurrentStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const otpInputRef = useRef<HTMLInputElement>(null);
@@ -155,7 +157,7 @@ export default function OnboardPage() {
             nationalId: data.users[0].socialSecurityNumber,
             countryOfIssue: data.users[0].countryOfIssue,
             birthDate: data.users[0].birthDate,
-            walletAddress: data.settlementAddress,
+            walletAddress: safeUser.walletAddress!,
             address: {
               line1: data.users[0].streetAddress1,
               line2: data.users[0].streetAddress2 || undefined,
@@ -189,6 +191,7 @@ export default function OnboardPage() {
             })),
           representatives: data.users
             .filter((user) => user.roles.includes(UserRole.REPRESENTATIVE))
+            // .slice(1) // Skip the first representative
             .map((user) => ({
               firstName: user.firstName,
               lastName: user.lastName,
@@ -211,7 +214,7 @@ export default function OnboardPage() {
         },
         users: data.users
           .filter((user) => user.hasDashboardAccess)
-          .map((user) => {
+          .map((user, index) => {
             const role = user.dashboardRole as PersonRole;
             return {
               firstName: user.firstName,
@@ -223,6 +226,7 @@ export default function OnboardPage() {
               nationalId: user.socialSecurityNumber,
               countryOfIssue: user.countryOfIssue,
               role,
+              passkeyId: index === 0 ? safeUser.passkeyId : undefined,
               address: {
                 line1: user.streetAddress1,
                 line2: user.streetAddress2 || undefined,
@@ -237,9 +241,11 @@ export default function OnboardPage() {
       });
 
       if (response) {
-        const controlOwnerEmail = data.users[0].email;
-        await initiateOTP(controlOwnerEmail);
+        const safeHelper = new SafeAccountHelper(safeUser.publicKeyCoordinates);
+        const walletAddress = safeHelper.getAddress();
+        LocalStorage.setSafeUser(safeUser.publicKeyCoordinates, walletAddress, "", true);
       }
+      router.push("/");
     } catch (error: any) {
       console.error("error: ", error);
       if (error.response?.data?.errors) {
@@ -248,6 +254,12 @@ export default function OnboardPage() {
             type: "required",
             message: value as string,
           });
+        });
+      } else {
+        // Display a generic error message
+        setError("root", {
+          type: "validate",
+          message: error.message,
         });
       }
     } finally {

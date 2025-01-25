@@ -11,7 +11,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 
   return (
     <html suppressHydrationWarning lang="en">
-      <body className="min-h-screen bg-zinc-300 font-sans antialiased">
+      <body className="min-h-screen bg-zinc-300/80 font-sans antialiased">
         <AuthProvider token={authToken?.value}>
           <AccountProvider>
             <Providers themeProps={{ attribute: "class", defaultTheme: "dark" }}>{children}</Providers>

@@ -2,6 +2,7 @@
 
 import { Checkbox } from "@nextui-org/checkbox";
 import { useFormContext } from "react-hook-form";
+import { Link } from "@nextui-org/link";
 
 const CustomCheckIcon = (props: { className: string }) => (
   <svg
@@ -36,33 +37,35 @@ export const TermsStep = () => {
           classNames={{
             wrapper:
               "before:border-ualert-500 group-data-[selected=true]:before:border-ualert-500 group-data-[selected=true]:before:bg-ualert-500 group-data-[selected=true]:after:bg-ualert-500",
+            label: errors?.acceptedTerms ? "text-red-500" : "",
           }}
           icon={<CustomCheckIcon className="text-white" />}
           size="lg"
           onValueChange={handleAcceptTerms}
         />
-        <div>
+        <span>
           I acknowledge and accept the{" "}
-          <span
-            className="text-ualert-500 underline cursor-pointer z-10"
-            onClick={(e) => {
-              window.open("https://backpack.com/terms-and-conditions", "_blank");
-            }}
+          <Link
+            className="text-ualert-500 cursor-pointer"
+            href="https://backpack.network/terms-of-service"
+            isExternal
+            showAnchorIcon
           >
-            terms and conditions
-          </span>{" "}
+            terms of service
+          </Link>{" "}
           as well as{" "}
-          <span
-            className="text-ualert-500 underline cursor-pointer z-10"
-            onClick={(e) => {
-              window.open("https://backpack.com/privacy-policy", "_blank");
-            }}
+          <Link
+            className="text-ualert-500 cursor-pointer"
+            href="https://backpack.network/privacy-policy"
+            isExternal
+            showAnchorIcon
           >
             privacy policy
-          </span>{" "}
+          </Link>{" "}
           for Backpack, including but not limited to, the Rain Card and Bill Pay services.
-        </div>
+        </span>
       </div>
+      {errors?.acceptedTerms && <p className="text-red-500 text-sm">{errors.acceptedTerms.message?.toString()}</p>}
     </div>
   );
 };
