@@ -46,19 +46,19 @@ export const TermsStep = () => {
         <span>
           I acknowledge and accept the{" "}
           <Link
-            className="text-ualert-500 cursor-pointer"
-            href="https://backpack.network/terms-of-service"
             isExternal
             showAnchorIcon
+            className="text-ualert-500 cursor-pointer"
+            href="https://backpack.network/terms-of-service"
           >
             terms of service
           </Link>{" "}
           as well as{" "}
           <Link
-            className="text-ualert-500 cursor-pointer"
-            href="https://backpack.network/privacy-policy"
             isExternal
             showAnchorIcon
+            className="text-ualert-500 cursor-pointer"
+            href="https://backpack.network/privacy-policy"
           >
             privacy policy
           </Link>{" "}

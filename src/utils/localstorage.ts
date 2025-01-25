@@ -22,6 +22,7 @@ export class LocalStorage {
       if (typeof value === "bigint") {
         return value.toString(); // Convert BigInt to string
       }
+
       return value;
     };
 
@@ -41,6 +42,7 @@ export class LocalStorage {
 
   static getSafeUser() {
     const servicesStr = this.getItem("@backpack/services");
+
     if (!servicesStr) return { publicKeyCoordinates: null, walletAddress: null, passkeyId: null, isLogin: false };
 
     // Custom reviver to convert string back to BigInt
@@ -49,6 +51,7 @@ export class LocalStorage {
       if (typeof value === "string" && /^-?\d+n?$/.test(value)) {
         return BigInt(value);
       }
+
       return value;
     };
 

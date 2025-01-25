@@ -1,8 +1,11 @@
 import type { NextRequest } from "next/server";
+
 import { NextResponse } from "next/server";
-import { MERCHANT_COOKIE_NAME } from "./utils/constants";
 import { BridgeComplianceKycStatus, RainComplianceKybStatus } from "@backpack-fux/pylon-sdk";
+
 import { LocalStorage } from "@/utils/localstorage"; // Import LocalStorage
+
+import { MERCHANT_COOKIE_NAME } from "./utils/constants";
 
 export async function middleware(request: NextRequest) {
   const authToken = request.cookies.get(MERCHANT_COOKIE_NAME);
@@ -31,6 +34,7 @@ export async function middleware(request: NextRequest) {
 
       if (!complianceResponse.ok) {
         console.error("Failed to fetch compliance status");
+
         return NextResponse.next();
       }
 
@@ -50,6 +54,7 @@ export async function middleware(request: NextRequest) {
       }
     } catch (error) {
       console.error("Middleware error:", error);
+
       return NextResponse.next();
     }
   }

@@ -7,7 +7,6 @@ import { ThemeProviderProps } from "next-themes/dist/types";
 import { NextUIProvider } from "@nextui-org/system";
 // import { PylonProvider } from "@backpack-fux/pylon-sdk";
 
-import pylonInstance from "@/libs/pylon-sdk";
 import { MessagingProvider } from "@/components/messaging/messaging-provider";
 import { ShortcutsProvider } from "@/components/generics/shortcuts-provider";
 

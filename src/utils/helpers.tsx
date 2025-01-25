@@ -1,5 +1,6 @@
-import { createIcon } from "opepen-standard";
 import type { Address } from "viem";
+
+import { createIcon } from "opepen-standard";
 
 export const isLocal = process.env.NEXT_PUBLIC_NODE_ENV === "development";
 export const isTesting = process.env.NEXT_PUBLIC_NODE_ENV === "ci";
@@ -103,15 +104,19 @@ export const truncateAddress = (address: Address): string => {
 export const formatPhoneNumber = (value: string, extension?: string) => {
   if (!value) return "";
   const digits = value.replace(/\D/g, "");
+
   if (digits.length <= 3) return `(${digits}`;
   if (digits.length <= 6) return `(${digits.slice(0, 3)}) ${digits.slice(3)}`;
+
   return `${extension ? `+${extension} ` : ""}(${digits.slice(0, 3)}) ${digits.slice(3, 6)}-${digits.slice(6)}`;
 };
 
 export const formatEIN = (value: string) => {
   if (!value) return "";
   const digits = value.replace(/\D/g, "");
+
   if (digits.length <= 2) return digits;
+
   return `${digits.slice(0, 2)}-${digits.slice(2)}`;
 };
 

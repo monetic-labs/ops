@@ -1,5 +1,6 @@
 import "@/styles/globals.css";
 import { cookies } from "next/headers";
+
 import { AuthProvider } from "@/contexts/AuthContext";
 import { AccountProvider } from "@/contexts/AccountContext";
 import { MERCHANT_COOKIE_NAME } from "@/utils/constants";

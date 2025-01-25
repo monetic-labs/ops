@@ -1,6 +1,7 @@
+import type { P256Credential, SignMetadata } from "ox/WebAuthnP256";
+
 import { Base64, Bytes, Hex as OxHex, PublicKey, type Signature } from "ox";
 import { createChallenge, createCredential, CredentialCreationFailedError, sign } from "ox/WebAuthnP256";
-import type { P256Credential, SignMetadata } from "ox/WebAuthnP256";
 import {
   type WebauthnPublicKey,
   type WebauthnSignatureData,
@@ -8,8 +9,10 @@ import {
   SafeAccountV0_3_0 as SafeAccount,
 } from "abstractionkit";
 import { Hex } from "viem";
-import { isLocal } from "./helpers";
+
 import pylon from "@/libs/pylon-sdk";
+
+import { isLocal } from "./helpers";
 
 export class WebAuthnHelper {
   private credential: P256Credential | null = null;
@@ -27,6 +30,7 @@ export class WebAuthnHelper {
    */
   async requestChallenge(): Promise<string> {
     const response = await pylon.generatePasskeyChallenge();
+
     return response.challenge;
   }
 
@@ -68,6 +72,7 @@ export class WebAuthnHelper {
     if (!this.credential) throw new CredentialCreationFailedError();
 
     const { x, y } = PublicKey.from(this.credential.publicKey);
+
     this.webauthPublicKey = { x, y };
 
     const response = this.credential.raw.response as AuthenticatorAttestationResponse;
@@ -134,6 +139,7 @@ export class WebAuthnHelper {
       });
 
       const { x, y } = PublicKey.fromHex(publicKey as Hex);
+
       return { x, y };
     } catch (error) {
       console.error("Error logging in with passkey:", error);
@@ -189,6 +195,7 @@ export class WebAuthnHelper {
   ): WebauthnSignatureData {
     // Extract fields after the challenge from clientDataJSON using Safe's required format
     const match = metadata.clientDataJSON.match(/^\{"type":"webauthn.get","challenge":"[A-Za-z0-9\-_]{43}",(.*)\}$/);
+
     if (!match) {
       throw new Error("Invalid client data format: challenge not found");
     }

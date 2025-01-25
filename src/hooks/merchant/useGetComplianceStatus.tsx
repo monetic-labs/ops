@@ -15,6 +15,7 @@ export function useGetComplianceStatus() {
         pylon.getCardCompanyStatus(),
       ]);
       const complianceStatus = { ...bridgeComplianceStatus, ...rainComplianceStatus };
+
       console.log("complianceStatus", complianceStatus);
       setComplianceStatus(complianceStatus);
     }

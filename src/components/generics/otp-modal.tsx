@@ -4,6 +4,7 @@ import { Modal, ModalContent, ModalHeader, ModalBody, ModalFooter } from "@nextu
 import { Button } from "@nextui-org/button";
 import { InputOtp } from "@nextui-org/input-otp";
 import { RefObject, ChangeEvent } from "react";
+
 import { OTP_CODE_LENGTH } from "@/utils/constants";
 
 interface OTPModalProps {
@@ -41,14 +42,14 @@ export function OTPModal({
 }: OTPModalProps) {
   return (
     <Modal
-      isOpen={isOpen}
-      hideCloseButton={!onClose}
-      isDismissable={!!onClose}
-      onClose={onClose}
       classNames={{
         base: "bg-background/80 backdrop-blur-md",
         body: "py-6",
       }}
+      hideCloseButton={!onClose}
+      isDismissable={!!onClose}
+      isOpen={isOpen}
+      onClose={onClose}
     >
       <ModalContent>
         <ModalHeader className="flex flex-col gap-1 text-center">

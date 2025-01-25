@@ -1,5 +1,5 @@
 import React from "react";
-import { ExternalLink, CheckCircle, AlertCircle, Clock, Lock, X } from "lucide-react";
+import { ExternalLink, CheckCircle } from "lucide-react";
 import {
   BridgeComplianceKycStatus as BridgeKybStatus,
   CardCompanyStatus as RainKybStatus,
@@ -99,6 +99,7 @@ export function StatusCard({ provider, status, onVerify, type }: StatusCardProps
 
   const getStatusStyles = () => {
     const color = getStatusColor();
+
     switch (color) {
       case "success":
         return "text-green-500";

@@ -8,8 +8,9 @@
 
 import { redirect } from "next/navigation";
 import { cookies } from "next/headers";
-import { MERCHANT_COOKIE_NAME } from "@/utils/constants";
 import Image from "next/image";
+
+import { MERCHANT_COOKIE_NAME } from "@/utils/constants";
 
 export default function PublicLayout({ children }: { children: React.ReactNode }) {
   const authToken = cookies().get(MERCHANT_COOKIE_NAME);
@@ -23,11 +24,11 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
       {/* Background Image - Hidden on mobile */}
       <div className="hidden sm:block absolute inset-0">
         <Image
-          src="/bg-celestial.png"
-          alt="Background"
           fill
-          className="object-cover opacity-20 pointer-events-none"
           priority
+          alt="Background"
+          className="object-cover opacity-20 pointer-events-none"
+          src="/bg-celestial.png"
         />
       </div>
       {children}

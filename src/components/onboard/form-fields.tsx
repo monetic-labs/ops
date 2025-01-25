@@ -2,8 +2,9 @@
 
 import { Input } from "@nextui-org/input";
 import { useFormContext } from "react-hook-form";
-import { schema } from "@/validations/onboard/schemas";
 import { z } from "zod";
+
+import { schema } from "@/validations/onboard/schemas";
 
 // Helper function to check if a field is optional in the schema
 const isFieldOptional = (fieldPath: string) => {
@@ -67,6 +68,7 @@ export const FormField = ({
 
     if (formatValue) {
       const formattedValue = formatValue(newValue);
+
       setValue(name, formattedValue);
     } else if (onChange) {
       onChange(e);
@@ -84,6 +86,7 @@ export const FormField = ({
             register(name).onChange(e);
             if (formatValue) {
               const formattedValue = formatValue(e.target.value);
+
               setValue(name, formattedValue);
             }
           },
@@ -93,13 +96,13 @@ export const FormField = ({
     <Input
       {...props}
       {...inputProps}
-      isRequired={isRequired}
       classNames={{
         ...props.classNames,
         input: `${props.classNames?.input || ""} ${error ? "border-red-500" : ""}`,
       }}
       errorMessage={errorMessage?.replace(/'/g, "&apos;")}
       isInvalid={!!error}
+      isRequired={isRequired}
       label={
         <>
           {label}

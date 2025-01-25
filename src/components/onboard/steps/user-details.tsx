@@ -1,23 +1,24 @@
 "use client";
 
 import { useFormContext, Controller } from "react-hook-form";
-import { FormField } from "../form-fields";
-import { FormData } from "@/validations/onboard/schemas";
 import { Select, SelectItem } from "@nextui-org/select";
-import { Divider } from "@nextui-org/divider";
-import postcodeMap from "@/data/postcodes-map.json";
 import { ChangeEvent } from "react";
 import { Input } from "@nextui-org/input";
 import { SharedSelection } from "@nextui-org/system";
 import { ISO3166Alpha2Country, PersonRole } from "@backpack-fux/pylon-sdk";
 import { Checkbox } from "@nextui-org/checkbox";
+
+import postcodeMap from "@/data/postcodes-map.json";
+import { FormData } from "@/validations/onboard/schemas";
 import { formatPersonRole } from "@/utils/helpers";
 
 const formatSSN = (value: string) => {
   if (!value) return "";
   const digits = value.replace(/\D/g, "");
+
   if (digits.length <= 3) return digits;
   if (digits.length <= 5) return `${digits.slice(0, 3)}-${digits.slice(3)}`;
+
   return `${digits.slice(0, 3)}-${digits.slice(3, 5)}-${digits.slice(5)}`;
 };
 
@@ -59,6 +60,7 @@ export const UserDetailsStep = () => {
             selectedKeys={watch(`users.${index}.countryOfIssue`) ? [watch(`users.${index}.countryOfIssue`)] : []}
             onSelectionChange={(keys: SharedSelection) => {
               const selected = Array.from(keys)[0];
+
               setValue(`users.${index}.countryOfIssue`, selected as ISO3166Alpha2Country, { shouldValidate: true });
             }}
           >
@@ -98,6 +100,7 @@ export const UserDetailsStep = () => {
                 value={field.value ? formatSSN(field.value) : ""}
                 onChange={(e) => {
                   const digits = e.target.value.replace(/\D/g, "");
+
                   if (digits.length <= 9) {
                     field.onChange(digits);
                   }
@@ -121,8 +124,10 @@ export const UserDetailsStep = () => {
                   onChange={(e: ChangeEvent<HTMLInputElement>) => {
                     field.onChange(e);
                     const postcodeValue = e.target.value;
+
                     if (postcodeValue && postcodeMap[postcodeValue]) {
                       const data = postcodeMap[postcodeValue];
+
                       setValue(`users.${index}.city`, data.city || "", { shouldValidate: true });
                       setValue(`users.${index}.state`, data.stateAbbreviation || "", { shouldValidate: true });
                     }
@@ -194,8 +199,8 @@ export const UserDetailsStep = () => {
               name={`users.${index}.hasDashboardAccess`}
               render={({ field }) => (
                 <Checkbox
-                  isSelected={index === 0 ? true : field.value}
                   isDisabled={index === 0}
+                  isSelected={index === 0 ? true : field.value}
                   onValueChange={(checked) => {
                     field.onChange(checked);
                     if (!checked) {
@@ -216,19 +221,20 @@ export const UserDetailsStep = () => {
                   <>
                     <Select
                       isRequired
-                      isDisabled={index === 0}
-                      errorMessage={error?.message}
-                      isInvalid={!!error}
-                      label="Dashboard Role"
-                      placeholder="Select role"
                       description={
                         index > 0 && watch(`users.${index}.hasDashboardAccess`)
                           ? `An email notification will be sent to ${watch(`users.${index}.email`)} for onboarding`
                           : "You must be a Super Admin"
                       }
+                      errorMessage={error?.message}
+                      isDisabled={index === 0}
+                      isInvalid={!!error}
+                      label="Dashboard Role"
+                      placeholder="Select role"
                       selectedKeys={index === 0 ? [PersonRole.SUPER_ADMIN] : field.value ? [field.value] : []}
                       onSelectionChange={(keys: SharedSelection) => {
                         const selected = Array.from(keys)[0];
+
                         field.onChange(selected as PersonRole);
                       }}
                     >

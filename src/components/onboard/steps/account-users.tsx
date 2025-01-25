@@ -6,9 +6,10 @@ import { useFormContext, useFieldArray } from "react-hook-form";
 import { Controller } from "react-hook-form";
 import { Input } from "@nextui-org/input";
 
-import { FormField } from "../form-fields";
 import { UserRole } from "@/validations/onboard/schemas";
 import { formatPhoneNumber } from "@/utils/helpers";
+
+import { FormField } from "../form-fields";
 
 // Helper function for class names
 const cn = (...classes: string[]) => classes.filter(Boolean).join(" ");
@@ -136,6 +137,7 @@ export const AccountUsers = () => {
                         value={field.value?.number ? formatPhoneNumber(field.value.number) : ""}
                         onChange={(e) => {
                           const digits = e.target.value.replace(/\D/g, "");
+
                           if (digits.length <= 10) {
                             field.onChange({
                               extension: "1",

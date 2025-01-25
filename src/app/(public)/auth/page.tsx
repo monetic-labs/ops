@@ -10,7 +10,6 @@ import { useRouter } from "next/navigation";
 import { WebAuthnHelper } from "@/utils/webauthn";
 import { SafeAccountHelper } from "@/utils/safeAccount";
 import { LocalStorage } from "@/utils/localstorage";
-import pylon from "@/libs/pylon-sdk";
 
 const SecurityFeatures = () => (
   <div className="space-y-4 text-default-500">
@@ -53,6 +52,7 @@ export default function AuthPage() {
 
   useEffect(() => {
     const safeUser = LocalStorage.getSafeUser();
+
     if (safeUser && safeUser.isLogin) {
       setIsDisabled(safeUser.isLogin);
     }
@@ -68,6 +68,7 @@ export default function AuthPage() {
         const publicKey = await webauthnHelper.loginWithPasskey();
         const safeHelper = new SafeAccountHelper(publicKey);
         const walletAddress = safeHelper.getAddress();
+
         // TODO: pass in passkeyId from pylon
         LocalStorage.setSafeUser(publicKey, walletAddress, "", true);
         router.refresh();
@@ -76,6 +77,7 @@ export default function AuthPage() {
         const { publicKeyCoordinates, passkeyId } = await webauthnHelper.createPasskey();
         const safeHelper = new SafeAccountHelper(publicKeyCoordinates);
         const walletAddress = safeHelper.getAddress();
+
         LocalStorage.setSafeUser(publicKeyCoordinates, walletAddress, passkeyId, false);
         router.push("/onboard");
       }
@@ -108,10 +110,10 @@ export default function AuthPage() {
           {/* Sign In Section */}
           <Button
             className="w-full bg-white/10 hover:bg-white/20 text-white h-14"
-            radius="lg"
             isLoading={isLoading}
-            onClick={() => handlePasskeyAuth(true)}
+            radius="lg"
             startContent={!isLoading && <Fingerprint className="w-5 h-5" />}
+            onClick={() => handlePasskeyAuth(true)}
           >
             Continue with Passkey
           </Button>
@@ -131,11 +133,11 @@ export default function AuthPage() {
             </div>
             <Button
               className="w-full bg-white/10 hover:bg-white/20 text-white h-14"
-              radius="lg"
-              isLoading={isLoading}
               isDisabled={isDisabled}
-              onClick={() => handlePasskeyAuth(false)}
+              isLoading={isLoading}
+              radius="lg"
               startContent={!isLoading && <KeyRound className="w-5 h-5" />}
+              onClick={() => handlePasskeyAuth(false)}
             >
               Create Passkey
             </Button>

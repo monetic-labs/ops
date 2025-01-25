@@ -1,10 +1,10 @@
 "use client";
 
 import { useFormContext, Controller } from "react-hook-form";
-import { FormField } from "../form-fields";
-import postcodeMap from "@/data/postcodes-map.json";
 import { ChangeEvent, useCallback, useEffect } from "react";
 import { Input } from "@nextui-org/input";
+
+import postcodeMap from "@/data/postcodes-map.json";
 
 export const CompanyDetailsStep = () => {
   const {
@@ -17,10 +17,12 @@ export const CompanyDetailsStep = () => {
   const handlePostcodeChange = useCallback(
     (e: ChangeEvent<HTMLInputElement>, onChange: (value: any) => void) => {
       const postcodeValue = e.target.value;
+
       onChange(postcodeValue);
 
       if (postcodeValue && postcodeMap[postcodeValue]) {
         const data = postcodeMap[postcodeValue];
+
         // Use requestAnimationFrame to defer state updates
         requestAnimationFrame(() => {
           setValue("city", data.city || "", { shouldValidate: false });
@@ -34,8 +36,10 @@ export const CompanyDetailsStep = () => {
   // Use useEffect to validate after city/state updates
   useEffect(() => {
     const postcode = watch("postcode");
+
     if (postcode && postcodeMap[postcode]) {
       const data = postcodeMap[postcode];
+
       setValue("city", data.city || "", { shouldValidate: true });
       setValue("state", data.stateAbbreviation || "", { shouldValidate: true });
     }
@@ -111,8 +115,8 @@ export const CompanyDetailsStep = () => {
           render={({ field }) => (
             <Input
               {...field}
-              errorMessage={errors?.city?.message?.toString()}
               isDisabled
+              errorMessage={errors?.city?.message?.toString()}
               isInvalid={!!errors?.city}
               label="City"
               placeholder="New York"
@@ -125,8 +129,8 @@ export const CompanyDetailsStep = () => {
           render={({ field }) => (
             <Input
               {...field}
-              errorMessage={errors?.state?.message?.toString()}
               isDisabled
+              errorMessage={errors?.state?.message?.toString()}
               isInvalid={!!errors?.state}
               label="State"
               maxLength={2}

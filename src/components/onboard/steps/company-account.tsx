@@ -1,11 +1,13 @@
 "use client";
 
 import { useFormContext, Controller } from "react-hook-form";
-import { FormField } from "../form-fields";
 import { Select, SelectItem } from "@nextui-org/select";
 import { CardCompanyType } from "@backpack-fux/pylon-sdk";
 import { Input } from "@nextui-org/input";
+
 import { formatCompanyType, formatEIN } from "@/utils/helpers";
+
+import { FormField } from "../form-fields";
 
 export const CompanyAccountStep = () => {
   const {
@@ -45,6 +47,7 @@ export const CompanyAccountStep = () => {
               value={field.value ? formatEIN(field.value) : ""}
               onChange={(e) => {
                 const digits = e.target.value.replace(/\D/g, "");
+
                 if (digits.length <= 9) {
                   field.onChange(digits);
                 }
@@ -58,8 +61,8 @@ export const CompanyAccountStep = () => {
           render={({ field, fieldState: { error } }) => (
             <Select
               {...field}
-              errorMessage={error?.message}
               fullWidth
+              errorMessage={error?.message}
               isInvalid={!!error}
               label="Company Type"
               placeholder="Select Company Type"

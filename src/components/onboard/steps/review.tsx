@@ -3,6 +3,7 @@
 import { useFormContext } from "react-hook-form";
 import { CheckCircle, Edit, UserRound } from "lucide-react";
 import { Button } from "@nextui-org/button";
+
 import { FormData } from "@/validations/onboard/schemas";
 import { formatCompanyType, formatEIN, formatPersonRole, formatPhoneNumber, truncateAddress } from "@/utils/helpers";
 
@@ -13,9 +14,9 @@ export const ReviewStep = ({ onStepChange }: { onStepChange: (step: number) => v
   const EditButton = ({ step }: { step: number }) => (
     <Button
       className="text-[#E31B88] hover:text-[#cc0077]"
-      onClick={() => onStepChange(step)}
       size="sm"
       variant="light"
+      onClick={() => onStepChange(step)}
     >
       <Edit className="text-[#E31B88] hover:text-[#cc0077]" size={16} />
       Edit

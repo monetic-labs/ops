@@ -1,10 +1,12 @@
 import { http, createPublicClient, Chain } from "viem";
 import { baseSepolia, base } from "viem/chains";
+
 import { isLocal } from "@/utils/helpers";
 import "viem/window";
 
 // Environment variables validation
 const CANDIDE_API_KEY = process.env.NEXT_PUBLIC_CANDIDE_API_KEY;
+
 if (!CANDIDE_API_KEY) {
   throw new Error("CANDIDE_API_KEY is not set");
 }
@@ -29,12 +31,16 @@ const getSponsorshipPolicyId = (chain: Chain): string => {
   switch (chain.id) {
     case 84532: {
       const policyId = process.env.NEXT_PUBLIC_CANDIDE_BASE_SEPOLIA_SPONSORSHIP_POLICY_ID;
+
       if (!policyId) throw new Error("CANDIDE_BASE_SEPOLIA_SPONSORSHIP_POLICY_ID is not set");
+
       return policyId;
     }
     case 8453: {
       const policyId = process.env.CANDIDE_BASE_SPONSORSHIP_POLICY_ID;
+
       if (!policyId) throw new Error("CANDIDE_BASE_SPONSORSHIP_POLICY_ID is not set");
+
       return policyId;
     }
     default:

@@ -1,7 +1,8 @@
 import { z } from "zod";
 import { Address, isAddress } from "viem";
-import postcodeMap from "@/data/postcodes-map.json";
 import { CardCompanyType, ISO3166Alpha2Country, PersonRole } from "@backpack-fux/pylon-sdk";
+
+import postcodeMap from "@/data/postcodes-map.json";
 
 // Add validation patterns
 const birthdayRegex = /^\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$/;
@@ -22,8 +23,10 @@ export const companyDetailsSchema = z.object({
     .string()
     .transform((val) => {
       let url = val.trim().toLowerCase();
+
       url = url.replace(/^https?:\/\//, "");
       url = url.replace(/^www\./, "");
+
       return url;
     })
     .pipe(
@@ -151,10 +154,12 @@ export const accountUsersSchema = z.object({
     )
     .refine((users) => {
       const emails = users.map((user) => user.email);
+
       return new Set(emails).size === emails.length;
     }, "Each user must have a unique email address")
     .refine((users) => {
       const phoneNumbers = users.map((user) => user.phoneNumber.number).filter(Boolean);
+
       return new Set(phoneNumbers).size === phoneNumbers.length;
     }, "Each user must have a unique phone number"),
 });

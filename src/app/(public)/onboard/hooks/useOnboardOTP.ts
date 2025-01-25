@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+
 import { useOTP } from "@/hooks/auth/useOTP";
 import { isLocal, isTesting } from "@/utils/helpers";
 
@@ -27,9 +28,11 @@ export const useOnboardOTP = (otpInputRef: React.RefObject<HTMLInputElement>) =>
       if (success) {
         setShowOTPModal(false);
         resetState();
+
         return true;
       }
     }
+
     return false;
   };
 

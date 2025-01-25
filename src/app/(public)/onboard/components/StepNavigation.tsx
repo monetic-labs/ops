@@ -22,8 +22,8 @@ export const StepNavigation = ({
   <div className="mt-8 flex justify-end space-x-4">
     {!isFirstStep && (
       <Button
-        variant="bordered"
         className="border-ualert-500 text-notpurple-500 hover:bg-ualert-500/10"
+        variant="bordered"
         onClick={onPrevious}
       >
         Previous

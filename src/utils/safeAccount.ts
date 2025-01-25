@@ -5,10 +5,10 @@ import {
   SafeAccountV0_3_0 as SafeAccount,
   CandidePaymaster,
   DEFAULT_SECP256R1_PRECOMPILE_ADDRESS,
-  UserOperationV6,
   UserOperationV7,
 } from "abstractionkit";
 import { entryPoint07Address } from "viem/account-abstraction";
+
 import { BUNDLER_URL, chain, PAYMASTER_URL, SPONSORSHIP_POLICY_ID } from "@/config/web3";
 
 export class SafeAccountHelper {
@@ -52,6 +52,7 @@ export class SafeAccountHelper {
       BUNDLER_URL,
       SPONSORSHIP_POLICY_ID
     );
+
     Object.assign(userOperation, sponsoredUserOp);
 
     return userOperation;

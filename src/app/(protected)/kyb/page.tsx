@@ -40,8 +40,8 @@ export default function KYB() {
         <div>
           <h2 className="text-2xl font-semibold text-white mb-4">Business Verification (KYB)</h2>
           <div className="grid md:grid-cols-2 gap-6">
-            <StatusCard provider="BRIDGE" status={complianceStatus?.kycStatus} onVerify={handleBridgeKYB} type="KYB" />
-            <StatusCard provider="RAIN" status={complianceStatus?.rainKybStatus} onVerify={handleRainKYB} type="KYB" />
+            <StatusCard provider="BRIDGE" status={complianceStatus?.kycStatus} type="KYB" onVerify={handleBridgeKYB} />
+            <StatusCard provider="RAIN" status={complianceStatus?.rainKybStatus} type="KYB" onVerify={handleRainKYB} />
           </div>
         </div>
 
@@ -53,8 +53,8 @@ export default function KYB() {
               <StatusCard
                 provider="RAIN"
                 status={complianceStatus?.rainKycStatus}
-                onVerify={handleRainKYC}
                 type="KYC"
+                onVerify={handleRainKYC}
               />
             </div>
           </div>

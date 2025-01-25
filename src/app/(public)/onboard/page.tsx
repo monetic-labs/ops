@@ -5,10 +5,12 @@ import { useSearchParams, useRouter } from "next/navigation";
 import { Spinner } from "@nextui-org/spinner";
 import { useForm, FormProvider } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { schema, FormData, UserRole } from "@/validations/onboard/schemas";
-import pylon from "@/libs/pylon-sdk";
 import { ISO3166Alpha2Country, ISO3166Alpha3Country, PersonRole } from "@backpack-fux/pylon-sdk";
 import { Accordion, AccordionItem } from "@nextui-org/accordion";
+import { useState } from "react";
+
+import { schema, FormData, UserRole } from "@/validations/onboard/schemas";
+import pylon from "@/libs/pylon-sdk";
 import { CompanyDetailsStep } from "@/components/onboard/steps/company-details";
 import { CompanyAccountStep } from "@/components/onboard/steps/company-account";
 import { AccountUsers } from "@/components/onboard/steps/account-users";
@@ -16,13 +18,13 @@ import { TermsStep } from "@/components/onboard/steps/terms";
 import { ReviewStep } from "@/components/onboard/steps/review";
 import { UserDetailsStep } from "@/components/onboard/steps/user-details";
 import { OTPModal } from "@/components/generics/otp-modal";
+import { LocalStorage } from "@/utils/localstorage";
+import { SafeAccountHelper } from "@/utils/safeAccount";
+
 import { getDefaultValues, getFieldsForStep } from "./types";
 import { StepNavigation } from "./components/StepNavigation";
 import { CircleWithNumber, CheckCircleIcon } from "./components/StepIndicator";
 import { useOnboardOTP } from "./hooks/useOnboardOTP";
-import { useState } from "react";
-import { LocalStorage } from "@/utils/localstorage";
-import { SafeAccountHelper } from "@/utils/safeAccount";
 
 export default function OnboardPage() {
   const searchParams = useSearchParams();
@@ -79,6 +81,7 @@ export default function OnboardPage() {
             type: "required",
             message: "Please fill out all required fields for Person 1",
           });
+
           return;
         }
 
@@ -104,11 +107,13 @@ export default function OnboardPage() {
               });
             }
           });
+
           return;
         }
 
         clearErrors("users");
         setCurrentStep(Math.min(currentStep + 1, 6));
+
         return;
       }
       default: {
@@ -216,6 +221,7 @@ export default function OnboardPage() {
           .filter((user) => user.hasDashboardAccess)
           .map((user, index) => {
             const role = user.dashboardRole as PersonRole;
+
             return {
               firstName: user.firstName,
               lastName: user.lastName,
@@ -243,6 +249,7 @@ export default function OnboardPage() {
       if (response) {
         const safeHelper = new SafeAccountHelper(safeUser.publicKeyCoordinates);
         const walletAddress = safeHelper.getAddress();
+
         LocalStorage.setSafeUser(safeUser.publicKeyCoordinates, walletAddress, "", true);
       }
       router.push("/");
@@ -274,7 +281,7 @@ export default function OnboardPage() {
       content: (
         <>
           <CompanyDetailsStep />
-          <StepNavigation onNext={handleNext} isValidating={isValidating} isFirstStep />
+          <StepNavigation isFirstStep isValidating={isValidating} onNext={handleNext} />
         </>
       ),
     },
@@ -284,7 +291,7 @@ export default function OnboardPage() {
       content: (
         <>
           <CompanyAccountStep />
-          <StepNavigation onNext={handleNext} onPrevious={handlePrevious} isValidating={isValidating} />
+          <StepNavigation isValidating={isValidating} onNext={handleNext} onPrevious={handlePrevious} />
         </>
       ),
     },
@@ -294,7 +301,7 @@ export default function OnboardPage() {
       content: (
         <>
           <AccountUsers />
-          <StepNavigation onNext={handleNext} onPrevious={handlePrevious} isValidating={isValidating} />
+          <StepNavigation isValidating={isValidating} onNext={handleNext} onPrevious={handlePrevious} />
         </>
       ),
     },
@@ -304,7 +311,7 @@ export default function OnboardPage() {
       content: (
         <>
           <UserDetailsStep />
-          <StepNavigation onNext={handleNext} onPrevious={handlePrevious} isValidating={isValidating} />
+          <StepNavigation isValidating={isValidating} onNext={handleNext} onPrevious={handlePrevious} />
         </>
       ),
     },
@@ -314,7 +321,7 @@ export default function OnboardPage() {
       content: (
         <>
           <TermsStep />
-          <StepNavigation onNext={handleNext} onPrevious={handlePrevious} isValidating={isValidating} />
+          <StepNavigation isValidating={isValidating} onNext={handleNext} onPrevious={handlePrevious} />
         </>
       ),
     },
@@ -324,7 +331,7 @@ export default function OnboardPage() {
       content: (
         <>
           <ReviewStep onStepChange={() => handleNext()} />
-          <StepNavigation onPrevious={handlePrevious} isLastStep isSubmitting={isSubmitting} isValid={isValid} />
+          <StepNavigation isLastStep isSubmitting={isSubmitting} isValid={isValid} onPrevious={handlePrevious} />
         </>
       ),
     },
@@ -358,15 +365,15 @@ export default function OnboardPage() {
             </Accordion>
 
             <OTPModal
-              isOpen={showOTPModal}
+              canResend={canResend}
               email={email}
+              isLoading={isOTPLoading}
+              isOpen={showOTPModal}
               otp={otp}
               otpError={otpError}
-              isLoading={isOTPLoading}
-              canResend={canResend}
+              otpInputRef={otpInputRef}
               resendTimer={resendTimer}
               shouldEnableTimer={true}
-              otpInputRef={otpInputRef}
               onOTPChange={(e) => setOTP(e.target.value)}
               onOTPComplete={() =>
                 handleOTPSubmit(watch("users.0.email")).then((success) => {
