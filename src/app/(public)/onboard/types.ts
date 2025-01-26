@@ -3,14 +3,14 @@ import { ISO3166Alpha2Country, PersonRole } from "@backpack-fux/pylon-sdk";
 import { UserRole } from "@/validations/onboard/schemas";
 import { FormData } from "@/validations/onboard/schemas";
 
-export const getDefaultValues = (email: string): Partial<FormData> => ({
-  companyEmail: email,
+export const getDefaultValues = (): Partial<FormData> => ({
+  companyEmail: "",
   acceptedTerms: false,
   users: [
     {
       firstName: "",
       lastName: "",
-      email: email,
+      email: "",
       phoneNumber: {
         extension: "",
         number: "",

@@ -1,7 +1,7 @@
 "use client";
 
-import { Suspense, useRef } from "react";
-import { useSearchParams, useRouter } from "next/navigation";
+import { Suspense, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { Spinner } from "@nextui-org/spinner";
 import { useForm, FormProvider } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -17,42 +17,36 @@ import { AccountUsers } from "@/components/onboard/steps/account-users";
 import { TermsStep } from "@/components/onboard/steps/terms";
 import { ReviewStep } from "@/components/onboard/steps/review";
 import { UserDetailsStep } from "@/components/onboard/steps/user-details";
-import { OTPModal } from "@/components/generics/otp-modal";
 import { LocalStorage } from "@/utils/localstorage";
-import { SafeAccountHelper } from "@/utils/safeAccount";
 
 import { getDefaultValues, getFieldsForStep } from "./types";
 import { StepNavigation } from "./components/StepNavigation";
 import { CircleWithNumber, CheckCircleIcon } from "./components/StepIndicator";
-import { useOnboardOTP } from "./hooks/useOnboardOTP";
 
 export default function OnboardPage() {
-  const searchParams = useSearchParams();
   const router = useRouter();
-  const email = searchParams?.get("email") || "";
   const safeUser = LocalStorage.getSafeUser();
   const [currentStep, setCurrentStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const otpInputRef = useRef<HTMLInputElement>(null);
 
-  const {
-    showOTPModal,
-    otp,
-    setOTP,
-    isOTPLoading,
-    otpError,
-    canResend,
-    resendTimer,
-    handleOTPSubmit,
-    handleResendOTP,
-    initiateOTP,
-  } = useOnboardOTP(otpInputRef);
+  // TODO: this should be done in middleware
+  useEffect(() => {
+    if (
+      !safeUser ||
+      !safeUser.walletAddress ||
+      !safeUser.passkeyId ||
+      !safeUser.publicKeyCoordinates ||
+      safeUser.isLogin
+    ) {
+      router.push("/auth");
+    }
+  }, [safeUser]);
 
   const methods = useForm<FormData>({
     resolver: zodResolver(schema),
     mode: "onChange",
     reValidateMode: "onChange",
-    defaultValues: getDefaultValues(email),
+    defaultValues: getDefaultValues(),
   });
 
   const {
@@ -73,7 +67,6 @@ export default function OnboardPage() {
           person1 &&
           person1.firstName?.length >= 2 &&
           person1.lastName?.length >= 2 &&
-          person1.email &&
           person1.phoneNumber?.number?.length >= 9;
 
         if (!isValidPerson1) {
@@ -85,27 +78,17 @@ export default function OnboardPage() {
           return;
         }
 
-        // Check for duplicate emails and phone numbers
-        const emails = users.map((user) => user.email);
+        // Check for duplicate phone numbers
         const phoneNumbers = users.map((user) => user.phoneNumber?.number).filter(Boolean);
 
-        const hasDuplicateEmails = new Set(emails).size !== emails.length;
         const hasDuplicatePhones = new Set(phoneNumbers).size !== phoneNumbers.length;
 
-        if (hasDuplicateEmails || hasDuplicatePhones) {
+        if (hasDuplicatePhones) {
           users.forEach((_, index) => {
-            if (hasDuplicateEmails) {
-              setError(`users.${index}.email`, {
-                type: "validate",
-                message: "Email address must be unique",
-              });
-            }
-            if (hasDuplicatePhones) {
-              setError(`users.${index}.phoneNumber`, {
-                type: "validate",
-                message: "Phone number must be unique",
-              });
-            }
+            setError(`users.${index}.phoneNumber`, {
+              type: "validate",
+              message: "Phone number must be unique",
+            });
           });
 
           return;
@@ -135,7 +118,7 @@ export default function OnboardPage() {
     setIsSubmitting(true);
     try {
       const response = await pylon.createMerchant({
-        settlementAddress: data.settlementAddress,
+        settlementAddress: safeUser?.settlementAddress!,
         isTermsOfServiceAccepted: data.acceptedTerms,
         company: {
           name: data.companyName,
@@ -162,7 +145,7 @@ export default function OnboardPage() {
             nationalId: data.users[0].socialSecurityNumber,
             countryOfIssue: data.users[0].countryOfIssue,
             birthDate: data.users[0].birthDate,
-            walletAddress: safeUser.walletAddress!,
+            walletAddress: safeUser?.walletAddress!,
             address: {
               line1: data.users[0].streetAddress1,
               line2: data.users[0].streetAddress2 || undefined,
@@ -231,8 +214,9 @@ export default function OnboardPage() {
               birthDate: user.birthDate,
               nationalId: user.socialSecurityNumber,
               countryOfIssue: user.countryOfIssue,
+              walletAddress: index === 0 ? safeUser?.walletAddress! : undefined,
               role,
-              passkeyId: index === 0 ? safeUser.passkeyId : undefined,
+              passkeyId: index === 0 ? safeUser?.passkeyId! : undefined,
               address: {
                 line1: user.streetAddress1,
                 line2: user.streetAddress2 || undefined,
@@ -247,10 +231,13 @@ export default function OnboardPage() {
       });
 
       if (response) {
-        const safeHelper = new SafeAccountHelper(safeUser.publicKeyCoordinates);
-        const walletAddress = safeHelper.getAddress();
-
-        LocalStorage.setSafeUser(safeUser.publicKeyCoordinates, walletAddress, "", true);
+        LocalStorage.setSafeUser(
+          safeUser?.publicKeyCoordinates!,
+          safeUser?.walletAddress!,
+          safeUser?.settlementAddress!,
+          safeUser?.passkeyId!,
+          true
+        );
       }
       router.push("/");
     } catch (error: any) {
@@ -363,26 +350,6 @@ export default function OnboardPage() {
                 </AccordionItem>
               ))}
             </Accordion>
-
-            <OTPModal
-              canResend={canResend}
-              email={email}
-              isLoading={isOTPLoading}
-              isOpen={showOTPModal}
-              otp={otp}
-              otpError={otpError}
-              otpInputRef={otpInputRef}
-              resendTimer={resendTimer}
-              shouldEnableTimer={true}
-              onOTPChange={(e) => setOTP(e.target.value)}
-              onOTPComplete={() =>
-                handleOTPSubmit(watch("users.0.email")).then((success) => {
-                  if (success) router.refresh();
-                })
-              }
-              onResend={() => handleResendOTP(watch("users.0.email"))}
-              onValueChange={(value) => setOTP(value)}
-            />
           </form>
         </FormProvider>
       </Suspense>

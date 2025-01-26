@@ -1,4 +1,5 @@
 import { WebauthnPublicKey } from "abstractionkit";
+import { Address } from "viem";
 
 export class LocalStorage {
   private static getItem(key: string): string | null {
@@ -13,7 +14,8 @@ export class LocalStorage {
 
   static setSafeUser(
     publicKeyCoordinates: WebauthnPublicKey,
-    walletAddress: string,
+    walletAddress: Address,
+    settlementAddress: Address,
     passkeyId: string,
     isLogin: boolean
   ) {
@@ -32,6 +34,7 @@ export class LocalStorage {
         {
           publicKeyCoordinates,
           walletAddress,
+          settlementAddress,
           passkeyId,
           isLogin,
         },
@@ -40,10 +43,23 @@ export class LocalStorage {
     );
   }
 
-  static getSafeUser() {
+  static getSafeUser(): {
+    publicKeyCoordinates: WebauthnPublicKey | null;
+    walletAddress: Address | null;
+    settlementAddress: Address | null;
+    passkeyId: string | null;
+    isLogin: boolean;
+  } | null {
     const servicesStr = this.getItem("@backpack/services");
 
-    if (!servicesStr) return { publicKeyCoordinates: null, walletAddress: null, passkeyId: null, isLogin: false };
+    if (!servicesStr)
+      return {
+        publicKeyCoordinates: null,
+        walletAddress: null,
+        settlementAddress: null,
+        passkeyId: null,
+        isLogin: false,
+      };
 
     // Custom reviver to convert string back to BigInt
     const bigIntReviver = (key: string, value: any) => {
@@ -55,8 +71,11 @@ export class LocalStorage {
       return value;
     };
 
-    const { publicKeyCoordinates, walletAddress, passkeyId, isLogin } = JSON.parse(servicesStr, bigIntReviver);
+    const { publicKeyCoordinates, walletAddress, settlementAddress, passkeyId, isLogin } = JSON.parse(
+      servicesStr,
+      bigIntReviver
+    );
 
-    return { publicKeyCoordinates, walletAddress, passkeyId, isLogin }; // Return isLogin as well
+    return { publicKeyCoordinates, walletAddress, settlementAddress, passkeyId, isLogin };
   }
 }

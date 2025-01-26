@@ -47,11 +47,6 @@ export class WebAuthnHelper {
     challenge: string;
     passkeyId: string;
   }> {
-    // const passkey = await this.checkCredentialExists();
-    // if (passkey) {
-    //   throw Error("Passkey credential already exists.");
-    // }
-
     const challengeStr = await this.requestChallenge();
     const challenge = Bytes.fromString(challengeStr);
 
@@ -214,7 +209,7 @@ export class WebAuthnHelper {
 
   private async checkCredentialExists() {
     // TODO: check passkeyId with pylon
-    return await sign({
+    await sign({
       challenge: OxHex.fromBytes(createChallenge),
       userVerification: "required",
     });

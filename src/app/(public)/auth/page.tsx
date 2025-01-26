@@ -8,7 +8,7 @@ import { Backpack, Fingerprint, KeyRound, ShieldCheck } from "lucide-react";
 import { useRouter } from "next/navigation";
 
 import { WebAuthnHelper } from "@/utils/webauthn";
-import { SafeAccountHelper } from "@/utils/safeAccount";
+import { PublicKeySafeAccountHelper, WebAuthnSafeAccountHelper } from "@/utils/safeAccount";
 import { LocalStorage } from "@/utils/localstorage";
 
 const SecurityFeatures = () => (
@@ -65,20 +65,26 @@ export default function AuthPage() {
 
       if (isLogin) {
         // Login with passkey
-        const publicKey = await webauthnHelper.loginWithPasskey();
-        const safeHelper = new SafeAccountHelper(publicKey);
-        const walletAddress = safeHelper.getAddress();
+        const webauthnPublicKey = await webauthnHelper.loginWithPasskey();
+        const safeOwner = new WebAuthnSafeAccountHelper(webauthnPublicKey);
+        const walletAddress = safeOwner.getAddress();
+
+        const safeSettlement = new PublicKeySafeAccountHelper(walletAddress);
+        const settlementAddress = safeSettlement.getAddress();
 
         // TODO: pass in passkeyId from pylon
-        LocalStorage.setSafeUser(publicKey, walletAddress, "", true);
-        router.refresh();
+        LocalStorage.setSafeUser(webauthnPublicKey, walletAddress, settlementAddress, "", true);
+        router.push("/");
       } else {
         // Create new passkey
         const { publicKeyCoordinates, passkeyId } = await webauthnHelper.createPasskey();
-        const safeHelper = new SafeAccountHelper(publicKeyCoordinates);
-        const walletAddress = safeHelper.getAddress();
+        const safeOwner = new WebAuthnSafeAccountHelper(publicKeyCoordinates);
+        const walletAddress = safeOwner.getAddress();
 
-        LocalStorage.setSafeUser(publicKeyCoordinates, walletAddress, passkeyId, false);
+        const safeSettlement = new PublicKeySafeAccountHelper(walletAddress);
+        const settlementAddress = safeSettlement.getAddress();
+
+        LocalStorage.setSafeUser(publicKeyCoordinates, walletAddress, settlementAddress, passkeyId, false);
         router.push("/onboard");
       }
     } catch (error) {

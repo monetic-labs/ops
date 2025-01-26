@@ -11,6 +11,19 @@ export async function middleware(request: NextRequest) {
   const authToken = request.cookies.get(MERCHANT_COOKIE_NAME);
   const pathname = request.nextUrl.pathname;
 
+  // Handle invite page
+  if (pathname.startsWith("/invite")) {
+    const token = request.nextUrl.searchParams.get("token");
+
+    // Redirect to auth if no token is provided
+    if (!token) {
+      return NextResponse.redirect(new URL("/auth", request.url));
+    }
+
+    // Let the page handle the token validation
+    return NextResponse.next();
+  }
+
   // Skip middleware for auth routes
   const safeUser = LocalStorage.getSafeUser();
 
