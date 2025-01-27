@@ -10,6 +10,8 @@ import { useRouter } from "next/navigation";
 import { WebAuthnHelper } from "@/utils/webauthn";
 import { PublicKeySafeAccountHelper, WebAuthnSafeAccountHelper } from "@/utils/safeAccount";
 import { LocalStorage } from "@/utils/localstorage";
+import { MetaTransaction } from "abstractionkit";
+import { encodeFunctionData, erc20Abi, parseUnits } from "viem";
 
 const SecurityFeatures = () => (
   <div className="space-y-4 text-default-500">
@@ -77,12 +79,74 @@ export default function AuthPage() {
         router.push("/");
       } else {
         // Create new passkey
+        const webauthnHelper = new WebAuthnHelper(window.location.hostname);
+
         const { publicKeyCoordinates, passkeyId } = await webauthnHelper.createPasskey();
         const safeOwner = new WebAuthnSafeAccountHelper(publicKeyCoordinates);
         const walletAddress = safeOwner.getAddress();
 
         const safeSettlement = new PublicKeySafeAccountHelper(walletAddress);
         const settlementAddress = safeSettlement.getAddress();
+
+        const USDC_ADDRESS = "0xFaEc9cDC3Ef75713b48f46057B98BA04885e3391";
+
+        // Create a deployment transaction for the passkey account
+        const ownerDeploymentTx: MetaTransaction = {
+          to: walletAddress,
+          value: BigInt(0),
+          data: "0x",
+        };
+
+        // Create a deployment transaction for the safe settlement account
+        const settlementDeploymentTx: MetaTransaction = {
+          to: settlementAddress,
+          value: BigInt(0),
+          data: "0x",
+        };
+
+        const callDataToSettlement = encodeFunctionData({
+          abi: erc20Abi,
+          functionName: "transfer",
+          args: [settlementAddress, parseUnits("0.01", 6)],
+        });
+
+        // Send USDC from the passkey account to the settlement account
+        const sendUsdcTx: MetaTransaction = {
+          to: USDC_ADDRESS,
+          value: BigInt(0),
+          data: callDataToSettlement,
+        };
+
+        const callDataToPasskey = encodeFunctionData({
+          abi: erc20Abi,
+          functionName: "transfer",
+          args: [walletAddress, parseUnits("0.01", 6)],
+        });
+
+        // Send back the USDC from the settlement account to the passkey account
+        const sendUsdcToPasskeyTx: MetaTransaction = {
+          to: USDC_ADDRESS,
+          value: BigInt(0),
+          data: callDataToPasskey,
+        };
+
+        // Create a sponsored user operation
+        const userOperation = await safeOwner.createSponsoredUserOp([
+          ownerDeploymentTx,
+          settlementDeploymentTx,
+          sendUsdcTx,
+          sendUsdcToPasskeyTx,
+        ]);
+
+        // Sign and send the user operation
+        const userOpHash = safeOwner.getUserOpHash(userOperation);
+        const signature = await webauthnHelper.signMessage(userOpHash);
+        const receipt = await safeOwner.signAndSendUserOp(userOperation, signature);
+
+        console.log("Account created successfully:", {
+          address: walletAddress,
+          receipt,
+        });
 
         LocalStorage.setSafeUser(publicKeyCoordinates, walletAddress, settlementAddress, passkeyId, false);
         router.push("/onboard");

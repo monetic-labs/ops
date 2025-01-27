@@ -7,7 +7,7 @@ import {
   UserOperationV7,
 } from "abstractionkit";
 import { entryPoint07Address } from "viem/account-abstraction";
-import { Address } from "viem";
+import { Address, Hex } from "viem";
 
 import { BUNDLER_URL, chain, PAYMASTER_URL } from "@/config/web3";
 
@@ -50,10 +50,10 @@ export abstract class BaseSafeAccountHelper {
    * @param userOperation - User operation to get hash for
    * @returns Hash of the user operation
    */
-  getUserOpHash(userOperation: UserOperationV7): string {
+  getUserOpHash(userOperation: UserOperationV7): Hex {
     return SafeAccount.getUserOperationEip712Hash(userOperation, BigInt(chain.id), {
       entrypointAddress: entryPoint07Address,
-    });
+    }) as Hex;
   }
 
   /**
