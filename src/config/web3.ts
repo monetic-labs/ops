@@ -51,7 +51,7 @@ const getSponsorshipPolicyId = (chain: Chain): string => {
 // Public client configuration
 export const publicClient = createPublicClient({
   chain,
-  transport: http(),
+  transport: http(`https://base-sepolia.gateway.tenderly.co`),
 });
 
 // Candide API endpoints

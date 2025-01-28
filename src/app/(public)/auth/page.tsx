@@ -12,6 +12,7 @@ import { PublicKeySafeAccountHelper, WebAuthnSafeAccountHelper } from "@/utils/s
 import { LocalStorage } from "@/utils/localstorage";
 import { MetaTransaction } from "abstractionkit";
 import { encodeFunctionData, erc20Abi, parseUnits } from "viem";
+import create7579Account from "@/utils/7579";
 
 const SecurityFeatures = () => (
   <div className="space-y-4 text-default-500">
@@ -67,16 +68,17 @@ export default function AuthPage() {
 
       if (isLogin) {
         // Login with passkey
-        const webauthnPublicKey = await webauthnHelper.loginWithPasskey();
-        const safeOwner = new WebAuthnSafeAccountHelper(webauthnPublicKey);
-        const walletAddress = safeOwner.getAddress();
+        // const webauthnPublicKey = await webauthnHelper.loginWithPasskey();
+        // const safeOwner = new WebAuthnSafeAccountHelper(webauthnPublicKey);
+        // const walletAddress = safeOwner.getAddress();
 
-        const safeSettlement = new PublicKeySafeAccountHelper(walletAddress);
-        const settlementAddress = safeSettlement.getAddress();
+        // const safeSettlement = new PublicKeySafeAccountHelper(walletAddress);
+        // const settlementAddress = safeSettlement.getAddress();
 
-        // TODO: pass in passkeyId from pylon
-        LocalStorage.setSafeUser(webauthnPublicKey, walletAddress, settlementAddress, "", true);
-        router.push("/");
+        // // TODO: pass in passkeyId from pylon
+        // LocalStorage.setSafeUser(webauthnPublicKey, walletAddress, settlementAddress, "", true);
+        // router.push("/");
+        await create7579Account();
       } else {
         // Create new passkey
         const webauthnHelper = new WebAuthnHelper(window.location.hostname);
