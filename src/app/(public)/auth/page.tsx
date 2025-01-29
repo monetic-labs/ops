@@ -12,6 +12,7 @@ import { PublicKeySafeAccountHelper, WebAuthnSafeAccountHelper } from "@/utils/s
 import { LocalStorage } from "@/utils/localstorage";
 import { MetaTransaction } from "abstractionkit";
 import { encodeFunctionData, erc20Abi, parseUnits } from "viem";
+import { XMTPService } from "@/utils/xmtp/client";
 
 const SecurityFeatures = () => (
   <div className="space-y-4 text-default-500">
