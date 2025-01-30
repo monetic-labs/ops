@@ -1,60 +1,32 @@
-import { createSmartAccountClient, SmartAccountClient } from "permissionless";
+import { createSmartAccountClient } from "permissionless";
 import { erc7579Actions } from "permissionless/actions/erc7579";
-import { toSafeSmartAccount, toSimpleSmartAccount } from "permissionless/accounts";
-import { BUNDLER_URL, chain, publicClient } from "@/config/web3";
+import { toSafeSmartAccount } from "permissionless/accounts";
+import { chain, publicClient } from "@/config/web3";
 import {
   RHINESTONE_ATTESTER_ADDRESS,
-  MOCK_ATTESTER_ADDRESS,
   WEBAUTHN_VALIDATOR_ADDRESS,
   getAccount,
   encodeValidatorNonce,
-  getOwnableValidator,
-  OWNABLE_VALIDATOR_ADDRESS,
   getWebAuthnValidator,
   getWebauthnValidatorMockSignature,
   getWebauthnValidatorSignature,
-  getAddOwnableValidatorOwnerAction,
-  getOwnableValidatorOwners,
-  getClient,
   Execution,
-  SENTINEL_ADDRESS,
   getOwnableExecutor,
-  getRemoveOwnableExecutorOwnerAction,
-  getAddOwnableExecutorOwnerAction,
-  getOwnableValidatorSignature,
-  getOwnableValidatorMockSignature,
+  getExecuteBatchOnOwnedAccountAction,
+  getOwnableExecutorOwners,
 } from "@rhinestone/module-sdk";
-import {
-  createPaymasterClient,
-  createWebAuthnCredential,
-  entryPoint07Abi,
-  entryPoint07Address,
-  getUserOperationHash,
-  toWebAuthnAccount,
-} from "viem/account-abstraction";
+import { createWebAuthnCredential, entryPoint07Address, getUserOperationHash } from "viem/account-abstraction";
 import { createPimlicoClient } from "permissionless/clients/pimlico";
 import { getAccountNonce } from "permissionless/actions";
 import { sign } from "ox/WebAuthnP256";
 import { PublicKey } from "ox";
-import {
-  Address,
-  createTransport,
-  encodeFunctionData,
-  Hex,
-  http,
-  keccak256,
-  pad,
-  parseAbi,
-  parseEther,
-  slice,
-  sliceHex,
-  zeroAddress,
-} from "viem";
+import { http, parseEther } from "viem";
 import { generatePrivateKey, privateKeyToAccount } from "viem/accounts";
-import { WebAuthnSafeAccountHelper } from "./safeAccount";
+
+const API_KEY = "pim_Ws2qtNWqWEyQ7xb5FpoPAK";
 
 const pimlicoClient = createPimlicoClient({
-  transport: http(`https://api.pimlico.io/v2/${chain.id}/rpc?apikey=pim_Ws2qtNWqWEyQ7xb5FpoPAK`),
+  transport: http(`https://api.pimlico.io/v2/${chain.id}/rpc?apikey=${API_KEY}`),
   entryPoint: {
     address: entryPoint07Address,
     version: "0.7",
@@ -74,7 +46,7 @@ export default async function create7579Account() {
     authenticatorId: credential.id,
   });
 
-  const settlementAccount = await toSafeSmartAccount({
+  const individualAccount = await toSafeSmartAccount({
     client: publicClient,
     owners: [temporaryOwner],
     version: "1.4.1",
@@ -96,10 +68,10 @@ export default async function create7579Account() {
     ],
   });
 
-  const settlementAccountClient = createSmartAccountClient({
-    account: settlementAccount,
+  const individualAccountClient = createSmartAccountClient({
+    account: individualAccount,
     chain,
-    bundlerTransport: http(`https://api.pimlico.io/v2/${chain.id}/rpc?apikey=pim_Ws2qtNWqWEyQ7xb5FpoPAK`),
+    bundlerTransport: http(`https://api.pimlico.io/v2/${chain.id}/rpc?apikey=${API_KEY}`),
     paymaster: pimlicoClient,
     userOperation: {
       estimateFeesPerGas: async () => {
@@ -117,30 +89,31 @@ export default async function create7579Account() {
 
   const calls: Execution[] = [
     {
-      to: settlementAccountClient.account.address,
-      target: settlementAccountClient.account.address,
+      to: individualAccountClient.account.address,
+      target: individualAccountClient.account.address,
       value: parseEther("0"),
       data: "0x",
       callData: "0x",
     },
   ];
 
-  const nonce = await getAccountNonce(publicClient, {
-    address: settlementAccountClient.account.address,
+  // First nonce for individual account deployment
+  const individualNonce = await getAccountNonce(publicClient, {
+    address: individualAccountClient.account.address,
     entryPointAddress: entryPoint07Address,
     key: encodeValidatorNonce({
       account: getAccount({
-        address: settlementAccountClient.account.address,
+        address: individualAccountClient.account.address,
         type: "safe",
       }),
       validator: WEBAUTHN_VALIDATOR_ADDRESS,
     }),
   });
 
-  const userOperation = await settlementAccountClient.prepareUserOperation({
-    account: settlementAccountClient.account,
+  const userOperation = await individualAccountClient.prepareUserOperation({
+    account: individualAccountClient.account,
     calls,
-    nonce,
+    nonce: individualNonce,
     signature: getWebauthnValidatorMockSignature(),
   });
 
@@ -163,20 +136,21 @@ export default async function create7579Account() {
   });
   userOperation.signature = encodedSignature;
 
-  const userOpHash = await settlementAccountClient.sendUserOperation(userOperation);
-  const userOpReceipt = await settlementAccountClient.waitForUserOperationReceipt({
+  const userOpHash = await individualAccountClient.sendUserOperation(userOperation);
+  const userOpReceipt = await individualAccountClient.waitForUserOperationReceipt({
     hash: userOpHash,
   });
 
   console.log("User operation receipt:", userOpReceipt);
 
+  // Create the ownable executor module first
   const ownableModule = getOwnableExecutor({
-    owner: settlementAccountClient.account.address,
+    owner: individualAccountClient.account.address,
   });
 
-  const savingsAccount = await toSafeSmartAccount({
+  const settlementAccount = await toSafeSmartAccount({
     client: publicClient,
-    owners: [settlementAccountClient.account],
+    owners: [individualAccountClient.account],
     version: "1.4.1",
     entryPoint: {
       address: entryPoint07Address,
@@ -184,21 +158,73 @@ export default async function create7579Account() {
     },
     safe4337ModuleAddress: "0x7579EE8307284F293B1927136486880611F20002",
     erc7579LaunchpadAddress: "0x7579011aB74c46090561ea277Ba79D510c6C00ff",
-    attesters: [
-      RHINESTONE_ATTESTER_ADDRESS, // Rhinestone Attester
-    ],
+    attesters: [RHINESTONE_ATTESTER_ADDRESS],
     attestersThreshold: 1,
   });
 
-  const savingsAccountClient = createSmartAccountClient({
-    account: savingsAccount,
-    chain,
-    bundlerTransport: http(`https://api.pimlico.io/v2/${chain.id}/rpc?apikey=pim_Ws2qtNWqWEyQ7xb5FpoPAK`),
-    paymaster: pimlicoClient,
-    userOperation: {
-      estimateFeesPerGas: async () => {
-        return (await pimlicoClient.getUserOperationGasPrice()).fast;
-      },
-    },
-  }).extend(erc7579Actions());
+  // Create deployment call for Settlement Account
+  const settlementDeploymentCall: Execution = {
+    to: settlementAccount.address,
+    target: settlementAccount.address,
+    value: parseEther("0"),
+    data: "0x",
+    callData: "0x",
+  };
+
+  // Create the action to be executed through the individual account
+  const executeOnSettlementAction = getExecuteBatchOnOwnedAccountAction({
+    ownedAccount: settlementAccount.address,
+    executions: [settlementDeploymentCall],
+  });
+
+  // Second nonce for settlement account action
+  const individualNonce2 = await getAccountNonce(publicClient, {
+    address: individualAccountClient.account.address,
+    entryPointAddress: entryPoint07Address,
+    key: encodeValidatorNonce({
+      account: getAccount({
+        address: individualAccountClient.account.address,
+        type: "safe",
+      }),
+      validator: WEBAUTHN_VALIDATOR_ADDRESS,
+    }),
+  });
+
+  console.log("Individual account address:", individualAccountClient.account.address);
+  console.log("Settlement account address:", settlementAccount.address);
+  console.log("Ownable executor module address:", ownableModule.address);
+
+  const userOperation2 = await individualAccountClient.prepareUserOperation({
+    account: individualAccountClient.account,
+    calls: [executeOnSettlementAction],
+    nonce: individualNonce2,
+    signature: getWebauthnValidatorMockSignature(),
+  });
+
+  const userOpHashToSign2 = getUserOperationHash({
+    chainId: chain.id,
+    entryPointAddress: entryPoint07Address,
+    entryPointVersion: "0.7",
+    userOperation: userOperation2,
+  });
+
+  const { metadata: webauthn2, signature: signature2 } = await sign({
+    credentialId: credential.id,
+    challenge: userOpHashToSign2,
+  });
+
+  const encodedSignature2 = getWebauthnValidatorSignature({
+    webauthn: webauthn2,
+    signature: signature2,
+    usePrecompiled: true,
+  });
+
+  userOperation2.signature = encodedSignature2;
+
+  const userOpHash2 = await individualAccountClient.sendUserOperation(userOperation2);
+  const userOpReceipt2 = await individualAccountClient.waitForUserOperationReceipt({
+    hash: userOpHash2,
+  });
+
+  console.log("Settlement deployment receipt:", userOpReceipt2);
 }
