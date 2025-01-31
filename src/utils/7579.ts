@@ -150,7 +150,7 @@ export default async function create7579Account() {
 
   const settlementAccount = await toSafeSmartAccount({
     client: publicClient,
-    owners: [individualAccountClient.account],
+    owners: [temporaryOwner],
     version: "1.4.1",
     entryPoint: {
       address: entryPoint07Address,
@@ -160,6 +160,23 @@ export default async function create7579Account() {
     erc7579LaunchpadAddress: "0x7579011aB74c46090561ea277Ba79D510c6C00ff",
     attesters: [RHINESTONE_ATTESTER_ADDRESS],
     attestersThreshold: 1,
+  });
+
+  const settlementAccountClient = createSmartAccountClient({
+    account: settlementAccount,
+    chain: chain,
+    bundlerTransport: http(`https://api.pimlico.io/v2/${chain.id}/rpc?apikey=${API_KEY}`),
+    paymaster: pimlicoClient,
+    userOperation: {
+      estimateFeesPerGas: async () => {
+        return (await pimlicoClient.getUserOperationGasPrice()).fast;
+      },
+    },
+  }).extend(erc7579Actions());
+
+  const opHash1 = await settlementAccountClient.installModule(ownableModule);
+  await pimlicoClient.waitForUserOperationReceipt({
+    hash: opHash1,
   });
 
   // Create deployment call for Settlement Account
