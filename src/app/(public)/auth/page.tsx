@@ -47,15 +47,18 @@ export default function AuthPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [isDisabled, setIsDisabled] = useState(false);
   const [notification, setNotification] = useState<string | null>(null);
-
-  const router = useRouter();
+  const [hasPasskey, setHasPasskey] = useState(false);
 
   useEffect(() => {
     const safeUser = LocalStorage.getSafeUser();
+    const hasExistingPasskey = LocalStorage.hasExistingPasskey();
 
-    if (safeUser && safeUser.isLogin) {
-      setIsDisabled(safeUser.isLogin);
+    if (safeUser?.isLogin) {
+      setIsDisabled(true);
+      window.location.href = "/";
     }
+
+    setHasPasskey(hasExistingPasskey);
   }, []);
 
   const handlePasskeyAuth = async (isLogin: boolean) => {
@@ -74,8 +77,13 @@ export default function AuthPage() {
 
         // TODO: pass in passkeyId from pylon
         LocalStorage.setSafeUser(webauthnPublicKey, walletAddress, settlementAddress, "", true);
-        router.push("/");
+        window.location.href = "/";
       } else {
+        if (hasPasskey) {
+          setNotification("You already have a passkey. Please use it to sign in.");
+          return;
+        }
+
         // Create new passkey
         const webauthnHelper = new WebAuthnHelper(window.location.hostname);
 
@@ -86,68 +94,8 @@ export default function AuthPage() {
         const safeSettlement = new PublicKeySafeAccountHelper(walletAddress);
         const settlementAddress = safeSettlement.getAddress();
 
-        // const USDC_ADDRESS = "0xFaEc9cDC3Ef75713b48f46057B98BA04885e3391";
-
-        // // Create a deployment transaction for the passkey account
-        // const ownerDeploymentTx: MetaTransaction = {
-        //   to: walletAddress,
-        //   value: BigInt(0),
-        //   data: "0x",
-        // };
-
-        // // Create a deployment transaction for the safe settlement account
-        // const settlementDeploymentTx: MetaTransaction = {
-        //   to: settlementAddress,
-        //   value: BigInt(0),
-        //   data: "0x",
-        // };
-
-        // const callDataToSettlement = encodeFunctionData({
-        //   abi: erc20Abi,
-        //   functionName: "transfer",
-        //   args: [settlementAddress, parseUnits("0.01", 6)],
-        // });
-
-        // // Send USDC from the passkey account to the settlement account
-        // const sendUsdcTx: MetaTransaction = {
-        //   to: USDC_ADDRESS,
-        //   value: BigInt(0),
-        //   data: callDataToSettlement,
-        // };
-
-        // const callDataToPasskey = encodeFunctionData({
-        //   abi: erc20Abi,
-        //   functionName: "transfer",
-        //   args: [walletAddress, parseUnits("0.01", 6)],
-        // });
-
-        // // Send back the USDC from the settlement account to the passkey account
-        // const sendUsdcToPasskeyTx: MetaTransaction = {
-        //   to: USDC_ADDRESS,
-        //   value: BigInt(0),
-        //   data: callDataToPasskey,
-        // };
-
-        // // Create a sponsored user operation
-        // const userOperation = await safeOwner.createSponsoredUserOp([
-        //   ownerDeploymentTx,
-        //   settlementDeploymentTx,
-        //   sendUsdcTx,
-        //   sendUsdcToPasskeyTx,
-        // ]);
-
-        // // Sign and send the user operation
-        // const userOpHash = safeOwner.getUserOpHash(userOperation);
-        // const signature = await webauthnHelper.signMessage(userOpHash);
-        // const receipt = await safeOwner.signAndSendUserOp(userOperation, signature);
-
-        // console.log("Account created successfully:", {
-        //   address: walletAddress,
-        //   receipt,
-        // });
-
         LocalStorage.setSafeUser(publicKeyCoordinates, walletAddress, settlementAddress, passkeyId, false);
-        router.push("/onboard");
+        window.location.href = "/onboard";
       }
     } catch (error) {
       console.error("Passkey error:", error);
@@ -201,13 +149,13 @@ export default function AuthPage() {
             </div>
             <Button
               className="w-full bg-white/10 hover:bg-white/20 text-white h-14"
-              isDisabled={isDisabled}
+              isDisabled={isDisabled || hasPasskey}
               isLoading={isLoading}
               radius="lg"
               startContent={!isLoading && <KeyRound className="w-5 h-5" />}
               onClick={() => handlePasskeyAuth(false)}
             >
-              Create Passkey
+              {hasPasskey ? "Passkey Already Exists" : "Create Passkey"}
             </Button>
             {notification ? <div className="text-red-200 text-center"> {notification} </div> : undefined}
           </div>

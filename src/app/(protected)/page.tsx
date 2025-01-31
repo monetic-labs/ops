@@ -1,6 +1,7 @@
 // Note: This can't be a client component
 import { cookies } from "next/headers";
 import { jwtDecode } from "jwt-decode";
+import { redirect } from "next/navigation";
 
 import { MERCHANT_COOKIE_NAME } from "@/utils/constants";
 import MerchantServicesTabs from "@/app/(protected)/tabs";
@@ -16,19 +17,25 @@ type JwtPayload = {
 
 export default function Home() {
   const authToken = cookies().get(MERCHANT_COOKIE_NAME);
-  const token = authToken?.value;
 
-  if (!token) {
-    throw new Error("No token found");
+  // If no token, redirect to auth
+  if (!authToken?.value) {
+    redirect("/auth");
   }
-  const userId = jwtDecode<JwtPayload>(token).userId;
 
-  return (
-    <section className="flex flex-col items-center justify-center">
-      <div className="flex flex-col sm:flex-row gap-4 w-full max-w-7xl justify-between mb-8">
-        <AccountMeta />
-      </div>
-      <MerchantServicesTabs userId={userId} />
-    </section>
-  );
+  try {
+    const { userId } = jwtDecode<JwtPayload>(authToken.value);
+
+    return (
+      <section className="flex flex-col items-center justify-center">
+        <div className="flex flex-col sm:flex-row gap-4 w-full max-w-7xl justify-between mb-8">
+          <AccountMeta />
+        </div>
+        <MerchantServicesTabs userId={userId} />
+      </section>
+    );
+  } catch (error) {
+    console.error("Error decoding token:", error);
+    redirect("/auth");
+  }
 }

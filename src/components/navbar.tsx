@@ -9,11 +9,11 @@ import { LogOut, User, Backpack, Shield } from "lucide-react";
 
 import pylon from "@/libs/pylon-sdk";
 import { ExtendedMerchantUser, useAccounts } from "@/contexts/AccountContext";
-import { useAuth } from "@/contexts/AuthContext";
+import { LocalStorage } from "@/utils/localstorage";
+import { getDisplayName } from "@/utils/helpers";
 
 import { ProfileSettingsModal } from "./account-settings/profile-modal";
 import { SecuritySettingsModal } from "./account-settings/security-modal";
-import { getDisplayName, getFullName } from "@/utils/helpers";
 
 interface UserInfoProps {
   userName?: string;
@@ -39,21 +39,10 @@ const AuthenticatedNav = ({
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isSecurityOpen, setIsSecurityOpen] = useState(false);
   const [dropdownKey, setDropdownKey] = useState(0);
-  const [profileImage, setProfileImage] = useState<string | null>(null);
-
-  useEffect(() => {
-    // Load profile image from localStorage
-    const storedImage = localStorage.getItem("@backpack/profile-image");
-    if (storedImage) {
-      setProfileImage(storedImage);
-    }
-  }, []);
 
   const displayName = user.username || getDisplayName(user.firstName, user.lastName);
   const initials =
-    !profileImage && user.firstName && user.lastName
-      ? `${user.firstName[0]}${user.lastName[0]}`.toUpperCase()
-      : undefined;
+    user.firstName && user.lastName ? `${user.firstName[0]}${user.lastName[0]}`.toUpperCase() : undefined;
 
   const dropdownItems = (
     <>
@@ -89,10 +78,10 @@ const AuthenticatedNav = ({
               <button className="flex items-center gap-2 hover:opacity-80 transition-opacity">
                 <Avatar
                   className="bg-notpurple-500/20"
-                  src={profileImage || undefined}
+                  src={user.profileImage || undefined}
                   name={initials}
                   size="sm"
-                  showFallback={!profileImage}
+                  showFallback={!user.profileImage}
                 />
                 <UserInfo orgName={merchant?.name} userName={displayName} />
               </button>
@@ -110,10 +99,10 @@ const AuthenticatedNav = ({
           <DropdownTrigger>
             <Avatar
               className="bg-notpurple-500/20 cursor-pointer"
-              src={profileImage || undefined}
+              src={user.profileImage || undefined}
               name={initials}
               size="sm"
-              showFallback={!profileImage}
+              showFallback={!user.profileImage}
             />
           </DropdownTrigger>
           <DropdownMenu aria-label="Mobile user menu" className="w-[280px]" variant="flat">
@@ -147,17 +136,26 @@ const AuthenticatedNav = ({
 
 const UnauthenticatedNav = () => (
   <NavbarContent justify="end">
-    <NavbarItem>{/* <ThemeSwitch /> */}</NavbarItem>
+    <NavbarItem>
+      <NextLink className="text-white/60 hover:text-white transition-colors" href="/auth">
+        Sign In
+      </NextLink>
+    </NavbarItem>
   </NavbarContent>
 );
 
 export const Navbar = () => {
   const router = useRouter();
-  const { merchant, user, isAuthenticated } = useAccounts();
+  const { merchant, user, isAuthenticated, isLoading } = useAccounts();
 
   const handleSignOut = async () => {
-    await pylon.logout();
-    router.refresh();
+    try {
+      await pylon.logout();
+      LocalStorage.clearAuthState();
+      window.location.href = "/auth";
+    } catch (error) {
+      console.error("Error signing out:", error);
+    }
   };
 
   return (
@@ -172,14 +170,14 @@ export const Navbar = () => {
       {/* Logo */}
       <NavbarContent className="basis-1/5 sm:basis-full" justify="start">
         <NavbarBrand as="li" className="gap-3 max-w-fit">
-          <NextLink className="flex justify-start items-center gap-1" href="/">
+          <NextLink className="flex justify-start items-center gap-1" href={isAuthenticated ? "/" : "/auth"}>
             <Backpack className="text-notpurple-500" size={24} strokeWidth={1.5} />
             <p className="font-bold text-inherit">Backpack Services</p>
           </NextLink>
         </NavbarBrand>
       </NavbarContent>
 
-      {isAuthenticated && user && merchant ? (
+      {isLoading ? null : isAuthenticated && user && merchant ? (
         <AuthenticatedNav handleSignOut={handleSignOut} merchant={merchant} user={user} />
       ) : (
         <UnauthenticatedNav />

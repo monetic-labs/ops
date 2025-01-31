@@ -184,7 +184,7 @@ export function AccountCard(props: CardProps) {
       aria-label={`${props.isCreateAccount ? "Create new account" : `${props.name} account`}`}
       className={`w-full text-left p-3 rounded-lg transition-all ${
         props.isCreateAccount
-          ? "border border-dashed border-default-300 hover:border-primary/50"
+          ? "border border-dashed border-default-200"
           : "border border-default-200 bg-white/5 backdrop-blur-sm"
       } ${
         !props.disabled && !props.isCreateAccount
@@ -218,7 +218,7 @@ export function AccountCard(props: CardProps) {
         <div className="mt-1">
           {props.isCreateAccount ? (
             <div className="flex flex-col items-center justify-center">
-              <Icon className="w-6 h-6 text-default-400 hover:text-primary transition-colors" />
+              <Icon className="w-6 h-6 text-default-400 transition-colors" />
               <span className="text-xs text-default-500 mt-1">Create account</span>
             </div>
           ) : (

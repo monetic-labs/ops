@@ -30,7 +30,6 @@ export class WebAuthnHelper {
    */
   async requestChallenge(): Promise<string> {
     const response = await pylon.generatePasskeyChallenge();
-
     return response.challenge;
   }
 
@@ -51,12 +50,16 @@ export class WebAuthnHelper {
     const challenge = Bytes.fromString(challengeStr);
 
     this.credential = await createCredential({
-      name: WebAuthnHelper.appName,
       challenge,
       authenticatorSelection: {
         authenticatorAttachment: "platform",
         residentKey: "preferred",
         userVerification: "required",
+      },
+      user: {
+        id: Bytes.fromString(crypto.randomUUID()),
+        name: `${WebAuthnHelper.appName} Key`,
+        displayName: `${WebAuthnHelper.appName} Key (${new Date().toLocaleDateString()})`,
       },
       rp: {
         id: this.hostName,

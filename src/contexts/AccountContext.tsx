@@ -29,6 +29,7 @@ interface AccountContextType {
   user: ExtendedMerchantUser | undefined;
   merchant: { name: string } | undefined;
   isAuthenticated: boolean;
+  isLoading: boolean;
 }
 
 const AccountContext = createContext<AccountContextType>({
@@ -38,29 +39,51 @@ const AccountContext = createContext<AccountContextType>({
   user: undefined,
   merchant: undefined,
   isAuthenticated: false,
+  isLoading: true,
 });
 
 export function AccountProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<ExtendedMerchantUser | undefined>(undefined);
   const [merchant, setMerchant] = useState<{ name: string } | undefined>(undefined);
+  const [isLoading, setIsLoading] = useState(true);
+  const safeUser = LocalStorage.getSafeUser();
+
+  // Determine authentication state
+  const isAuthenticated = Boolean(safeUser?.isLogin && user && merchant);
 
   useEffect(() => {
     const fetchUser = async () => {
-      const result = await pylon.getUserById();
-      const safeUser = LocalStorage.getSafeUser();
+      if (!safeUser?.isLogin) {
+        setIsLoading(false);
+        return;
+      }
 
-      // Create extended user object with profile image
-      const extendedUser: ExtendedMerchantUser = {
-        ...result,
-        profileImage: safeUser?.profileImage || null,
-      };
+      try {
+        const result = await pylon.getUserById();
 
-      setUser(extendedUser);
-      setMerchant({ name: result.merchant.company.name });
+        // Create extended user object with profile image
+        const extendedUser: ExtendedMerchantUser = {
+          ...result,
+          profileImage: safeUser?.profileImage || null,
+        };
+
+        setUser(extendedUser);
+        setMerchant({ name: result.merchant.company.name });
+      } catch (error) {
+        console.error("Error fetching user data:", error);
+        // If unauthorized, clear the safe user
+        if ((error as any)?.response?.status === 401) {
+          LocalStorage.clearAuthState();
+          setUser(undefined);
+          setMerchant(undefined);
+        }
+      } finally {
+        setIsLoading(false);
+      }
     };
 
     fetchUser();
-  }, []);
+  }, [safeUser?.isLogin]);
 
   const accounts: Account[] = [
     {
@@ -100,9 +123,6 @@ export function AccountProvider({ children }: { children: ReactNode }) {
   const getEnabledAccounts = () => accounts.filter((acc) => !acc.disabled);
   const getAccountById = (id: string) => accounts.find((acc) => acc.id === id);
 
-  // For now, we'll consider the user authenticated if we have both user and merchant data
-  const isAuthenticated = Boolean(user && merchant);
-
   return (
     <AccountContext.Provider
       value={{
@@ -112,6 +132,7 @@ export function AccountProvider({ children }: { children: ReactNode }) {
         user,
         merchant,
         isAuthenticated,
+        isLoading,
       }}
     >
       {children}

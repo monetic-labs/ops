@@ -12,31 +12,50 @@ export class LocalStorage {
     }
   }
 
+  private static SAFE_USER_KEY = "@backpack/services";
+
+  // Custom replacer for JSON.stringify to handle BigInt
+  private static replacer(key: string, value: any) {
+    if (typeof value === "bigint") {
+      return value.toString();
+    }
+    return value;
+  }
+
+  // Custom reviver for JSON.parse to handle BigInt strings
+  private static reviver(key: string, value: any) {
+    // Check if the value matches a BigInt string pattern
+    if (typeof value === "string" && /^-?\d+n?$/.test(value)) {
+      return BigInt(value.replace("n", ""));
+    }
+    return value;
+  }
+
   // Profile image methods
   static setProfileImage(base64Image: string) {
-    const services = this.getItem("@backpack/services");
+    const services = this.getItem(this.SAFE_USER_KEY);
     if (services) {
-      const servicesObj = JSON.parse(services);
+      const servicesObj = JSON.parse(services, this.reviver);
       servicesObj.profileImage = base64Image;
-      this.setItem("@backpack/services", JSON.stringify(servicesObj));
+      this.setItem(this.SAFE_USER_KEY, JSON.stringify(servicesObj, this.replacer));
     }
   }
 
   static getProfileImage(): string | null {
-    const services = this.getItem("@backpack/services");
+    const services = this.getItem(this.SAFE_USER_KEY);
     if (services) {
-      const servicesObj = JSON.parse(services);
+      const servicesObj = JSON.parse(services, this.reviver);
       return servicesObj.profileImage || null;
     }
     return null;
   }
 
   static removeProfileImage() {
-    const services = this.getItem("@backpack/services");
+    const services = this.getItem(this.SAFE_USER_KEY);
     if (services) {
-      const servicesObj = JSON.parse(services);
+      const servicesObj = JSON.parse(services, this.reviver);
       delete servicesObj.profileImage;
-      this.setItem("@backpack/services", JSON.stringify(servicesObj));
+      this.setItem(this.SAFE_USER_KEY, JSON.stringify(servicesObj, this.replacer));
     }
   }
 
@@ -48,67 +67,38 @@ export class LocalStorage {
     isLogin: boolean
   ) {
     // Get existing data to preserve profile image if it exists
-    const existingData = this.getItem("@backpack/services");
-    const existingProfileImage = existingData ? JSON.parse(existingData).profileImage : null;
+    const existingData = this.getItem(this.SAFE_USER_KEY);
+    const existingProfileImage = existingData ? JSON.parse(existingData, this.reviver).profileImage : null;
 
-    // Custom replacer function to handle BigInt serialization
-    const bigIntReplacer = (key: string, value: any) => {
-      if (typeof value === "bigint") {
-        return value.toString(); // Convert BigInt to string
-      }
-      return value;
+    const data = {
+      publicKeyCoordinates,
+      walletAddress,
+      settlementAddress,
+      passkeyId,
+      isLogin,
+      profileImage: existingProfileImage, // Preserve profile image
     };
 
-    this.setItem(
-      "@backpack/services",
-      JSON.stringify(
-        {
-          publicKeyCoordinates,
-          walletAddress,
-          settlementAddress,
-          passkeyId,
-          isLogin,
-          profileImage: existingProfileImage, // Preserve profile image
-        },
-        bigIntReplacer
-      )
-    );
+    this.setItem(this.SAFE_USER_KEY, JSON.stringify(data, this.replacer));
   }
 
-  static getSafeUser(): {
-    publicKeyCoordinates: WebauthnPublicKey | null;
-    walletAddress: Address | null;
-    settlementAddress: Address | null;
-    passkeyId: string | null;
-    isLogin: boolean;
-    profileImage?: string | null;
-  } | null {
-    const servicesStr = this.getItem("@backpack/services");
+  static getSafeUser() {
+    const data = this.getItem(this.SAFE_USER_KEY);
+    if (!data) return null;
 
-    if (!servicesStr)
-      return {
-        publicKeyCoordinates: null,
-        walletAddress: null,
-        settlementAddress: null,
-        passkeyId: null,
-        isLogin: false,
-        profileImage: null,
-      };
+    return JSON.parse(data, this.reviver);
+  }
 
-    // Custom reviver to convert string back to BigInt
-    const bigIntReviver = (key: string, value: any) => {
-      // Check if the value looks like a BigInt string
-      if (typeof value === "string" && /^-?\d+n?$/.test(value)) {
-        return BigInt(value);
-      }
-      return value;
-    };
+  static clearAuthState() {
+    const data = this.getSafeUser();
+    if (data) {
+      // Preserve passkey data but clear login state
+      this.setSafeUser(data.publicKeyCoordinates, data.walletAddress, data.settlementAddress, data.passkeyId, false);
+    }
+  }
 
-    const { publicKeyCoordinates, walletAddress, settlementAddress, passkeyId, isLogin, profileImage } = JSON.parse(
-      servicesStr,
-      bigIntReviver
-    );
-
-    return { publicKeyCoordinates, walletAddress, settlementAddress, passkeyId, isLogin, profileImage };
+  static hasExistingPasskey() {
+    const data = this.getSafeUser();
+    return Boolean(data?.publicKeyCoordinates && data?.walletAddress);
   }
 }
