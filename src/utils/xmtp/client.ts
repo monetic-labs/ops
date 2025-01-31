@@ -1,7 +1,8 @@
 import { Client, DecodedMessage, Signer } from "@xmtp/xmtp-js";
-import { WebAuthnHelper } from "@/utils/webauthn";
 import { Hex } from "viem";
 import { Signature } from "ox";
+
+import { WebAuthnHelper } from "@/utils/webauthn";
 import { WebAuthnSafeAccountHelper } from "@/utils/safeAccount";
 
 export interface GroupMessage {
@@ -28,6 +29,7 @@ export class XMTPService {
     this.XMTP_ENV = process.env.NEXT_PUBLIC_XMTP_ENV === "production" ? "production" : "dev";
 
     const supportAddress = process.env.NEXT_PUBLIC_BACKPACK_SUPPORT_ADDRESS;
+
     if (!supportAddress) {
       throw new Error("NEXT_PUBLIC_BACKPACK_SUPPORT_ADDRESS is not set");
     }
@@ -49,6 +51,7 @@ export class XMTPService {
         const webAuthn = new WebAuthnHelper(window.location.hostname);
         const { rawSignature } = await webAuthn.signMessage(message as Hex);
         const signature = Signature.toHex(rawSignature);
+
         return signature as string;
       },
     };
@@ -64,6 +67,7 @@ export class XMTPService {
     // Return existing client if available
     if (XMTPService.clients.has(address)) {
       this.client = XMTPService.clients.get(address)!;
+
       return;
     }
 
@@ -82,6 +86,7 @@ export class XMTPService {
       return await Client.canMessage(address, { env: this.XMTP_ENV });
     } catch (error) {
       console.error("Error checking XMTP identity:", error);
+
       return false;
     }
   }
@@ -116,6 +121,7 @@ export class XMTPService {
   async sendGroupMessage(merchantId: string, content: string): Promise<void> {
     await this.conversation;
     const conversation = await this.initMerchantGroup(merchantId);
+
     await conversation.send(content);
   }
 
@@ -137,6 +143,7 @@ export class XMTPService {
   disconnect() {
     if (this.client) {
       const address = this.account.getAddress();
+
       XMTPService.clients.delete(address);
       this.client = null;
     }

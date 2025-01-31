@@ -3,9 +3,11 @@ import {
   type MetaTransaction,
   SafeAccountV0_3_0 as SafeAccount,
   DEFAULT_SECP256R1_PRECOMPILE_ADDRESS,
+  GasOption,
 } from "abstractionkit";
 
 import { BUNDLER_URL, chain, SPONSORSHIP_POLICY_ID } from "@/config/web3";
+
 import { BaseSafeAccountHelper } from "./base";
 
 /**
@@ -30,6 +32,7 @@ export class WebAuthnSafeAccountHelper extends BaseSafeAccountHelper {
       {
         expectedSigners: [this.signer],
         eip7212WebAuthnPrecompileVerifier: DEFAULT_SECP256R1_PRECOMPILE_ADDRESS,
+        gasLevel: GasOption.Fast,
       }
     );
 

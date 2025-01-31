@@ -45,6 +45,7 @@ export default function InvitePage() {
       try {
         // @ts-ignore - Method will be added to SDK
         const response = await pylon.verifyInvite(token);
+
         setUserDetails({
           company: response.company,
           firstName: response.firstName,
@@ -104,6 +105,7 @@ export default function InvitePage() {
     e.preventDefault();
     if (!userDetails.phoneNumber) {
       setError("Please enter your phone number");
+
       return;
     }
     handlePasskeyRegistration();
@@ -112,7 +114,7 @@ export default function InvitePage() {
   if (isVerifying) {
     return (
       <div className="w-full h-[50vh] flex items-center justify-center">
-        <Spinner size="lg" color="white" />
+        <Spinner color="white" size="lg" />
       </div>
     );
   }
@@ -130,52 +132,52 @@ export default function InvitePage() {
           <p className="text-white/60 text-sm sm:text-base">Set up your account with a passkey</p>
         </CardHeader>
         <CardBody className="px-6 pb-6 sm:px-8 flex flex-col gap-6">
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form className="space-y-4" onSubmit={handleSubmit}>
             <Input
+              isDisabled
+              classNames={{
+                input: "text-white/60",
+              }}
               label="Company"
               value={userDetails.company}
+            />
+            <Input
               isDisabled
               classNames={{
                 input: "text-white/60",
               }}
-            />
-            <Input
               label="First Name"
               value={userDetails.firstName}
+            />
+            <Input
               isDisabled
               classNames={{
                 input: "text-white/60",
               }}
-            />
-            <Input
               label="Last Name"
               value={userDetails.lastName}
+            />
+            <Input
               isDisabled
               classNames={{
                 input: "text-white/60",
               }}
-            />
-            <Input
               label="Email"
               value={userDetails.email}
-              isDisabled
-              classNames={{
-                input: "text-white/60",
-              }}
             />
             <Input
+              required
               label="Phone Number"
               placeholder="Enter your phone number"
               value={userDetails.phoneNumber}
               onChange={(e) => setUserDetails({ ...userDetails, phoneNumber: e.target.value })}
-              required
             />
             <Button
               className="w-full bg-white/10 hover:bg-white/20 text-white h-14"
               isLoading={isLoading}
               radius="lg"
-              type="submit"
               startContent={!isLoading && <Fingerprint className="w-5 h-5" />}
+              type="submit"
             >
               Register with Passkey
             </Button>

@@ -239,7 +239,7 @@ export default function OnboardPage() {
           true
         );
       }
-      router.push("/");
+      router.refresh();
     } catch (error: any) {
       console.error("error: ", error);
       if (error.response?.data?.errors) {

@@ -1,6 +1,11 @@
 "use client";
-import { createContext, useContext, ReactNode } from "react";
+
+import { createContext, useContext, ReactNode, useState, useEffect } from "react";
 import { Building2, CreditCard, PiggyBank, PlusCircle } from "lucide-react";
+
+import pylon from "@/libs/pylon-sdk";
+import { MerchantUserGetByIdOutput as MerchantUser } from "@backpack-fux/pylon-sdk";
+import { LocalStorage } from "@/utils/localstorage";
 
 export interface Account {
   id: string;
@@ -13,26 +18,50 @@ export interface Account {
   isCreateAccount?: boolean;
 }
 
-interface User {
-  name: string;
-}
-
-interface Merchant {
-  name: string;
+export interface ExtendedMerchantUser extends MerchantUser {
+  profileImage?: string | null;
 }
 
 interface AccountContextType {
   accounts: Account[];
   getEnabledAccounts: () => Account[];
   getAccountById: (id: string) => Account | undefined;
-  user?: User;
-  merchant?: Merchant;
+  user: ExtendedMerchantUser | undefined;
+  merchant: { name: string } | undefined;
   isAuthenticated: boolean;
 }
 
-const AccountContext = createContext<AccountContextType | undefined>(undefined);
+const AccountContext = createContext<AccountContextType>({
+  accounts: [],
+  getEnabledAccounts: () => [],
+  getAccountById: () => undefined,
+  user: undefined,
+  merchant: undefined,
+  isAuthenticated: false,
+});
 
 export function AccountProvider({ children }: { children: ReactNode }) {
+  const [user, setUser] = useState<ExtendedMerchantUser | undefined>(undefined);
+  const [merchant, setMerchant] = useState<{ name: string } | undefined>(undefined);
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      const result = await pylon.getUserById();
+      const safeUser = LocalStorage.getSafeUser();
+
+      // Create extended user object with profile image
+      const extendedUser: ExtendedMerchantUser = {
+        ...result,
+        profileImage: safeUser?.profileImage || null,
+      };
+
+      setUser(extendedUser);
+      setMerchant({ name: result.merchant.company.name });
+    };
+
+    fetchUser();
+  }, []);
+
   const accounts: Account[] = [
     {
       id: "settlement",
@@ -70,10 +99,6 @@ export function AccountProvider({ children }: { children: ReactNode }) {
 
   const getEnabledAccounts = () => accounts.filter((acc) => !acc.disabled);
   const getAccountById = (id: string) => accounts.find((acc) => acc.id === id);
-
-  // Mock data for now - replace with real data later
-  const user = { name: "John Doe" };
-  const merchant = { name: "Acme Corp" };
 
   // For now, we'll consider the user authenticated if we have both user and merchant data
   const isAuthenticated = Boolean(user && merchant);

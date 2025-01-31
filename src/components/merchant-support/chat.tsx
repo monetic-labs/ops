@@ -1,4 +1,5 @@
 import { useEffect, useState, useRef } from "react";
+
 import { WebAuthnSafeAccountHelper } from "@/utils/safeAccount";
 import { XMTPService, type GroupMessage } from "@/utils/xmtp/client";
 
@@ -35,6 +36,7 @@ export function MerchantSupportChat({ account, merchantId }: ChatProps) {
     const loadMessages = async () => {
       try {
         const history = await xmtpService.current.listGroupMessages(merchantId);
+
         setMessages(history);
         setIsLoading(false);
         scrollToBottom();
@@ -98,16 +100,16 @@ export function MerchantSupportChat({ account, merchantId }: ChatProps) {
       <div className="border-t p-4">
         <div className="flex gap-2">
           <input
+            className="flex-1 p-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            placeholder="Type your message..."
             type="text"
             value={newMessage}
             onChange={(e) => setNewMessage(e.target.value)}
             onKeyPress={(e) => e.key === "Enter" && handleSend()}
-            placeholder="Type your message..."
-            className="flex-1 p-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
           <button
-            onClick={handleSend}
             className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
+            onClick={handleSend}
           >
             Send
           </button>

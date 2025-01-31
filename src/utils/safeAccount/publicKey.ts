@@ -1,7 +1,8 @@
-import { type MetaTransaction, SafeAccountV0_3_0 as SafeAccount } from "abstractionkit";
+import { GasOption, type MetaTransaction, SafeAccountV0_3_0 as SafeAccount } from "abstractionkit";
 import { Address } from "viem";
 
 import { BUNDLER_URL, chain, SPONSORSHIP_POLICY_ID } from "@/config/web3";
+
 import { BaseSafeAccountHelper } from "./base";
 
 /**
@@ -23,6 +24,7 @@ export class PublicKeySafeAccountHelper extends BaseSafeAccountHelper {
       BUNDLER_URL,
       {
         expectedSigners: [this.signer],
+        gasLevel: GasOption.Fast,
       }
     );
 

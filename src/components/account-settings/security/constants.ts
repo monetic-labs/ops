@@ -1,0 +1,53 @@
+import { Mail, Phone, Key, Backpack } from "lucide-react";
+
+export const GRACE_PERIOD_OPTIONS = [
+  { label: "3 Days", value: "3", description: "Shortest timelock, suitable for frequent users" },
+  {
+    label: "7 Days (Recommended)",
+    value: "7",
+    description: "Balanced timelock, recommended for most users",
+    isRecommended: true,
+  },
+  { label: "14 Days", value: "14", description: "Maximum security, best for long-term holdings" },
+];
+
+export const DEAD_SWITCH_OPTIONS = [
+  { label: "6 Months", value: "6", description: "Shortest inactivity period before transfer" },
+  { label: "1 Year", value: "12", description: "Standard inactivity period" },
+  { label: "2 Years", value: "24", description: "Extended inactivity period" },
+];
+
+export const RECOVERY_OPTIONS = [
+  {
+    id: "email",
+    title: "Email Recovery",
+    description: "Verify an email to use it as a recovery option",
+    icon: Mail,
+    isConfigured: false,
+    isComingSoon: false,
+  },
+  {
+    id: "phone",
+    title: "Phone Recovery",
+    description: "Use your phone number for secure recovery",
+    icon: Phone,
+    isConfigured: false,
+    isComingSoon: false,
+  },
+  {
+    id: "backpack",
+    title: "Backpack Recovery",
+    description: "Allow Backpack to help recover your account",
+    icon: Backpack,
+    isConfigured: false,
+    isComingSoon: false,
+  },
+  {
+    id: "wallet",
+    title: "Hardware Wallet",
+    description: "Use a hardware security key as backup",
+    icon: Key,
+    isConfigured: false,
+    isComingSoon: true,
+  },
+];

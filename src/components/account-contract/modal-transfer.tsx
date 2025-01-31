@@ -81,7 +81,7 @@ export default function TransferModal({ isOpen, onClose }: TransferModalProps) {
         hideCloseButton
         classNames={{
           base: "bg-[#0A0A0A]",
-          wrapper: "bg-black/80",
+          backdrop: "bg-black/80",
           body: "p-0",
         }}
         isOpen={isOpen}

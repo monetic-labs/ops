@@ -150,3 +150,25 @@ export const formatPersonRole = (value: string) => {
     .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
     .join(" ");
 };
+
+export const capitalizeFirstChar = (value: string) => {
+  if (!value) return "";
+  if (value.length === 1) return value.toUpperCase();
+  return value.charAt(0).toUpperCase() + value.slice(1).toLowerCase();
+};
+
+export const getDisplayName = (firstName: string, lastName: string) => {
+  // Full name
+  const fullName = `${capitalizeFirstChar(firstName)} ${capitalizeFirstChar(lastName)}`;
+  if (fullName.length <= 10) return fullName;
+
+  // First initial + last name
+  const initialLastName = `${capitalizeFirstChar(firstName[0])}. ${capitalizeFirstChar(lastName)}`;
+  if (initialLastName.length <= 10) return initialLastName;
+
+  // First name only
+  if (firstName.length <= 10) return capitalizeFirstChar(firstName);
+
+  // If all else fails, return first initial + last name
+  return initialLastName;
+};
