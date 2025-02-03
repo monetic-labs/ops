@@ -13,6 +13,13 @@ export type ConfiguredPhone = {
   isVerified: boolean;
 };
 
+export type OrgMember = {
+  id: string;
+  displayName: string;
+  email: string;
+  role: "OWNER" | "ADMIN" | "MEMBER";
+};
+
 export type EmailVerificationProps = {
   configuredEmails: ConfiguredEmail[];
   currentEmail: string;
@@ -37,4 +44,10 @@ export type PhoneVerificationProps = {
   onRemovePhone: () => void;
   onPhoneChange: (phone: string) => void;
   onPhoneOtpChange: (otp: string) => void;
+};
+
+export type TeamRecoveryProps = {
+  configuredTeamMember: OrgMember | null;
+  onSelectTeamMember: (memberId: string) => void;
+  onRemoveTeamMember: () => void;
 };

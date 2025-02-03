@@ -5,7 +5,7 @@ import { Input } from "@nextui-org/input";
 import { InputOtp } from "@nextui-org/input-otp";
 import { Chip } from "@nextui-org/chip";
 import { Mail, XIcon } from "lucide-react";
-import { EmailVerificationProps } from "../types";
+import { EmailVerificationProps } from "../../types";
 
 export const EmailVerification = ({
   configuredEmails,

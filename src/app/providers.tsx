@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { ThemeProvider as NextThemesProvider } from "next-themes";
 import { ThemeProviderProps } from "next-themes/dist/types";
 import { NextUIProvider } from "@nextui-org/system";
+import { PrivyProvider } from "@privy-io/react-auth";
 // import { PylonProvider } from "@backpack-fux/pylon-sdk";
 
 import { MessagingProvider } from "@/components/messaging/messaging-provider";
@@ -31,7 +32,19 @@ export function Providers({ children, themeProps, userId }: ProvidersProps) {
     <NextUIProvider navigate={router.push}>
       <NextThemesProvider {...themeProps}>
         <MessagingProvider userId={userId || "default-user"}>
-          <ShortcutsProvider initialValue={shortcutsInitialValue}>{children}</ShortcutsProvider>
+          <ShortcutsProvider initialValue={shortcutsInitialValue}>
+            <PrivyProvider
+              appId="cm6kflcul00yk102qos0gjism"
+              config={{
+                loginMethods: ["email", "sms"],
+                embeddedWallets: {
+                  createOnLogin: "users-without-wallets",
+                },
+              }}
+            >
+              {children}
+            </PrivyProvider>
+          </ShortcutsProvider>
         </MessagingProvider>
       </NextThemesProvider>
     </NextUIProvider>

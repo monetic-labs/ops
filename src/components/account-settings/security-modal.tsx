@@ -3,10 +3,19 @@
 import { useState } from "react";
 import { Modal, ModalContent, ModalBody } from "@nextui-org/modal";
 import { Button } from "@nextui-org/button";
+import { Accordion, AccordionItem } from "@nextui-org/accordion";
+import { Chip } from "@nextui-org/chip";
 import { XIcon } from "lucide-react";
-import { RECOVERY_OPTIONS } from "./security/constants";
+import { RECOVERY_OPTIONS, MOCK_ORG_MEMBERS, OrgMember } from "./security/constants";
 import { SecuritySettingsModalProps, ConfiguredEmail, ConfiguredPhone } from "./security/types";
-import { RecoveryWarning, RecoveryOptions, GracePeriod, DeadSwitch } from "./security/components";
+import { DeadSwitch } from "./security/components/dead-switch";
+import { EmailVerification } from "./security/components/recovery-options/email-verification";
+import { PhoneVerification } from "./security/components/recovery-options/phone-verification";
+import { TeamRecovery } from "./security/components/recovery-options/team-recovery";
+import { BackpackRecovery } from "./security/components/recovery-options/backpack-recovery";
+import { GracePeriod } from "./security/components/grace-period";
+import { RecoveryWarning } from "./security/components/recovery-warning";
+import { RecoveryHeader } from "./security/components/recovery-header";
 
 export const SecuritySettingsModal = ({ isOpen, onClose }: SecuritySettingsModalProps) => {
   const [selectedGracePeriod, setSelectedGracePeriod] = useState<string>("7");
@@ -23,12 +32,17 @@ export const SecuritySettingsModal = ({ isOpen, onClose }: SecuritySettingsModal
   const [verifyingPhone, setVerifyingPhone] = useState<string | null>(null);
   const [phoneOtpValue, setPhoneOtpValue] = useState("");
 
+  // Team recovery state
+  const [configuredTeamMember, setConfiguredTeamMember] = useState<OrgMember | null>(null);
+
   const configuredCount =
     configuredEmails.filter((e) => e.isVerified).length +
     (isBackpackRecoveryEnabled ? 1 : 0) +
     (configuredPhone?.isVerified ? 1 : 0) +
+    (configuredTeamMember ? 1 : 0) +
     RECOVERY_OPTIONS.filter(
-      (opt) => opt.id !== "email" && opt.id !== "backpack" && opt.id !== "phone" && opt.isConfigured
+      (opt) =>
+        opt.id !== "email" && opt.id !== "backpack" && opt.id !== "phone" && opt.id !== "team" && opt.isConfigured
     ).length;
 
   const handleAddEmail = (email: string) => {
@@ -107,6 +121,18 @@ export const SecuritySettingsModal = ({ isOpen, onClose }: SecuritySettingsModal
     }
   };
 
+  // Team recovery handlers
+  const handleSelectTeamMember = (memberId: string) => {
+    const member = MOCK_ORG_MEMBERS.find((m) => m.id === memberId);
+    if (member) {
+      setConfiguredTeamMember(member);
+    }
+  };
+
+  const handleRemoveTeamMember = () => {
+    setConfiguredTeamMember(null);
+  };
+
   return (
     <Modal
       hideCloseButton
@@ -141,31 +167,99 @@ export const SecuritySettingsModal = ({ isOpen, onClose }: SecuritySettingsModal
           {/* Recovery Options Section */}
           <div className="space-y-4">
             <RecoveryWarning configuredCount={configuredCount} />
-            <RecoveryOptions
-              configuredCount={configuredCount}
-              configuredEmails={configuredEmails}
-              currentEmail={currentEmail}
-              verifyingEmail={verifyingEmail}
-              otpValue={otpValue}
-              onAddEmail={handleAddEmail}
-              onVerifyOtp={handleVerifyOtp}
-              onCancelVerification={handleCancelVerification}
-              onRemoveEmail={handleRemoveEmail}
-              onEmailChange={setCurrentEmail}
-              onOtpChange={setOtpValue}
-              onBackpackRecoveryToggle={handleBackpackRecoveryToggle}
-              isBackpackRecoveryEnabled={isBackpackRecoveryEnabled}
-              configuredPhone={configuredPhone}
-              currentPhone={currentPhone}
-              verifyingPhone={verifyingPhone}
-              phoneOtpValue={phoneOtpValue}
-              onAddPhone={handleAddPhone}
-              onVerifyPhoneOtp={handleVerifyPhoneOtp}
-              onCancelPhoneVerification={handleCancelPhoneVerification}
-              onRemovePhone={handleRemovePhone}
-              onPhoneChange={setCurrentPhone}
-              onPhoneOtpChange={setPhoneOtpValue}
-            />
+            <RecoveryHeader configuredCount={configuredCount} />
+            <Accordion
+              className="p-0 gap-0 flex flex-col bg-[#141414] rounded-lg border border-[#1a1a1a]"
+              itemClasses={{
+                base: "border-b border-[#1a1a1a] last:border-0",
+                title: "font-medium",
+                trigger: "px-4 py-3 flex data-[hover=true]:bg-[#1a1a1a] rounded-none",
+                indicator: "text-medium",
+                content: "pt-0",
+              }}
+              showDivider={false}
+              variant="light"
+            >
+              {RECOVERY_OPTIONS.map((option) => (
+                <AccordionItem
+                  key={option.id}
+                  aria-label={option.title}
+                  isDisabled={option.isComingSoon}
+                  classNames={{
+                    base: option.isComingSoon ? "opacity-50" : option.isConfigured ? "bg-success/10" : "",
+                    content: "pt-6",
+                  }}
+                  startContent={
+                    <option.icon
+                      className={`w-5 h-5 ${
+                        option.isConfigured
+                          ? "text-success"
+                          : option.isComingSoon
+                            ? "text-default-300"
+                            : "text-default-500"
+                      }`}
+                    />
+                  }
+                  subtitle={<p className="text-sm text-gray-400">{option.description}</p>}
+                  title={
+                    <div className="flex items-center gap-2">
+                      <span className={option.isComingSoon ? "text-default-400" : ""}>{option.title}</span>
+                      {option.isComingSoon && (
+                        <Chip size="sm" variant="flat" className="bg-[#1a1a1a] text-default-400">
+                          Coming Soon
+                        </Chip>
+                      )}
+                      {option.isConfigured && (
+                        <Chip size="sm" variant="flat" color="success">
+                          Configured
+                        </Chip>
+                      )}
+                    </div>
+                  }
+                >
+                  <div className="px-4 pb-4 space-y-4">
+                    {option.id === "email" && (
+                      <EmailVerification
+                        configuredEmails={configuredEmails}
+                        currentEmail={currentEmail}
+                        verifyingEmail={verifyingEmail}
+                        otpValue={otpValue}
+                        onAddEmail={handleAddEmail}
+                        onVerifyOtp={handleVerifyOtp}
+                        onCancelVerification={handleCancelVerification}
+                        onRemoveEmail={handleRemoveEmail}
+                        onEmailChange={setCurrentEmail}
+                        onOtpChange={setOtpValue}
+                      />
+                    )}
+                    {option.id === "phone" && (
+                      <PhoneVerification
+                        configuredPhone={configuredPhone}
+                        currentPhone={currentPhone}
+                        verifyingPhone={verifyingPhone}
+                        phoneOtpValue={phoneOtpValue}
+                        onAddPhone={handleAddPhone}
+                        onVerifyPhoneOtp={handleVerifyPhoneOtp}
+                        onCancelPhoneVerification={handleCancelPhoneVerification}
+                        onRemovePhone={handleRemovePhone}
+                        onPhoneChange={setCurrentPhone}
+                        onPhoneOtpChange={setPhoneOtpValue}
+                      />
+                    )}
+                    {option.id === "team" && (
+                      <TeamRecovery
+                        configuredTeamMember={configuredTeamMember}
+                        onSelectTeamMember={handleSelectTeamMember}
+                        onRemoveTeamMember={handleRemoveTeamMember}
+                      />
+                    )}
+                    {option.id === "backpack" && (
+                      <BackpackRecovery isEnabled={isBackpackRecoveryEnabled} onToggle={handleBackpackRecoveryToggle} />
+                    )}
+                  </div>
+                </AccordionItem>
+              ))}
+            </Accordion>
           </div>
 
           {/* Grace Period Section */}

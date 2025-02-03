@@ -3,12 +3,18 @@ import { baseSepolia, base } from "viem/chains";
 
 import { isLocal } from "@/utils/helpers";
 import "viem/window";
+import { Magic } from "magic-sdk";
 
 // Environment variables validation
 const CANDIDE_API_KEY = process.env.NEXT_PUBLIC_CANDIDE_API_KEY;
 
 if (!CANDIDE_API_KEY) {
   throw new Error("CANDIDE_API_KEY is not set");
+}
+
+const MAGIC_PUBLISHABLE_API_KEY = process.env.NEXT_PUBLIC_MAGIC_PUBLISHABLE_API_KEY;
+if (!MAGIC_PUBLISHABLE_API_KEY) {
+  throw new Error("MAGIC_PUBLISHABLE_API_KEY is not set");
 }
 
 // Chain configuration
@@ -61,3 +67,12 @@ const chainName = getChainName(chain);
 export const BUNDLER_URL = `${CANDIDE_BASE_URL}/bundler/v3/${chainName}/${CANDIDE_API_KEY}`;
 export const PAYMASTER_URL = `${CANDIDE_BASE_URL}/paymaster/v3/${chainName}/${CANDIDE_API_KEY}`;
 export const SPONSORSHIP_POLICY_ID = getSponsorshipPolicyId(chain);
+
+// Magic
+export const magic = new Magic(MAGIC_PUBLISHABLE_API_KEY, {
+  network: {
+    rpcUrl: chain.rpcUrls.default.http[0],
+    chainId: chain.id,
+  },
+  deferPreload: true,
+});

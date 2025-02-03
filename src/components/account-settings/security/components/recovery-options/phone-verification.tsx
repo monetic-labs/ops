@@ -5,10 +5,8 @@ import { Input } from "@nextui-org/input";
 import { InputOtp } from "@nextui-org/input-otp";
 import { Chip } from "@nextui-org/chip";
 import { Phone, XIcon } from "lucide-react";
-import { PhoneVerificationProps } from "../types";
+import { PhoneVerificationProps } from "../../types";
 import { formatPhoneNumber } from "@/utils/helpers";
-import { Select } from "@nextui-org/select";
-import { Dropdown, DropdownItem, DropdownMenu, DropdownTrigger } from "@nextui-org/dropdown";
 
 export const PhoneVerification = ({
   configuredPhone,
