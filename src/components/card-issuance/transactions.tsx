@@ -1,129 +1,131 @@
-// REFAC THIS LATER
-import React, { useCallback, useState } from "react";
-import { Chip } from "@nextui-org/chip";
-import { User } from "@nextui-org/user";
+"use client";
+
+import { useState } from "react";
+import { Spinner } from "@nextui-org/spinner";
+import { useInfiniteQuery } from "@tanstack/react-query";
 import { MerchantCardTransactionGetOutput } from "@backpack-fux/pylon-sdk";
 
-import TransactionDetailsModal from "@/components/card-issuance/card-txns";
 import InfiniteTable from "@/components/generics/table-infinite";
-import { getOpepenAvatar } from "@/utils/helpers";
+import { formatNumber, formattedDate } from "@/utils/helpers";
 import pylon from "@/libs/pylon-sdk";
+import TransactionDetailsModal from "./card-txns";
 
-const statusColorMap: Record<string, "success" | "warning" | "danger" | "primary"> = {
-  COMPLETED: "success",
-  PPENDING: "primary",
-  DECLINED: "danger",
-  REVERSED: "warning",
-};
+type Transaction = MerchantCardTransactionGetOutput["transactions"][number] & { id: string };
 
-type HybridTransaction = MerchantCardTransactionGetOutput["transactions"][number] & {
-  avatar?: string;
-  spender: string;
-};
+interface TransactionPage {
+  items: Transaction[];
+  cursor: string | undefined;
+}
 
-const transactions: HybridTransaction[] = [];
+export default function Transactions() {
+  const [selectedTxn, setSelectedTxn] = useState<Transaction | null>(null);
 
-export default function TransactionListTable() {
-  const [selectedTransaction, setSelectedTransaction] = useState<HybridTransaction | null>(null);
-  const renderCell = useCallback((transaction: HybridTransaction, columnKey: keyof HybridTransaction) => {
-    switch (columnKey) {
-      case "merchantName":
-        return (
-          <User
-            avatarProps={{
-              radius: "lg",
-              src: transaction.avatar,
-            }}
-            description={transaction.id}
-            name={transaction.merchantName}
-          >
-            {transaction.id}
-          </User>
-        );
-      case "status":
-        return (
-          <Chip className="capitalize" color={statusColorMap[transaction.status]} size="sm" variant="flat">
-            {transaction.status}
-          </Chip>
-        );
-      case "amount":
-        return (
-          <Chip className="capitalize" color={"default"} size="sm" variant="flat">
-            {(transaction.amount / 100).toPrecision(4)} {transaction.currency}
-          </Chip>
-        );
-      case "createdAt": {
-        return (
-          <p>
-            {new Date(transaction.createdAt).toLocaleDateString(undefined, {
-              year: "numeric",
-              month: "short",
-              day: "numeric",
-              hour12: true,
-              hour: "numeric",
-              minute: "numeric",
-              second: "2-digit",
-            })}
-          </p>
-        );
-      }
-      case "spender": {
-        return <p>{transaction.spender}</p>;
-      }
-      default:
-        return <></>;
-    }
-  }, []);
+  const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading, isError } =
+    useInfiniteQuery<TransactionPage>({
+      queryKey: ["card-transactions"],
+      initialPageParam: undefined as string | undefined,
+      queryFn: async ({ pageParam }) => {
+        const response = await pylon.getCardTransactions({
+          after: pageParam as string | undefined,
+          limit: 10,
+        });
+        return {
+          items: response.transactions.map((txn) => ({ ...txn, id: txn.id })),
+          cursor: response.meta.endCursor,
+        };
+      },
+      getNextPageParam: (lastPage: TransactionPage) => lastPage.cursor,
+    });
 
-  const loadMore = async (cursor: string | undefined) => {
-    try {
-      const { transactions, meta } = await (cursor && cursor?.length > 1
-        ? pylon.getCardTransactions({ after: cursor })
-        : pylon.getCardTransactions({}));
+  const transactions = data?.pages.flatMap((page) => page.items) ?? [];
 
-      return {
-        items: transactions.map((t) => ({
-          ...t,
-          avatar: getOpepenAvatar(t.merchantName, 20),
-          spender: t.merchantCard.cardOwner.firstName + " " + t.merchantCard.cardOwner.lastName,
-        })),
-        cursor: meta.endCursor,
-      };
-    } catch (error) {
-      console.log(error);
+  if (isError) {
+    return (
+      <div className="w-full h-[200px] flex items-center justify-center">
+        <p className="text-white/60">Failed to load transactions</p>
+      </div>
+    );
+  }
 
-      return { items: [], cursor: "" };
-    }
-  };
-
-  const handleRowSelect = useCallback((transaction: HybridTransaction) => {
-    setSelectedTransaction(transaction);
-  }, []);
+  if (isLoading && transactions.length === 0) {
+    return (
+      <div className="w-full h-[200px] flex items-center justify-center">
+        <Spinner color="white" />
+      </div>
+    );
+  }
 
   return (
     <>
       <InfiniteTable
         columns={[
-          { name: "MERCHANT NAME", uid: "merchantName" },
-          { name: "AMOUNT", uid: "amount" },
-          { name: "STATUS", uid: "status" },
-          { name: "SPENDER", uid: "spender" },
-          { name: "DATE", uid: "createdAt" },
+          {
+            name: "MERCHANT NAME",
+            uid: "merchantName",
+          },
+          {
+            name: "AMOUNT",
+            uid: "amount",
+          },
+          {
+            name: "STATUS",
+            uid: "status",
+          },
+          {
+            name: "SPENDER",
+            uid: "merchantCard",
+          },
+          {
+            name: "DATE",
+            uid: "createdAt",
+          },
         ]}
         initialData={transactions}
-        loadMore={loadMore}
-        renderCell={renderCell}
-        onRowSelect={handleRowSelect}
+        loadMore={async (cursor) => {
+          await fetchNextPage();
+          const lastPage = data?.pages[data.pages.length - 1];
+          return {
+            items: lastPage?.items ?? [],
+            cursor: lastPage?.cursor,
+          };
+        }}
+        renderCell={(txn: Transaction, columnKey) => {
+          switch (columnKey) {
+            case "merchantName":
+              return txn.merchantName || "Unknown Merchant";
+            case "amount":
+              return `$${formatNumber(txn.amount / 100)} ${txn.currency}`;
+            case "status":
+              return (
+                <span
+                  className={
+                    txn.status === "COMPLETED"
+                      ? "text-success"
+                      : txn.status === "PENDING"
+                        ? "text-warning"
+                        : "text-danger"
+                  }
+                >
+                  {txn.status}
+                </span>
+              );
+            case "merchantCard":
+              return `${txn.merchantCard.cardOwner.firstName} ${txn.merchantCard.cardOwner.lastName}`;
+            case "createdAt":
+              return formattedDate(txn.createdAt);
+            default:
+              return null;
+          }
+        }}
+        onRowSelect={setSelectedTxn}
+        emptyContent="No transactions found"
       />
-      {selectedTransaction && (
-        <>
-          <TransactionDetailsModal
-            isOpen={Boolean(selectedTransaction)}
-            transaction={selectedTransaction}
-            onClose={() => setSelectedTransaction(null)}
-          />
-        </>
-      )}
+
+      <TransactionDetailsModal
+        isOpen={!!selectedTxn}
+        onClose={() => setSelectedTxn(null)}
+        transaction={selectedTxn as any} // TODO: Fix type mismatch between components
+      />
     </>
   );
 }

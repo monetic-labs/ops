@@ -34,14 +34,20 @@ export default function CardServicesTabs({ handleSubTabChange }: CardServicesTab
         <Tabs
           aria-label="Service options"
           selectedKey={selectedService}
+          variant="bordered"
           onSelectionChange={(key) => setSelectedService(key as string)}
         >
           {cardServicesConfig.map((tab) => (
             <Tab key={tab.id} title={tab.label} />
           ))}
         </Tabs>
-        <Button color="default" startContent={<PlusIcon size={18} />} onPress={() => setIsCreateModalOpen(true)}>
-          Create Card
+        <Button
+          isIconOnly
+          className="bg-charyo-500/60 backdrop-blur-sm border border-white/5"
+          data-testid="create-transfer-button"
+          onPress={() => setIsCreateModalOpen(true)}
+        >
+          <PlusIcon size={18} />
         </Button>
       </div>
       <div className="mt-4">{renderTabContent(selectedService)}</div>

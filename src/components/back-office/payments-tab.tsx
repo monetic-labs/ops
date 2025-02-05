@@ -129,11 +129,11 @@ export default function PaymentsTab() {
 
   return (
     <>
-      <Table aria-label="Transactions table with custom cells">
+      <Table removeWrapper aria-label="Transactions table with custom cells">
         <TableHeader columns={paymentsColumns as Column<TransactionListItem>[]}>
           {(column) => <TableColumn key={column.uid}>{column.name}</TableColumn>}
         </TableHeader>
-        <TableBody emptyContent={isLoading ? null : "No transactions found"} items={transactions}>
+        <TableBody isLoading={isLoading} emptyContent={"No transactions found"} items={transactions}>
           {(item) => {
             return (
               <TableRow

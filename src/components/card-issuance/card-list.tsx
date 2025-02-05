@@ -1,127 +1,173 @@
-import { Chip } from "@nextui-org/chip";
-import { User } from "@nextui-org/user";
-import React, { useCallback, useState } from "react";
-import { MerchantCardGetOutput } from "@backpack-fux/pylon-sdk";
-import { AsyncListData, useAsyncList } from "@react-stately/data";
+"use client";
 
-import CardDetailsModal from "@/components/card-issuance/card-details";
-import { formatNumber, getOpepenAvatar } from "@/utils/helpers";
+import { useState } from "react";
+import { Spinner } from "@nextui-org/spinner";
+import { useInfiniteQuery } from "@tanstack/react-query";
+import { MerchantCardGetOutput, CardStatus, CardLimitFrequency, CardType } from "@backpack-fux/pylon-sdk";
+
+import InfiniteTable from "@/components/generics/table-infinite";
+import { formattedDate } from "@/utils/helpers";
 import pylon from "@/libs/pylon-sdk";
-
-import { InfiniteTableWithExternalList } from "../generics/table-infinite";
+import CardDetailsModal from "./card-details";
 
 type HybridCard = MerchantCardGetOutput["cards"][number] & {
+  id: string;
   avatar?: string;
-  type: string;
-  holder: string;
+  type: CardType;
   limit: number;
-  limitFrequency: string;
+  limitFrequency: CardLimitFrequency;
+  holder: string;
 };
 
-const statusColorMap: Record<string, "success" | "danger" | "primary" | "default"> = {
-  ACTIVE: "success",
-  CANCELED: "danger",
-  NOT_ACTIVATED: "default",
-  LOCKED: "primary",
+interface CardPage {
+  items: HybridCard[];
+  cursor: string | undefined;
+}
+
+const getStatusColor = (status: CardStatus | null | undefined) => {
+  if (!status) return "text-default";
+
+  switch (status) {
+    case CardStatus.ACTIVE:
+      return "text-success";
+    case CardStatus.NOT_ACTIVATED:
+      return "text-warning";
+    case CardStatus.LOCKED:
+    case CardStatus.CANCELLED:
+      return "text-danger";
+    default:
+      return "text-default";
+  }
 };
 
-export default function CardListTable() {
+export default function CardList() {
   const [selectedCard, setSelectedCard] = useState<HybridCard | null>(null);
-  const [hasMore, setHasMore] = React.useState(true);
 
-  const renderCell = useCallback((card: HybridCard, columnKey: keyof HybridCard) => {
-    switch (columnKey) {
-      case "displayName":
-        return (
-          <User
-            avatarProps={{
-              radius: "lg",
-              src: card.avatar,
-            }}
-            description={""}
-            name={card.displayName}
-          />
-        );
-      case "status":
-        return (
-          <Chip className="capitalize" color={statusColorMap[card.status]} size="sm" variant="flat">
-            {card.status}
-          </Chip>
-        );
-      case "type": {
-        return <p>{card.type}</p>;
-      }
-      case "holder": {
-        return <p>{card.holder}</p>;
-      }
-      case "limit":
-        return `$${formatNumber(card.limit)} per ${card.limitFrequency.toLowerCase()}`;
-      default:
-        return <></>;
-    }
-  }, []);
-
-  const list = useAsyncList({
-    async load({ cursor }) {
+  const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading, isError } = useInfiniteQuery<CardPage>({
+    queryKey: ["merchant-cards"],
+    initialPageParam: undefined as string | undefined,
+    queryFn: async ({ pageParam }) => {
       try {
-        const { cards, meta } = await (cursor && cursor?.length > 1
-          ? pylon.getCards({ after: cursor })
-          : pylon.getCards({}));
+        const response = await pylon.getCards({
+          after: pageParam as string | undefined,
+          limit: 10,
+        });
 
-        if (meta.endCursor) {
-          setHasMore(true);
-        } else {
-          setHasMore(false);
+        // Ensure we have a valid response with cards array
+        if (!response || !response.cards || !Array.isArray(response.cards)) {
+          throw new Error("Invalid response from Pylon SDK");
         }
 
+        // Map and validate each card
+        const items = response.cards
+          .map((card) => {
+            if (!card || typeof card !== "object") {
+              console.warn("Invalid card object in response:", card);
+              return null;
+            }
+
+            try {
+              return {
+                ...card,
+                id: card.id || "",
+                type: card.cardShippingDetails ? CardType.PHYSICAL : CardType.VIRTUAL,
+                holder: card.cardOwner ? `${card.cardOwner.firstName} ${card.cardOwner.lastName}` : "Unknown",
+                limit: typeof card.limit === "number" ? card.limit : 0,
+                limitFrequency: card.limitFrequency || CardLimitFrequency.MONTH,
+                status: card.status || CardStatus.NOT_ACTIVATED,
+                lastFour: card.lastFour || "",
+                createdAt: card.createdAt || new Date().toISOString(),
+              };
+            } catch (err) {
+              console.warn("Error processing card:", err);
+              return null;
+            }
+          })
+          .filter((card): card is HybridCard => card !== null);
+
         return {
-          items: cards.map((t) => ({
-            ...t,
-            avatar: getOpepenAvatar(t.id, 20),
-            type: t.cardShippingDetails ? "Physical" : "Virtual",
-            holder: t?.cardOwner?.firstName + " " + t?.cardOwner?.lastName,
-            limit: t.limit,
-            limitFrequency: t.limitFrequency,
-          })),
-          cursor: meta.endCursor,
+          items,
+          cursor: response.meta?.endCursor,
         };
       } catch (error) {
-        console.log(error);
-        setHasMore(false);
-
-        return { items: [], cursor: "" };
+        console.error("Error fetching cards:", error);
+        throw error;
       }
     },
+    getNextPageParam: (lastPage: CardPage) => lastPage.cursor,
+    retry: 3,
+    retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
   });
-  const handleCloseModal = (card: HybridCard) => {
-    list.update(card.id, card);
-    setSelectedCard(null);
-  };
 
-  const handleRowSelect = useCallback((card: HybridCard) => {
-    setSelectedCard(card);
-  }, []);
+  const cards = data?.pages.flatMap((page) => page.items) ?? [];
+
+  if (isError) {
+    return (
+      <div className="w-full h-[200px] flex items-center justify-center">
+        <p className="text-white/60">Failed to load cards</p>
+      </div>
+    );
+  }
+
+  if (isLoading && cards.length === 0) {
+    return (
+      <div className="w-full h-[200px] flex items-center justify-center">
+        <Spinner color="white" />
+      </div>
+    );
+  }
 
   return (
     <>
-      <InfiniteTableWithExternalList
+      <InfiniteTable
         columns={[
-          { name: "CARD NAME", uid: "displayName" },
-          { name: "HOLDER", uid: "holder" },
-          { name: "TYPE", uid: "type" },
-          { name: "LIMIT", uid: "limit" },
-          { name: "STATUS", uid: "status" },
+          {
+            name: "CARD NUMBER",
+            uid: "lastFour",
+          },
+          {
+            name: "STATUS",
+            uid: "status",
+          },
+          {
+            name: "CARDHOLDER",
+            uid: "cardOwner",
+          },
+          {
+            name: "CREATED",
+            uid: "createdAt",
+          },
         ]}
-        hasMore={hasMore}
-        list={list as AsyncListData<HybridCard>}
-        renderCell={renderCell}
-        setHasMore={setHasMore}
-        onRowSelect={handleRowSelect}
+        initialData={cards}
+        loadMore={async (cursor) => {
+          await fetchNextPage();
+          const lastPage = data?.pages[data.pages.length - 1];
+          return {
+            items: lastPage?.items ?? [],
+            cursor: lastPage?.cursor,
+          };
+        }}
+        renderCell={(card: HybridCard, columnKey) => {
+          if (!card) return null;
+
+          switch (columnKey) {
+            case "lastFour":
+              return `•••• ${card.lastFour || ""}`;
+            case "status":
+              return <span className={getStatusColor(card.status)}>{card.status || "Unknown"}</span>;
+            case "cardOwner":
+              return card.holder || "Unknown";
+            case "createdAt":
+              return card.createdAt ? formattedDate(card.createdAt) : "Unknown";
+            default:
+              return null;
+          }
+        }}
+        onRowSelect={setSelectedCard}
+        emptyContent="No cards found"
       />
 
-      {selectedCard && (
-        <CardDetailsModal card={selectedCard} isOpen={Boolean(selectedCard)} onClose={handleCloseModal} />
-      )}
+      {selectedCard && <CardDetailsModal isOpen={true} onClose={() => setSelectedCard(null)} card={selectedCard} />}
     </>
   );
 }

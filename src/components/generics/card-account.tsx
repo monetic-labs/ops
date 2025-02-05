@@ -1,6 +1,6 @@
 import { Card, CardBody } from "@nextui-org/card";
 import { Tooltip } from "@nextui-org/tooltip";
-import { InfoIcon, ArrowUpRight, ArrowDownRight } from "lucide-react";
+import { InfoIcon, ArrowUpRight, ArrowDownRight, PlusCircle } from "lucide-react";
 import { LucideIcon } from "lucide-react";
 
 interface BaseCardProps {
@@ -9,6 +9,7 @@ interface BaseCardProps {
   isLoading?: boolean;
   comingSoon?: boolean;
   isHoverable?: boolean;
+  className?: string;
 }
 
 interface FundCardProps extends BaseCardProps {
@@ -45,7 +46,7 @@ export function AccountCard(props: CardProps) {
     return (
       <button
         aria-label={`Fund card for ${props.title}`}
-        className="w-full text-left cursor-pointer"
+        className={`w-full text-left cursor-pointer ${props.className || ""}`}
         disabled={props.disabled}
         onClick={props.onClick}
       >
@@ -75,7 +76,7 @@ export function AccountCard(props: CardProps) {
           : props.trendColor === "danger"
             ? "bg-danger/5 border border-danger/10"
             : "bg-default-100/5 border border-default/10"
-    }`;
+    } ${props.className || ""}`;
 
     const hoverClasses = props.isHoverable
       ? props.trendColor === "success"
@@ -177,60 +178,79 @@ export function AccountCard(props: CardProps) {
     );
   }
 
-  const Icon = props.icon;
+  if (props.variant === "account") {
+    const Icon = props.icon;
 
-  return (
-    <button
-      aria-label={`${props.isCreateAccount ? "Create new account" : `${props.name} account`}`}
-      className={`w-full text-left p-3 rounded-lg transition-all ${
-        props.isCreateAccount
-          ? "border border-dashed border-default-200"
-          : "border border-default-200 bg-white/5 backdrop-blur-sm"
-      } ${
-        !props.disabled && !props.isCreateAccount
-          ? "hover:bg-default-50 cursor-pointer"
-          : props.disabled
-            ? "opacity-60"
-            : ""
-      }`}
-      disabled={props.disabled}
-      type="button"
-      onClick={props.onClick}
-    >
-      <div>
-        <div className="flex items-center justify-between">
-          {!props.isCreateAccount ? (
-            <>
-              <div className="flex items-center gap-2">
-                <Icon className="w-4 h-4 text-default-500" />
-                <span className="text-xs text-default-600">{props.name}</span>
-              </div>
-            </>
-          ) : (
-            <div className="w-4" />
-          )}
-          {props.comingSoon && (
-            <span className="hidden md:inline-block text-xs px-2 py-0.5 bg-default-100 rounded-full text-default-600">
-              Coming soon
+    if (props.isCreateAccount) {
+      return (
+        <div
+          aria-label="Create new account"
+          className={`w-full h-full p-4 rounded-lg transition-all duration-300 ease-in-out relative group border border-dashed border-white/10 bg-[#1A1A1A]/30 hover:bg-[#1A1A1A]/50 hover:border-white/20 ${props.className || ""}`}
+          onClick={props.onClick}
+        >
+          <div className="h-full flex flex-col items-center justify-center">
+            <Icon className="w-6 h-6 text-white/60 mb-2" />
+            <span className="text-sm text-white/60">Create account</span>
+          </div>
+        </div>
+      );
+    }
+
+    return (
+      <div
+        aria-label={`${props.name} account`}
+        className={`w-full h-full p-4 rounded-lg transition-all duration-300 ease-in-out relative group ${
+          props.disabled
+            ? "border border-white/5 bg-[#1A1A1A]/30 hover:bg-[#1A1A1A]/40"
+            : "border border-white/10 bg-[#1A1A1A] hover:bg-[#1A1A1A]/80 cursor-pointer"
+        } ${props.className || ""}`}
+        onClick={props.onClick}
+      >
+        <div className="h-full flex flex-col justify-between">
+          {/* Header */}
+          <div className="flex items-center gap-2">
+            <Icon
+              className={`w-5 h-5 ${
+                props.disabled ? "text-white/40 group-hover:text-white/60" : "text-white/80"
+              } transition-colors duration-300 ease-in-out`}
+            />
+            <span
+              className={`text-sm font-medium ${
+                props.disabled ? "text-white/40 group-hover:text-white/60" : "text-white/80"
+              } transition-colors duration-300 ease-in-out`}
+            >
+              {props.name}
             </span>
-          )}
+          </div>
+
+          {/* Content */}
+          <div
+            className={`${props.disabled ? "opacity-40 group-hover:opacity-60" : ""} transition-all duration-300 ease-in-out`}
+          >
+            <p className="text-2xl font-bold text-white mb-1">${props.balance?.toLocaleString() ?? "0"}</p>
+            <p
+              className={`text-sm ${
+                props.disabled ? "text-white/40 group-hover:text-white/60" : "text-white/60"
+              } transition-colors duration-300 ease-in-out`}
+            >
+              {props.currency}
+            </p>
+          </div>
         </div>
-        <div className="mt-1">
-          {props.isCreateAccount ? (
-            <div className="flex flex-col items-center justify-center">
-              <Icon className="w-6 h-6 text-default-400 transition-colors" />
-              <span className="text-xs text-default-500 mt-1">Create account</span>
+
+        {props.comingSoon && (
+          <div className="absolute inset-0 flex items-center justify-center bg-black/80 opacity-0 group-hover:opacity-100 transition-all duration-300 ease-in-out rounded-lg backdrop-blur-sm">
+            <div className="flex flex-col items-center gap-2">
+              <PlusCircle className="w-6 h-6 text-white/80" />
+              <span className="text-sm font-medium text-white/90">Coming Soon</span>
             </div>
-          ) : (
-            <>
-              <p className="text-lg md:text-xl font-bold">${props.balance?.toLocaleString() ?? "0"}</p>
-              <p className="text-xs text-default-500">{props.currency}</p>
-            </>
-          )}
-        </div>
+          </div>
+        )}
       </div>
-    </button>
-  );
+    );
+  }
+
+  return null;
 }
 
 // For backward compatibility

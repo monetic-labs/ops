@@ -78,7 +78,7 @@ export default function Transfers() {
 
   return (
     <>
-      <Table>
+      <Table removeWrapper aria-label="Transfers table">
         <TableHeader>
           {billPayColumns.map((column) => (
             <TableColumn key={column.uid}>{column.name}</TableColumn>

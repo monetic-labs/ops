@@ -173,7 +173,6 @@ export const handleSubmit = async ({
       const recoveryInputs: RecoveryWalletGenerateInput[] = [
         { identifier: ownerUser.email, method: RecoveryWalletMethod.EMAIL },
         { identifier: ownerUser.phoneNumber.number, method: RecoveryWalletMethod.PHONE },
-        { identifier: BACKPACK_GUARDIAN_ADDRESS, method: RecoveryWalletMethod.BACKPACK },
       ];
 
       const recoveryWallets = await pylon.generateRecoveryWallets(recoveryInputs);
@@ -183,9 +182,12 @@ export const handleSubmit = async ({
 
       // Create enable module transaction
       const enableModuleTransaction = srm.createEnableModuleMetaTransaction(onboardingState.walletAddress);
-      const addGuardianTransactions = recoveryWallets.map((wallet) =>
-        srm.createAddGuardianWithThresholdMetaTransaction(wallet.publicAddress, BigInt(2))
-      );
+      const addGuardianTransactions = [
+        srm.createAddGuardianWithThresholdMetaTransaction(BACKPACK_GUARDIAN_ADDRESS, BigInt(2)),
+        ...recoveryWallets.map((wallet) =>
+          srm.createAddGuardianWithThresholdMetaTransaction(wallet.publicAddress, BigInt(2))
+        ),
+      ];
 
       // Create WebAuthn safe account helper for executing transactions
       const individualAccount = new WebAuthnSafeAccountHelper({

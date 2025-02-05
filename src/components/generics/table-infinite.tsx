@@ -15,6 +15,7 @@ interface InfiniteTableProps<T> {
   renderCell: (item: T, columnKey: keyof T) => ReactNode;
   loadMore: (cursor: string | undefined) => Promise<{ items: T[]; cursor: string | undefined }>;
   onRowSelect?: (item: T) => void;
+  emptyContent?: ReactNode;
 }
 
 interface InfiniteTableWithExternalListProps<T> {
@@ -24,6 +25,7 @@ interface InfiniteTableWithExternalListProps<T> {
   list: AsyncListData<T>;
   hasMore: boolean;
   setHasMore: React.Dispatch<React.SetStateAction<boolean>>;
+  emptyContent?: ReactNode;
 }
 
 export default function InfiniteTable<T extends { id: string }>({
@@ -32,6 +34,7 @@ export default function InfiniteTable<T extends { id: string }>({
   renderCell,
   loadMore,
   onRowSelect,
+  emptyContent,
 }: InfiniteTableProps<T>) {
   const [isLoading, setIsLoading] = React.useState(false);
   const [hasMore, setHasMore] = React.useState(true);
@@ -64,6 +67,7 @@ export default function InfiniteTable<T extends { id: string }>({
 
   return (
     <Table
+      removeWrapper
       isHeaderSticky
       aria-label="Generic table with infinite scroll"
       baseRef={scrollerRef}
@@ -83,7 +87,12 @@ export default function InfiniteTable<T extends { id: string }>({
       <TableHeader columns={columns as Column<T>[]}>
         {(column) => <TableColumn key={column.uid.toString()}>{column.name}</TableColumn>}
       </TableHeader>
-      <TableBody items={list.items} loadingContent={<Spinner color="primary" />}>
+      <TableBody
+        emptyContent={emptyContent}
+        items={list.items}
+        loadingContent={<Spinner color="primary" />}
+        onError={() => <div>Error fetching transfers</div>}
+      >
         {(item) => (
           <TableRow key={item.id}>
             {(columnKey) => <TableCell>{renderCell(item, columnKey as keyof T)}</TableCell>}
@@ -100,6 +109,7 @@ export function InfiniteTableWithExternalList<T extends { id: string }>({
   onRowSelect,
   list,
   hasMore,
+  emptyContent,
 }: InfiniteTableWithExternalListProps<T>) {
   const [loaderRef, scrollerRef] = useInfiniteScroll({
     hasMore,
@@ -108,6 +118,7 @@ export function InfiniteTableWithExternalList<T extends { id: string }>({
 
   return (
     <Table
+      removeWrapper
       isHeaderSticky
       aria-label="Generic table with infinite scroll"
       baseRef={scrollerRef}
@@ -127,7 +138,12 @@ export function InfiniteTableWithExternalList<T extends { id: string }>({
       <TableHeader columns={columns as Column<T>[]}>
         {(column) => <TableColumn key={column.uid.toString()}>{column.name}</TableColumn>}
       </TableHeader>
-      <TableBody items={list.items} loadingContent={<Spinner color="primary" />}>
+      <TableBody
+        emptyContent={emptyContent}
+        items={list.items}
+        loadingContent={<Spinner color="primary" />}
+        onError={() => <div>Error fetching transfers</div>}
+      >
         {(item) => (
           <TableRow key={item.id}>
             {(columnKey) => <TableCell>{renderCell(item, columnKey as keyof T)}</TableCell>}

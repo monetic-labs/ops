@@ -128,7 +128,7 @@ export default function AuthPage() {
 
   return (
     <div className="w-full sm:max-w-md">
-      <Card className="bg-transparent sm:bg-zinc-800/90 backdrop-blur-xl border-none shadow-none sm:shadow-2xl">
+      <Card className="bg-transparent sm:bg-zinc-800/90 backdrop-blur-xl sm:border border-zinc-700 rounded-xl shadow-none">
         <CardHeader className="flex flex-col gap-2 p-6 sm:px-8 sm:pt-8">
           <div className="flex items-center gap-3">
             <div className="p-2 rounded-xl bg-white/5">

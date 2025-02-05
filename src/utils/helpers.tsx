@@ -178,3 +178,35 @@ export const getDisplayName = (firstName: string, lastName: string) => {
 };
 
 export const todayStr = dayjs().format("MMM D YYYY hh:mm A");
+
+export const formatCurrencyInput = (value: string): string => {
+  // Remove all non-numeric characters except decimal point
+  const cleanValue = value.replace(/[^0-9.]/g, "");
+
+  // Handle special cases
+  if (cleanValue === "" || cleanValue === ".") return "";
+
+  // Ensure only one decimal point
+  const parts = cleanValue.split(".");
+  if (parts.length > 2) return formatCurrencyInput(parts[0] + "." + parts[1]);
+
+  // Handle decimal places
+  if (parts.length === 2) {
+    const whole = parts[0];
+    const decimal = parts[1].slice(0, 2); // Limit to 2 decimal places
+
+    // Format whole number part with commas
+    const formatted = Number(whole).toLocaleString("en-US");
+    return `${formatted}${decimal ? "." + decimal : ""}`;
+  }
+
+  // Format whole number with commas
+  return Number(cleanValue).toLocaleString("en-US");
+};
+
+export const parseCurrencyInput = (value: string): number => {
+  // Remove all non-numeric characters except decimal point
+  const cleanValue = value.replace(/[^0-9.]/g, "");
+  const number = parseFloat(cleanValue);
+  return isNaN(number) ? 0 : Number(number.toFixed(2));
+};

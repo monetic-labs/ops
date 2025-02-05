@@ -6,6 +6,7 @@ import { ThemeProvider as NextThemesProvider } from "next-themes";
 import { ThemeProviderProps } from "next-themes/dist/types";
 import { NextUIProvider } from "@nextui-org/system";
 import { PrivyProvider } from "@privy-io/react-auth";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 // import { PylonProvider } from "@backpack-fux/pylon-sdk";
 
 import { MessagingProvider } from "@/components/messaging/messaging-provider";
@@ -19,6 +20,7 @@ export interface ProvidersProps {
 
 export function Providers({ children, themeProps, userId }: ProvidersProps) {
   const router = useRouter();
+  const [queryClient] = React.useState(() => new QueryClient());
 
   const shortcutsInitialValue = {
     isChatOpen: false,
@@ -29,25 +31,27 @@ export function Providers({ children, themeProps, userId }: ProvidersProps) {
 
   return (
     // <PylonProvider pylon={pylonInstance}>
-    <NextUIProvider navigate={router.push}>
-      <NextThemesProvider {...themeProps}>
-        <MessagingProvider userId={userId || "default-user"}>
-          <ShortcutsProvider initialValue={shortcutsInitialValue}>
-            <PrivyProvider
-              appId="cm6kflcul00yk102qos0gjism"
-              config={{
-                loginMethods: ["email", "sms"],
-                embeddedWallets: {
-                  createOnLogin: "users-without-wallets",
-                },
-              }}
-            >
-              {children}
-            </PrivyProvider>
-          </ShortcutsProvider>
-        </MessagingProvider>
-      </NextThemesProvider>
-    </NextUIProvider>
+    <QueryClientProvider client={queryClient}>
+      <NextUIProvider navigate={router.push}>
+        <NextThemesProvider {...themeProps}>
+          <MessagingProvider userId={userId || "default-user"}>
+            <ShortcutsProvider initialValue={shortcutsInitialValue}>
+              <PrivyProvider
+                appId="cm6kflcul00yk102qos0gjism"
+                config={{
+                  loginMethods: ["email", "sms"],
+                  embeddedWallets: {
+                    createOnLogin: "users-without-wallets",
+                  },
+                }}
+              >
+                {children}
+              </PrivyProvider>
+            </ShortcutsProvider>
+          </MessagingProvider>
+        </NextThemesProvider>
+      </NextUIProvider>
+    </QueryClientProvider>
     // </PylonProvider>
   );
 }

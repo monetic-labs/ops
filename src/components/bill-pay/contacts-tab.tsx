@@ -67,7 +67,7 @@ export default function Contacts() {
   );
 
   return (
-    <Table>
+    <Table removeWrapper aria-label="Contacts table">
       <TableHeader>
         {contactColumns.map((column) => (
           <TableColumn key={column.uid}>{column.name}</TableColumn>

@@ -71,7 +71,7 @@ const AuthenticatedNav = ({
   return (
     <>
       {/* Desktop Menu */}
-      <NavbarContent className="hidden sm:flex basis-1/5 sm:basis-full" justify="end">
+      <NavbarContent className="hidden sm:flex flex-1" justify="end">
         <NavbarItem className="hidden sm:flex gap-4 items-center">
           <Dropdown key={`desktop-${dropdownKey}`} placement="bottom-end">
             <DropdownTrigger>
@@ -94,7 +94,7 @@ const AuthenticatedNav = ({
       </NavbarContent>
 
       {/* Mobile Menu */}
-      <NavbarContent className="sm:hidden" justify="end">
+      <NavbarContent className="sm:hidden flex-1" justify="end">
         <Dropdown key={`mobile-${dropdownKey}`} placement="bottom-end">
           <DropdownTrigger>
             <Avatar
@@ -152,7 +152,7 @@ export const Navbar = () => {
     try {
       await pylon.logout();
       LocalStorage.clearAuthState();
-      window.location.href = "/auth";
+      router.push("/auth");
     } catch (error) {
       console.error("Error signing out:", error);
     }
@@ -161,18 +161,17 @@ export const Navbar = () => {
   return (
     <NextUINavbar
       classNames={{
-        base: "bg-charyo-900/70 text-notpurple-500 backdrop-blur-lg border-none",
-        wrapper: "px-4",
+        base: "w-full bg-[#1A1A1A]/90 text-notpurple-500 rounded-xl shadow-xl border border-white/10 backdrop-blur-sm",
+        wrapper: "w-full px-4 max-w-full",
+        content: "basis-auto flex-grow",
       }}
-      maxWidth="xl"
-      position="sticky"
     >
       {/* Logo */}
-      <NavbarContent className="basis-1/5 sm:basis-full" justify="start">
+      <NavbarContent className="flex-none" justify="start">
         <NavbarBrand as="li" className="gap-3 max-w-fit">
           <NextLink className="flex justify-start items-center gap-1" href={isAuthenticated ? "/" : "/auth"}>
             <Backpack className="text-notpurple-500" size={24} strokeWidth={1.5} />
-            <p className="font-bold text-inherit">Backpack Services</p>
+            {/* <p className="font-bold text-inherit">Backpack Services</p> */}
           </NextLink>
         </NavbarBrand>
       </NavbarContent>

@@ -1,142 +1,40 @@
-import React, { useEffect, useState } from "react";
-import { Input } from "@nextui-org/input";
+import React, { useEffect, useState, useImperativeHandle, forwardRef } from "react";
 import { Button } from "@nextui-org/button";
 import { Snippet } from "@nextui-org/snippet";
-import { GetOrderLinksOutput, ISO4217Currency } from "@backpack-fux/pylon-sdk";
-import { Card, CardHeader, CardBody } from "@nextui-org/card";
-import { Accordion, AccordionItem } from "@nextui-org/accordion";
-import { z } from "zod";
-
+import { GetOrderLinksOutput } from "@backpack-fux/pylon-sdk";
+import { Table, TableHeader, TableColumn, TableBody, TableRow, TableCell } from "@nextui-org/table";
+import { formatPhoneNumber, formatNumber } from "@/utils/helpers";
 import Countdown from "@/components/generics/countdown";
 import pylon from "@/libs/pylon-sdk";
+import { PlusIcon } from "lucide-react";
 
-const orderSchema = z.object({
-  email: z.string().email("Invalid email address"),
-  phone: z.string().min(9, "Phone number must be at least 9 digits"),
-  amount: z.string().regex(/^\d+(\.\d{1,2})?$/, "Invalid amount"),
-});
+export interface OrdersTabRef {
+  refresh: () => Promise<void>;
+}
 
-export default function CreateOrders() {
-  const [order, setOrder] = useState<{
-    email: string;
-    phone: string;
-    amount: string;
-  }>({
-    email: "",
-    phone: "",
-    amount: "",
-  });
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+interface OrdersTabProps {
+  onCreateClick: () => void;
+}
+
+const OrdersTab = forwardRef<OrdersTabRef, OrdersTabProps>(({ onCreateClick }, ref) => {
   const [currentOrders, setCurrentOrders] = useState<GetOrderLinksOutput[]>([]);
-  const [validationErrors, setValidationErrors] = useState<{
-    email?: string;
-    phone?: string;
-    amount?: string;
-  }>({});
-  const [touched, setTouched] = useState<{
-    email?: boolean;
-    phone?: boolean;
-    amount?: boolean;
-  }>({});
-
-  useEffect(() => {
-    // Fetch active orders from Pylon
-    fetchCurrentOrders();
-  }, []);
-
-  useEffect(() => {
-    // Validate form data whenever it changes
-    const result = orderSchema.safeParse(order);
-
-    if (!result.success) {
-      const errors: { [key: string]: string } = {};
-
-      result.error.issues.forEach((issue) => {
-        errors[issue.path[0]] = issue.message;
-      });
-      setValidationErrors(errors);
-    } else {
-      setValidationErrors({});
-    }
-  }, [order]);
-
-  useEffect(() => {
-    // Trigger hook when currentOrders changes
-    console.log("Current orders updated:", currentOrders);
-  }, [currentOrders]);
 
   const fetchCurrentOrders = async () => {
     try {
       const orders = await pylon.getOrderLinks();
-
       setCurrentOrders(orders);
     } catch (err) {
       console.error("Failed to fetch current orders:", err);
     }
   };
 
-  const handleCreateOrder = async () => {
-    setIsLoading(true);
-    setError(null);
+  useImperativeHandle(ref, () => ({
+    refresh: fetchCurrentOrders,
+  }));
 
-    // Validate form data
-    const result = orderSchema.safeParse(order);
-
-    if (!result.success) {
-      const errors: { [key: string]: string } = {};
-
-      result.error.issues.forEach((issue) => {
-        errors[issue.path[0]] = issue.message;
-      });
-      setValidationErrors(errors);
-      setIsLoading(false);
-
-      return;
-    }
-
-    try {
-      const response = await pylon.createOrderLink({
-        customer: {
-          email: order.email,
-          phone: order.phone,
-        },
-        order: {
-          subtotal: parseFloat(order.amount),
-          currency: ISO4217Currency.USD,
-        },
-      });
-
-      const newOrder: GetOrderLinksOutput = {
-        id: response.orderLink,
-        customer: {
-          email: order.email,
-          phone: order.phone,
-        },
-        order: {
-          subtotal: parseFloat(order.amount),
-          currency: ISO4217Currency.USD,
-        },
-        expiresAt: response.expiresAt,
-      };
-
-      setCurrentOrders([...currentOrders, newOrder]);
-
-      // Clear input fields
-      setOrder({
-        email: "",
-        phone: "",
-        amount: "",
-      });
-      setValidationErrors({});
-      setTouched({});
-    } catch (err) {
-      setError("Failed to create order. Please try again.");
-      console.error("Order creation error:", err);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  useEffect(() => {
+    fetchCurrentOrders();
+  }, []);
 
   const handleDeleteOrder = async (orderLink: string) => {
     const orderId = orderLink.substring(orderLink.lastIndexOf("/") + 1);
@@ -149,81 +47,75 @@ export default function CreateOrders() {
     }
   };
 
-  const handleBlur = (field: keyof typeof order) => {
-    setTouched({ ...touched, [field]: true });
-  };
+  const columns = [
+    { key: "email", label: "Email" },
+    { key: "phone", label: "Phone" },
+    { key: "amount", label: "Amount" },
+    { key: "expires", label: "Expires" },
+    { key: "link", label: "Link" },
+    { key: "actions", label: "Actions", align: "end" },
+  ];
+
+  const renderEmptyContent = () => (
+    <Button className="bg-charyo-500/60 backdrop-blur-sm border border-white/5" onPress={onCreateClick}>
+      Create your first order
+      <PlusIcon size={18} />
+    </Button>
+  );
 
   return (
-    <div className="space-y-6 mx-auto">
-      <Card>
-        <CardHeader>Create New Order</CardHeader>
-        <CardBody className="space-y-4">
-          <div>
-            <Input
-              label="Customer Email"
-              placeholder="Enter customer email"
-              value={order.email}
-              onBlur={() => handleBlur("email")}
-              onChange={(e) => setOrder({ ...order, email: e.target.value })}
-            />
-            {touched.email && validationErrors.email && <p className="text-red-500">{validationErrors.email}</p>}
-          </div>
-          <div>
-            <Input
-              label="Customer Phone"
-              placeholder="Enter customer phone"
-              value={order.phone}
-              onBlur={() => handleBlur("phone")}
-              onChange={(e) => setOrder({ ...order, phone: e.target.value })}
-            />
-            {touched.phone && validationErrors.phone && <p className="text-red-500">{validationErrors.phone}</p>}
-          </div>
-          <div>
-            <Input
-              label="Amount"
-              placeholder="Enter amount"
-              startContent={
-                <div className="pointer-events-none flex items-center">
-                  <span className="text-default-400 text-small">$</span>
-                </div>
-              }
-              value={order.amount}
-              onBlur={() => handleBlur("amount")}
-              onChange={(e) => setOrder({ ...order, amount: e.target.value })}
-            />
-            {touched.amount && validationErrors.amount && <p className="text-ualert-500">{validationErrors.amount}</p>}
-          </div>
-          <Button isDisabled={Object.keys(validationErrors).length > 0} onClick={handleCreateOrder}>
-            {isLoading ? "Creating..." : "Create Order"}
-          </Button>
-          {error && <p className="text-ualert-500">{error}</p>}
-        </CardBody>
-      </Card>
-
-      {currentOrders.length > 0 && (
-        <Card>
-          <CardHeader>Current Orders</CardHeader>
-          <Accordion variant="splitted">
-            {currentOrders.map((order, index) => (
-              <AccordionItem
-                key={index}
-                aria-label={`Order ${index + 1}`}
-                title={`${order.customer.email} (${order.customer.phone}) - $${order.order.subtotal} ${order.order.currency}`}
+    <Table
+      removeWrapper
+      aria-label="Orders table"
+      classNames={{
+        wrapper: "bg-default-100/50",
+      }}
+    >
+      <TableHeader columns={columns}>
+        {(column) => (
+          <TableColumn key={column.key} align={column.align as "end" | "center" | "start" | undefined}>
+            {column.label}
+          </TableColumn>
+        )}
+      </TableHeader>
+      <TableBody emptyContent={renderEmptyContent()} items={currentOrders}>
+        {(order) => (
+          <TableRow key={order.id}>
+            <TableCell>{order.customer.email}</TableCell>
+            <TableCell>{formatPhoneNumber(order.customer.phone)}</TableCell>
+            <TableCell>
+              ${formatNumber(order.order.subtotal)} {order.order.currency}
+            </TableCell>
+            <TableCell>
+              <Countdown expiresAt={order.expiresAt} />
+            </TableCell>
+            <TableCell>
+              <Snippet
+                hideSymbol
+                size="sm"
+                variant="flat"
+                classNames={{
+                  base: "bg-default-200",
+                  pre: "text-xs",
+                }}
               >
-                <div className="relative">
-                  <Snippet hideSymbol size="md" variant="bordered">
-                    {order.id}
-                  </Snippet>
-                  <p className="mt-2">Expires in {<Countdown expiresAt={order.expiresAt} />}</p>
-                  <Button className="absolute top-0 right-0 bg-ualert-500" onClick={() => handleDeleteOrder(order.id)}>
-                    Delete
-                  </Button>
-                </div>
-              </AccordionItem>
-            ))}
-          </Accordion>
-        </Card>
-      )}
-    </div>
+                {order.id}
+              </Snippet>
+            </TableCell>
+            <TableCell>
+              <div className="flex justify-end">
+                <Button color="danger" variant="flat" size="sm" onPress={() => handleDeleteOrder(order.id)}>
+                  Delete
+                </Button>
+              </div>
+            </TableCell>
+          </TableRow>
+        )}
+      </TableBody>
+    </Table>
   );
-}
+});
+
+OrdersTab.displayName = "OrdersTab";
+
+export default OrdersTab;

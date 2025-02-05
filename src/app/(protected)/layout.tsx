@@ -23,20 +23,15 @@ export default function ProtectedLayout({ children }: { children: React.ReactNod
   }
 
   return (
-    <div className="flex flex-col min-h-screen">
-      <Navbar />
-      <main className="container mx-auto max-w-7xl pt-8 px-6 flex-grow">{children}</main>
-      <footer className="w-full flex items-center justify-center py-3 gap-4">
-        <Link isExternal aria-label="Twitter" href={siteConfig.links.twitter}>
-          <TwitterIcon className="text-default-500" />
-        </Link>
-        <Link isExternal aria-label="Discord" href={siteConfig.links.discord}>
-          <DiscordIcon className="text-default-500" />
-        </Link>
-        <Link isExternal aria-label="Github" href={siteConfig.links.github}>
-          <GithubIcon className="text-default-500" />
-        </Link>
-      </footer>
+    <div className="min-h-screen flex flex-col bg-gradient-to-br from-zinc-950 via-zinc-900 to-charyo-900">
+      <div className="flex-1 w-full max-w-[1440px] mx-auto px-6">
+        <div className="py-4 space-y-4">
+          <div className="h-[72px] w-full">
+            <Navbar />
+          </div>
+          <div className="w-full">{children}</div>
+        </div>
+      </div>
     </div>
   );
 }

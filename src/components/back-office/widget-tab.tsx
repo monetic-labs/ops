@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Input } from "@nextui-org/input";
+
 import { Select, SelectItem } from "@nextui-org/select";
 import { Network, StableCurrency } from "@backpack-fux/pylon-sdk";
 
@@ -10,8 +10,22 @@ import { FormButton } from "../generics/form-button";
 import GenerateApiKeysModal from "./actions/widgets/api-keys";
 import { RefundSuccessModal } from "./actions/order-success";
 
+import { Autocomplete, AutocompleteItem } from "@nextui-org/autocomplete";
+
 const networks = ["POLYGON", "SOLANA", "BASE", "OPTIMISM", "ARBITRUM"];
 const currencies = ["USDC", "USDT", "DAI"];
+
+// TODO: Fetch accounts from backend
+const accounts = [
+  {
+    name: "Settlement",
+    address: "0x595ec62736Bf19445d7F00D66072B3a3c7aeA0F5",
+  },
+  {
+    name: "Rain",
+    address: "0x695ec62736Bf19445d7F00D66072B3a3c7aeA0F5",
+  },
+];
 
 export default function WidgetManagement() {
   const [settlementAddress, setSettlementAddress] = useState<string>("");
@@ -91,17 +105,26 @@ export default function WidgetManagement() {
 
   return (
     <div className="space-y-4">
-      <Input
-        label="Settlement Address"
-        placeholder="Enter wallet address"
+      <Autocomplete
+        label="Settlement Account"
+        placeholder="Search for an account"
         value={settlementAddress}
-        onChange={(e) => setSettlementAddress(e.target.value)}
-      />
+        onSelectionChange={(value) => {
+          if (value !== null) setSettlementAddress(value.toString());
+        }}
+      >
+        {accounts.map((account) => (
+          <AutocompleteItem key={account.address} value={account.address} textValue={`${account.name} Account`}>
+            {account.name} Account
+          </AutocompleteItem>
+        ))}
+      </Autocomplete>
       <Select
+        isDisabled
         label="Settlement Network"
         placeholder="Select a network"
         selectedKeys={selectedNetwork ? [selectedNetwork] : []}
-        onSelectionChange={(keys) => setSelectedNetwork(Array.from(keys)[0] as Network)}
+        onSelectionChange={(keys) => setSelectedNetwork(Network.BASE)}
       >
         {networks.map((network) => (
           <SelectItem key={network} value={network}>
@@ -110,10 +133,11 @@ export default function WidgetManagement() {
         ))}
       </Select>
       <Select
+        isDisabled
         label="Settlement Currency"
         placeholder="Select a currency"
         selectedKeys={selectedCurrency ? [selectedCurrency] : []}
-        onSelectionChange={(keys) => setSelectedCurrency(Array.from(keys)[0] as StableCurrency)}
+        onSelectionChange={(keys) => setSelectedCurrency(StableCurrency.USDC)}
       >
         {currencies.map((currency) => (
           <SelectItem key={currency} value={currency}>
@@ -124,9 +148,6 @@ export default function WidgetManagement() {
       <div className="flex flex-col sm:flex-row justify-end space-y-2 sm:space-y-0 sm:space-x-2">
         <FormButton className="w-full sm:w-auto" disabled={!hasChanges()} onClick={handleSaveSettings}>
           Save Settings
-        </FormButton>
-        <FormButton className="w-full sm:w-auto" onClick={() => setIsApiKeysModalOpen(true)}>
-          Manage API Keys
         </FormButton>
       </div>
 

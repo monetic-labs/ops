@@ -15,7 +15,7 @@ import BackOfficeTabs from "@/components/back-office/back-office";
 import BillPayTabs from "@/components/bill-pay/bill-pay";
 import CardServicesTabs from "@/components/card-issuance";
 import ComplianceTable from "@/components/compliance/compliance";
-import UserTab from "@/components/users/users";
+import UserTab from "@/components/users";
 import { tabsConfig } from "@/config/tabs";
 import { useGetComplianceStatus } from "@/hooks/merchant/useGetComplianceStatus";
 
@@ -73,17 +73,17 @@ export default function MerchantServicesTabs({ userId }: { userId: string }) {
 
   return (
     <div className="w-full">
-      <Card className="bg-charyo-500/60 backdrop-blur-sm">
-        <CardBody className="p-0">
+      <Card className="w-full bg-[#1A1A1A]/90 border border-white/10 backdrop-blur-sm">
+        <CardBody className="w-full p-0">
           <Tabs
             aria-label="Service options"
             classNames={{
               base: "w-full",
-              tabList: "w-full relative px-6 py-2 border-b border-divider gap-6",
+              tabList: "w-full relative px-6 py-2 gap-6",
               cursor: "w-full bg-notpurple-500",
               tab: "max-w-fit px-0 h-12",
               tabContent: "text-default-500 text-sm group-data-[selected=true]:text-notpurple-500",
-              panel: "p-0",
+              panel: "w-full p-0",
             }}
             selectedKey={selectedService}
             variant="underlined"
@@ -123,7 +123,7 @@ export default function MerchantServicesTabs({ userId }: { userId: string }) {
                   </Tooltip>
                 }
               >
-                <div className="px-6 py-4">{renderTabContent(tab.id)}</div>
+                <div className="w-full px-6 py-4">{renderTabContent(tab.id)}</div>
               </Tab>
             ))}
           </Tabs>

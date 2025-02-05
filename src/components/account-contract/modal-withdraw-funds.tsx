@@ -89,7 +89,7 @@ export default function WithdrawFundsModal({ isOpen, onClose }: WithdrawFundsMod
             <p>Loading account balances...</p>
           ) : (
             <>
-              <Table aria-label="Available balances">
+              <Table removeWrapper aria-label="Available balances">
                 <TableHeader>
                   <TableColumn>SELECT</TableColumn>
                   <TableColumn>NETWORK</TableColumn>

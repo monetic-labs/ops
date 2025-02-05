@@ -96,7 +96,7 @@ export default function ComplianceTable() {
   }, []);
 
   return (
-    <Table aria-label="Example table with custom cells">
+    <Table removeWrapper aria-label="Example table with custom cells">
       <TableHeader columns={columns}>
         {(column) => (
           <TableColumn key={column.uid} align={column.uid === "actions" ? "center" : "start"}>

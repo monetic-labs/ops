@@ -16,8 +16,8 @@ export const tabsConfig = [
   },
   {
     id: "users",
-    label: "Team Access",
-    content: "Manage user access and roles for your organization.",
+    label: "Team Settings",
+    content: "Manage your organization's settings like access and roles.",
   },
 ];
 
@@ -38,11 +38,11 @@ export const backOfficeConfig = [
     label: "Payments",
   },
   {
-    id: "create-orders",
-    label: "Create Orders",
+    id: "order-links",
+    label: "Order Links",
   },
   {
-    id: "widget-mgmt",
+    id: "widget-management",
     label: "Widget Management",
   },
 ];

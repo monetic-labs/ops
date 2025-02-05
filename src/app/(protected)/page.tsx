@@ -27,11 +27,11 @@ export default function Home() {
     const { userId } = jwtDecode<JwtPayload>(authToken.value);
 
     return (
-      <section className="flex flex-col items-center justify-center">
-        <div className="flex flex-col sm:flex-row gap-4 w-full max-w-7xl justify-between mb-8">
+      <section className="flex flex-col items-center justify-center w-full">
+        <div className="flex flex-col w-full space-y-6">
           <AccountMeta />
+          <MerchantServicesTabs userId={userId} />
         </div>
-        <MerchantServicesTabs userId={userId} />
       </section>
     );
   } catch (error) {

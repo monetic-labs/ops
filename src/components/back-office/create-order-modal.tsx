@@ -1,0 +1,205 @@
+import React, { useState } from "react";
+import { Modal, ModalContent, ModalHeader, ModalBody, ModalFooter } from "@nextui-org/modal";
+import { Button } from "@nextui-org/button";
+import { Input } from "@nextui-org/input";
+import { Mail, Phone, DollarSign } from "lucide-react";
+import { GetOrderLinksOutput, ISO4217Currency } from "@backpack-fux/pylon-sdk";
+
+import { formatPhoneNumber, formatNumber } from "@/utils/helpers";
+import pylon from "@/libs/pylon-sdk";
+
+interface CreateOrderModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  onCreate: (order: GetOrderLinksOutput) => void;
+}
+
+export default function CreateOrderModal({ isOpen, onClose, onCreate }: CreateOrderModalProps) {
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [formData, setFormData] = useState({
+    email: "",
+    phone: "",
+    amount: "",
+  });
+  const [errors, setErrors] = useState({
+    email: "",
+    phone: "",
+    amount: "",
+  });
+
+  const validateEmail = (email: string) => {
+    const emailRegex = /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i;
+    return emailRegex.test(email) ? "" : "Please enter a valid email address";
+  };
+
+  const validatePhone = (phone: string) => {
+    const phoneRegex = /^\(\d{3}\)\s\d{3}-\d{4}$/;
+    return phoneRegex.test(phone) ? "" : "Please enter a valid phone number";
+  };
+
+  const validateAmount = (amount: string) => {
+    const numericValue = parseFloat(amount.replace(/[^\d.]/g, ""));
+    if (isNaN(numericValue)) return "Please enter a valid amount";
+    if (numericValue < 1) return "Amount must be at least $1.00";
+    if (numericValue > 1000000) return "Amount cannot exceed $1,000,000";
+    return "";
+  };
+
+  const handleInputChange = (field: string, value: string) => {
+    let formattedValue = value;
+    let error = "";
+
+    switch (field) {
+      case "email":
+        error = validateEmail(value);
+        break;
+      case "phone":
+        formattedValue = formatPhoneNumber(value.replace(/\D/g, ""));
+        error = validatePhone(formattedValue);
+        break;
+      case "amount":
+        // Only allow numbers and a single decimal point
+        const cleanValue = value.replace(/[^\d.]/g, "");
+
+        // Handle decimal places
+        const parts = cleanValue.split(".");
+        if (parts.length > 2) {
+          // More than one decimal point - keep only first one
+          formattedValue = parts[0] + "." + parts[1];
+        } else if (parts.length === 2) {
+          // Has decimal point - limit to 2 decimal places
+          formattedValue = parts[0] + "." + parts[1].slice(0, 2);
+        } else {
+          formattedValue = cleanValue;
+        }
+
+        // Format with commas if not typing decimal
+        if (!formattedValue.endsWith(".")) {
+          const numericValue = parseFloat(formattedValue);
+          if (!isNaN(numericValue)) {
+            formattedValue = formatNumber(numericValue);
+          }
+        }
+
+        error = validateAmount(formattedValue);
+        break;
+    }
+
+    setFormData((prev) => ({ ...prev, [field]: formattedValue }));
+    setErrors((prev) => ({ ...prev, [field]: error }));
+  };
+
+  const isFormValid = () => {
+    return !errors.email && !errors.phone && !errors.amount && formData.email && formData.phone && formData.amount;
+  };
+
+  const handleSubmit = async () => {
+    if (!isFormValid()) return;
+
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      const amountInCents = Math.round(parseFloat(formData.amount.replace(/[^\d.]/g, "")) * 100);
+
+      const response = await pylon.createOrderLink({
+        customer: {
+          email: formData.email,
+          phone: formData.phone.replace(/\D/g, ""),
+        },
+        order: {
+          subtotal: amountInCents,
+          currency: ISO4217Currency.USD,
+        },
+      });
+
+      const newOrder: GetOrderLinksOutput = {
+        id: response.orderLink,
+        customer: {
+          email: formData.email,
+          phone: formData.phone,
+        },
+        order: {
+          subtotal: amountInCents,
+          currency: ISO4217Currency.USD,
+        },
+        expiresAt: response.expiresAt,
+      };
+
+      onCreate(newOrder);
+      handleClose();
+    } catch (err) {
+      setError("Failed to create order. Please try again.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleClose = () => {
+    setFormData({ email: "", phone: "", amount: "" });
+    setErrors({ email: "", phone: "", amount: "" });
+    setError(null);
+    onClose();
+  };
+
+  return (
+    <Modal isOpen={isOpen} onClose={handleClose} size="2xl">
+      <ModalContent>
+        {() => (
+          <>
+            <ModalHeader>Create Payment Order</ModalHeader>
+            <ModalBody>
+              <div className="space-y-4">
+                <Input
+                  label="Email"
+                  placeholder="customer@example.com"
+                  value={formData.email}
+                  onChange={(e) => handleInputChange("email", e.target.value)}
+                  startContent={<Mail className="w-4 h-4 text-default-400" />}
+                  isInvalid={!!errors.email}
+                  errorMessage={errors.email}
+                  variant="bordered"
+                />
+                <Input
+                  label="Phone"
+                  placeholder="(555) 555-5555"
+                  value={formData.phone}
+                  onChange={(e) => handleInputChange("phone", e.target.value)}
+                  startContent={<Phone className="w-4 h-4 text-default-400" />}
+                  isInvalid={!!errors.phone}
+                  errorMessage={errors.phone}
+                  variant="bordered"
+                />
+                <Input
+                  label="Amount"
+                  placeholder="0.00"
+                  value={formData.amount}
+                  onChange={(e) => handleInputChange("amount", e.target.value)}
+                  startContent={<DollarSign className="w-4 h-4 text-default-400" />}
+                  endContent={
+                    <div className="pointer-events-none flex items-center">
+                      <span className="text-default-400 text-small">USD</span>
+                    </div>
+                  }
+                  isInvalid={!!errors.amount}
+                  errorMessage={errors.amount}
+                  variant="bordered"
+                />
+                {error && <p className="text-danger text-sm">{error}</p>}
+              </div>
+            </ModalBody>
+            <ModalFooter>
+              <Button color="danger" variant="light" onPress={handleClose}>
+                Cancel
+              </Button>
+              <Button color="primary" isLoading={isLoading} isDisabled={!isFormValid()} onPress={handleSubmit}>
+                Create Order
+              </Button>
+            </ModalFooter>
+          </>
+        )}
+      </ModalContent>
+    </Modal>
+  );
+}

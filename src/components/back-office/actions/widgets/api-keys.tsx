@@ -63,7 +63,7 @@ export default function GenerateApiKeysModal({ isOpen, onClose }: GenerateApiKey
           {isLoading ? (
             <p>Loading API keys...</p>
           ) : (
-            <Table aria-label="API Keys">
+            <Table removeWrapper aria-label="API Keys">
               <TableHeader>
                 <TableColumn>NAME</TableColumn>
                 <TableColumn>KEY</TableColumn>

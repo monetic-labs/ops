@@ -22,15 +22,16 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
   return (
     <div className="min-h-screen w-full relative flex items-center justify-center bg-zinc-800 sm:bg-gradient-to-br sm:from-charyo-950 sm:via-charyo-900 sm:to-notpurple-900">
       {/* Background Image - Hidden on mobile */}
-      <div className="hidden sm:block absolute inset-0">
+      {/* <div className="hidden sm:block absolute inset-0">
         <Image
           fill
           priority
+          unoptimized
           alt="Background"
           className="object-cover opacity-20 pointer-events-none"
           src="/bg-celestial.png"
         />
-      </div>
+      </div> */}
       {children}
     </div>
   );
