@@ -14,12 +14,12 @@ export function StatusModal({ isOpen, steps }: StatusModalProps) {
   return (
     <Modal
       hideCloseButton
-      isDismissable={false}
-      isOpen={isOpen}
       classNames={{
         base: "bg-zinc-900/95 shadow-xl border border-white/10",
         body: "p-0",
       }}
+      isDismissable={false}
+      isOpen={isOpen}
       size="sm"
     >
       <ModalContent>
@@ -46,7 +46,7 @@ export function StatusModal({ isOpen, steps }: StatusModalProps) {
                       >
                         {step.isComplete && (
                           <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                            <path d="M5 13l4 4L19 7" strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} />
                           </svg>
                         )}
                       </div>

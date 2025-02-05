@@ -5,6 +5,7 @@ import { Input } from "@nextui-org/input";
 import { InputOtp } from "@nextui-org/input-otp";
 import { Chip } from "@nextui-org/chip";
 import { Mail, XIcon } from "lucide-react";
+
 import { EmailVerificationProps } from "../../types";
 
 export const EmailVerification = ({
@@ -29,15 +30,15 @@ export const EmailVerification = ({
                 <Mail className="w-4 h-4 text-default-500" />
                 <span>{email.email}</span>
                 {email.isVerified ? (
-                  <Chip size="sm" variant="flat" color="success">
+                  <Chip color="success" size="sm" variant="flat">
                     Verified
                   </Chip>
                 ) : email.email === verifyingEmail ? (
-                  <Chip size="sm" variant="flat" color="warning">
+                  <Chip color="warning" size="sm" variant="flat">
                     Verifying
                   </Chip>
                 ) : (
-                  <Chip size="sm" variant="flat" color="warning">
+                  <Chip color="warning" size="sm" variant="flat">
                     Pending
                   </Chip>
                 )}
@@ -45,11 +46,11 @@ export const EmailVerification = ({
               {email.isVerified && (
                 <Button
                   isIconOnly
+                  color="danger"
+                  isDisabled={email.email === verifyingEmail}
                   size="sm"
                   variant="light"
-                  color="danger"
                   onClick={() => onRemoveEmail(email.email)}
-                  isDisabled={email.email === verifyingEmail}
                 >
                   <XIcon className="w-4 h-4" />
                 </Button>
@@ -65,13 +66,13 @@ export const EmailVerification = ({
           <div className="flex flex-col sm:flex-row gap-2">
             <div className="w-full sm:flex-1">
               <InputOtp
-                length={6}
-                value={otpValue}
-                onValueChange={onOtpChange}
                 classNames={{
                   base: "w-full",
                   input: "h-[40px]",
                 }}
+                length={6}
+                value={otpValue}
+                onValueChange={onOtpChange}
               />
             </div>
             <div className="flex gap-2 mt-2 sm:mt-0">
@@ -81,8 +82,8 @@ export const EmailVerification = ({
               <Button
                 className="flex-1 sm:flex-initial"
                 color="primary"
-                onClick={onVerifyOtp}
                 isDisabled={otpValue.length !== 6}
+                onClick={onVerifyOtp}
               >
                 Verify
               </Button>
@@ -94,21 +95,21 @@ export const EmailVerification = ({
       {!verifyingEmail && (
         <div className="flex flex-col sm:flex-row gap-2">
           <Input
-            placeholder="Enter your email address"
-            type="email"
-            value={currentEmail}
-            onChange={(e) => onEmailChange(e.target.value)}
-            description="For enhanced security, use emails of trusted friends and family."
             classNames={{
               base: "flex-1",
               inputWrapper: "h-[40px]",
             }}
+            description="For enhanced security, use emails of trusted friends and family."
+            placeholder="Enter your email address"
+            type="email"
+            value={currentEmail}
+            onChange={(e) => onEmailChange(e.target.value)}
           />
           <Button
             className="w-full sm:w-auto mt-2 sm:mt-0"
             color="primary"
-            onClick={() => onAddEmail(currentEmail)}
             isDisabled={!currentEmail || configuredEmails.some((e) => e.email === currentEmail)}
+            onClick={() => onAddEmail(currentEmail)}
           >
             Add Email
           </Button>

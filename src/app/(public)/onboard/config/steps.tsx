@@ -4,6 +4,7 @@ import { AccountUsers } from "@/components/onboard/steps/account-users";
 import { UserDetailsStep } from "@/components/onboard/steps/user-details";
 import { TermsStep } from "@/components/onboard/steps/terms";
 import { ReviewStep } from "@/components/onboard/steps/review";
+
 import { StepNavigation } from "../components/StepNavigation";
 
 interface StepConfig {

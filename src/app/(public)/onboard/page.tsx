@@ -12,6 +12,7 @@ import { schema, FormData } from "@/validations/onboard/schemas";
 import { LocalStorage } from "@/utils/localstorage";
 import { OnboardingState } from "@/contexts/AccountContext";
 import { StatusModal, StatusStep } from "@/components/onboard/status-modal";
+
 import { CircleWithNumber, CheckCircleIcon } from "./components/StepIndicator";
 import { getDefaultValues, getFieldsForStep } from "./types";
 import { handleSubmit } from "./handlers/submit-handler";
@@ -30,10 +31,12 @@ export default function OnboardPage() {
 
   const [onboardingState] = useState<OnboardingState>(() => {
     const state = LocalStorage.getOnboardingState();
+
     if (!state) {
       router.push("/auth");
       throw new Error("Missing onboarding state");
     }
+
     return state;
   });
 
@@ -73,6 +76,7 @@ export default function OnboardPage() {
             type: "required",
             message: "Please fill out all required fields for Person 1",
           });
+
           return;
         }
 
@@ -86,11 +90,13 @@ export default function OnboardPage() {
               message: "Phone number must be unique",
             });
           });
+
           return;
         }
 
         clearErrors("users");
         setCurrentStep(Math.min(currentStep + 1, 6));
+
         return;
       }
       default: {
@@ -177,18 +183,18 @@ export default function OnboardPage() {
       {/* Redirect Loading State */}
       <Modal
         hideCloseButton
-        isDismissable={false}
-        isOpen={isRedirecting}
         classNames={{
           base: "bg-zinc-900/95 shadow-xl border border-white/10",
           body: "p-0",
         }}
+        isDismissable={false}
+        isOpen={isRedirecting}
         size="sm"
       >
         <ModalContent>
           <div className="p-8">
             <div className="flex flex-col items-center justify-center gap-4">
-              <Spinner size="lg" color="white" />
+              <Spinner color="white" size="lg" />
               <div className="text-center">
                 <h2 className="text-xl font-semibold text-white mb-2">Checking Compliance Status</h2>
                 <p className="text-white/60">Please wait while we verify your account...</p>

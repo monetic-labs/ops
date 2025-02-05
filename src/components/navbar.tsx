@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { NavbarBrand, NavbarContent, NavbarItem, Navbar as NextUINavbar } from "@nextui-org/navbar";
 import { Dropdown, DropdownTrigger, DropdownMenu, DropdownItem } from "@nextui-org/dropdown";
 import { Avatar } from "@nextui-org/avatar";
@@ -78,10 +78,10 @@ const AuthenticatedNav = ({
               <button className="flex items-center gap-2 hover:opacity-80 transition-opacity">
                 <Avatar
                   className="bg-notpurple-500/20"
-                  src={user.profileImage || undefined}
                   name={initials}
-                  size="sm"
                   showFallback={!user.profileImage}
+                  size="sm"
+                  src={user.profileImage || undefined}
                 />
                 <UserInfo orgName={merchant?.name} userName={displayName} />
               </button>
@@ -99,10 +99,10 @@ const AuthenticatedNav = ({
           <DropdownTrigger>
             <Avatar
               className="bg-notpurple-500/20 cursor-pointer"
-              src={user.profileImage || undefined}
               name={initials}
-              size="sm"
               showFallback={!user.profileImage}
+              size="sm"
+              src={user.profileImage || undefined}
             />
           </DropdownTrigger>
           <DropdownMenu aria-label="Mobile user menu" className="w-[280px]" variant="flat">

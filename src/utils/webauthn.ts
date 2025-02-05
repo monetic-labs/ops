@@ -1,7 +1,7 @@
-import type { P256Credential, SignMetadata } from "ox/WebAuthnP256";
+import type { SignMetadata } from "ox/WebAuthnP256";
 
-import { Base64, Bytes, Hex as OxHex, PublicKey, type Signature } from "ox";
-import { createChallenge, createCredential, CredentialCreationFailedError, sign, verify } from "ox/WebAuthnP256";
+import { Bytes, Hex as OxHex, PublicKey, type Signature } from "ox";
+import { createCredential, sign } from "ox/WebAuthnP256";
 import {
   type WebauthnPublicKey,
   type WebauthnSignatureData,
@@ -31,6 +31,7 @@ export class WebAuthnHelper {
    */
   async requestChallenge(): Promise<string> {
     const response = await pylon.generatePasskeyChallenge();
+
     return response.challenge;
   }
 
@@ -67,6 +68,7 @@ export class WebAuthnHelper {
     });
 
     const { x, y } = PublicKey.from(credential.publicKey);
+
     this.publicKey = { x, y };
     this.credentialId = credential.id;
 
@@ -115,6 +117,7 @@ export class WebAuthnHelper {
       });
 
       const { x, y } = PublicKey.fromHex(publicKey as Hex);
+
       this.publicKey = { x, y };
       this.credentialId = credential.id;
 

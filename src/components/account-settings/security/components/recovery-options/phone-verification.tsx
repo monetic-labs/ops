@@ -5,8 +5,10 @@ import { Input } from "@nextui-org/input";
 import { InputOtp } from "@nextui-org/input-otp";
 import { Chip } from "@nextui-org/chip";
 import { Phone, XIcon } from "lucide-react";
-import { PhoneVerificationProps } from "../../types";
+
 import { formatPhoneNumber } from "@/utils/helpers";
+
+import { PhoneVerificationProps } from "../../types";
 
 export const PhoneVerification = ({
   configuredPhone,
@@ -28,15 +30,15 @@ export const PhoneVerification = ({
             <Phone className="w-4 h-4 text-default-500" />
             <span>{configuredPhone.number}</span>
             {configuredPhone.isVerified ? (
-              <Chip size="sm" variant="flat" color="success">
+              <Chip color="success" size="sm" variant="flat">
                 Verified
               </Chip>
             ) : configuredPhone.number === verifyingPhone ? (
-              <Chip size="sm" variant="flat" color="warning">
+              <Chip color="warning" size="sm" variant="flat">
                 Verifying
               </Chip>
             ) : (
-              <Chip size="sm" variant="flat" color="warning">
+              <Chip color="warning" size="sm" variant="flat">
                 Pending
               </Chip>
             )}
@@ -44,11 +46,11 @@ export const PhoneVerification = ({
           {configuredPhone.isVerified && (
             <Button
               isIconOnly
+              color="danger"
+              isDisabled={configuredPhone.number === verifyingPhone}
               size="sm"
               variant="light"
-              color="danger"
               onClick={onRemovePhone}
-              isDisabled={configuredPhone.number === verifyingPhone}
             >
               <XIcon className="w-4 h-4" />
             </Button>
@@ -62,13 +64,13 @@ export const PhoneVerification = ({
           <div className="flex flex-col sm:flex-row gap-2">
             <div className="w-full sm:flex-1">
               <InputOtp
-                length={6}
-                value={phoneOtpValue}
-                onValueChange={onPhoneOtpChange}
                 classNames={{
                   base: "w-full",
                   input: "h-[40px]",
                 }}
+                length={6}
+                value={phoneOtpValue}
+                onValueChange={onPhoneOtpChange}
               />
             </div>
             <div className="flex gap-2 mt-2 sm:mt-0">
@@ -83,8 +85,8 @@ export const PhoneVerification = ({
               <Button
                 className="flex-1 sm:flex-initial"
                 color="primary"
-                onClick={onVerifyPhoneOtp}
                 isDisabled={phoneOtpValue.length !== 6}
+                onClick={onVerifyPhoneOtp}
               >
                 Verify
               </Button>
@@ -96,9 +98,17 @@ export const PhoneVerification = ({
       {!verifyingPhone && !configuredPhone && (
         <div className="flex flex-col sm:flex-row gap-2">
           <Input
+            classNames={{
+              base: "flex-1",
+              inputWrapper: "h-[40px]",
+            }}
+            description={
+              <span className="text-xs text-warning-500">
+                Phone recovery is susceptible to SIM swap attacks. Use with caution. This is the least secure recovery
+                option.
+              </span>
+            }
             placeholder="Enter your phone number"
-            type="tel"
-            value={currentPhone}
             startContent={
               <div className="flex items-center">
                 <label className="sr-only" htmlFor="phone-extension-code">
@@ -123,23 +133,15 @@ export const PhoneVerification = ({
                 </select>
               </div>
             }
+            type="tel"
+            value={currentPhone}
             onChange={(e) => onPhoneChange(formatPhoneNumber(e.target.value))}
-            description={
-              <span className="text-xs text-warning-500">
-                Phone recovery is susceptible to SIM swap attacks. Use with caution. This is the least secure recovery
-                option.
-              </span>
-            }
-            classNames={{
-              base: "flex-1",
-              inputWrapper: "h-[40px]",
-            }}
           />
           <Button
             className="w-full sm:w-auto mt-2 sm:mt-0"
             color="primary"
-            onClick={() => onAddPhone(currentPhone)}
             isDisabled={!currentPhone}
+            onClick={() => onAddPhone(currentPhone)}
           >
             Add Phone
           </Button>

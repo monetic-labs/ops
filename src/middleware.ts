@@ -1,6 +1,8 @@
 import type { NextRequest } from "next/server";
+
 import { NextResponse } from "next/server";
 import { BridgeComplianceKycStatus, RainComplianceKybStatus } from "@backpack-fux/pylon-sdk";
+
 import { MERCHANT_COOKIE_NAME } from "./utils/constants";
 
 // Define public routes that don't require authentication
@@ -55,6 +57,7 @@ export async function middleware(request: NextRequest) {
 
     if (!complianceResponse.ok) {
       console.error("Failed to fetch compliance status");
+
       return NextResponse.next();
     }
 
@@ -75,6 +78,7 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next();
   } catch (error) {
     console.error("Middleware error:", error);
+
     // On error, we might want to redirect to an error page or clear auth
     return NextResponse.redirect(new URL("/auth", request.url));
   }

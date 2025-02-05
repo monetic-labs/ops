@@ -6,9 +6,8 @@ import { Button } from "@nextui-org/button";
 import { Input } from "@nextui-org/input";
 import { ArrowLeft, Mail, Phone, Key, Shield, ArrowRight } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { OTP_CODE_LENGTH } from "@/utils/constants";
 
-import pylon from "@/libs/pylon-sdk";
+import { OTP_CODE_LENGTH } from "@/utils/constants";
 
 interface RecoveryOptions {
   email: boolean;
@@ -106,11 +105,11 @@ export default function RecoveryPage() {
     isEnabled: boolean;
   }) => (
     <button
-      onClick={() => isEnabled && handleRecoveryOption(method)}
-      disabled={!isEnabled}
       className={`w-full p-4 rounded-xl text-left transition-all ${
         isEnabled ? "bg-white/10 hover:bg-white/20 cursor-pointer" : "bg-white/5 cursor-not-allowed opacity-50"
       }`}
+      disabled={!isEnabled}
+      onClick={() => isEnabled && handleRecoveryOption(method)}
     >
       <div className="flex items-start gap-4">
         <div className="p-2 rounded-lg bg-white/10">
@@ -130,13 +129,13 @@ export default function RecoveryPage() {
       <Card className="bg-transparent sm:bg-zinc-800/90 backdrop-blur-xl border-none shadow-none sm:shadow-2xl">
         <CardHeader className="flex flex-col gap-2 p-6 sm:px-8 sm:pt-8">
           <div className="flex items-center gap-3">
-            <Button isIconOnly variant="light" className="text-white" onClick={() => router.back()}>
+            <Button isIconOnly className="text-white" variant="light" onClick={() => router.back()}>
               <ArrowLeft className="w-5 h-5" />
             </Button>
             <div>
               <h1 className="text-xl sm:text-2xl font-semibold text-white">Account Recovery</h1>
               <p className="text-white/60 text-sm sm:text-base mt-1">
-                Forgot your passkey? No problem. Let's recover it.
+                Forgot your passkey? No problem. Let&apos;s recover it.
               </p>
             </div>
           </div>
@@ -166,20 +165,20 @@ export default function RecoveryPage() {
                 <p className="text-white/60 text-sm">Enter your account email to start the recovery process.</p>
               </div>
               <Input
-                type="email"
-                placeholder="Enter your account email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                size="lg"
                 classNames={{
                   input: "text-white text-lg",
                   inputWrapper: "bg-white/10 border-none",
                 }}
+                placeholder="Enter your account email"
+                size="lg"
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
               />
               <Button
                 className="w-full bg-white/10 hover:bg-white/20 text-white h-12"
-                size="lg"
                 isLoading={isLoading}
+                size="lg"
                 onClick={handleEmailSubmit}
               >
                 Continue
@@ -190,24 +189,24 @@ export default function RecoveryPage() {
             <div className="space-y-6">
               <div className="space-y-2">
                 <h2 className="text-white text-lg font-medium">Verify Your Email</h2>
-                <p className="text-white/60 text-sm">We've sent a verification code to {email}</p>
+                <p className="text-white/60 text-sm">We&apos;ve sent a verification code to {email}</p>
               </div>
               <Input
-                type="text"
-                placeholder="Enter 6-digit code"
-                value={otp}
-                onChange={(e) => setOtp(e.target.value)}
-                maxLength={OTP_CODE_LENGTH}
-                size="lg"
                 classNames={{
                   input: "text-white text-lg tracking-widest text-center",
                   inputWrapper: "bg-white/10 border-none",
                 }}
+                maxLength={OTP_CODE_LENGTH}
+                placeholder="Enter 6-digit code"
+                size="lg"
+                type="text"
+                value={otp}
+                onChange={(e) => setOtp(e.target.value)}
               />
               <Button
                 className="w-full bg-white/10 hover:bg-white/20 text-white h-12"
-                size="lg"
                 isLoading={isLoading}
+                size="lg"
                 onClick={handleOTPVerification}
               >
                 Verify Email
@@ -222,32 +221,32 @@ export default function RecoveryPage() {
               </div>
               <div className="space-y-3">
                 <RecoveryOption
-                  method="email"
-                  icon={Mail}
-                  title="Email Recovery"
                   description="Recover using your verified email address"
+                  icon={Mail}
                   isEnabled={recoveryOptions.email}
+                  method="email"
+                  title="Email Recovery"
                 />
                 <RecoveryOption
-                  method="phone"
-                  icon={Phone}
-                  title="Phone Recovery"
                   description="Use your registered phone number"
+                  icon={Phone}
                   isEnabled={recoveryOptions.phone}
+                  method="phone"
+                  title="Phone Recovery"
                 />
                 <RecoveryOption
-                  method="recoveryCode"
-                  icon={Key}
-                  title="Recovery Codes"
                   description="Use one of your backup recovery codes"
+                  icon={Key}
                   isEnabled={recoveryOptions.recoveryCode}
+                  method="recoveryCode"
+                  title="Recovery Codes"
                 />
                 <RecoveryOption
-                  method="backpack"
-                  icon={Shield}
-                  title="Backpack Support"
                   description="Contact Backpack support for assistance"
+                  icon={Shield}
                   isEnabled={recoveryOptions.backpack}
+                  method="backpack"
+                  title="Backpack Support"
                 />
               </div>
             </div>

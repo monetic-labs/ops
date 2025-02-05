@@ -1,9 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { Card, CardBody } from "@nextui-org/card";
+import { Card } from "@nextui-org/card";
 import { Switch } from "@nextui-org/switch";
-import { Backpack } from "lucide-react";
 
 type BackpackRecoveryProps = {
   isEnabled: boolean;
@@ -30,11 +29,11 @@ export const BackpackRecovery = ({ isEnabled, onToggle }: BackpackRecoveryProps)
           <div className="flex items-center justify-between">
             <p className="text-sm text-gray-400">Allow Backpack to help recover your account in case of emergency</p>
             <Switch
-              isSelected={isEnabled}
-              onValueChange={handleToggle}
-              isDisabled={isLoading}
-              size="sm"
               color="primary"
+              isDisabled={isLoading}
+              isSelected={isEnabled}
+              size="sm"
+              onValueChange={handleToggle}
             />
           </div>
           <div className="text-xs text-gray-500 space-y-2">

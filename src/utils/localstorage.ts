@@ -1,6 +1,3 @@
-import { WebauthnPublicKey } from "abstractionkit";
-import { Address } from "viem";
-
 export class LocalStorage {
   private static getItem(key: string): string | null {
     return typeof localStorage !== "undefined" ? localStorage.getItem(key) : null;
@@ -25,6 +22,7 @@ export class LocalStorage {
     if (typeof value === "bigint") {
       return value.toString();
     }
+
     return value;
   }
 
@@ -34,6 +32,7 @@ export class LocalStorage {
     if (typeof value === "string" && /^-?\d+n?$/.test(value)) {
       return BigInt(value.replace("n", ""));
     }
+
     return value;
   }
 
@@ -58,6 +57,7 @@ export class LocalStorage {
         timestamp: Date.now(),
       },
     };
+
     this.setItem(this.BACKPACK_STATE_KEY, JSON.stringify(updatedState, this.replacer));
 
     // Dispatch custom event for auth state changes
@@ -68,8 +68,10 @@ export class LocalStorage {
 
   static getSafeUser() {
     const state = this.getItem(this.BACKPACK_STATE_KEY);
+
     if (!state) return null;
     const parsedState = JSON.parse(state, this.reviver);
+
     return parsedState.user || null;
   }
 
@@ -90,21 +92,26 @@ export class LocalStorage {
         isOnboarding: true,
       },
     };
+
     this.setItem(this.BACKPACK_STATE_KEY, JSON.stringify(updatedState, this.replacer));
   }
 
   static getOnboardingState() {
     const state = this.getItem(this.BACKPACK_STATE_KEY);
+
     if (!state) return null;
     const parsedState = JSON.parse(state, this.reviver);
+
     return parsedState.onboarding || null;
   }
 
   static clearOnboardingState() {
     const currentState = this.getItem(this.BACKPACK_STATE_KEY);
+
     if (!currentState) return;
 
     const parsedState = JSON.parse(currentState, this.reviver);
+
     delete parsedState.onboarding;
     this.setItem(this.BACKPACK_STATE_KEY, JSON.stringify(parsedState, this.replacer));
   }
@@ -121,20 +128,25 @@ export class LocalStorage {
         timestamp: Date.now(),
       },
     };
+
     this.setItem(this.BACKPACK_STATE_KEY, JSON.stringify(updatedState, this.replacer));
   }
 
   static hasPasskeyRegistered() {
     const state = this.getItem(this.BACKPACK_STATE_KEY);
+
     if (!state) return false;
     const parsedState = JSON.parse(state, this.reviver);
+
     return parsedState.passkey?.isRegistered || false;
   }
 
   static getPasskeyId() {
     const state = this.getItem(this.BACKPACK_STATE_KEY);
+
     if (!state) return null;
     const parsedState = JSON.parse(state, this.reviver);
+
     return parsedState.passkey?.passkeyId || null;
   }
 
@@ -144,9 +156,11 @@ export class LocalStorage {
 
   static clearAuthState() {
     const currentState = this.getItem(this.BACKPACK_STATE_KEY);
+
     if (!currentState) return;
 
     const parsedState = JSON.parse(currentState, this.reviver);
+
     if (parsedState.user) {
       // Preserve passkey data but clear login state
       parsedState.user.isLogin = false;
@@ -166,21 +180,26 @@ export class LocalStorage {
         profileImage: base64Image,
       },
     };
+
     this.setItem(this.BACKPACK_STATE_KEY, JSON.stringify(updatedState, this.replacer));
   }
 
   static getProfileImage(): string | null {
     const state = this.getItem(this.BACKPACK_STATE_KEY);
+
     if (!state) return null;
     const parsedState = JSON.parse(state, this.reviver);
+
     return parsedState.user?.profileImage || null;
   }
 
   static removeProfileImage() {
     const currentState = this.getItem(this.BACKPACK_STATE_KEY);
+
     if (!currentState) return;
 
     const parsedState = JSON.parse(currentState, this.reviver);
+
     if (parsedState.user) {
       delete parsedState.user.profileImage;
       this.setItem(this.BACKPACK_STATE_KEY, JSON.stringify(parsedState, this.replacer));

@@ -84,6 +84,7 @@ export default function AuthPage() {
       } else {
         if (hasPasskey) {
           setNotification("You already have a passkey. Please use it to sign in.");
+
           return;
         }
 
@@ -153,8 +154,8 @@ export default function AuthPage() {
             {/* Lost Passkey Link */}
             <div className="flex justify-center">
               <button
-                onClick={() => router.push("/auth/recovery")}
                 className="text-white/60 hover:text-white text-sm transition-colors"
+                onClick={() => router.push("/auth/recovery")}
               >
                 Forgot your passkey?
               </button>

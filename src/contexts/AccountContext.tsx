@@ -3,11 +3,11 @@
 import { createContext, useContext, ReactNode, useState, useEffect } from "react";
 import { Building2, CreditCard, PiggyBank, PlusCircle } from "lucide-react";
 import { useRouter, usePathname } from "next/navigation";
+import { MerchantUserGetByIdOutput as MerchantUser } from "@backpack-fux/pylon-sdk";
+import { Address } from "viem";
 
 import pylon from "@/libs/pylon-sdk";
-import { MerchantUserGetByIdOutput as MerchantUser } from "@backpack-fux/pylon-sdk";
 import { LocalStorage } from "@/utils/localstorage";
-import { Address } from "viem";
 
 export interface Account {
   id: string;
@@ -82,16 +82,19 @@ export function AccountProvider({ children }: { children: ReactNode }) {
 
     if (!isPublicRoute && !isAuthenticated && !isOnboardingRoute) {
       router.replace("/auth");
+
       return;
     }
 
     if (isAuthenticated && isPublicRoute) {
       router.replace("/");
+
       return;
     }
 
     if (isOnboardingRoute && !onboardingState) {
       router.replace("/auth");
+
       return;
     }
   }, [isAuthenticated, isLoading, pathname, router, onboardingState]);
@@ -100,6 +103,7 @@ export function AccountProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     const handleStorageChange = () => {
       const newSafeUser = LocalStorage.getSafeUser();
+
       setSafeUser(newSafeUser);
     };
 
@@ -116,6 +120,7 @@ export function AccountProvider({ children }: { children: ReactNode }) {
     const fetchUser = async () => {
       if (!safeUser?.isLogin) {
         setIsLoading(false);
+
         return;
       }
 

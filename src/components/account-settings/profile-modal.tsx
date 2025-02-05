@@ -6,9 +6,9 @@ import { Button } from "@nextui-org/button";
 import { Input } from "@nextui-org/input";
 import { Avatar } from "@nextui-org/avatar";
 import { XIcon, Upload, Trash2 } from "lucide-react";
-import { formatPhoneNumber, truncateAddress } from "@/utils/helpers";
+
+import { formatPhoneNumber } from "@/utils/helpers";
 import { ExtendedMerchantUser } from "@/contexts/AccountContext";
-import { Address } from "viem";
 import { LocalStorage } from "@/utils/localstorage";
 
 interface ProfileSettingsModalProps {
@@ -24,23 +24,28 @@ export const ProfileSettingsModal = ({ isOpen, onClose, user }: ProfileSettingsM
     if (isOpen) {
       // Load profile image from localStorage when modal opens
       const storedImage = LocalStorage.getSafeUser()?.profileImage;
+
       setProfileImage(storedImage || null);
     }
   }, [isOpen]); // Only depend on isOpen to prevent unnecessary reloads
 
   const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
+
     if (file) {
       // Check file size (limit to 5MB)
       if (file.size > 5 * 1024 * 1024) {
         alert("Image size should be less than 5MB");
+
         return;
       }
 
       const reader = new FileReader();
+
       reader.onloadend = () => {
         if (typeof reader.result === "string") {
           const base64String = reader.result;
+
           setProfileImage(base64String);
           LocalStorage.setProfileImage(base64String);
           // Force a re-render of components using the image
@@ -60,6 +65,7 @@ export const ProfileSettingsModal = ({ isOpen, onClose, user }: ProfileSettingsM
 
   const getInitials = (firstName?: string, lastName?: string) => {
     if (!firstName || !lastName) return "";
+
     return `${firstName[0]}${lastName[0]}`.toUpperCase();
   };
 
@@ -100,20 +106,20 @@ export const ProfileSettingsModal = ({ isOpen, onClose, user }: ProfileSettingsM
                 isBordered
                 className="w-16 h-16"
                 color="secondary"
-                src={profileImage || undefined}
                 name={getInitials(user.firstName, user.lastName)}
                 showFallback={!profileImage}
+                src={profileImage || undefined}
               />
               <div className="flex flex-col gap-2">
                 <Button
+                  as="label"
                   color="secondary"
                   size="sm"
                   startContent={<Upload className="w-4 h-4" />}
                   variant="flat"
-                  as="label"
                 >
                   Change Picture
-                  <input type="file" accept="image/*" className="hidden" onChange={handleImageUpload} />
+                  <input accept="image/*" className="hidden" type="file" onChange={handleImageUpload} />
                 </Button>
                 {profileImage && (
                   <Button

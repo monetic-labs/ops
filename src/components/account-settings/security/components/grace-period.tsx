@@ -4,6 +4,7 @@ import { Card, CardBody } from "@nextui-org/card";
 import { Select, SelectItem } from "@nextui-org/select";
 import { Timer } from "lucide-react";
 import { Chip } from "@nextui-org/chip";
+
 import { GRACE_PERIOD_OPTIONS } from "../constants";
 
 type GracePeriodProps = {
@@ -27,20 +28,20 @@ export const GracePeriod = ({ selectedGracePeriod, onGracePeriodChange }: GraceP
           </p>
 
           <Select
-            label="Select Grace Period"
-            selectedKeys={[selectedGracePeriod]}
-            onChange={(e) => onGracePeriodChange(e.target.value)}
             classNames={{
               trigger: "p-3",
             }}
+            label="Select Grace Period"
+            selectedKeys={[selectedGracePeriod]}
+            onChange={(e) => onGracePeriodChange(e.target.value)}
           >
             {GRACE_PERIOD_OPTIONS.map((option) => (
-              <SelectItem key={option.value} value={option.value} textValue={option.label}>
+              <SelectItem key={option.value} textValue={option.label} value={option.value}>
                 <div className="flex flex-col">
                   <div className="flex items-center gap-2">
                     <span>{option.label}</span>
                     {option.isRecommended && (
-                      <Chip size="sm" color="primary" variant="flat" className="ml-2">
+                      <Chip className="ml-2" color="primary" size="sm" variant="flat">
                         Recommended
                       </Chip>
                     )}

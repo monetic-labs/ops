@@ -1,7 +1,6 @@
 import type { Address } from "viem";
 
 import dayjs from "dayjs";
-
 import { createIcon } from "opepen-standard";
 
 export const isLocal = process.env.NEXT_PUBLIC_NODE_ENV === "development";
@@ -156,16 +155,19 @@ export const formatPersonRole = (value: string) => {
 export const capitalizeFirstChar = (value: string) => {
   if (!value) return "";
   if (value.length === 1) return value.toUpperCase();
+
   return value.charAt(0).toUpperCase() + value.slice(1).toLowerCase();
 };
 
 export const getDisplayName = (firstName: string, lastName: string) => {
   // Full name
   const fullName = `${capitalizeFirstChar(firstName)} ${capitalizeFirstChar(lastName)}`;
+
   if (fullName.length <= 10) return fullName;
 
   // First initial + last name
   const initialLastName = `${capitalizeFirstChar(firstName[0])}. ${capitalizeFirstChar(lastName)}`;
+
   if (initialLastName.length <= 10) return initialLastName;
 
   // First name only

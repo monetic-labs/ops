@@ -6,6 +6,7 @@ import { Button } from "@nextui-org/button";
 import { Accordion, AccordionItem } from "@nextui-org/accordion";
 import { Chip } from "@nextui-org/chip";
 import { XIcon } from "lucide-react";
+
 import { RECOVERY_OPTIONS, MOCK_ORG_MEMBERS, OrgMember } from "./security/constants";
 import { SecuritySettingsModalProps, ConfiguredEmail, ConfiguredPhone } from "./security/types";
 import { DeadSwitch } from "./security/components/dead-switch";
@@ -49,6 +50,7 @@ export const SecuritySettingsModal = ({ isOpen, onClose }: SecuritySettingsModal
     if (!email || configuredEmails.some((e) => e.email === email)) return;
 
     const newEmail = { email, isVerified: false };
+
     setConfiguredEmails((prev) => [...prev, newEmail]);
     setVerifyingEmail(email);
     setCurrentEmail("");
@@ -124,6 +126,7 @@ export const SecuritySettingsModal = ({ isOpen, onClose }: SecuritySettingsModal
   // Team recovery handlers
   const handleSelectTeamMember = (memberId: string) => {
     const member = MOCK_ORG_MEMBERS.find((m) => m.id === memberId);
+
     if (member) {
       setConfiguredTeamMember(member);
     }
@@ -184,11 +187,11 @@ export const SecuritySettingsModal = ({ isOpen, onClose }: SecuritySettingsModal
                 <AccordionItem
                   key={option.id}
                   aria-label={option.title}
-                  isDisabled={option.isComingSoon}
                   classNames={{
                     base: option.isComingSoon ? "opacity-50" : option.isConfigured ? "bg-success/10" : "",
                     content: "pt-6",
                   }}
+                  isDisabled={option.isComingSoon}
                   startContent={
                     <option.icon
                       className={`w-5 h-5 ${
@@ -205,12 +208,12 @@ export const SecuritySettingsModal = ({ isOpen, onClose }: SecuritySettingsModal
                     <div className="flex items-center gap-2">
                       <span className={option.isComingSoon ? "text-default-400" : ""}>{option.title}</span>
                       {option.isComingSoon && (
-                        <Chip size="sm" variant="flat" className="bg-[#1a1a1a] text-default-400">
+                        <Chip className="bg-[#1a1a1a] text-default-400" size="sm" variant="flat">
                           Coming Soon
                         </Chip>
                       )}
                       {option.isConfigured && (
-                        <Chip size="sm" variant="flat" color="success">
+                        <Chip color="success" size="sm" variant="flat">
                           Configured
                         </Chip>
                       )}
@@ -222,35 +225,35 @@ export const SecuritySettingsModal = ({ isOpen, onClose }: SecuritySettingsModal
                       <EmailVerification
                         configuredEmails={configuredEmails}
                         currentEmail={currentEmail}
-                        verifyingEmail={verifyingEmail}
                         otpValue={otpValue}
+                        verifyingEmail={verifyingEmail}
                         onAddEmail={handleAddEmail}
-                        onVerifyOtp={handleVerifyOtp}
                         onCancelVerification={handleCancelVerification}
-                        onRemoveEmail={handleRemoveEmail}
                         onEmailChange={setCurrentEmail}
                         onOtpChange={setOtpValue}
+                        onRemoveEmail={handleRemoveEmail}
+                        onVerifyOtp={handleVerifyOtp}
                       />
                     )}
                     {option.id === "phone" && (
                       <PhoneVerification
                         configuredPhone={configuredPhone}
                         currentPhone={currentPhone}
-                        verifyingPhone={verifyingPhone}
                         phoneOtpValue={phoneOtpValue}
+                        verifyingPhone={verifyingPhone}
                         onAddPhone={handleAddPhone}
-                        onVerifyPhoneOtp={handleVerifyPhoneOtp}
                         onCancelPhoneVerification={handleCancelPhoneVerification}
-                        onRemovePhone={handleRemovePhone}
                         onPhoneChange={setCurrentPhone}
                         onPhoneOtpChange={setPhoneOtpValue}
+                        onRemovePhone={handleRemovePhone}
+                        onVerifyPhoneOtp={handleVerifyPhoneOtp}
                       />
                     )}
                     {option.id === "team" && (
                       <TeamRecovery
                         configuredTeamMember={configuredTeamMember}
-                        onSelectTeamMember={handleSelectTeamMember}
                         onRemoveTeamMember={handleRemoveTeamMember}
+                        onSelectTeamMember={handleSelectTeamMember}
                       />
                     )}
                     {option.id === "backpack" && (

@@ -1,10 +1,3 @@
-import { SubmitHandler } from "react-hook-form";
-import { WebAuthnHelper } from "@/utils/webauthn";
-import { WebAuthnSafeAccountHelper } from "@/utils/safeAccount";
-import { LocalStorage } from "@/utils/localstorage";
-import { FormData, UserRole } from "@/validations/onboard/schemas";
-import { OnboardingState } from "@/contexts/AccountContext";
-import { BACKPACK_GUARDIAN_ADDRESS } from "@/utils/constants";
 import { SocialRecoveryModule, SocialRecoveryModuleGracePeriodSelector } from "abstractionkit";
 import {
   ISO3166Alpha2Country,
@@ -13,6 +6,13 @@ import {
   RecoveryWalletMethod,
   RecoveryWalletGenerateInput,
 } from "@backpack-fux/pylon-sdk";
+
+import { WebAuthnHelper } from "@/utils/webauthn";
+import { WebAuthnSafeAccountHelper } from "@/utils/safeAccount";
+import { LocalStorage } from "@/utils/localstorage";
+import { FormData, UserRole } from "@/validations/onboard/schemas";
+import { OnboardingState } from "@/contexts/AccountContext";
+import { BACKPACK_GUARDIAN_ADDRESS } from "@/utils/constants";
 import pylon from "@/libs/pylon-sdk";
 
 interface SubmitHandlerParams {
@@ -47,6 +47,7 @@ export const handleSubmit = async ({
         type: "validate",
         message: "Please verify your passkey before submitting",
       });
+
       return;
     }
 
@@ -201,6 +202,7 @@ export const handleSubmit = async ({
       // Sign and send the user operation
       const userOpHash = individualAccount.getUserOpHash(userOperation);
       const signature = await webauthnHelper.signMessage(userOpHash);
+
       await individualAccount.signAndSendUserOp(userOperation, signature);
 
       // Update second status step

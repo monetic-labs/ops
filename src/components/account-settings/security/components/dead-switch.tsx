@@ -4,6 +4,7 @@ import { Card, CardBody } from "@nextui-org/card";
 import { Select, SelectItem } from "@nextui-org/select";
 import { Clock } from "lucide-react";
 import { Chip } from "@nextui-org/chip";
+
 import { DEAD_SWITCH_OPTIONS } from "../constants";
 
 type DeadSwitchProps = {
@@ -19,7 +20,7 @@ export const DeadSwitch = ({ selectedDeadSwitch, onDeadSwitchChange }: DeadSwitc
           <Clock className="w-5 h-5 text-primary" />
           <h4 className="text-lg font-medium">Dead Switch</h4>
         </div>
-        <Chip size="sm" variant="flat" className="bg-default-100">
+        <Chip className="bg-default-100" size="sm" variant="flat">
           Coming Soon
         </Chip>
       </div>
@@ -32,15 +33,15 @@ export const DeadSwitch = ({ selectedDeadSwitch, onDeadSwitchChange }: DeadSwitc
 
           <Select
             isDisabled
-            label="Select Inactivity Period"
-            selectedKeys={[selectedDeadSwitch]}
-            onChange={(e) => onDeadSwitchChange(e.target.value)}
             classNames={{
               trigger: "p-3",
             }}
+            label="Select Inactivity Period"
+            selectedKeys={[selectedDeadSwitch]}
+            onChange={(e) => onDeadSwitchChange(e.target.value)}
           >
             {DEAD_SWITCH_OPTIONS.map((option) => (
-              <SelectItem key={option.value} value={option.value} textValue={option.label}>
+              <SelectItem key={option.value} textValue={option.label} value={option.value}>
                 <div className="flex flex-col">
                   <span>{option.label}</span>
                   <span className="text-tiny text-default-400">{option.description}</span>
