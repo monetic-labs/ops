@@ -12,7 +12,13 @@ export class LocalStorage {
     }
   }
 
-  private static SAFE_USER_KEY = "@backpack/services";
+  private static removeItem(key: string): void {
+    if (typeof localStorage !== "undefined") {
+      localStorage.removeItem(key);
+    }
+  }
+
+  private static BACKPACK_STATE_KEY = "@backpack/service:state";
 
   // Custom replacer for JSON.stringify to handle BigInt
   private static replacer(key: string, value: any) {
@@ -31,74 +37,153 @@ export class LocalStorage {
     return value;
   }
 
-  // Profile image methods
-  static setProfileImage(base64Image: string) {
-    const services = this.getItem(this.SAFE_USER_KEY);
-    if (services) {
-      const servicesObj = JSON.parse(services, this.reviver);
-      servicesObj.profileImage = base64Image;
-      this.setItem(this.SAFE_USER_KEY, JSON.stringify(servicesObj, this.replacer));
-    }
-  }
-
-  static getProfileImage(): string | null {
-    const services = this.getItem(this.SAFE_USER_KEY);
-    if (services) {
-      const servicesObj = JSON.parse(services, this.reviver);
-      return servicesObj.profileImage || null;
-    }
-    return null;
-  }
-
-  static removeProfileImage() {
-    const services = this.getItem(this.SAFE_USER_KEY);
-    if (services) {
-      const servicesObj = JSON.parse(services, this.reviver);
-      delete servicesObj.profileImage;
-      this.setItem(this.SAFE_USER_KEY, JSON.stringify(servicesObj, this.replacer));
-    }
-  }
-
   static setSafeUser(
-    publicKeyCoordinates: WebauthnPublicKey,
-    walletAddress: Address,
-    settlementAddress: Address,
+    publicKey: any,
+    walletAddress: string,
+    settlementAddress: string,
     passkeyId: string,
     isLogin: boolean
   ) {
-    // Get existing data to preserve profile image if it exists
-    const existingData = this.getItem(this.SAFE_USER_KEY);
-    const existingProfileImage = existingData ? JSON.parse(existingData, this.reviver).profileImage : null;
+    const currentState = this.getItem(this.BACKPACK_STATE_KEY);
+    const parsedState = currentState ? JSON.parse(currentState, this.reviver) : {};
 
-    const data = {
-      publicKeyCoordinates,
-      walletAddress,
-      settlementAddress,
-      passkeyId,
-      isLogin,
-      profileImage: existingProfileImage, // Preserve profile image
+    const updatedState = {
+      ...parsedState,
+      user: {
+        publicKey,
+        walletAddress,
+        settlementAddress,
+        passkeyId,
+        isLogin,
+        timestamp: Date.now(),
+      },
     };
+    this.setItem(this.BACKPACK_STATE_KEY, JSON.stringify(updatedState, this.replacer));
 
-    this.setItem(this.SAFE_USER_KEY, JSON.stringify(data, this.replacer));
-  }
-
-  static getSafeUser() {
-    const data = this.getItem(this.SAFE_USER_KEY);
-    if (!data) return null;
-
-    return JSON.parse(data, this.reviver);
-  }
-
-  static clearAuthState() {
-    const data = this.getSafeUser();
-    if (data) {
-      // Preserve passkey data but clear login state
-      this.setSafeUser(data.publicKeyCoordinates, data.walletAddress, data.settlementAddress, data.passkeyId, false);
+    // Dispatch custom event for auth state changes
+    if (typeof window !== "undefined") {
+      window.dispatchEvent(new Event("authStateChange"));
     }
   }
 
-  static hasExistingPasskey() {
-    const data = this.getSafeUser();
-    return Boolean(data?.publicKeyCoordinates && data?.walletAddress);
+  static getSafeUser() {
+    const state = this.getItem(this.BACKPACK_STATE_KEY);
+    if (!state) return null;
+    const parsedState = JSON.parse(state, this.reviver);
+    return parsedState.user || null;
+  }
+
+  static setOnboardingState(state: {
+    passkeyId: string;
+    walletAddress: string;
+    settlementAddress: string;
+    publicKeyCoordinates: { x: string; y: string };
+  }) {
+    const currentState = this.getItem(this.BACKPACK_STATE_KEY);
+    const parsedState = currentState ? JSON.parse(currentState, this.reviver) : {};
+
+    const updatedState = {
+      ...parsedState,
+      onboarding: {
+        ...state,
+        timestamp: Date.now(),
+        isOnboarding: true,
+      },
+    };
+    this.setItem(this.BACKPACK_STATE_KEY, JSON.stringify(updatedState, this.replacer));
+  }
+
+  static getOnboardingState() {
+    const state = this.getItem(this.BACKPACK_STATE_KEY);
+    if (!state) return null;
+    const parsedState = JSON.parse(state, this.reviver);
+    return parsedState.onboarding || null;
+  }
+
+  static clearOnboardingState() {
+    const currentState = this.getItem(this.BACKPACK_STATE_KEY);
+    if (!currentState) return;
+
+    const parsedState = JSON.parse(currentState, this.reviver);
+    delete parsedState.onboarding;
+    this.setItem(this.BACKPACK_STATE_KEY, JSON.stringify(parsedState, this.replacer));
+  }
+
+  static setPasskeyRegistered(passkeyId: string) {
+    const currentState = this.getItem(this.BACKPACK_STATE_KEY);
+    const parsedState = currentState ? JSON.parse(currentState, this.reviver) : {};
+
+    const updatedState = {
+      ...parsedState,
+      passkey: {
+        passkeyId,
+        isRegistered: true,
+        timestamp: Date.now(),
+      },
+    };
+    this.setItem(this.BACKPACK_STATE_KEY, JSON.stringify(updatedState, this.replacer));
+  }
+
+  static hasPasskeyRegistered() {
+    const state = this.getItem(this.BACKPACK_STATE_KEY);
+    if (!state) return false;
+    const parsedState = JSON.parse(state, this.reviver);
+    return parsedState.passkey?.isRegistered || false;
+  }
+
+  static getPasskeyId() {
+    const state = this.getItem(this.BACKPACK_STATE_KEY);
+    if (!state) return null;
+    const parsedState = JSON.parse(state, this.reviver);
+    return parsedState.passkey?.passkeyId || null;
+  }
+
+  static clearAll() {
+    this.removeItem(this.BACKPACK_STATE_KEY);
+  }
+
+  static clearAuthState() {
+    const currentState = this.getItem(this.BACKPACK_STATE_KEY);
+    if (!currentState) return;
+
+    const parsedState = JSON.parse(currentState, this.reviver);
+    if (parsedState.user) {
+      // Preserve passkey data but clear login state
+      parsedState.user.isLogin = false;
+      this.setItem(this.BACKPACK_STATE_KEY, JSON.stringify(parsedState, this.replacer));
+    }
+  }
+
+  // Profile image methods
+  static setProfileImage(base64Image: string) {
+    const currentState = this.getItem(this.BACKPACK_STATE_KEY);
+    const parsedState = currentState ? JSON.parse(currentState, this.reviver) : {};
+
+    const updatedState = {
+      ...parsedState,
+      user: {
+        ...parsedState.user,
+        profileImage: base64Image,
+      },
+    };
+    this.setItem(this.BACKPACK_STATE_KEY, JSON.stringify(updatedState, this.replacer));
+  }
+
+  static getProfileImage(): string | null {
+    const state = this.getItem(this.BACKPACK_STATE_KEY);
+    if (!state) return null;
+    const parsedState = JSON.parse(state, this.reviver);
+    return parsedState.user?.profileImage || null;
+  }
+
+  static removeProfileImage() {
+    const currentState = this.getItem(this.BACKPACK_STATE_KEY);
+    if (!currentState) return;
+
+    const parsedState = JSON.parse(currentState, this.reviver);
+    if (parsedState.user) {
+      delete parsedState.user.profileImage;
+      this.setItem(this.BACKPACK_STATE_KEY, JSON.stringify(parsedState, this.replacer));
+    }
   }
 }

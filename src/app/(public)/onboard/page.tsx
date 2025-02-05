@@ -1,62 +1,61 @@
 "use client";
 
-import { Suspense, useEffect } from "react";
+import { Suspense, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Spinner } from "@nextui-org/spinner";
 import { useForm, FormProvider } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { ISO3166Alpha2Country, ISO3166Alpha3Country, PersonRole } from "@backpack-fux/pylon-sdk";
 import { Accordion, AccordionItem } from "@nextui-org/accordion";
-import { useState } from "react";
+import { Modal, ModalContent } from "@nextui-org/modal";
 
-import { schema, FormData, UserRole } from "@/validations/onboard/schemas";
-import pylon from "@/libs/pylon-sdk";
-import { CompanyDetailsStep } from "@/components/onboard/steps/company-details";
-import { CompanyAccountStep } from "@/components/onboard/steps/company-account";
-import { AccountUsers } from "@/components/onboard/steps/account-users";
-import { TermsStep } from "@/components/onboard/steps/terms";
-import { ReviewStep } from "@/components/onboard/steps/review";
-import { UserDetailsStep } from "@/components/onboard/steps/user-details";
+import { schema, FormData } from "@/validations/onboard/schemas";
 import { LocalStorage } from "@/utils/localstorage";
-
-import { getDefaultValues, getFieldsForStep } from "./types";
-import { StepNavigation } from "./components/StepNavigation";
+import { OnboardingState } from "@/contexts/AccountContext";
+import { StatusModal, StatusStep } from "@/components/onboard/status-modal";
 import { CircleWithNumber, CheckCircleIcon } from "./components/StepIndicator";
+import { getDefaultValues, getFieldsForStep } from "./types";
+import { handleSubmit } from "./handlers/submit-handler";
+import { getSteps } from "./config/steps";
 
 export default function OnboardPage() {
   const router = useRouter();
-  const safeUser = LocalStorage.getSafeUser();
   const [currentStep, setCurrentStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isRedirecting, setIsRedirecting] = useState(false);
+  const [statusSteps, setStatusSteps] = useState<StatusStep[]>([
+    { message: "Creating merchant account...", isComplete: false },
+    { message: "Setting up account recovery...", isComplete: false },
+    { message: "Redirecting to compliance portal...", isComplete: false },
+  ]);
 
-  // TODO: this should be done in middleware
-  useEffect(() => {
-    if (
-      !safeUser ||
-      !safeUser.walletAddress ||
-      !safeUser.passkeyId ||
-      !safeUser.publicKeyCoordinates ||
-      safeUser.isLogin
-    ) {
+  const [onboardingState] = useState<OnboardingState>(() => {
+    const state = LocalStorage.getOnboardingState();
+    if (!state) {
       router.push("/auth");
+      throw new Error("Missing onboarding state");
     }
-  }, [safeUser]);
+    return state;
+  });
 
   const methods = useForm<FormData>({
     resolver: zodResolver(schema),
     mode: "onChange",
     reValidateMode: "onChange",
-    defaultValues: getDefaultValues(),
+    defaultValues: getDefaultValues({ settlementAddress: onboardingState.settlementAddress }),
   });
 
   const {
-    handleSubmit,
-    formState: { errors, isValid, isValidating },
-    trigger,
+    handleSubmit: handleFormSubmit,
     watch,
+    formState: { errors, isValid, isValidating },
     setError,
     clearErrors,
+    trigger,
   } = methods;
+
+  const updateStatusStep = (step: number, isComplete: boolean) => {
+    setStatusSteps((steps) => steps.map((s, i) => (i === step ? { ...s, isComplete } : s)));
+  };
 
   const handleNext = async () => {
     switch (currentStep) {
@@ -74,13 +73,10 @@ export default function OnboardPage() {
             type: "required",
             message: "Please fill out all required fields for Person 1",
           });
-
           return;
         }
 
-        // Check for duplicate phone numbers
         const phoneNumbers = users.map((user) => user.phoneNumber?.number).filter(Boolean);
-
         const hasDuplicatePhones = new Set(phoneNumbers).size !== phoneNumbers.length;
 
         if (hasDuplicatePhones) {
@@ -90,13 +86,11 @@ export default function OnboardPage() {
               message: "Phone number must be unique",
             });
           });
-
           return;
         }
 
         clearErrors("users");
         setCurrentStep(Math.min(currentStep + 1, 6));
-
         return;
       }
       default: {
@@ -114,215 +108,31 @@ export default function OnboardPage() {
     setCurrentStep(Math.max(currentStep - 1, 1));
   };
 
-  const onSubmit = handleSubmit(async (data) => {
+  const handleEdit = (stepNumber: number) => {
+    setCurrentStep(stepNumber);
+  };
+
+  const onSubmit = handleFormSubmit(async (formData) => {
     setIsSubmitting(true);
     try {
-      const response = await pylon.createMerchant({
-        settlementAddress: safeUser?.settlementAddress!,
-        isTermsOfServiceAccepted: data.acceptedTerms,
-        company: {
-          name: data.companyName,
-          email: data.companyEmail,
-          website: `https://${data.companyWebsite}`,
-          type: data.companyType,
-          registrationNumber: data.companyRegistrationNumber,
-          taxId: data.companyTaxId,
-          description: data.companyDescription || undefined,
-          registeredAddress: {
-            street1: data.streetAddress1,
-            street2: data.streetAddress2 || undefined,
-            city: data.city,
-            postcode: data.postcode,
-            state: data.state,
-            country: ISO3166Alpha2Country.US,
-          },
-          controlOwner: {
-            firstName: data.users[0].firstName,
-            lastName: data.users[0].lastName,
-            email: data.users[0].email,
-            phoneCountryCode: data.users[0].phoneNumber.extension,
-            phoneNumber: data.users[0].phoneNumber.number,
-            nationalId: data.users[0].socialSecurityNumber,
-            countryOfIssue: data.users[0].countryOfIssue,
-            birthDate: data.users[0].birthDate,
-            walletAddress: safeUser?.walletAddress!,
-            address: {
-              line1: data.users[0].streetAddress1,
-              line2: data.users[0].streetAddress2 || undefined,
-              city: data.users[0].city,
-              region: data.users[0].state,
-              postalCode: data.users[0].postcode,
-              countryCode: ISO3166Alpha2Country.US,
-              country: ISO3166Alpha3Country.USA,
-            },
-          },
-          ultimateBeneficialOwners: data.users
-            .filter((user) => user.roles.includes(UserRole.BENEFICIAL_OWNER))
-            .map((user) => ({
-              firstName: user.firstName,
-              lastName: user.lastName,
-              email: user.email,
-              phoneCountryCode: user.phoneNumber.extension,
-              phoneNumber: user.phoneNumber.number,
-              nationalId: user.socialSecurityNumber,
-              countryOfIssue: user.countryOfIssue,
-              birthDate: user.birthDate,
-              address: {
-                line1: user.streetAddress1,
-                line2: user.streetAddress2 || undefined,
-                city: user.city,
-                region: user.state,
-                postalCode: user.postcode,
-                countryCode: ISO3166Alpha2Country.US,
-                country: ISO3166Alpha3Country.USA,
-              },
-            })),
-          representatives: data.users
-            .filter((user) => user.roles.includes(UserRole.REPRESENTATIVE))
-            // .slice(1) // Skip the first representative
-            .map((user) => ({
-              firstName: user.firstName,
-              lastName: user.lastName,
-              email: user.email,
-              phoneCountryCode: user.phoneNumber.extension,
-              phoneNumber: user.phoneNumber.number,
-              nationalId: user.socialSecurityNumber,
-              countryOfIssue: user.countryOfIssue,
-              birthDate: user.birthDate,
-              address: {
-                line1: user.streetAddress1,
-                line2: user.streetAddress2 || undefined,
-                city: user.city,
-                region: user.state,
-                postalCode: user.postcode,
-                countryCode: ISO3166Alpha2Country.US,
-                country: ISO3166Alpha3Country.USA,
-              },
-            })),
+      await handleSubmit({
+        formData,
+        onboardingState,
+        updateStatusStep,
+        setError,
+        onSuccess: async () => {
+          await new Promise((resolve) => setTimeout(resolve, 1500));
+          setIsSubmitting(false);
+          setIsRedirecting(true);
+          router.push("/");
         },
-        users: data.users
-          .filter((user) => user.hasDashboardAccess)
-          .map((user, index) => {
-            const role = user.dashboardRole as PersonRole;
-
-            return {
-              firstName: user.firstName,
-              lastName: user.lastName,
-              email: user.email,
-              phoneCountryCode: user.phoneNumber.extension,
-              phoneNumber: user.phoneNumber.number,
-              birthDate: user.birthDate,
-              nationalId: user.socialSecurityNumber,
-              countryOfIssue: user.countryOfIssue,
-              walletAddress: index === 0 ? safeUser?.walletAddress! : undefined,
-              role,
-              passkeyId: index === 0 ? safeUser?.passkeyId! : undefined,
-              address: {
-                line1: user.streetAddress1,
-                line2: user.streetAddress2 || undefined,
-                city: user.city,
-                region: user.state,
-                postalCode: user.postcode,
-                countryCode: ISO3166Alpha2Country.US,
-                country: ISO3166Alpha3Country.USA,
-              },
-            };
-          }),
       });
-
-      if (response) {
-        LocalStorage.setSafeUser(
-          safeUser?.publicKeyCoordinates!,
-          safeUser?.walletAddress!,
-          safeUser?.settlementAddress!,
-          safeUser?.passkeyId!,
-          true
-        );
-      }
-      router.refresh();
-    } catch (error: any) {
-      console.error("error: ", error);
-      if (error.response?.data?.errors) {
-        Object.entries(error.response.data.errors).forEach(([key, value]) => {
-          setError(key as any, {
-            type: "required",
-            message: value as string,
-          });
-        });
-      } else {
-        // Display a generic error message
-        setError("root", {
-          type: "validate",
-          message: error.message,
-        });
-      }
-    } finally {
+    } catch (error) {
       setIsSubmitting(false);
     }
   });
 
-  const steps = [
-    {
-      number: "1",
-      title: "Company Account",
-      content: (
-        <>
-          <CompanyDetailsStep />
-          <StepNavigation isFirstStep isValidating={isValidating} onNext={handleNext} />
-        </>
-      ),
-    },
-    {
-      number: "2",
-      title: "Company Details",
-      content: (
-        <>
-          <CompanyAccountStep />
-          <StepNavigation isValidating={isValidating} onNext={handleNext} onPrevious={handlePrevious} />
-        </>
-      ),
-    },
-    {
-      number: "3",
-      title: "Account Users",
-      content: (
-        <>
-          <AccountUsers />
-          <StepNavigation isValidating={isValidating} onNext={handleNext} onPrevious={handlePrevious} />
-        </>
-      ),
-    },
-    {
-      number: "4",
-      title: "User Details",
-      content: (
-        <>
-          <UserDetailsStep />
-          <StepNavigation isValidating={isValidating} onNext={handleNext} onPrevious={handlePrevious} />
-        </>
-      ),
-    },
-    {
-      number: "5",
-      title: "Terms and Conditions",
-      content: (
-        <>
-          <TermsStep />
-          <StepNavigation isValidating={isValidating} onNext={handleNext} onPrevious={handlePrevious} />
-        </>
-      ),
-    },
-    {
-      number: "6",
-      title: "Review",
-      content: (
-        <>
-          <ReviewStep onStepChange={() => handleNext()} />
-          <StepNavigation isLastStep isSubmitting={isSubmitting} isValid={isValid} onPrevious={handlePrevious} />
-        </>
-      ),
-    },
-  ];
+  const steps = getSteps();
 
   return (
     <section className="w-full relative z-10 max-w-3xl mx-auto px-4 py-8">
@@ -346,13 +156,47 @@ export default function OnboardPage() {
                   }
                   title={step.title}
                 >
-                  {step.content}
+                  {step.content({
+                    isValidating,
+                    onNext: handleNext,
+                    onPrevious: handlePrevious,
+                    onStepChange: handleEdit,
+                    isSubmitting,
+                    isValid,
+                  })}
                 </AccordionItem>
               ))}
             </Accordion>
           </form>
         </FormProvider>
       </Suspense>
+
+      {/* Status Modal */}
+      <StatusModal isOpen={isSubmitting} steps={statusSteps} />
+
+      {/* Redirect Loading State */}
+      <Modal
+        hideCloseButton
+        isDismissable={false}
+        isOpen={isRedirecting}
+        classNames={{
+          base: "bg-zinc-900/95 shadow-xl border border-white/10",
+          body: "p-0",
+        }}
+        size="sm"
+      >
+        <ModalContent>
+          <div className="p-8">
+            <div className="flex flex-col items-center justify-center gap-4">
+              <Spinner size="lg" color="white" />
+              <div className="text-center">
+                <h2 className="text-xl font-semibold text-white mb-2">Checking Compliance Status</h2>
+                <p className="text-white/60">Please wait while we verify your account...</p>
+              </div>
+            </div>
+          </div>
+        </ModalContent>
+      </Modal>
     </section>
   );
 }

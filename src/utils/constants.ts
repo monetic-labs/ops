@@ -1,8 +1,8 @@
 import { Address, erc20Abi } from "viem";
 
-import { isLocal } from "./helpers";
+import { isLocal, isProduction } from "./helpers";
 
-export const MERCHANT_COOKIE_NAME = "pyv2_merchant_token";
+export const MERCHANT_COOKIE_NAME = "@backpack/services";
 
 export const OTP_CODE_LENGTH = 6;
 
@@ -17,3 +17,8 @@ export const BASE_USDC = {
 
 export const MOCK_SETTLEMENT_ADDRESS = "0x595ec62736Bf19445d7F00D66072B3a3c7aeA0F5";
 export const MOCK_BALANCE = "750";
+
+// TODO
+export const BACKPACK_GUARDIAN_ADDRESS = isProduction
+  ? "0x4198E85b2fDAc05993C8F5d70ab07Ab5348C0694"
+  : "0x4198E85b2fDAc05993C8F5d70ab07Ab5348C0694";

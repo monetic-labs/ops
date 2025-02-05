@@ -2,10 +2,12 @@ import { ISO3166Alpha2Country, PersonRole } from "@backpack-fux/pylon-sdk";
 
 import { UserRole } from "@/validations/onboard/schemas";
 import { FormData } from "@/validations/onboard/schemas";
+import { Address } from "viem";
 
-export const getDefaultValues = (): Partial<FormData> => ({
+export const getDefaultValues = ({ settlementAddress }: { settlementAddress: Address }): Partial<FormData> => ({
   companyEmail: "",
   acceptedTerms: false,
+  settlementAddress,
   users: [
     {
       firstName: "",

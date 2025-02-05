@@ -1,5 +1,7 @@
 import type { Address } from "viem";
 
+import dayjs from "dayjs";
+
 import { createIcon } from "opepen-standard";
 
 export const isLocal = process.env.NEXT_PUBLIC_NODE_ENV === "development";
@@ -172,3 +174,5 @@ export const getDisplayName = (firstName: string, lastName: string) => {
   // If all else fails, return first initial + last name
   return initialLastName;
 };
+
+export const todayStr = dayjs().format("MMM D YYYY hh:mm A");

@@ -10,6 +10,7 @@ import { useRouter } from "next/navigation";
 import { WebAuthnHelper } from "@/utils/webauthn";
 import { PublicKeySafeAccountHelper, WebAuthnSafeAccountHelper } from "@/utils/safeAccount";
 import { LocalStorage } from "@/utils/localstorage";
+import { useAccounts } from "@/contexts/AccountContext";
 
 const SecurityFeatures = () => (
   <div className="space-y-4 text-default-500">
@@ -48,23 +49,25 @@ export default function AuthPage() {
   const [isDisabled, setIsDisabled] = useState(false);
   const [notification, setNotification] = useState<string | null>(null);
   const [hasPasskey, setHasPasskey] = useState(false);
+  const router = useRouter();
+  const { setOnboardingState } = useAccounts();
 
   useEffect(() => {
     const safeUser = LocalStorage.getSafeUser();
-    const hasExistingPasskey = LocalStorage.hasExistingPasskey();
+    const hasExistingPasskey = LocalStorage.hasPasskeyRegistered();
 
     if (safeUser?.isLogin) {
       setIsDisabled(true);
-      window.location.href = "/";
+      router.push("/");
     }
 
     setHasPasskey(hasExistingPasskey);
-  }, []);
+  }, [router]);
 
   const handlePasskeyAuth = async (isLogin: boolean) => {
     setIsLoading(true);
     try {
-      const webauthnHelper = new WebAuthnHelper(window.location.hostname);
+      const webauthnHelper = new WebAuthnHelper({});
 
       if (isLogin) {
         // Login with passkey
@@ -75,9 +78,9 @@ export default function AuthPage() {
         const safeSettlement = new PublicKeySafeAccountHelper(walletAddress);
         const settlementAddress = safeSettlement.getAddress();
 
-        // TODO: pass in passkeyId from pylon
+        // Store login state
         LocalStorage.setSafeUser(webauthnPublicKey, walletAddress, settlementAddress, "", true);
-        window.location.href = "/";
+        router.push("/");
       } else {
         if (hasPasskey) {
           setNotification("You already have a passkey. Please use it to sign in.");
@@ -85,21 +88,33 @@ export default function AuthPage() {
         }
 
         // Create new passkey
-        const webauthnHelper = new WebAuthnHelper(window.location.hostname);
-
-        const { publicKeyCoordinates, passkeyId } = await webauthnHelper.createPasskey();
+        const { publicKeyCoordinates, passkeyId, credentialId } = await webauthnHelper.createPasskey();
         const safeOwner = new WebAuthnSafeAccountHelper(publicKeyCoordinates);
         const walletAddress = safeOwner.getAddress();
 
         const safeSettlement = new PublicKeySafeAccountHelper(walletAddress);
         const settlementAddress = safeSettlement.getAddress();
 
-        LocalStorage.setSafeUser(publicKeyCoordinates, walletAddress, settlementAddress, passkeyId, false);
-        window.location.href = "/onboard";
+        // Store onboarding state
+        const onboardingState = {
+          passkeyId,
+          credentialId,
+          walletAddress,
+          settlementAddress,
+          publicKeyCoordinates: {
+            x: publicKeyCoordinates.x.toString(),
+            y: publicKeyCoordinates.y.toString(),
+          },
+        };
+
+        // Store onboarding state in context and localStorage
+        setOnboardingState(onboardingState);
+        LocalStorage.setOnboardingState(onboardingState);
+
+        router.push("/onboard");
       }
     } catch (error) {
       console.error("Passkey error:", error);
-
       if (error instanceof Error) {
         setNotification(error.message);
       } else {
@@ -124,15 +139,27 @@ export default function AuthPage() {
         </CardHeader>
         <CardBody className="px-6 pb-6 sm:px-8 flex flex-col items-center gap-6">
           {/* Sign In Section */}
-          <Button
-            className="w-full bg-white/10 hover:bg-white/20 text-white h-14"
-            isLoading={isLoading}
-            radius="lg"
-            startContent={!isLoading && <Fingerprint className="w-5 h-5" />}
-            onClick={() => handlePasskeyAuth(true)}
-          >
-            Continue with Passkey
-          </Button>
+          <div className="w-full space-y-2">
+            <Button
+              className="w-full bg-white/10 hover:bg-white/20 text-white h-14"
+              isLoading={isLoading}
+              radius="lg"
+              startContent={!isLoading && <Fingerprint className="w-5 h-5" />}
+              onClick={() => handlePasskeyAuth(true)}
+            >
+              Continue with Passkey
+            </Button>
+
+            {/* Lost Passkey Link */}
+            <div className="flex justify-center">
+              <button
+                onClick={() => router.push("/auth/recovery")}
+                className="text-white/60 hover:text-white text-sm transition-colors"
+              >
+                Forgot your passkey?
+              </button>
+            </div>
+          </div>
 
           {/* Divider */}
           <div className="w-full flex items-center gap-4">

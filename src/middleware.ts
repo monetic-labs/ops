@@ -11,10 +11,21 @@ export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const authToken = request.cookies.get(MERCHANT_COOKIE_NAME);
 
-  // Special handling for invite route
-  if (pathname.startsWith("/invite")) {
-    const token = request.nextUrl.searchParams.get("token");
-    return token ? NextResponse.next() : NextResponse.redirect(new URL("/auth", request.url));
+  // Special handling for auth route
+  if (pathname.startsWith("/auth")) {
+    // Check if user has a registered passkey but hasn't completed onboarding
+    // Note: We can't check localStorage in middleware, so we'll handle this in the auth page component
+    if (authToken) {
+      return NextResponse.redirect(new URL("/", request.url));
+    }
+
+    return NextResponse.next();
+  }
+
+  // Special handling for onboarding route
+  if (pathname.startsWith("/onboard")) {
+    // Note: We can't check localStorage in middleware, so we'll handle this in the onboard page component
+    return NextResponse.next();
   }
 
   // If no auth token, only allow public routes

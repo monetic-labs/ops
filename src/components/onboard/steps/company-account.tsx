@@ -21,12 +21,13 @@ export const CompanyAccountStep = () => {
   return (
     <div className="mb-8 space-y-6">
       <div className="space-y-4">
-        <FormField
+        {/** We pass in the settlement address as a default value */}
+        {/* <FormField
           label="Settlement Address"
           maxLength={42}
           name="settlementAddress"
           placeholder="0x1234567890123456789012345678901234567890"
-        />
+        /> */}
         <FormField
           label="Company Registration Number"
           maxLength={12}
