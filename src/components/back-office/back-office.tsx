@@ -4,8 +4,8 @@ import { Button } from "@nextui-org/button";
 import { PlusIcon } from "lucide-react";
 
 import { backOfficeConfig } from "@/config/tabs";
-import CreateOrderModal from "./create-order-modal";
 
+import CreateOrderModal from "./create-order-modal";
 import PaymentsTab from "./payments-tab";
 import OrdersTab, { OrdersTabRef } from "./orders-tab";
 import WidgetTab from "./widget-tab";

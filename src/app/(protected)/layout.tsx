@@ -6,13 +6,10 @@
  * For example, /src/app/(protected)/page.tsx will still be accessible at '/'
  */
 
-import { Link } from "@nextui-org/link";
 import { redirect } from "next/navigation";
 import { cookies } from "next/headers";
 
 import { Navbar } from "@/components/navbar";
-import { siteConfig } from "@/config/site";
-import { DiscordIcon, GithubIcon, TwitterIcon } from "@/components/icons";
 import { MERCHANT_COOKIE_NAME } from "@/utils/constants";
 
 export default function ProtectedLayout({ children }: { children: React.ReactNode }) {

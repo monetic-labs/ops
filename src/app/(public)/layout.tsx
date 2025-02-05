@@ -8,7 +8,6 @@
 
 import { redirect } from "next/navigation";
 import { cookies } from "next/headers";
-import Image from "next/image";
 
 import { MERCHANT_COOKIE_NAME } from "@/utils/constants";
 

@@ -3,10 +3,11 @@ import { Button } from "@nextui-org/button";
 import { Snippet } from "@nextui-org/snippet";
 import { GetOrderLinksOutput } from "@backpack-fux/pylon-sdk";
 import { Table, TableHeader, TableColumn, TableBody, TableRow, TableCell } from "@nextui-org/table";
+import { PlusIcon } from "lucide-react";
+
 import { formatPhoneNumber, formatNumber } from "@/utils/helpers";
 import Countdown from "@/components/generics/countdown";
 import pylon from "@/libs/pylon-sdk";
-import { PlusIcon } from "lucide-react";
 
 export interface OrdersTabRef {
   refresh: () => Promise<void>;
@@ -22,6 +23,7 @@ const OrdersTab = forwardRef<OrdersTabRef, OrdersTabProps>(({ onCreateClick }, r
   const fetchCurrentOrders = async () => {
     try {
       const orders = await pylon.getOrderLinks();
+
       setCurrentOrders(orders);
     } catch (err) {
       console.error("Failed to fetch current orders:", err);
@@ -92,19 +94,19 @@ const OrdersTab = forwardRef<OrdersTabRef, OrdersTabProps>(({ onCreateClick }, r
             <TableCell>
               <Snippet
                 hideSymbol
-                size="sm"
-                variant="flat"
                 classNames={{
                   base: "bg-default-200",
                   pre: "text-xs",
                 }}
+                size="sm"
+                variant="flat"
               >
                 {order.id}
               </Snippet>
             </TableCell>
             <TableCell>
               <div className="flex justify-end">
-                <Button color="danger" variant="flat" size="sm" onPress={() => handleDeleteOrder(order.id)}>
+                <Button color="danger" size="sm" variant="flat" onPress={() => handleDeleteOrder(order.id)}>
                   Delete
                 </Button>
               </div>

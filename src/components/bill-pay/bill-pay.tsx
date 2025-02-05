@@ -3,6 +3,7 @@ import { Tabs, Tab } from "@nextui-org/tabs";
 import { Button } from "@nextui-org/button";
 import { useAppKitAccount } from "@reown/appkit/react";
 import { Address } from "viem";
+import { PlusIcon } from "lucide-react";
 
 import { billPayConfig, BillPayId } from "@/config/tabs";
 import { DEFAULT_NEW_BILL_PAY } from "@/types/bill-pay";
@@ -13,7 +14,6 @@ import { MOCK_SETTLEMENT_ADDRESS } from "@/utils/constants";
 import CreateBillPayModal from "./bill-actions/create";
 import Transfers from "./transfers-tab";
 import Contacts from "./contacts-tab";
-import { PlusIcon } from "lucide-react";
 
 type BillPayTabsProps = {
   handleSubTabChange: (key: string) => void;
@@ -44,8 +44,8 @@ export default function BillPayTabs({ handleSubTabChange }: BillPayTabsProps) {
       <div className="flex justify-between items-center mb-4">
         <Tabs
           aria-label="Bill Pay options"
-          variant="bordered"
           selectedKey={selectedService}
+          variant="bordered"
           onSelectionChange={(key) => setSelectedService(key as string)}
         >
           {billPayConfig.map((tab) => (

@@ -1,8 +1,6 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { Button } from "@nextui-org/button";
-import { PlusIcon } from "lucide-react";
 import { Chip } from "@nextui-org/chip";
 import { Table, TableBody, TableCell, TableColumn, TableHeader, TableRow } from "@nextui-org/table";
 import { User } from "@nextui-org/user";
@@ -11,6 +9,7 @@ import { MerchantUserGetOutput, PersonRole } from "@backpack-fux/pylon-sdk";
 import { Column, usersColumns, usersStatusColorMap } from "@/data";
 import { getFullName, getOpepenAvatar } from "@/utils/helpers";
 import pylon from "@/libs/pylon-sdk";
+
 import CreateUserModal from "./user-create";
 import UserEditModal from "./user-edit";
 
@@ -34,6 +33,7 @@ export default function MembersTab({ userId, isCreateModalOpen, setIsCreateModal
   const availableRoles = Object.values(PersonRole).filter((role) => {
     if (userRole === PersonRole.SUPER_ADMIN) return true;
     if (userRole === PersonRole.ADMIN) return role !== PersonRole.SUPER_ADMIN;
+
     return role === PersonRole.MEMBER;
   });
 
@@ -42,6 +42,7 @@ export default function MembersTab({ userId, isCreateModalOpen, setIsCreateModal
       setIsLoading(true);
       try {
         const users = await pylon.getUsers();
+
         setUsers(users);
         setUserRole(users.find((user) => user.id === userId)?.role || null);
       } catch (error) {
@@ -62,6 +63,7 @@ export default function MembersTab({ userId, isCreateModalOpen, setIsCreateModal
     switch (columnKey) {
       case "firstName":
         const fullName = getFullName(user.firstName, user.lastName);
+
         return (
           <div className="flex items-center gap-2">
             <User
@@ -129,6 +131,7 @@ export default function MembersTab({ userId, isCreateModalOpen, setIsCreateModal
           }}
           onRemove={async (userId) => {
             const success = await pylon.deleteUser(selectedUser.id);
+
             if (success) {
               setUsers(users.filter((user) => user.id !== selectedUser.id));
               setSelectedUser(null);
@@ -146,6 +149,7 @@ export default function MembersTab({ userId, isCreateModalOpen, setIsCreateModal
               role: updatedUser.role,
               phone: updatedUser.phone,
             });
+
             setUsers(users.map((user) => (user.id === returnedUser.id ? returnedUser : user)));
             setSelectedUser(null);
             setIsEditModalOpen(false);

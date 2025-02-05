@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
-
 import { Select, SelectItem } from "@nextui-org/select";
 import { Network, StableCurrency } from "@backpack-fux/pylon-sdk";
+import { Autocomplete, AutocompleteItem } from "@nextui-org/autocomplete";
 
 import pylon from "@/libs/pylon-sdk";
 
@@ -9,8 +9,6 @@ import { FormButton } from "../generics/form-button";
 
 import GenerateApiKeysModal from "./actions/widgets/api-keys";
 import { RefundSuccessModal } from "./actions/order-success";
-
-import { Autocomplete, AutocompleteItem } from "@nextui-org/autocomplete";
 
 const networks = ["POLYGON", "SOLANA", "BASE", "OPTIMISM", "ARBITRUM"];
 const currencies = ["USDC", "USDT", "DAI"];
@@ -114,7 +112,7 @@ export default function WidgetManagement() {
         }}
       >
         {accounts.map((account) => (
-          <AutocompleteItem key={account.address} value={account.address} textValue={`${account.name} Account`}>
+          <AutocompleteItem key={account.address} textValue={`${account.name} Account`} value={account.address}>
             {account.name} Account
           </AutocompleteItem>
         ))}

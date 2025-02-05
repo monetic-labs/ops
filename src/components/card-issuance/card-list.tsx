@@ -8,6 +8,7 @@ import { MerchantCardGetOutput, CardStatus, CardLimitFrequency, CardType } from 
 import InfiniteTable from "@/components/generics/table-infinite";
 import { formattedDate } from "@/utils/helpers";
 import pylon from "@/libs/pylon-sdk";
+
 import CardDetailsModal from "./card-details";
 
 type HybridCard = MerchantCardGetOutput["cards"][number] & {
@@ -63,6 +64,7 @@ export default function CardList() {
           .map((card) => {
             if (!card || typeof card !== "object") {
               console.warn("Invalid card object in response:", card);
+
               return null;
             }
 
@@ -80,6 +82,7 @@ export default function CardList() {
               };
             } catch (err) {
               console.warn("Error processing card:", err);
+
               return null;
             }
           })
@@ -138,10 +141,12 @@ export default function CardList() {
             uid: "createdAt",
           },
         ]}
+        emptyContent="No cards found"
         initialData={cards}
         loadMore={async (cursor) => {
           await fetchNextPage();
           const lastPage = data?.pages[data.pages.length - 1];
+
           return {
             items: lastPage?.items ?? [],
             cursor: lastPage?.cursor,
@@ -164,10 +169,9 @@ export default function CardList() {
           }
         }}
         onRowSelect={setSelectedCard}
-        emptyContent="No cards found"
       />
 
-      {selectedCard && <CardDetailsModal isOpen={true} onClose={() => setSelectedCard(null)} card={selectedCard} />}
+      {selectedCard && <CardDetailsModal card={selectedCard} isOpen={true} onClose={() => setSelectedCard(null)} />}
     </>
   );
 }

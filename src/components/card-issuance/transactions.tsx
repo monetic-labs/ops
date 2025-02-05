@@ -8,6 +8,7 @@ import { MerchantCardTransactionGetOutput } from "@backpack-fux/pylon-sdk";
 import InfiniteTable from "@/components/generics/table-infinite";
 import { formatNumber, formattedDate } from "@/utils/helpers";
 import pylon from "@/libs/pylon-sdk";
+
 import TransactionDetailsModal from "./card-txns";
 
 type Transaction = MerchantCardTransactionGetOutput["transactions"][number] & { id: string };
@@ -29,6 +30,7 @@ export default function Transactions() {
           after: pageParam as string | undefined,
           limit: 10,
         });
+
         return {
           items: response.transactions.map((txn) => ({ ...txn, id: txn.id })),
           cursor: response.meta.endCursor,
@@ -80,10 +82,12 @@ export default function Transactions() {
             uid: "createdAt",
           },
         ]}
+        emptyContent="No transactions found"
         initialData={transactions}
         loadMore={async (cursor) => {
           await fetchNextPage();
           const lastPage = data?.pages[data.pages.length - 1];
+
           return {
             items: lastPage?.items ?? [],
             cursor: lastPage?.cursor,
@@ -118,13 +122,12 @@ export default function Transactions() {
           }
         }}
         onRowSelect={setSelectedTxn}
-        emptyContent="No transactions found"
       />
 
       <TransactionDetailsModal
         isOpen={!!selectedTxn}
-        onClose={() => setSelectedTxn(null)}
         transaction={selectedTxn as any} // TODO: Fix type mismatch between components
+        onClose={() => setSelectedTxn(null)}
       />
     </>
   );

@@ -1,3 +1,4 @@
+import { Button } from "@nextui-org/button";
 import { Card, CardBody } from "@nextui-org/card";
 import { Tooltip } from "@nextui-org/tooltip";
 import { InfoIcon, ArrowUpRight, ArrowDownRight, PlusCircle } from "lucide-react";
@@ -183,27 +184,43 @@ export function AccountCard(props: CardProps) {
 
     if (props.isCreateAccount) {
       return (
-        <div
+        <Button
           aria-label="Create new account"
-          className={`w-full h-full p-4 rounded-lg transition-all duration-300 ease-in-out relative group border border-dashed border-white/10 bg-[#1A1A1A]/30 hover:bg-[#1A1A1A]/50 hover:border-white/20 ${props.className || ""}`}
+          className={`w-full h-full p-4 rounded-lg transition-all duration-300 ease-in-out relative group border border-dashed ${
+            props.disabled
+              ? "border-white/5 bg-[#1A1A1A]/30 !cursor-not-allowed !hover:bg-[#1A1A1A]/30"
+              : "border-white/10 bg-[#1A1A1A]/30 hover:bg-[#1A1A1A]/50 hover:border-white/20 cursor-pointer"
+          } ${props.className || ""}`}
+          disableAnimation={props.disabled}
+          disableRipple={props.disabled}
+          disabled={props.disabled}
           onClick={props.onClick}
         >
           <div className="h-full flex flex-col items-center justify-center">
-            <Icon className="w-6 h-6 text-white/60 mb-2" />
-            <span className="text-sm text-white/60">Create account</span>
+            <Icon className={`w-6 h-6 ${props.disabled ? "text-white/40" : "text-white/60"} mb-2`} />
+            <span className={`text-sm ${props.disabled ? "text-white/40" : "text-white/60"}`}>Create account</span>
           </div>
-        </div>
+          {props.comingSoon && (
+            <div className="absolute inset-0 flex items-center justify-center bg-black/80 opacity-0 group-hover:opacity-100 transition-all duration-300 ease-in-out rounded-lg backdrop-blur-sm">
+              <div className="flex flex-col items-center gap-2">
+                <PlusCircle className="w-6 h-6 text-white/80" />
+                <span className="text-sm font-medium text-white/90">Coming Soon</span>
+              </div>
+            </div>
+          )}
+        </Button>
       );
     }
 
     return (
-      <div
+      <Button
         aria-label={`${props.name} account`}
         className={`w-full h-full p-4 rounded-lg transition-all duration-300 ease-in-out relative group ${
           props.disabled
             ? "border border-white/5 bg-[#1A1A1A]/30 hover:bg-[#1A1A1A]/40"
             : "border border-white/10 bg-[#1A1A1A] hover:bg-[#1A1A1A]/80 cursor-pointer"
         } ${props.className || ""}`}
+        disabled={props.disabled}
         onClick={props.onClick}
       >
         <div className="h-full flex flex-col justify-between">
@@ -246,7 +263,7 @@ export function AccountCard(props: CardProps) {
             </div>
           </div>
         )}
-      </div>
+      </Button>
     );
   }
 

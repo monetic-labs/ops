@@ -133,7 +133,7 @@ export default function PaymentsTab() {
         <TableHeader columns={paymentsColumns as Column<TransactionListItem>[]}>
           {(column) => <TableColumn key={column.uid}>{column.name}</TableColumn>}
         </TableHeader>
-        <TableBody isLoading={isLoading} emptyContent={"No transactions found"} items={transactions}>
+        <TableBody emptyContent={"No transactions found"} isLoading={isLoading} items={transactions}>
           {(item) => {
             return (
               <TableRow

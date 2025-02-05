@@ -2,9 +2,7 @@
 
 import { useState } from "react";
 import { Table, TableHeader, TableBody, TableColumn, TableRow, TableCell } from "@nextui-org/table";
-import { Chip } from "@nextui-org/chip";
-import { Button } from "@nextui-org/button";
-import { PlusIcon } from "lucide-react";
+
 import GenerateApiKeysModal from "@/components/back-office/actions/widgets/api-keys";
 
 const columns = [

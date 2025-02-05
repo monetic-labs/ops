@@ -1,5 +1,6 @@
 import { z } from "zod";
-import { isLocal, formatPhoneNumber, parseCurrencyInput, formatNumber } from "@/utils/helpers";
+
+import { isLocal, formatPhoneNumber } from "@/utils/helpers";
 
 // Add validation patterns
 const emailRegex = /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i;
@@ -26,6 +27,7 @@ export const orderSchema = z.object({
     .min(1, "Phone number is required")
     .transform((val) => {
       const digits = val.replace(/\D/g, "");
+
       return formatPhoneNumber(digits);
     })
     .refine((val) => phoneRegex.test(val), "Please enter a valid phone number in format (XXX) XXX-XXXX"),
@@ -37,6 +39,7 @@ export const orderSchema = z.object({
     .refine((val) => {
       const cleanValue = val.replace(/[^\d.]/g, "");
       const numericValue = parseFloat(cleanValue);
+
       return !isNaN(numericValue);
     }, "Please enter a valid amount")
     .refine(
@@ -44,6 +47,7 @@ export const orderSchema = z.object({
         const cleanValue = val.replace(/[^\d.]/g, "");
         const amount = parseFloat(cleanValue);
         const minAmount = isLocal ? 0.01 : 1;
+
         return !isNaN(amount) && amount >= minAmount;
       },
       (val) => ({
@@ -53,6 +57,7 @@ export const orderSchema = z.object({
     .refine((val) => {
       const cleanValue = val.replace(/[^\d.]/g, "");
       const amount = parseFloat(cleanValue);
+
       return !isNaN(amount) && amount <= 1000000;
     }, "Amount cannot exceed $1,000,000"),
 });

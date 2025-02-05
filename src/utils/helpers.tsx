@@ -188,6 +188,7 @@ export const formatCurrencyInput = (value: string): string => {
 
   // Ensure only one decimal point
   const parts = cleanValue.split(".");
+
   if (parts.length > 2) return formatCurrencyInput(parts[0] + "." + parts[1]);
 
   // Handle decimal places
@@ -197,6 +198,7 @@ export const formatCurrencyInput = (value: string): string => {
 
     // Format whole number part with commas
     const formatted = Number(whole).toLocaleString("en-US");
+
     return `${formatted}${decimal ? "." + decimal : ""}`;
   }
 
@@ -208,5 +210,6 @@ export const parseCurrencyInput = (value: string): number => {
   // Remove all non-numeric characters except decimal point
   const cleanValue = value.replace(/[^0-9.]/g, "");
   const number = parseFloat(cleanValue);
+
   return isNaN(number) ? 0 : Number(number.toFixed(2));
 };

@@ -30,19 +30,23 @@ export default function CreateOrderModal({ isOpen, onClose, onCreate }: CreateOr
 
   const validateEmail = (email: string) => {
     const emailRegex = /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i;
+
     return emailRegex.test(email) ? "" : "Please enter a valid email address";
   };
 
   const validatePhone = (phone: string) => {
     const phoneRegex = /^\(\d{3}\)\s\d{3}-\d{4}$/;
+
     return phoneRegex.test(phone) ? "" : "Please enter a valid phone number";
   };
 
   const validateAmount = (amount: string) => {
     const numericValue = parseFloat(amount.replace(/[^\d.]/g, ""));
+
     if (isNaN(numericValue)) return "Please enter a valid amount";
     if (numericValue < 1) return "Amount must be at least $1.00";
     if (numericValue > 1000000) return "Amount cannot exceed $1,000,000";
+
     return "";
   };
 
@@ -64,6 +68,7 @@ export default function CreateOrderModal({ isOpen, onClose, onCreate }: CreateOr
 
         // Handle decimal places
         const parts = cleanValue.split(".");
+
         if (parts.length > 2) {
           // More than one decimal point - keep only first one
           formattedValue = parts[0] + "." + parts[1];
@@ -77,6 +82,7 @@ export default function CreateOrderModal({ isOpen, onClose, onCreate }: CreateOr
         // Format with commas if not typing decimal
         if (!formattedValue.endsWith(".")) {
           const numericValue = parseFloat(formattedValue);
+
           if (!isNaN(numericValue)) {
             formattedValue = formatNumber(numericValue);
           }
@@ -144,7 +150,7 @@ export default function CreateOrderModal({ isOpen, onClose, onCreate }: CreateOr
   };
 
   return (
-    <Modal isOpen={isOpen} onClose={handleClose} size="2xl">
+    <Modal isOpen={isOpen} size="2xl" onClose={handleClose}>
       <ModalContent>
         {() => (
           <>
@@ -152,39 +158,39 @@ export default function CreateOrderModal({ isOpen, onClose, onCreate }: CreateOr
             <ModalBody>
               <div className="space-y-4">
                 <Input
+                  errorMessage={errors.email}
+                  isInvalid={!!errors.email}
                   label="Email"
                   placeholder="customer@example.com"
-                  value={formData.email}
-                  onChange={(e) => handleInputChange("email", e.target.value)}
                   startContent={<Mail className="w-4 h-4 text-default-400" />}
-                  isInvalid={!!errors.email}
-                  errorMessage={errors.email}
+                  value={formData.email}
                   variant="bordered"
+                  onChange={(e) => handleInputChange("email", e.target.value)}
                 />
                 <Input
+                  errorMessage={errors.phone}
+                  isInvalid={!!errors.phone}
                   label="Phone"
                   placeholder="(555) 555-5555"
-                  value={formData.phone}
-                  onChange={(e) => handleInputChange("phone", e.target.value)}
                   startContent={<Phone className="w-4 h-4 text-default-400" />}
-                  isInvalid={!!errors.phone}
-                  errorMessage={errors.phone}
+                  value={formData.phone}
                   variant="bordered"
+                  onChange={(e) => handleInputChange("phone", e.target.value)}
                 />
                 <Input
-                  label="Amount"
-                  placeholder="0.00"
-                  value={formData.amount}
-                  onChange={(e) => handleInputChange("amount", e.target.value)}
-                  startContent={<DollarSign className="w-4 h-4 text-default-400" />}
                   endContent={
                     <div className="pointer-events-none flex items-center">
                       <span className="text-default-400 text-small">USD</span>
                     </div>
                   }
-                  isInvalid={!!errors.amount}
                   errorMessage={errors.amount}
+                  isInvalid={!!errors.amount}
+                  label="Amount"
+                  placeholder="0.00"
+                  startContent={<DollarSign className="w-4 h-4 text-default-400" />}
+                  value={formData.amount}
                   variant="bordered"
+                  onChange={(e) => handleInputChange("amount", e.target.value)}
                 />
                 {error && <p className="text-danger text-sm">{error}</p>}
               </div>
@@ -193,7 +199,7 @@ export default function CreateOrderModal({ isOpen, onClose, onCreate }: CreateOr
               <Button color="danger" variant="light" onPress={handleClose}>
                 Cancel
               </Button>
-              <Button color="primary" isLoading={isLoading} isDisabled={!isFormValid()} onPress={handleSubmit}>
+              <Button color="primary" isDisabled={!isFormValid()} isLoading={isLoading} onPress={handleSubmit}>
                 Create Order
               </Button>
             </ModalFooter>

@@ -9,7 +9,6 @@ import {
   Building2,
   CreditCard,
   PiggyBank,
-  Banknote,
   PlusCircle,
   ChevronLeft,
   ChevronRight,
@@ -160,6 +159,7 @@ function AccountsGrid({ accounts, currentPage, itemsPerPage, onAccountClick }: A
             <div key={account.id} style={{ width: `${CARD_WIDTH}px`, flex: `0 0 ${CARD_WIDTH}px` }}>
               <AccountCard
                 balance={account.balance}
+                className="h-full"
                 comingSoon={account.comingSoon}
                 currency={account.currency}
                 disabled={account.disabled}
@@ -167,7 +167,6 @@ function AccountsGrid({ accounts, currentPage, itemsPerPage, onAccountClick }: A
                 isCreateAccount={account.isCreateAccount}
                 name={account.name}
                 variant="account"
-                className="h-full"
                 onClick={() => !account.disabled && !account.isCreateAccount && onAccountClick()}
               />
             </div>
@@ -193,9 +192,11 @@ export default function AccountOverview() {
       if (containerRef.current) {
         const containerWidth = containerRef.current.offsetWidth - CONTAINER_PADDING;
         const newItemsPerPage = Math.max(1, Math.floor(containerWidth / CARD_WIDTH));
+
         setItemsPerPage(newItemsPerPage);
         // Reset to first page if current page would be invalid with new items per page
         const newTotalPages = Math.ceil(accounts.length / newItemsPerPage);
+
         if (currentPage >= newTotalPages) {
           setCurrentPage(0);
         }
@@ -207,6 +208,7 @@ export default function AccountOverview() {
 
     // Update on window resize
     const resizeObserver = new ResizeObserver(updateItemsPerPage);
+
     if (containerRef.current) {
       resizeObserver.observe(containerRef.current);
     }
@@ -238,8 +240,8 @@ export default function AccountOverview() {
         <AccountsPagination
           currentPage={currentPage}
           totalPages={totalPages}
-          onPrevPage={handlePrevPage}
           onNextPage={handleNextPage}
+          onPrevPage={handlePrevPage}
         />
       </div>
 

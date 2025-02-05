@@ -67,8 +67,8 @@ export default function InfiniteTable<T extends { id: string }>({
 
   return (
     <Table
-      removeWrapper
       isHeaderSticky
+      removeWrapper
       aria-label="Generic table with infinite scroll"
       baseRef={scrollerRef}
       bottomContent={
@@ -118,8 +118,8 @@ export function InfiniteTableWithExternalList<T extends { id: string }>({
 
   return (
     <Table
-      removeWrapper
       isHeaderSticky
+      removeWrapper
       aria-label="Generic table with infinite scroll"
       baseRef={scrollerRef}
       bottomContent={

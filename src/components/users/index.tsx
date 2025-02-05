@@ -26,7 +26,7 @@ export default function UserTab({ userId }: { userId: string }) {
   const renderTabContent = (tabId: string) => {
     switch (tabId) {
       case "members":
-        return <MembersTab userId={userId} isCreateModalOpen={isModalOpen} setIsCreateModalOpen={setIsModalOpen} />;
+        return <MembersTab isCreateModalOpen={isModalOpen} setIsCreateModalOpen={setIsModalOpen} userId={userId} />;
       case "developer":
         return <DeveloperAccess />;
       default:
@@ -39,10 +39,10 @@ export default function UserTab({ userId }: { userId: string }) {
       <div className="flex justify-between items-center">
         <Tabs
           aria-label="User management options"
+          disabledKeys={["developer"]}
           selectedKey={selectedTab}
           variant="bordered"
           onSelectionChange={(key) => setSelectedTab(key as string)}
-          disabledKeys={["developer"]}
         >
           {userTabsConfig.map((tab) => (
             <Tab key={tab.id} title={tab.label} />
