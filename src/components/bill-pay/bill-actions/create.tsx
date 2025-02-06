@@ -238,36 +238,85 @@ export default function CreateBillPayModal({
   };
 
   return (
-    <Modal data-testid="create-transfer-modal" isOpen={isOpen} size="2xl" onClose={onClose}>
+    <Modal
+      data-testid="create-transfer-modal"
+      isOpen={isOpen}
+      size="2xl"
+      classNames={{
+        base: "bg-content1",
+        header: "border-b border-default-100",
+        body: "py-6",
+        closeButton: "hover:bg-default-100",
+      }}
+      onClose={onClose}
+    >
       <ModalContent className="relative">
         {transferStatus !== TransferStatus.IDLE && (
-          <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-70 z-50">
+          <div className="absolute inset-0 flex items-center justify-center bg-background/90 backdrop-blur-sm z-50 rounded-lg">
             <TransferStatusView status={transferStatus} />
           </div>
         )}
-        <ModalHeader>Create New Transfer</ModalHeader>
-        <ModalBody className="overflow-y-auto max-h-[50vh] relative">{renderTransferFields()}</ModalBody>
-        {!isWalletConnected && <div className="absolute inset-0 bg-gray-500 bg-opacity-50 z-10" />}
-        <Divider className="my-4" />
-        {renderFeeAndTotal()}
-        <Divider className="my-1" />
+        <ModalHeader className="flex flex-col gap-1">
+          <h3 className="text-xl font-semibold text-foreground">Create New Transfer</h3>
+          <p className="text-sm text-default-500">Fill in the details below to create a new transfer</p>
+        </ModalHeader>
+        <Divider className="bg-default-100" />
+        <ModalBody className="overflow-y-auto max-h-[50vh] relative px-6">{renderTransferFields()}</ModalBody>
+        <Divider className="bg-default-100" />
+        <ModalBody className="px-6">
+          <div className="space-y-3 font-mono text-sm">
+            <div className="flex justify-between items-center">
+              <span className="text-default-600">Fee:</span>
+              <div className="flex items-center gap-2">
+                <Tooltip
+                  content={
+                    <div className="px-2 py-1 text-sm">
+                      {billPay.vendorMethod === DisbursementMethod.WIRE
+                        ? "We pass on the fees from the receiving bank. We do not add any additional fees."
+                        : "We cover these fees for you."}
+                    </div>
+                  }
+                  classNames={{
+                    base: "bg-content2/80 backdrop-blur-sm",
+                    content: "text-foreground",
+                  }}
+                >
+                  <Info className="text-default-500 dark:text-default-400 cursor-help" size={14} />
+                </Tooltip>
+                <span data-testid="fee" className="text-default-600">
+                  {fee.toFixed(2) === "0.00" ? "Free" : `${fee * 100}%`}
+                </span>
+              </div>
+            </div>
+            <div className="flex justify-between items-center">
+              <span className="text-lg font-semibold text-foreground">Total:</span>
+              <span data-testid="total" className="text-lg font-semibold text-foreground">
+                ${total.toFixed(2)}
+              </span>
+            </div>
+          </div>
+        </ModalBody>
+        <Divider className="bg-default-100" />
         <ModalFooterWithSupport
-          actions={footerActions}
-          isNewSender={isNewSender}
-          onNewSenderChange={handleNewSenderChange}
+          actions={[
+            {
+              label: "Create Transfer",
+              onClick: handleSave,
+              isDisabled: !formIsValid || !isWalletConnected,
+              className: `${
+                !formIsValid || !isWalletConnected
+                  ? "bg-default-100 text-default-400"
+                  : "bg-notpurple-500 text-white hover:bg-notpurple-600"
+              } px-6`,
+            },
+          ]}
           onSupportClick={handleSupportClick}
         />
         {!isWalletConnected && (
-          <div className="absolute inset-0 flex items-center justify-center z-20">
-            <Button
-              color="primary"
-              data-testid="connect-wallet-button"
-              onPress={async () => {
-                await modal.open();
-              }}
-            >
-              Connect Wallet
-            </Button>
+          <div className="absolute inset-0 bg-background/50 backdrop-blur-sm z-10 rounded-lg flex items-center justify-center">
+            <div className="bg-content2/90 backdrop-blur-sm p-4 rounded-lg shadow-lg text-center">
+              <p className="text-foreground font-medium">Please connect your wallet to continue</p>
+            </div>
           </div>
         )}
       </ModalContent>

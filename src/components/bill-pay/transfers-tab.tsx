@@ -1,107 +1,100 @@
-import React, { useCallback, useEffect, useState } from "react";
+"use client";
+
+import React, { useState } from "react";
 import { Chip } from "@nextui-org/chip";
 import { User } from "@nextui-org/user";
-import { Table, TableBody, TableCell, TableColumn, TableHeader, TableRow } from "@nextui-org/table";
 import { MerchantDisbursementEventGetOutput } from "@backpack-fux/pylon-sdk";
+import { Address } from "viem";
 
+import { DataTable, Column, EmptyContent } from "@/components/generics/data-table";
 import BillPayDetailsModal from "@/components/bill-pay/bill-actions/details";
-import { BillPay, billPayColumns, statusColorMap } from "@/data";
-import { getOpepenAvatar, getTimeAgo } from "@/utils/helpers";
+import CreateBillPayModal from "@/components/bill-pay/bill-actions/create";
+import { statusColorMap } from "@/data";
+import { getOpepenAvatar, formatNumber, isTesting } from "@/utils/helpers";
 import { useGetTransfers } from "@/hooks/bill-pay/useGetTransfers";
+import { DEFAULT_NEW_BILL_PAY } from "@/types/bill-pay";
+import { useAppKitAccount } from "@reown/appkit/react";
+import { MOCK_SETTLEMENT_ADDRESS } from "@/utils/constants";
+
+const transferColumns: Column<MerchantDisbursementEventGetOutput>[] = [
+  {
+    name: "ACCOUNT OWNER",
+    uid: "contact.accountOwnerName",
+    align: "start",
+    render: (transfer: MerchantDisbursementEventGetOutput) => (
+      <User
+        avatarProps={{
+          radius: "lg",
+          src: getOpepenAvatar(transfer.contact.accountOwnerName, 32),
+        }}
+        classNames={{
+          name: "truncate max-w-[100px] sm:max-w-[200px] md:max-w-[300px]",
+          description: "truncate max-w-[100px] sm:max-w-[200px] md:max-w-[300px]",
+        }}
+        description={transfer.contact.nickname}
+        name={transfer.contact.accountOwnerName}
+      />
+    ),
+  },
+  {
+    name: "AMOUNT",
+    uid: "contact.amount",
+    align: "start",
+    render: (transfer: MerchantDisbursementEventGetOutput) => (
+      <span className="text-sm truncate">
+        ${formatNumber(Number(transfer.amountOut))} {transfer.currencyOut}
+      </span>
+    ),
+  },
+  {
+    name: "STATUS",
+    uid: "contact.status",
+    align: "center",
+    render: (transfer: MerchantDisbursementEventGetOutput) => (
+      <Chip className="capitalize truncate" color={statusColorMap[transfer.state]} size="sm" variant="flat">
+        {transfer.state}
+      </Chip>
+    ),
+  },
+  {
+    name: "BANK INFO",
+    uid: "contact.bankInfo",
+    align: "end",
+    render: (transfer: MerchantDisbursementEventGetOutput) => (
+      <div className="space-y-1">
+        <div className="text-sm truncate max-w-[150px] sm:max-w-[200px]">Name: {transfer.contact.bankName}</div>
+        <div className="text-sm truncate max-w-[150px] sm:max-w-[200px]">Routing: {transfer.contact.routingNumber}</div>
+        <div className="text-sm truncate max-w-[150px] sm:max-w-[200px]">Account: {transfer.contact.accountNumber}</div>
+      </div>
+    ),
+  },
+];
 
 export default function Transfers() {
-  const { transfers, pagination, isLoading, error, fetchTransfers } = useGetTransfers({});
+  const { transfers, isLoading, error } = useGetTransfers({});
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
   const [selectedTransfer, setSelectedTransfer] = useState<MerchantDisbursementEventGetOutput | null>(null);
-  const [avatars, setAvatars] = useState<Record<string, string>>({});
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
-  useEffect(() => {
-    fetchTransfers();
-  }, []);
-
-  useEffect(() => {
-    const newAvatars: Record<string, string> = {};
-
-    transfers.forEach((transfer) => {
-      newAvatars[transfer.id] = getOpepenAvatar(transfer.contact.accountOwnerName, 32);
-    });
-    setAvatars(newAvatars);
-  }, [transfers]);
-
-  const handleRowSelect = useCallback((transfer: MerchantDisbursementEventGetOutput) => {
-    setSelectedTransfer(transfer);
-    setIsDetailsModalOpen(true);
-  }, []);
-
-  const renderCell = useCallback(
-    (transfer: MerchantDisbursementEventGetOutput, columnKey: keyof BillPay) => {
-      const cellValue = transfer[columnKey as keyof MerchantDisbursementEventGetOutput];
-
-      switch (columnKey) {
-        case "accountOwnerName":
-          return (
-            <User
-              avatarProps={{
-                radius: "lg",
-                src: avatars[transfer.id],
-              }}
-              description={transfer.contact.nickname}
-              name={transfer.contact.accountOwnerName}
-            >
-              {transfer.contact.accountOwnerName}
-            </User>
-          );
-        case "amountOut" && "currencyOut":
-          return `$${transfer.amountOut} ${transfer.currencyOut}`;
-        case "state":
-          return (
-            <Chip className="capitalize" color={statusColorMap[transfer.state]} size="sm" variant="flat">
-              {transfer.state}
-            </Chip>
-          );
-        case "bankName":
-          return (
-            <div>
-              <div>Name: {transfer.contact.bankName}</div>
-              <div>Routing: {transfer.contact.routingNumber}</div>
-              <div>Account: {transfer.contact.accountNumber}</div>
-            </div>
-          );
-        case "createdAt":
-          return getTimeAgo(transfer.createdAt);
-        default:
-          return typeof cellValue === "object" ? JSON.stringify(cellValue) : cellValue;
-      }
-    },
-    [avatars]
-  );
+  const appKitAccount = useAppKitAccount();
+  const isConnected = isTesting ? true : appKitAccount.isConnected;
 
   return (
     <>
-      <Table removeWrapper aria-label="Transfers table">
-        <TableHeader>
-          {billPayColumns.map((column) => (
-            <TableColumn key={column.uid}>{column.name}</TableColumn>
-          ))}
-        </TableHeader>
-        <TableBody
-          emptyContent={"No transfers found"}
-          isLoading={isLoading}
-          onError={() => <div>Error fetching transfers</div>}
-        >
-          {transfers.map((transfer) => (
-            <TableRow
-              key={transfer.id}
-              className="cursor-pointer transition-all hover:bg-gray-100 dark:hover:bg-charyo-500"
-              onClick={() => handleRowSelect(transfer)}
-            >
-              {billPayColumns.map((column) => (
-                <TableCell key={column.uid}>{renderCell(transfer, column.uid)}</TableCell>
-              ))}
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
+      <DataTable
+        aria-label="Transfers table"
+        columns={transferColumns}
+        emptyContent={<EmptyContent message="Create your first transfer" onAction={() => setIsCreateModalOpen(true)} />}
+        errorMessage="Failed to load transfers"
+        isError={!!error}
+        isLoading={isLoading}
+        items={transfers}
+        onRowAction={(transfer) => {
+          setSelectedTransfer(transfer);
+          setIsDetailsModalOpen(true);
+        }}
+      />
+
       {selectedTransfer && (
         <BillPayDetailsModal
           billPay={selectedTransfer}
@@ -109,6 +102,19 @@ export default function Transfers() {
           onClose={() => setIsDetailsModalOpen(false)}
         />
       )}
+
+      <CreateBillPayModal
+        billPay={DEFAULT_NEW_BILL_PAY}
+        isOpen={isCreateModalOpen}
+        isWalletConnected={isConnected}
+        settlementAddress={(isTesting ? MOCK_SETTLEMENT_ADDRESS : appKitAccount.address) as Address}
+        setBillPay={() => {}}
+        onClose={() => setIsCreateModalOpen(false)}
+        onSave={(newBillPay) => {
+          console.log("Creating transfer:", newBillPay);
+          setIsCreateModalOpen(false);
+        }}
+      />
     </>
   );
 }

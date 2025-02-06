@@ -1,120 +1,190 @@
-import React, { useEffect, useState, useImperativeHandle, forwardRef } from "react";
+import React, { forwardRef, useState } from "react";
 import { Button } from "@nextui-org/button";
 import { Snippet } from "@nextui-org/snippet";
 import { GetOrderLinksOutput } from "@backpack-fux/pylon-sdk";
-import { Table, TableHeader, TableColumn, TableBody, TableRow, TableCell } from "@nextui-org/table";
 import { PlusIcon } from "lucide-react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
+import { DataTable, Column, EmptyContent } from "@/components/generics/data-table";
 import { formatPhoneNumber, formatNumber } from "@/utils/helpers";
 import Countdown from "@/components/generics/countdown";
+import CreateOrderModal from "@/components/back-office/actions/order-create";
 import pylon from "@/libs/pylon-sdk";
 
 export interface OrdersTabRef {
   refresh: () => Promise<void>;
 }
 
-interface OrdersTabProps {
-  onCreateClick: () => void;
-}
+const OrdersTab = forwardRef<OrdersTabRef>((_, ref) => {
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const queryClient = useQueryClient();
 
-const OrdersTab = forwardRef<OrdersTabRef, OrdersTabProps>(({ onCreateClick }, ref) => {
-  const [currentOrders, setCurrentOrders] = useState<GetOrderLinksOutput[]>([]);
-
-  const fetchCurrentOrders = async () => {
-    try {
+  // Query for fetching orders
+  const {
+    data: orders = [],
+    isLoading,
+    error,
+  } = useQuery({
+    queryKey: ["orders"],
+    queryFn: async () => {
       const orders = await pylon.getOrderLinks();
+      return orders;
+    },
+  });
 
-      setCurrentOrders(orders);
-    } catch (err) {
-      console.error("Failed to fetch current orders:", err);
-    }
-  };
+  // Mutation for deleting orders
+  const deleteMutation = useMutation({
+    mutationFn: async (orderId: string) => {
+      const id = orderId.substring(orderId.lastIndexOf("/") + 1);
+      await pylon.deleteOrderLink(id);
+      return orderId;
+    },
+    onMutate: async (orderId) => {
+      // Cancel any outgoing refetches
+      await queryClient.cancelQueries({ queryKey: ["orders"] });
 
-  useImperativeHandle(ref, () => ({
-    refresh: fetchCurrentOrders,
-  }));
+      // Snapshot the previous value
+      const previousOrders = queryClient.getQueryData<GetOrderLinksOutput[]>(["orders"]);
 
-  useEffect(() => {
-    fetchCurrentOrders();
-  }, []);
+      // Optimistically update to the new value
+      queryClient.setQueryData<GetOrderLinksOutput[]>(["orders"], (old = []) =>
+        old.filter((order) => order.id !== orderId)
+      );
 
-  const handleDeleteOrder = async (orderLink: string) => {
-    const orderId = orderLink.substring(orderLink.lastIndexOf("/") + 1);
-
-    try {
-      await pylon.deleteOrderLink(orderId);
-      setCurrentOrders(currentOrders.filter((order) => order.id !== orderLink));
-    } catch (err) {
+      // Return a context object with the snapshotted value
+      return { previousOrders };
+    },
+    onError: (err, orderId, context) => {
+      // If the mutation fails, use the context returned from onMutate to roll back
+      queryClient.setQueryData(["orders"], context?.previousOrders);
       console.error("Failed to delete order:", err);
-    }
+    },
+    onSettled: () => {
+      // Always refetch after error or success to make sure our local data is correct
+      queryClient.invalidateQueries({ queryKey: ["orders"] });
+    },
+  });
+
+  const handleDeleteOrder = (orderId: string) => {
+    deleteMutation.mutate(orderId);
   };
 
-  const columns = [
-    { key: "email", label: "Email" },
-    { key: "phone", label: "Phone" },
-    { key: "amount", label: "Amount" },
-    { key: "expires", label: "Expires" },
-    { key: "link", label: "Link" },
-    { key: "actions", label: "Actions", align: "end" },
+  const orderColumns: Column<GetOrderLinksOutput>[] = [
+    {
+      name: "EMAIL",
+      uid: "customer.email",
+      align: "start",
+      render: (order) => (
+        <span className="truncate max-w-[150px] sm:max-w-[200px] md:max-w-[300px] block">{order.customer.email}</span>
+      ),
+    },
+    {
+      name: "PHONE",
+      uid: "customer.phone",
+      align: "start",
+      render: (order) => <span className="truncate block">{formatPhoneNumber(order.customer.phone)}</span>,
+    },
+    {
+      name: "AMOUNT",
+      uid: "order.subtotal",
+      align: "start",
+      render: (order) => (
+        <span className="truncate block">
+          ${formatNumber(order.order.subtotal / 100)} {order.order.currency}
+        </span>
+      ),
+    },
+    {
+      name: "EXPIRES",
+      uid: "expiresAt",
+      align: "start",
+      render: (order) => (
+        <span className="truncate block">
+          <Countdown expiresAt={order.expiresAt} />
+        </span>
+      ),
+    },
+    {
+      name: "LINK",
+      uid: "order.link",
+      align: "start",
+      render: (order) => (
+        <Snippet
+          hideSymbol
+          classNames={{
+            base: "bg-default-200 max-w-[150px] sm:max-w-[200px]",
+            pre: "text-xs truncate",
+          }}
+          size="sm"
+          variant="flat"
+        >
+          {order.id}
+        </Snippet>
+      ),
+    },
+    {
+      name: "ACTIONS",
+      uid: "order.actions",
+      align: "end",
+      render: (order) => (
+        <div className="flex justify-end">
+          <Button color="danger" size="sm" variant="flat" onPress={() => handleDeleteOrder(order.id)}>
+            Delete
+          </Button>
+        </div>
+      ),
+    },
   ];
 
-  const renderEmptyContent = () => (
-    <Button className="bg-charyo-500/60 backdrop-blur-sm border border-white/5" onPress={onCreateClick}>
-      Create your first order
-      <PlusIcon size={18} />
-    </Button>
-  );
+  // Mutation for creating orders
+  const createMutation = useMutation({
+    mutationFn: async (newOrder: GetOrderLinksOutput) => {
+      // The actual API call is handled in the CreateOrderModal
+      return newOrder;
+    },
+    onMutate: async (newOrder) => {
+      await queryClient.cancelQueries({ queryKey: ["orders"] });
+      const previousOrders = queryClient.getQueryData<GetOrderLinksOutput[]>(["orders"]);
+
+      queryClient.setQueryData<GetOrderLinksOutput[]>(["orders"], (old = []) => [newOrder, ...old]);
+
+      return { previousOrders };
+    },
+    onError: (err, newOrder, context) => {
+      queryClient.setQueryData(["orders"], context?.previousOrders);
+      console.error("Failed to create order:", err);
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ["orders"] });
+    },
+  });
+
+  // Expose refresh method via ref
+  React.useImperativeHandle(ref, () => ({
+    refresh: async () => {
+      await queryClient.invalidateQueries({ queryKey: ["orders"] });
+    },
+  }));
+
+  const handleOrderCreated = async (newOrder: GetOrderLinksOutput) => {
+    createMutation.mutate(newOrder);
+    setIsModalOpen(false);
+  };
 
   return (
-    <Table
-      removeWrapper
-      aria-label="Orders table"
-      classNames={{
-        wrapper: "bg-default-100/50",
-      }}
-    >
-      <TableHeader columns={columns}>
-        {(column) => (
-          <TableColumn key={column.key} align={column.align as "end" | "center" | "start" | undefined}>
-            {column.label}
-          </TableColumn>
-        )}
-      </TableHeader>
-      <TableBody emptyContent={renderEmptyContent()} items={currentOrders}>
-        {(order) => (
-          <TableRow key={order.id}>
-            <TableCell>{order.customer.email}</TableCell>
-            <TableCell>{formatPhoneNumber(order.customer.phone)}</TableCell>
-            <TableCell>
-              ${formatNumber(order.order.subtotal)} {order.order.currency}
-            </TableCell>
-            <TableCell>
-              <Countdown expiresAt={order.expiresAt} />
-            </TableCell>
-            <TableCell>
-              <Snippet
-                hideSymbol
-                classNames={{
-                  base: "bg-default-200",
-                  pre: "text-xs",
-                }}
-                size="sm"
-                variant="flat"
-              >
-                {order.id}
-              </Snippet>
-            </TableCell>
-            <TableCell>
-              <div className="flex justify-end">
-                <Button color="danger" size="sm" variant="flat" onPress={() => handleDeleteOrder(order.id)}>
-                  Delete
-                </Button>
-              </div>
-            </TableCell>
-          </TableRow>
-        )}
-      </TableBody>
-    </Table>
+    <>
+      <DataTable
+        aria-label="Orders table"
+        columns={orderColumns}
+        emptyContent={<EmptyContent message="Create your first order" onAction={() => setIsModalOpen(true)} />}
+        errorMessage="Failed to load orders"
+        isError={!!error}
+        isLoading={isLoading}
+        items={orders}
+      />
+
+      <CreateOrderModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} onCreate={handleOrderCreated} />
+    </>
   );
 });
 

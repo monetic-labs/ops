@@ -1,6 +1,5 @@
 import { useState } from "react";
-import { Tabs, Tab } from "@nextui-org/tabs";
-import { Button } from "@nextui-org/button";
+import { Tab, Tabs } from "@nextui-org/tabs";
 import { useAppKitAccount } from "@reown/appkit/react";
 import { Address } from "viem";
 import { PlusIcon } from "lucide-react";
@@ -10,10 +9,11 @@ import { DEFAULT_NEW_BILL_PAY } from "@/types/bill-pay";
 import { NewBillPay, ExistingBillPay } from "@/types/bill-pay";
 import { isTesting } from "@/utils/helpers";
 import { MOCK_SETTLEMENT_ADDRESS } from "@/utils/constants";
+import { ResponsiveButton } from "@/components/generics/responsive-button";
 
 import CreateBillPayModal from "./bill-actions/create";
-import Transfers from "./transfers-tab";
-import Contacts from "./contacts-tab";
+import TransfersTab from "./transfers-tab";
+import ContactsTab from "./contacts-tab";
 
 type BillPayTabsProps = {
   handleSubTabChange: (key: string) => void;
@@ -30,10 +30,10 @@ export default function BillPayTabs({ handleSubTabChange }: BillPayTabsProps) {
 
   const renderTabContent = (tabId: string) => {
     switch (tabId) {
-      case BillPayId.TRANSFERS:
-        return <Transfers />;
-      case BillPayId.CONTACTS:
-        return <Contacts />;
+      case "transfers":
+        return <TransfersTab />;
+      case "contacts":
+        return <ContactsTab />;
       default:
         return <div>Tab content not found</div>;
     }
@@ -43,7 +43,7 @@ export default function BillPayTabs({ handleSubTabChange }: BillPayTabsProps) {
     <div className="w-full">
       <div className="flex justify-between items-center mb-4">
         <Tabs
-          aria-label="Bill Pay options"
+          aria-label="Service options"
           selectedKey={selectedService}
           variant="bordered"
           onSelectionChange={(key) => setSelectedService(key as string)}
@@ -52,14 +52,9 @@ export default function BillPayTabs({ handleSubTabChange }: BillPayTabsProps) {
             <Tab key={tab.id} title={tab.label} />
           ))}
         </Tabs>
-        <Button
-          isIconOnly
-          className="bg-charyo-500/60 backdrop-blur-sm border border-white/5"
-          data-testid="create-transfer-button"
-          onPress={() => setIsCreateModalOpen(true)}
-        >
-          <PlusIcon className="h-4 w-4" />
-        </Button>
+        {selectedService === "transfers" && (
+          <ResponsiveButton label="Create Transfer" icon={PlusIcon} onPress={() => setIsCreateModalOpen(true)} />
+        )}
       </div>
       <div className="mt-4">{renderTabContent(selectedService)}</div>
       <CreateBillPayModal

@@ -1,9 +1,9 @@
 import { useState } from "react";
-import { Button } from "@nextui-org/button";
 import { Tab, Tabs } from "@nextui-org/tabs";
 import { PlusIcon } from "lucide-react";
 
 import { cardServicesConfig } from "@/config/tabs";
+import { ResponsiveButton } from "@/components/generics/responsive-button";
 import CreateCardModal from "@/components/card-issuance/card-create";
 
 import CardListTable from "./card-list";
@@ -41,14 +41,9 @@ export default function CardServicesTabs({ handleSubTabChange }: CardServicesTab
             <Tab key={tab.id} title={tab.label} />
           ))}
         </Tabs>
-        <Button
-          isIconOnly
-          className="bg-charyo-500/60 backdrop-blur-sm border border-white/5"
-          data-testid="create-transfer-button"
-          onPress={() => setIsCreateModalOpen(true)}
-        >
-          <PlusIcon size={18} />
-        </Button>
+        {selectedService === "card-list" && (
+          <ResponsiveButton label="Create Card" icon={PlusIcon} onPress={() => setIsCreateModalOpen(true)} />
+        )}
       </div>
       <div className="mt-4">{renderTabContent(selectedService)}</div>
       <CreateCardModal isOpen={isCreateModalOpen} onClose={() => setIsCreateModalOpen(false)} />

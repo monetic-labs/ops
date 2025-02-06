@@ -1,15 +1,15 @@
 "use client";
 
 import { useState } from "react";
-import { Spinner } from "@nextui-org/spinner";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { MerchantCardGetOutput, CardStatus, CardLimitFrequency, CardType } from "@backpack-fux/pylon-sdk";
 
-import InfiniteTable from "@/components/generics/table-infinite";
+import { DataTable, EmptyContent } from "@/components/generics/data-table";
 import { formattedDate } from "@/utils/helpers";
 import pylon from "@/libs/pylon-sdk";
 
 import CardDetailsModal from "./card-details";
+import CreateCardModal from "./card-create";
 
 type HybridCard = MerchantCardGetOutput["cards"][number] & {
   id: string;
@@ -41,8 +41,40 @@ const getStatusColor = (status: CardStatus | null | undefined) => {
   }
 };
 
+const cardColumns = [
+  {
+    name: "CARD NUMBER",
+    uid: "lastFour" as const,
+    render: (card: HybridCard) => (
+      <span className="text-sm truncate max-w-[150px] sm:max-w-[200px] md:max-w-[300px]">
+        **** **** **** {card.lastFour}
+      </span>
+    ),
+  },
+  {
+    name: "STATUS",
+    uid: "status" as const,
+    render: (card: HybridCard) => (
+      <span className={`text-sm truncate ${getStatusColor(card.status)}`}>{card.status}</span>
+    ),
+  },
+  {
+    name: "CARDHOLDER",
+    uid: "cardOwner" as const,
+    render: (card: HybridCard) => (
+      <span className="text-sm truncate max-w-[150px] sm:max-w-[200px] md:max-w-[300px]">{card.holder}</span>
+    ),
+  },
+  {
+    name: "CREATED",
+    uid: "createdAt" as const,
+    render: (card: HybridCard) => <span className="text-sm truncate">{formattedDate(card.createdAt)}</span>,
+  },
+];
+
 export default function CardList() {
   const [selectedCard, setSelectedCard] = useState<HybridCard | null>(null);
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
   const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading, isError } = useInfiniteQuery<CardPage>({
     queryKey: ["merchant-cards"],
@@ -64,7 +96,6 @@ export default function CardList() {
           .map((card) => {
             if (!card || typeof card !== "object") {
               console.warn("Invalid card object in response:", card);
-
               return null;
             }
 
@@ -82,7 +113,6 @@ export default function CardList() {
               };
             } catch (err) {
               console.warn("Error processing card:", err);
-
               return null;
             }
           })
@@ -104,74 +134,21 @@ export default function CardList() {
 
   const cards = data?.pages.flatMap((page) => page.items) ?? [];
 
-  if (isError) {
-    return (
-      <div className="w-full h-[200px] flex items-center justify-center">
-        <p className="text-white/60">Failed to load cards</p>
-      </div>
-    );
-  }
-
-  if (isLoading && cards.length === 0) {
-    return (
-      <div className="w-full h-[200px] flex items-center justify-center">
-        <Spinner color="white" />
-      </div>
-    );
-  }
-
   return (
     <>
-      <InfiniteTable
-        columns={[
-          {
-            name: "CARD NUMBER",
-            uid: "lastFour",
-          },
-          {
-            name: "STATUS",
-            uid: "status",
-          },
-          {
-            name: "CARDHOLDER",
-            uid: "cardOwner",
-          },
-          {
-            name: "CREATED",
-            uid: "createdAt",
-          },
-        ]}
-        emptyContent="No cards found"
-        initialData={cards}
-        loadMore={async (cursor) => {
-          await fetchNextPage();
-          const lastPage = data?.pages[data.pages.length - 1];
-
-          return {
-            items: lastPage?.items ?? [],
-            cursor: lastPage?.cursor,
-          };
-        }}
-        renderCell={(card: HybridCard, columnKey) => {
-          if (!card) return null;
-
-          switch (columnKey) {
-            case "lastFour":
-              return `•••• ${card.lastFour || ""}`;
-            case "status":
-              return <span className={getStatusColor(card.status)}>{card.status || "Unknown"}</span>;
-            case "cardOwner":
-              return card.holder || "Unknown";
-            case "createdAt":
-              return card.createdAt ? formattedDate(card.createdAt) : "Unknown";
-            default:
-              return null;
-          }
-        }}
-        onRowSelect={setSelectedCard}
+      <DataTable
+        aria-label="Card list table"
+        columns={cardColumns}
+        errorMessage="Failed to load cards"
+        emptyContent={<EmptyContent message="Create your first card" onAction={() => setIsCreateModalOpen(true)} />}
+        isError={isError}
+        isLoading={isLoading}
+        items={cards}
+        onRowAction={setSelectedCard}
       />
 
-      {selectedCard && <CardDetailsModal card={selectedCard} isOpen={true} onClose={() => setSelectedCard(null)} />}
+      <CardDetailsModal isOpen={!!selectedCard} card={selectedCard} onClose={() => setSelectedCard(null)} />
+      <CreateCardModal isOpen={isCreateModalOpen} onClose={() => setIsCreateModalOpen(false)} />
     </>
   );
 }

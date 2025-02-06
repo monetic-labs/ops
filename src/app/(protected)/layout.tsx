@@ -20,13 +20,13 @@ export default function ProtectedLayout({ children }: { children: React.ReactNod
   }
 
   return (
-    <div className="min-h-screen flex flex-col bg-gradient-to-br from-zinc-950 via-zinc-900 to-charyo-900 py-2">
+    <div className="min-h-screen flex flex-col bg-gradient-to-br from-background via-background/90 to-background/80 transition-colors">
       <div className="fixed top-0 left-0 right-0 z-50">
         <div className="w-full max-w-[1440px] mx-auto px-6 py-4">
           <Navbar />
         </div>
       </div>
-      <div className="flex-1 w-full max-w-[1440px] mx-auto px-6">
+      <div className="flex-1 w-full max-w-[1440px] mx-auto px-6 pt-2">
         <div className="pt-[92px] pb-4 space-y-4">
           <div className="w-full">{children}</div>
         </div>

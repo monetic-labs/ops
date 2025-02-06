@@ -68,21 +68,21 @@ function BalanceOverview({ onAddFunds, onTransfer }: BalanceOverviewProps) {
   return (
     <div className="w-full p-6 space-y-6">
       <div className="w-full text-center space-y-2">
-        <p className="text-white/60 text-sm">Total Balance</p>
-        <h1 className="text-4xl font-bold text-white">$487,487.63</h1>
-        <p className="text-white/40 text-sm">Available for use</p>
+        <p className="text-foreground/60 text-sm">Total Balance</p>
+        <h1 className="text-4xl font-bold text-foreground">$487,487.63</h1>
+        <p className="text-foreground/40 text-sm">Available for use</p>
       </div>
 
       <div className="w-full flex justify-center gap-3">
         <Button
-          className="bg-[#1A1A1A] hover:bg-[#252525] text-white border border-white/10 px-6 py-2 h-11"
+          className="bg-content1 hover:bg-content2 text-foreground border border-border px-6 py-2 h-11"
           startContent={<ArrowUpRight className="w-4 h-4" />}
           onPress={onTransfer}
         >
           Send
         </Button>
         <Button
-          className="bg-[#1A1A1A] hover:bg-[#252525] text-white border border-white/10 px-6 py-2 h-11"
+          className="bg-content1 hover:bg-content2 text-foreground border border-border px-6 py-2 h-11"
           startContent={<ArrowDownLeft className="w-4 h-4" />}
           onPress={onAddFunds}
         >
@@ -107,7 +107,7 @@ function AccountsPagination({ currentPage, totalPages, onPrevPage, onNextPage }:
     <div className="w-full flex items-center justify-center gap-4 pb-4">
       <Button
         isIconOnly
-        className="bg-[#1A1A1A]/60 text-white/60 hover:text-white w-8 h-8 min-w-0"
+        className="bg-content2/60 text-foreground/60 hover:text-foreground w-8 h-8 min-w-0"
         isDisabled={currentPage === 0}
         size="sm"
         variant="flat"
@@ -121,7 +121,7 @@ function AccountsPagination({ currentPage, totalPages, onPrevPage, onNextPage }:
           <div
             key={index}
             className={`w-1.5 h-1.5 rounded-full transition-all ${
-              currentPage === index ? "bg-white w-2" : "bg-white/40"
+              currentPage === index ? "bg-foreground w-2" : "bg-foreground/40"
             }`}
           />
         ))}
@@ -129,7 +129,7 @@ function AccountsPagination({ currentPage, totalPages, onPrevPage, onNextPage }:
 
       <Button
         isIconOnly
-        className="bg-[#1A1A1A]/60 text-white/60 hover:text-white w-8 h-8 min-w-0"
+        className="bg-content2/60 text-foreground/60 hover:text-foreground w-8 h-8 min-w-0"
         isDisabled={currentPage === totalPages - 1}
         size="sm"
         variant="flat"
@@ -226,10 +226,10 @@ export default function AccountOverview() {
   const handleNextPage = () => setCurrentPage((prev) => Math.min(totalPages - 1, prev + 1));
 
   return (
-    <Card className="w-full bg-[#1A1A1A]/90 border border-white/10 backdrop-blur-sm">
+    <Card className="w-full bg-content1/90 border border-border backdrop-blur-sm">
       <BalanceOverview onAddFunds={() => setIsAddFundsOpen(true)} onTransfer={() => setIsTransferOpen(true)} />
 
-      <div ref={containerRef} className="w-full relative px-4 border-t border-white/5">
+      <div ref={containerRef} className="w-full relative px-4 border-t border-border">
         <AccountsGrid
           accounts={accounts}
           currentPage={currentPage}

@@ -32,15 +32,20 @@ type HybridCard = MerchantCardGetOutput["cards"][number] & {
 interface CardDetailsModalProps {
   isOpen: boolean;
   onClose: (card: HybridCard) => void;
-  card: HybridCard;
+  card: HybridCard | null;
 }
 
 export default function CardDetailsModal({ isOpen, onClose, card: propsCard }: CardDetailsModalProps) {
-  const [card, setCard] = useState(propsCard);
+  const [card, setCard] = useState<HybridCard | null>(propsCard);
   const [isEditing, setIsEditing] = useState(false);
   const [cvv, setCvv] = useState<string | null>();
   const [pan, setPan] = useState<string | null>();
   const [updateError, setUpdateError] = useState<string | null>();
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    setCard(propsCard);
+  }, [propsCard]);
 
   useEffect(() => {
     if (card && !card.cardShippingDetails) {
@@ -56,17 +61,18 @@ export default function CardDetailsModal({ isOpen, onClose, card: propsCard }: C
     }
   }, [card, setCvv, setPan]);
 
-  const handleEdit = async (data: z.infer<typeof UpateCardSchema>) => {
+  const handleEdit = async (data: z.input<typeof UpateCardSchema>) => {
+    if (!card) return;
+
     setUpdateError(null);
     const finalPayload = {} as UpdateMerchantCardDataInput;
 
     if (data.status !== card.status) {
       finalPayload.status = data.status as CardStatus;
     }
-    if (data.limitAmount !== card.limit || data.limitFrequency !== card.limitFrequency) {
+    if (data.limitAmount !== card.limit.toString() || data.limitFrequency !== card.limitFrequency) {
       finalPayload.limit = {
-        amount: data.limitAmount,
-
+        amount: Number(data.limitAmount),
         frequency: data.limitFrequency as CardLimitFrequency,
       };
     }
@@ -82,35 +88,48 @@ export default function CardDetailsModal({ isOpen, onClose, card: propsCard }: C
         limit: finalPayload.limit,
       });
 
-      setCard(
-        (c) =>
-          ({
-            ...c,
-            limit: data.limitAmount || card.limit,
-            limitFrequency: data.limitFrequency || card.limitFrequency,
-            status: (data.status as CardStatus) || card.status,
-          }) as any
-      );
-      setLoading(false);
+      setCard((c) => {
+        if (!c) return null;
+        return {
+          ...c,
+          limit: Number(data.limitAmount) || c.limit,
+          limitFrequency: (data.limitFrequency as CardLimitFrequency) || c.limitFrequency,
+          status: (data.status as CardStatus) || c.status,
+        };
+      });
     } catch (error: any) {
       setUpdateError(error.message);
+    } finally {
       setLoading(false);
     }
   };
 
-  const [loading, setLoading] = useState(false);
   const {
-    control: control,
+    control,
     formState: { errors },
-    handleSubmit: handleSubmit,
-  } = useForm<z.infer<typeof UpateCardSchema>>({
+    handleSubmit,
+    reset,
+  } = useForm<z.input<typeof UpateCardSchema>>({
     resolver: zodResolver(UpateCardSchema),
     defaultValues: {
-      status: card.status,
-      limitAmount: card.limit.toString() as any,
-      limitFrequency: card.limitFrequency,
+      status: card?.status || CardStatus.NOT_ACTIVATED,
+      limitAmount: card?.limit?.toString() || "0",
+      limitFrequency: card?.limitFrequency || CardLimitFrequency.MONTH,
     },
   });
+
+  // Reset form when card changes
+  useEffect(() => {
+    if (card) {
+      reset({
+        status: card.status,
+        limitAmount: card.limit?.toString() || "0",
+        limitFrequency: card.limitFrequency,
+      });
+    }
+  }, [card, reset]);
+
+  if (!card) return null;
 
   return (
     <Modal
@@ -141,61 +160,57 @@ export default function CardDetailsModal({ isOpen, onClose, card: propsCard }: C
             <Controller
               control={control}
               name="limitFrequency"
-              render={({ field, formState: { errors } }) => {
-                return (
-                  <div>
-                    <Select
-                      data-testid="card-limitFrequency"
-                      defaultSelectedKeys={[card.limitFrequency]}
-                      label="Card limit cycle"
-                      placeholder="Select card limit cycle"
-                      value={field.value}
-                      onChange={field.onChange}
-                    >
-                      {limitCyclesObject.map((t) => (
-                        <SelectItem key={t.value} data-testid={t.value} value={t.value}>
-                          {t.label}
-                        </SelectItem>
-                      ))}
-                    </Select>
-                    {errors.limitFrequency?.message && (
-                      <p className="mt-1 text-sm text-ualert-500">{errors.limitFrequency?.message}</p>
-                    )}
-                  </div>
-                );
-              }}
+              render={({ field, formState: { errors } }) => (
+                <div>
+                  <Select
+                    data-testid="card-limitFrequency"
+                    defaultSelectedKeys={[card.limitFrequency]}
+                    label="Card limit cycle"
+                    placeholder="Select card limit cycle"
+                    value={field.value}
+                    onChange={field.onChange}
+                  >
+                    {limitCyclesObject.map((t) => (
+                      <SelectItem key={t.value} data-testid={t.value} value={t.value}>
+                        {t.label}
+                      </SelectItem>
+                    ))}
+                  </Select>
+                  {errors.limitFrequency?.message && (
+                    <p className="mt-1 text-sm text-ualert-500">{errors.limitFrequency?.message}</p>
+                  )}
+                </div>
+              )}
             />
 
             <Controller
               control={control}
               name="status"
-              render={({ field, formState: { errors } }) => {
-                return (
-                  <div>
-                    <Select
-                      data-testid="card-status"
-                      defaultSelectedKeys={[card.status]}
-                      label="Status"
-                      placeholder="Select status"
-                      value={field.value}
-                      onChange={field.onChange}
-                    >
-                      {limitStatesObject.map((t) => (
-                        <SelectItem key={t.value} data-testid={t.value} value={t.value}>
-                          {t.label}
-                        </SelectItem>
-                      ))}
-                    </Select>
-                    {errors.status?.message && <p className="mt-1 text-sm text-ualert-500">{errors.status?.message}</p>}
-                  </div>
-                );
-              }}
+              render={({ field, formState: { errors } }) => (
+                <div>
+                  <Select
+                    data-testid="card-status"
+                    defaultSelectedKeys={[card.status]}
+                    label="Status"
+                    placeholder="Select status"
+                    value={field.value}
+                    onChange={field.onChange}
+                  >
+                    {limitStatesObject.map((t) => (
+                      <SelectItem key={t.value} data-testid={t.value} value={t.value}>
+                        {t.label}
+                      </SelectItem>
+                    ))}
+                  </Select>
+                  {errors.status?.message && <p className="mt-1 text-sm text-ualert-500">{errors.status?.message}</p>}
+                </div>
+              )}
             />
           </ModalBody>
           {updateError ? <p className="text-danger-300 px-6">{updateError}</p> : null}
           <div className="flex items-center px-6 mb-6 mt-4 justify-end">
             <Button
-              className={`text-notpurple-500 w-full sm:w-auto mr-4 `}
+              className="text-notpurple-500 w-full sm:w-auto mr-4"
               onClick={() => {
                 setIsEditing(false);
               }}
@@ -203,7 +218,7 @@ export default function CardDetailsModal({ isOpen, onClose, card: propsCard }: C
               Cancel
             </Button>
             <Button
-              className={`bg-ualert-500 text-notpurple-500 w-full sm:w-auto `}
+              className="bg-ualert-500 text-notpurple-500 w-full sm:w-auto"
               disabled={loading}
               isLoading={loading}
               onClick={handleSubmit(handleEdit)}
@@ -231,7 +246,6 @@ export default function CardDetailsModal({ isOpen, onClose, card: propsCard }: C
               <p className="text-small text-default-500 mb-2">
                 Limit: ${formatAmountUSD(card.limit)} per {card.limitFrequency}
               </p>
-              {/* <Progress className="mt-2" maxValue={10000} value={parseInt(card.limit.amount)} /> */}
             </div>
             <div className="flex flex-col md:flex-row gap-4">
               {pan ? (
@@ -271,8 +285,7 @@ export default function CardDetailsModal({ isOpen, onClose, card: propsCard }: C
               <Input
                 isReadOnly={!isEditing}
                 label="Billing Address"
-                // @ts-ignore
-                value={`${card.cardShippingDetails.street1}, ${card.cardShippingDetails.city}, ${card.cardShippingDetails.state},${card.cardShippingDetails.country}`}
+                value={`${card.cardShippingDetails.line1}, ${card.cardShippingDetails.city}, ${card.cardShippingDetails.postalCode}, ${card.cardShippingDetails.country}`}
               />
             ) : null}
 
@@ -280,7 +293,7 @@ export default function CardDetailsModal({ isOpen, onClose, card: propsCard }: C
           </ModalBody>
           <div className="flex items-center px-6 mb-6 mt-4 justify-end">
             <Button
-              className={`text-notpurple-500 w-full sm:w-auto mr-4 `}
+              className="text-notpurple-500 w-full sm:w-auto mr-4"
               onClick={() => {
                 setIsEditing(true);
               }}
@@ -288,7 +301,7 @@ export default function CardDetailsModal({ isOpen, onClose, card: propsCard }: C
               Edit
             </Button>
             <Button
-              className={`bg-ualert-500 text-notpurple-500 w-full sm:w-auto `}
+              className="bg-ualert-500 text-notpurple-500 w-full sm:w-auto"
               onClick={() => {
                 onClose(card);
               }}

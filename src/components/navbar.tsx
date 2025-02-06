@@ -6,12 +6,13 @@ import { Avatar } from "@nextui-org/avatar";
 import { Button } from "@nextui-org/button";
 import { useRouter } from "next/navigation";
 import NextLink from "next/link";
-import { LogOut, User, Backpack, Shield, HelpCircle } from "lucide-react";
+import { LogOut, User, Backpack, Shield, HelpCircle, Moon, Sun } from "lucide-react";
 
 import pylon from "@/libs/pylon-sdk";
 import { ExtendedMerchantUser, useAccounts } from "@/contexts/AccountContext";
 import { LocalStorage } from "@/utils/localstorage";
 import { getDisplayName } from "@/utils/helpers";
+import { useTheme } from "@/hooks/useTheme";
 
 import { ProfileSettingsModal } from "./account-settings/profile-modal";
 import { SecuritySettingsModal } from "./account-settings/security-modal";
@@ -40,55 +41,57 @@ const AuthenticatedNav = ({
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isSecurityOpen, setIsSecurityOpen] = useState(false);
   const [dropdownKey, setDropdownKey] = useState(0);
+  const { toggleTheme, isDark } = useTheme();
 
   const displayName = user.username || getDisplayName(user.firstName, user.lastName);
   const initials =
     user.firstName && user.lastName ? `${user.firstName[0]}${user.lastName[0]}`.toUpperCase() : undefined;
 
-  const dropdownItems = (
-    <>
-      <DropdownItem key="profile" startContent={<User className="w-4 h-4" />} onClick={() => setIsProfileOpen(true)}>
-        Profile
-      </DropdownItem>
-      <DropdownItem
-        key="security"
-        startContent={<Shield className="w-4 h-4" />}
-        onClick={() => setIsSecurityOpen(true)}
-      >
-        Security
-      </DropdownItem>
-      <DropdownItem
-        key="logout"
-        className="text-danger"
-        color="danger"
-        startContent={<LogOut className="w-4 h-4" />}
-        onClick={handleSignOut}
-      >
-        Sign Out
-      </DropdownItem>
-    </>
-  );
-
   return (
     <>
       {/* Desktop Menu */}
       <NavbarContent className="hidden sm:flex flex-1" justify="end">
-        <NavbarItem>
-          <Button
-            isIconOnly
-            className="bg-transparent text-white/60 hover:text-white"
-            variant="light"
-            onPress={() => window.open("https://support.backpack.fux", "_blank")}
-          >
-            <HelpCircle className="w-5 h-5" />
-          </Button>
-        </NavbarItem>
+        <div className="flex items-center gap-1">
+          <NavbarItem>
+            <Button
+              isIconOnly
+              className="bg-transparent text-foreground/60 hover:text-foreground"
+              variant="light"
+              onPress={toggleTheme}
+            >
+              {isDark ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
+            </Button>
+          </NavbarItem>
+          <NavbarItem>
+            <Button
+              isIconOnly
+              className="bg-transparent text-foreground/60 hover:text-foreground"
+              variant="light"
+              onPress={() => {
+                const event = new KeyboardEvent("keydown", {
+                  key: "k",
+                  code: "KeyK",
+                  ctrlKey: true,
+                  metaKey: true,
+                });
+                window.dispatchEvent(event);
+              }}
+            >
+              <HelpCircle className="w-5 h-5" />
+            </Button>
+          </NavbarItem>
+        </div>
         <NavbarItem className="hidden sm:flex gap-4 items-center">
           <Dropdown key={`desktop-${dropdownKey}`} placement="bottom-end">
             <DropdownTrigger>
               <button className="flex items-center gap-2 hover:opacity-80 transition-opacity">
                 <Avatar
-                  className="bg-notpurple-500/20"
+                  isBordered
+                  className="transition-transform"
+                  classNames={{
+                    base: "bg-primary/10",
+                    icon: "text-primary",
+                  }}
                   name={initials}
                   showFallback={!user.profileImage}
                   size="sm"
@@ -98,7 +101,29 @@ const AuthenticatedNav = ({
               </button>
             </DropdownTrigger>
             <DropdownMenu aria-label="User menu" variant="flat">
-              {dropdownItems}
+              <DropdownItem
+                key="profile"
+                startContent={<User className="w-4 h-4" />}
+                onClick={() => setIsProfileOpen(true)}
+              >
+                Profile
+              </DropdownItem>
+              <DropdownItem
+                key="security"
+                startContent={<Shield className="w-4 h-4" />}
+                onClick={() => setIsSecurityOpen(true)}
+              >
+                Security
+              </DropdownItem>
+              <DropdownItem
+                key="logout"
+                className="text-danger"
+                color="danger"
+                startContent={<LogOut className="w-4 h-4" />}
+                onClick={handleSignOut}
+              >
+                Sign Out
+              </DropdownItem>
             </DropdownMenu>
           </Dropdown>
         </NavbarItem>
@@ -109,7 +134,17 @@ const AuthenticatedNav = ({
         <NavbarItem>
           <Button
             isIconOnly
-            className="bg-transparent text-white/60 hover:text-white"
+            className="bg-transparent text-foreground/60 hover:text-foreground"
+            variant="light"
+            onPress={toggleTheme}
+          >
+            {isDark ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
+          </Button>
+        </NavbarItem>
+        <NavbarItem>
+          <Button
+            isIconOnly
+            className="bg-transparent text-foreground/60 hover:text-foreground"
             variant="light"
             onPress={() => window.open("https://support.backpack.fux", "_blank")}
           >
@@ -119,7 +154,12 @@ const AuthenticatedNav = ({
         <Dropdown key={`mobile-${dropdownKey}`} placement="bottom-end">
           <DropdownTrigger>
             <Avatar
-              className="bg-notpurple-500/20 cursor-pointer"
+              isBordered
+              className="transition-transform cursor-pointer"
+              classNames={{
+                base: "bg-primary/10",
+                icon: "text-primary",
+              }}
               name={initials}
               showFallback={!user.profileImage}
               size="sm"
@@ -130,7 +170,29 @@ const AuthenticatedNav = ({
             <DropdownItem key="user-info" isReadOnly className="h-14 gap-2">
               <UserInfo orgName={merchant?.name} userName={displayName} />
             </DropdownItem>
-            {dropdownItems}
+            <DropdownItem
+              key="profile"
+              startContent={<User className="w-4 h-4" />}
+              onClick={() => setIsProfileOpen(true)}
+            >
+              Profile
+            </DropdownItem>
+            <DropdownItem
+              key="security"
+              startContent={<Shield className="w-4 h-4" />}
+              onClick={() => setIsSecurityOpen(true)}
+            >
+              Security
+            </DropdownItem>
+            <DropdownItem
+              key="logout"
+              className="text-danger"
+              color="danger"
+              startContent={<LogOut className="w-4 h-4" />}
+              onClick={handleSignOut}
+            >
+              Sign Out
+            </DropdownItem>
           </DropdownMenu>
         </Dropdown>
       </NavbarContent>
@@ -182,7 +244,10 @@ export const Navbar = () => {
   return (
     <NextUINavbar
       classNames={{
-        base: "w-full bg-[#1A1A1A]/90 text-notpurple-500 rounded-xl shadow-xl border border-white/10 backdrop-blur-sm transition-all duration-200",
+        base: [
+          "w-full bg-content1/90 text-foreground rounded-xl shadow-xl border border-border",
+          "backdrop-blur-sm transition-all duration-200",
+        ].join(" "),
         wrapper: "w-full px-4 max-w-full",
         content: "basis-auto flex-grow",
       }}
@@ -192,7 +257,7 @@ export const Navbar = () => {
       <NavbarContent className="flex-none" justify="start">
         <NavbarBrand as="li" className="gap-3 max-w-fit">
           <NextLink className="flex justify-start items-center gap-1" href={isAuthenticated ? "/" : "/auth"}>
-            <Backpack className="text-notpurple-500" size={24} strokeWidth={1.5} />
+            <Backpack className="dark:text-white" size={24} strokeWidth={1.5} />
           </NextLink>
         </NavbarBrand>
       </NavbarContent>

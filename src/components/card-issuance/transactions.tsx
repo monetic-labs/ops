@@ -1,11 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import { Spinner } from "@nextui-org/spinner";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { MerchantCardTransactionGetOutput } from "@backpack-fux/pylon-sdk";
 
-import InfiniteTable from "@/components/generics/table-infinite";
+import { DataTable, EmptyContent } from "@/components/generics/data-table";
 import { formatNumber, formattedDate } from "@/utils/helpers";
 import pylon from "@/libs/pylon-sdk";
 
@@ -17,6 +16,54 @@ interface TransactionPage {
   items: Transaction[];
   cursor: string | undefined;
 }
+
+const transactionColumns = [
+  {
+    name: "MERCHANT NAME",
+    uid: "merchantName" as const,
+    render: (txn: Transaction) => (
+      <span className="text-sm truncate max-w-[150px] sm:max-w-[200px] md:max-w-[300px]">
+        {txn.merchantName || "Unknown Merchant"}
+      </span>
+    ),
+  },
+  {
+    name: "AMOUNT",
+    uid: "amount" as const,
+    render: (txn: Transaction) => (
+      <span className="text-sm truncate">
+        ${formatNumber(txn.amount / 100)} {txn.currency}
+      </span>
+    ),
+  },
+  {
+    name: "STATUS",
+    uid: "status" as const,
+    render: (txn: Transaction) => (
+      <span
+        className={`text-sm truncate ${
+          txn.status === "COMPLETED" ? "text-success" : txn.status === "PENDING" ? "text-warning" : "text-danger"
+        }`}
+      >
+        {txn.status}
+      </span>
+    ),
+  },
+  {
+    name: "SPENDER",
+    uid: "merchantCard" as const,
+    render: (txn: Transaction) => (
+      <span className="text-sm truncate max-w-[150px] sm:max-w-[200px] md:max-w-[300px]">
+        {`${txn.merchantCard.cardOwner.firstName} ${txn.merchantCard.cardOwner.lastName}`}
+      </span>
+    ),
+  },
+  {
+    name: "DATE",
+    uid: "createdAt" as const,
+    render: (txn: Transaction) => <span className="text-sm truncate">{formattedDate(txn.createdAt)}</span>,
+  },
+];
 
 export default function Transactions() {
   const [selectedTxn, setSelectedTxn] = useState<Transaction | null>(null);
@@ -41,92 +88,22 @@ export default function Transactions() {
 
   const transactions = data?.pages.flatMap((page) => page.items) ?? [];
 
-  if (isError) {
-    return (
-      <div className="w-full h-[200px] flex items-center justify-center">
-        <p className="text-white/60">Failed to load transactions</p>
-      </div>
-    );
-  }
-
-  if (isLoading && transactions.length === 0) {
-    return (
-      <div className="w-full h-[200px] flex items-center justify-center">
-        <Spinner color="white" />
-      </div>
-    );
-  }
-
   return (
     <>
-      <InfiniteTable
-        columns={[
-          {
-            name: "MERCHANT NAME",
-            uid: "merchantName",
-          },
-          {
-            name: "AMOUNT",
-            uid: "amount",
-          },
-          {
-            name: "STATUS",
-            uid: "status",
-          },
-          {
-            name: "SPENDER",
-            uid: "merchantCard",
-          },
-          {
-            name: "DATE",
-            uid: "createdAt",
-          },
-        ]}
-        emptyContent="No transactions found"
-        initialData={transactions}
-        loadMore={async (cursor) => {
-          await fetchNextPage();
-          const lastPage = data?.pages[data.pages.length - 1];
-
-          return {
-            items: lastPage?.items ?? [],
-            cursor: lastPage?.cursor,
-          };
-        }}
-        renderCell={(txn: Transaction, columnKey) => {
-          switch (columnKey) {
-            case "merchantName":
-              return txn.merchantName || "Unknown Merchant";
-            case "amount":
-              return `$${formatNumber(txn.amount / 100)} ${txn.currency}`;
-            case "status":
-              return (
-                <span
-                  className={
-                    txn.status === "COMPLETED"
-                      ? "text-success"
-                      : txn.status === "PENDING"
-                        ? "text-warning"
-                        : "text-danger"
-                  }
-                >
-                  {txn.status}
-                </span>
-              );
-            case "merchantCard":
-              return `${txn.merchantCard.cardOwner.firstName} ${txn.merchantCard.cardOwner.lastName}`;
-            case "createdAt":
-              return formattedDate(txn.createdAt);
-            default:
-              return null;
-          }
-        }}
-        onRowSelect={setSelectedTxn}
+      <DataTable
+        aria-label="Card transactions table"
+        columns={transactionColumns}
+        emptyContent={<EmptyContent message="No card transactions found" />}
+        errorMessage="Failed to load transactions"
+        isError={isError}
+        isLoading={isLoading}
+        items={transactions}
+        onRowAction={setSelectedTxn}
       />
 
       <TransactionDetailsModal
         isOpen={!!selectedTxn}
-        transaction={selectedTxn as any} // TODO: Fix type mismatch between components
+        transaction={selectedTxn as any}
         onClose={() => setSelectedTxn(null)}
       />
     </>

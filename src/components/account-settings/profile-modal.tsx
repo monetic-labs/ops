@@ -73,8 +73,8 @@ export const ProfileSettingsModal = ({ isOpen, onClose, user }: ProfileSettingsM
     <Modal
       hideCloseButton
       classNames={{
-        base: "bg-[#0A0A0A]",
-        backdrop: "bg-black/80",
+        base: "bg-content1",
+        backdrop: "bg-black/50 backdrop-blur-sm",
         body: "p-0",
       }}
       isOpen={isOpen}
@@ -83,15 +83,15 @@ export const ProfileSettingsModal = ({ isOpen, onClose, user }: ProfileSettingsM
       onClose={onClose}
     >
       <ModalContent>
-        <div className="flex items-center justify-between px-5 py-4 border-b border-[#1a1a1a]">
+        <div className="flex items-center justify-between px-5 py-4 border-b border-divider">
           <div className="flex flex-col">
-            <h3 className="text-xl font-normal text-white">Profile Settings</h3>
-            <p className="text-sm text-gray-400">Account ID: {user.id ?? "N/A"}</p>
+            <h3 className="text-xl font-normal text-foreground">Profile Settings</h3>
+            <p className="text-sm text-foreground-400">Account ID: {user.id ?? "N/A"}</p>
           </div>
           <div className="flex items-center gap-3">
             <Button
               isIconOnly
-              className="text-gray-400 hover:text-white transition-colors"
+              className="text-foreground-400 hover:text-foreground transition-colors"
               variant="light"
               onClick={onClose}
             >
@@ -105,7 +105,10 @@ export const ProfileSettingsModal = ({ isOpen, onClose, user }: ProfileSettingsM
               <Avatar
                 isBordered
                 className="w-16 h-16"
-                color="secondary"
+                classNames={{
+                  base: "bg-primary/10",
+                  icon: "text-primary",
+                }}
                 name={getInitials(user.firstName, user.lastName)}
                 showFallback={!profileImage}
                 src={profileImage || undefined}
@@ -113,7 +116,7 @@ export const ProfileSettingsModal = ({ isOpen, onClose, user }: ProfileSettingsM
               <div className="flex flex-col gap-2">
                 <Button
                   as="label"
-                  color="secondary"
+                  color="primary"
                   size="sm"
                   startContent={<Upload className="w-4 h-4" />}
                   variant="flat"

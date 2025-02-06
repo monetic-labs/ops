@@ -1,11 +1,11 @@
 import { useState, useRef } from "react";
 import { Tab, Tabs } from "@nextui-org/tabs";
-import { Button } from "@nextui-org/button";
 import { PlusIcon } from "lucide-react";
 
 import { backOfficeConfig } from "@/config/tabs";
+import { ResponsiveButton } from "@/components/generics/responsive-button";
 
-import CreateOrderModal from "./create-order-modal";
+import CreateOrderModal from "./actions/order-create";
 import PaymentsTab from "./payments-tab";
 import OrdersTab, { OrdersTabRef } from "./orders-tab";
 import WidgetTab from "./widget-tab";
@@ -24,15 +24,13 @@ export default function BackOfficeTabs({ handleSubTabChange }: BackOfficeTabsPro
       case "payments":
         return <PaymentsTab />;
       case "order-links":
-        return <OrdersTab ref={ordersTabRef} onCreateClick={() => setIsCreateModalOpen(true)} />;
+        return <OrdersTab ref={ordersTabRef} />;
       case "widget-management":
         return <WidgetTab />;
       default:
         return <div>Tab content not found</div>;
     }
   };
-
-  const showCreateButton = selectedService === "order-links";
 
   const handleOrderCreated = async () => {
     setIsCreateModalOpen(false);
@@ -54,14 +52,8 @@ export default function BackOfficeTabs({ handleSubTabChange }: BackOfficeTabsPro
             <Tab key={tab.id} title={tab.label} />
           ))}
         </Tabs>
-        {showCreateButton && (
-          <Button
-            isIconOnly
-            className="bg-charyo-500/60 backdrop-blur-sm border border-white/5"
-            onPress={() => setIsCreateModalOpen(true)}
-          >
-            <PlusIcon size={18} />
-          </Button>
+        {selectedService === "order-links" && (
+          <ResponsiveButton label="Create Order Link" icon={PlusIcon} onPress={() => setIsCreateModalOpen(true)} />
         )}
       </div>
       <div className="mt-4">{renderTabContent(selectedService)}</div>

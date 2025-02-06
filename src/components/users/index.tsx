@@ -7,6 +7,7 @@ import { PlusIcon } from "lucide-react";
 
 import MembersTab from "./members-tab";
 import DeveloperAccess from "./developer-access";
+import { ResponsiveButton } from "../generics/responsive-button";
 
 const userTabsConfig = [
   {
@@ -49,14 +50,7 @@ export default function UserTab({ userId }: { userId: string }) {
           ))}
         </Tabs>
         {selectedTab === "members" && (
-          <Button
-            isIconOnly
-            className="bg-charyo-500/60 backdrop-blur-sm border border-white/5"
-            data-testid="create-transfer-button"
-            onPress={() => setIsModalOpen(true)}
-          >
-            <PlusIcon className="h-4 w-4" />
-          </Button>
+          <ResponsiveButton label="Add User" icon={PlusIcon} onPress={() => setIsModalOpen(true)} />
         )}
       </div>
       <div className="mt-4">{renderTabContent(selectedTab)}</div>

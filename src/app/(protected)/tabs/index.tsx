@@ -73,16 +73,15 @@ export default function MerchantServicesTabs({ userId }: { userId: string }) {
 
   return (
     <div className="w-full">
-      <Card className="w-full bg-[#1A1A1A]/90 border border-white/10 backdrop-blur-sm">
+      <Card className="w-full bg-content1/90 border border-default-200/50 backdrop-blur-sm">
         <CardBody className="w-full p-0">
           <Tabs
             aria-label="Service options"
             classNames={{
               base: "w-full",
               tabList: "w-full relative px-6 py-2 gap-6",
-              cursor: "w-full bg-notpurple-500",
+              cursor: "w-full bg-notpurple-500 h-[2px]",
               tab: "max-w-fit px-0 h-12",
-              tabContent: "text-default-500 text-sm group-data-[selected=true]:text-notpurple-500",
               panel: "w-full p-0",
             }}
             selectedKey={selectedService}
@@ -95,7 +94,7 @@ export default function MerchantServicesTabs({ userId }: { userId: string }) {
                 title={
                   <Tooltip
                     classNames={{
-                      content: "text-default-500 rounded-lg shadow-xl bg-background/90 text-sm",
+                      content: "text-default-600 rounded-lg shadow-xl bg-content2/90 text-sm",
                     }}
                     closeDelay={0}
                     content={tab.content}

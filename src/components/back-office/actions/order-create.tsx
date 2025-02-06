@@ -11,7 +11,7 @@ import pylon from "@/libs/pylon-sdk";
 interface CreateOrderModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onCreate: (order: GetOrderLinksOutput) => void;
+  onCreate: (order: GetOrderLinksOutput) => Promise<void>;
 }
 
 export default function CreateOrderModal({ isOpen, onClose, onCreate }: CreateOrderModalProps) {
@@ -30,23 +30,19 @@ export default function CreateOrderModal({ isOpen, onClose, onCreate }: CreateOr
 
   const validateEmail = (email: string) => {
     const emailRegex = /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i;
-
     return emailRegex.test(email) ? "" : "Please enter a valid email address";
   };
 
   const validatePhone = (phone: string) => {
     const phoneRegex = /^\(\d{3}\)\s\d{3}-\d{4}$/;
-
     return phoneRegex.test(phone) ? "" : "Please enter a valid phone number";
   };
 
   const validateAmount = (amount: string) => {
     const numericValue = parseFloat(amount.replace(/[^\d.]/g, ""));
-
     if (isNaN(numericValue)) return "Please enter a valid amount";
     if (numericValue < 1) return "Amount must be at least $1.00";
     if (numericValue > 1000000) return "Amount cannot exceed $1,000,000";
-
     return "";
   };
 
@@ -63,31 +59,21 @@ export default function CreateOrderModal({ isOpen, onClose, onCreate }: CreateOr
         error = validatePhone(formattedValue);
         break;
       case "amount":
-        // Only allow numbers and a single decimal point
         const cleanValue = value.replace(/[^\d.]/g, "");
-
-        // Handle decimal places
         const parts = cleanValue.split(".");
-
         if (parts.length > 2) {
-          // More than one decimal point - keep only first one
           formattedValue = parts[0] + "." + parts[1];
         } else if (parts.length === 2) {
-          // Has decimal point - limit to 2 decimal places
           formattedValue = parts[0] + "." + parts[1].slice(0, 2);
         } else {
           formattedValue = cleanValue;
         }
-
-        // Format with commas if not typing decimal
         if (!formattedValue.endsWith(".")) {
           const numericValue = parseFloat(formattedValue);
-
           if (!isNaN(numericValue)) {
             formattedValue = formatNumber(numericValue);
           }
         }
-
         error = validateAmount(formattedValue);
         break;
     }
@@ -108,7 +94,6 @@ export default function CreateOrderModal({ isOpen, onClose, onCreate }: CreateOr
 
     try {
       const amountInCents = Math.round(parseFloat(formData.amount.replace(/[^\d.]/g, "")) * 100);
-
       const response = await pylon.createOrderLink({
         customer: {
           email: formData.email,
@@ -133,9 +118,10 @@ export default function CreateOrderModal({ isOpen, onClose, onCreate }: CreateOr
         expiresAt: response.expiresAt,
       };
 
-      onCreate(newOrder);
+      await onCreate(newOrder);
       handleClose();
     } catch (err) {
+      console.error("Failed to create order:", err);
       setError("Failed to create order. Please try again.");
     } finally {
       setIsLoading(false);

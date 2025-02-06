@@ -58,19 +58,9 @@ const VALID_FREQUENCIES = [
 ];
 
 export const UpateCardSchema = z.object({
-  status: z.string().refine(
-    (value) => VALID_STATUSES.includes(value as (typeof VALID_STATUSES)[number]),
-    (value) => ({ message: `Please select valid status` })
-  ),
-  limitAmount: z
-    .string()
-    .min(1, "Please enter card limit number")
-    .transform((val) => Number(val))
-    .refine((val) => !isNaN(val) && val > 0, "Please enter a valid number for card limit"),
-  limitFrequency: z.string().refine(
-    (value) => VALID_FREQUENCIES.includes(value as (typeof VALID_FREQUENCIES)[number]),
-    (value) => ({ message: `Please select valid limit frequency` })
-  ),
+  status: z.nativeEnum(CardStatus),
+  limitAmount: z.string().transform((val) => Number(val)),
+  limitFrequency: z.nativeEnum(CardLimitFrequency),
 });
 
 export const CreateCardSchema = z.object({
@@ -416,3 +406,17 @@ export const usersStatusColorMap: Record<PersonRole, StatusColor> = {
   ADMIN: "success",
   SUPER_ADMIN: "danger",
 };
+
+export const ordersColumns = [
+  { uid: "id", name: "Order ID" },
+  { uid: "customer", name: "Customer" },
+  { uid: "order", name: "Amount" },
+  { uid: "expiresAt", name: "Expires" },
+];
+
+export const ordersStatusColorMap = {
+  PENDING: "warning",
+  COMPLETED: "success",
+  EXPIRED: "danger",
+  CANCELLED: "danger",
+} as const;
