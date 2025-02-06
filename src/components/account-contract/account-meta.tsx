@@ -153,7 +153,7 @@ function AccountsGrid({ accounts, currentPage, itemsPerPage, onAccountClick }: A
 
   return (
     <div className="w-full h-[160px]">
-      <div className="w-full py-4 h-full">
+      <div className="w-full py-4 mt-2 h-full">
         <div className="w-full flex justify-center px-4 gap-4 h-full overflow-x-auto">
           {visibleAccounts.map((account) => (
             <div key={account.id} style={{ width: `${CARD_WIDTH}px`, flex: `0 0 ${CARD_WIDTH}px` }}>

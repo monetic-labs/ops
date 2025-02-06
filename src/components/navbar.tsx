@@ -3,9 +3,10 @@ import { useState } from "react";
 import { NavbarBrand, NavbarContent, NavbarItem, Navbar as NextUINavbar } from "@nextui-org/navbar";
 import { Dropdown, DropdownTrigger, DropdownMenu, DropdownItem } from "@nextui-org/dropdown";
 import { Avatar } from "@nextui-org/avatar";
+import { Button } from "@nextui-org/button";
 import { useRouter } from "next/navigation";
 import NextLink from "next/link";
-import { LogOut, User, Backpack, Shield } from "lucide-react";
+import { LogOut, User, Backpack, Shield, HelpCircle } from "lucide-react";
 
 import pylon from "@/libs/pylon-sdk";
 import { ExtendedMerchantUser, useAccounts } from "@/contexts/AccountContext";
@@ -72,6 +73,16 @@ const AuthenticatedNav = ({
     <>
       {/* Desktop Menu */}
       <NavbarContent className="hidden sm:flex flex-1" justify="end">
+        <NavbarItem>
+          <Button
+            isIconOnly
+            className="bg-transparent text-white/60 hover:text-white"
+            variant="light"
+            onPress={() => window.open("https://support.backpack.fux", "_blank")}
+          >
+            <HelpCircle className="w-5 h-5" />
+          </Button>
+        </NavbarItem>
         <NavbarItem className="hidden sm:flex gap-4 items-center">
           <Dropdown key={`desktop-${dropdownKey}`} placement="bottom-end">
             <DropdownTrigger>
@@ -95,6 +106,16 @@ const AuthenticatedNav = ({
 
       {/* Mobile Menu */}
       <NavbarContent className="sm:hidden flex-1" justify="end">
+        <NavbarItem>
+          <Button
+            isIconOnly
+            className="bg-transparent text-white/60 hover:text-white"
+            variant="light"
+            onPress={() => window.open("https://support.backpack.fux", "_blank")}
+          >
+            <HelpCircle className="w-5 h-5" />
+          </Button>
+        </NavbarItem>
         <Dropdown key={`mobile-${dropdownKey}`} placement="bottom-end">
           <DropdownTrigger>
             <Avatar
@@ -161,17 +182,17 @@ export const Navbar = () => {
   return (
     <NextUINavbar
       classNames={{
-        base: "w-full bg-[#1A1A1A]/90 text-notpurple-500 rounded-xl shadow-xl border border-white/10 backdrop-blur-sm",
+        base: "w-full bg-[#1A1A1A]/90 text-notpurple-500 rounded-xl shadow-xl border border-white/10 backdrop-blur-sm transition-all duration-200",
         wrapper: "w-full px-4 max-w-full",
         content: "basis-auto flex-grow",
       }}
+      shouldHideOnScroll={false}
     >
       {/* Logo */}
       <NavbarContent className="flex-none" justify="start">
         <NavbarBrand as="li" className="gap-3 max-w-fit">
           <NextLink className="flex justify-start items-center gap-1" href={isAuthenticated ? "/" : "/auth"}>
             <Backpack className="text-notpurple-500" size={24} strokeWidth={1.5} />
-            {/* <p className="font-bold text-inherit">Backpack Services</p> */}
           </NextLink>
         </NavbarBrand>
       </NavbarContent>

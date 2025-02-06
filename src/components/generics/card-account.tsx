@@ -188,7 +188,7 @@ export function AccountCard(props: CardProps) {
           aria-label="Create new account"
           className={`w-full h-full p-4 rounded-lg transition-all duration-300 ease-in-out relative group border border-dashed ${
             props.disabled
-              ? "border-white/5 bg-[#1A1A1A]/30 !cursor-not-allowed !hover:bg-[#1A1A1A]/30"
+              ? "border border-white/5 bg-[#1A1A1A]/30 hover:bg-[#1A1A1A]/40"
               : "border-white/10 bg-[#1A1A1A]/30 hover:bg-[#1A1A1A]/50 hover:border-white/20 cursor-pointer"
           } ${props.className || ""}`}
           disableAnimation={props.disabled}
@@ -196,16 +196,13 @@ export function AccountCard(props: CardProps) {
           disabled={props.disabled}
           onClick={props.onClick}
         >
-          <div className="h-full flex flex-col items-center justify-center">
+          <div className="h-full w-full flex flex-col items-center justify-center">
             <Icon className={`w-6 h-6 ${props.disabled ? "text-white/40" : "text-white/60"} mb-2`} />
             <span className={`text-sm ${props.disabled ? "text-white/40" : "text-white/60"}`}>Create account</span>
           </div>
           {props.comingSoon && (
             <div className="absolute inset-0 flex items-center justify-center bg-black/80 opacity-0 group-hover:opacity-100 transition-all duration-300 ease-in-out rounded-lg backdrop-blur-sm">
-              <div className="flex flex-col items-center gap-2">
-                <PlusCircle className="w-6 h-6 text-white/80" />
-                <span className="text-sm font-medium text-white/90">Coming Soon</span>
-              </div>
+              <span className="text-sm font-medium text-white/90">Coming Soon</span>
             </div>
           )}
         </Button>
@@ -222,10 +219,12 @@ export function AccountCard(props: CardProps) {
         } ${props.className || ""}`}
         disabled={props.disabled}
         onClick={props.onClick}
+        fullWidth
+        style={{ justifyContent: "flex-start", alignItems: "flex-start" }}
       >
-        <div className="h-full flex flex-col justify-between">
+        <div className="h-full w-full flex flex-col justify-between items-start text-left">
           {/* Header */}
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 w-full">
             <Icon
               className={`w-5 h-5 ${
                 props.disabled ? "text-white/40 group-hover:text-white/60" : "text-white/80"
@@ -242,13 +241,13 @@ export function AccountCard(props: CardProps) {
 
           {/* Content */}
           <div
-            className={`${props.disabled ? "opacity-40 group-hover:opacity-60" : ""} transition-all duration-300 ease-in-out`}
+            className={`${props.disabled ? "opacity-40 group-hover:opacity-60" : ""} transition-all duration-300 ease-in-out w-full text-left`}
           >
-            <p className="text-2xl font-bold text-white mb-1">${props.balance?.toLocaleString() ?? "0"}</p>
+            <p className="text-2xl font-bold text-white mb-1 text-left">${props.balance?.toLocaleString() ?? "0"}</p>
             <p
               className={`text-sm ${
                 props.disabled ? "text-white/40 group-hover:text-white/60" : "text-white/60"
-              } transition-colors duration-300 ease-in-out`}
+              } transition-colors duration-300 ease-in-out text-left`}
             >
               {props.currency}
             </p>
@@ -257,10 +256,7 @@ export function AccountCard(props: CardProps) {
 
         {props.comingSoon && (
           <div className="absolute inset-0 flex items-center justify-center bg-black/80 opacity-0 group-hover:opacity-100 transition-all duration-300 ease-in-out rounded-lg backdrop-blur-sm">
-            <div className="flex flex-col items-center gap-2">
-              <PlusCircle className="w-6 h-6 text-white/80" />
-              <span className="text-sm font-medium text-white/90">Coming Soon</span>
-            </div>
+            <span className="text-sm font-medium text-white/90">Coming Soon</span>
           </div>
         )}
       </Button>
