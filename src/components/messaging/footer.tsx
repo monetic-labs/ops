@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import { Divider } from "@nextui-org/divider";
 
 import { MessageInput } from "./input";
 import { ChatActions } from "./actions";
@@ -12,9 +13,14 @@ interface ChatFooterProps {
 
 export const ChatFooter = React.memo<ChatFooterProps>(({ inputRef }) => {
   return (
-    <div className="border-t border-charyo-600 p-4 space-y-4" data-testid="pane-footer">
-      <ModeSwitcher />
-      <ChatActions />
+    <div className="w-full space-y-2" data-testid="pane-footer">
+      <div className="px-2">
+        <ModeSwitcher />
+      </div>
+      <Divider className="bg-charyo-400/20" />
+      <div className="px-2">
+        <ChatActions />
+      </div>
       <MessageInput ref={inputRef} />
     </div>
   );

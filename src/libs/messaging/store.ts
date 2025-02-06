@@ -28,6 +28,12 @@ interface UIState {
   isResizing: boolean;
 }
 
+interface PendingAttachment {
+  type: "image" | "screenshot";
+  file: File | null;
+  preview: string;
+}
+
 // Core message state
 interface MessageState {
   mode: MessageMode;
@@ -44,6 +50,7 @@ interface MessageState {
   merchantId?: string | null;
   activeService: MessageServiceType;
   pendingMessage: Message | null;
+  pendingAttachment: PendingAttachment | null;
 }
 
 // Connection state
@@ -68,8 +75,9 @@ interface MessageActions {
   updateMessage: (id: string, updates: Partial<Omit<Message, "type">>) => void;
   updateMessageStatus: (id: string, status: MessageStatus) => void;
   setTyping: (isTyping: boolean) => void;
-  setInputValue: (payload: { mode: MessageMode; value: string }) => void;
+  setInputValue: (params: { mode: MessageMode; value: string }) => void;
   setPendingMessage: (message: Message | null) => void;
+  setPendingAttachment: (attachment: PendingAttachment | null) => void;
   clearMessages: () => void;
 }
 
@@ -162,6 +170,7 @@ export const useMessagingStore = create<MessagingStore>()(
         userId: null,
         activeService: "openai",
         pendingMessage: null,
+        pendingAttachment: null,
       },
       mention: {
         isOpen: false,
@@ -261,6 +270,13 @@ export const useMessagingStore = create<MessagingStore>()(
             set((state) => ({
               message: { ...state.message, pendingMessage: message },
             })),
+          setPendingAttachment: (attachment: PendingAttachment | null) =>
+            set((state) => ({
+              message: {
+                ...state.message,
+                pendingAttachment: attachment,
+              },
+            })),
           clearMessages: () =>
             set((state) => ({
               message: {
@@ -348,6 +364,7 @@ export const resetMessagingStore = () => {
       userId: null,
       activeService: "openai",
       pendingMessage: null,
+      pendingAttachment: null,
     },
     connection: {
       status: "disconnected",

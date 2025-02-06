@@ -7,6 +7,8 @@ import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm"; // For tables, strikethrough, etc.
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import { vscDarkPlus } from "react-syntax-highlighter/dist/esm/styles/prism";
+import { Avatar } from "@nextui-org/avatar";
+import { User, Image as ImageIcon, Camera } from "lucide-react";
 
 // Define CodeProps interface if needed
 interface CodeProps {
@@ -25,36 +27,18 @@ interface MessageBubbleProps {
 }
 
 export const MessageBubble: React.FC<MessageBubbleProps> = ({ message, contentTestId, "data-testid": testId }) => {
+  const isUser = "role" in message ? message.role === "user" : message.type === "user";
+
   const getBubbleStyle = () => {
-    if ("role" in message) {
-      return message.role === "user" ? "bg-ualert-500 text-notpurple-500" : "bg-charyo-500/50 text-notpurple-500";
-    }
-
-    return message.type === "user" ? "bg-ualert-500 text-notpurple-500" : "bg-charyo-400 text-notpurple-500";
-  };
-
-  const getAlignment = () => {
-    if ("role" in message) {
-      return message.role === "user" ? "justify-end" : "justify-start";
-    }
-
-    return message.type === "user" ? "justify-end" : "justify-start";
+    return isUser ? "bg-ualert-500 text-notpurple-500 ml-auto" : "bg-charyo-500/50 text-notpurple-500 mr-auto";
   };
 
   const getMessageId = () => {
-    if ("role" in message) {
-      return message.id;
-    }
-
-    return message.id;
+    return "role" in message ? message.id : message.id;
   };
 
   const getMessageType = () => {
-    if ("role" in message) {
-      return message.role;
-    }
-
-    return message.type;
+    return "role" in message ? message.role : message.type;
   };
 
   const sanitizeContent = (content: string) => {
@@ -97,6 +81,38 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({ message, contentTe
 
   const getMessageContent = () => {
     const content = "role" in message ? message.content : message.text;
+    const hasAttachment = !("role" in message) && message.attachment;
+
+    // If there's an attachment, show it with the message
+    if (hasAttachment && message.attachment) {
+      const attachmentContent = (
+        <div className="space-y-2">
+          <div className="flex items-center gap-2">
+            {message.attachment.type === "screenshot" ? (
+              <Camera className="w-4 h-4 text-white/80" />
+            ) : (
+              <ImageIcon className="w-4 h-4 text-white/80" />
+            )}
+            <span className="text-white/80 text-sm">
+              {message.attachment.type === "screenshot" ? "Screenshot" : "Image"}
+            </span>
+          </div>
+          {message.attachment.url && (
+            <div className="mt-2 rounded-md overflow-hidden max-w-[200px]">
+              <img
+                src={message.attachment.url}
+                alt={`${message.attachment.type} attachment`}
+                className="w-full h-auto object-cover"
+              />
+            </div>
+          )}
+          {content && content !== "Image Attachment" && content !== "Screenshot" && (
+            <div className="mt-2 text-sm">{content}</div>
+          )}
+        </div>
+      );
+      return attachmentContent;
+    }
 
     // Apply special formatting for agent messages
     if (("role" in message && message.role === "assistant") || ("type" in message && message.type === "bot")) {
@@ -106,61 +122,69 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({ message, contentTe
     return sanitizeContent(content);
   };
 
-  const messageId = getMessageId();
-  const bubbleTestId = testId || `message-${messageId}`;
+  const messageContent = getMessageContent();
+  const bubbleTestId = testId || `message-${getMessageId()}`;
   const contentBubbleTestId = `${bubbleTestId}-content`;
-  const statusTestId = `${bubbleTestId}-status`;
 
   return (
-    <div className={`flex ${getAlignment()} message-${getMessageType()}`} data-testid={bubbleTestId}>
-      <div className={`max-w-[80%] rounded-lg p-3 ${getBubbleStyle()}`} data-testid={contentBubbleTestId}>
-        <ReactMarkdown
-          className="break-words"
-          components={{
-            code({ node, inline, className, children, ...props }: CodeProps) {
-              const match = /language-(\w+)/.exec(className || "");
-              const codeString = String(children).replace(/\n$/, "");
-
-              if (!inline && match) {
-                return (
-                  <SyntaxHighlighter PreTag="div" language={match[1]} style={vscDarkPlus}>
-                    {codeString}
-                  </SyntaxHighlighter>
-                );
-              }
-
-              return (
-                <code className={className} {...props}>
-                  {children}
-                </code>
-              );
-            },
-            // Customize other elements
-            h1: ({ children, ...props }) => (
-              <h1 className="text-xl font-bold my-4" {...props}>
-                {children}
-              </h1>
-            ),
-            h2: ({ children, ...props }) => (
-              <h2 className="text-lg font-bold my-3" {...props}>
-                {children}
-              </h2>
-            ),
-            h3: ({ children, ...props }) => (
-              <h3 className="text-md font-bold my-2" {...props}>
-                {children}
-              </h3>
-            ),
-            // Other components stay the same
-            ul: (props) => <ul className="list-disc ml-4 my-2" {...props} />,
-            ol: (props) => <ol className="list-decimal ml-4 my-2" {...props} />,
-            p: (props) => <p className="my-2" {...props} />,
+    <div className="flex items-start gap-3 message-${getMessageType()}" data-testid={bubbleTestId}>
+      {!isUser && (
+        <Avatar
+          icon={<User className="w-4 h-4" />}
+          classNames={{
+            base: "bg-charyo-600",
+            icon: "text-notpurple-500",
           }}
-          remarkPlugins={[remarkGfm]}
-        >
-          {getMessageContent()}
-        </ReactMarkdown>
+          size="sm"
+        />
+      )}
+      <div className={`max-w-[85%] rounded-lg p-3 shadow-sm ${getBubbleStyle()}`} data-testid={contentBubbleTestId}>
+        {React.isValidElement(messageContent) ? (
+          messageContent
+        ) : (
+          <ReactMarkdown
+            className="break-words prose prose-invert max-w-none text-sm"
+            components={{
+              code({ node, inline, className, children, ...props }: CodeProps) {
+                const match = /language-(\w+)/.exec(className || "");
+                const codeString = String(children).replace(/\n$/, "");
+
+                if (!inline && match) {
+                  return (
+                    <SyntaxHighlighter
+                      PreTag="div"
+                      language={match[1]}
+                      style={vscDarkPlus}
+                      className="rounded-md !bg-charyo-600/50 text-xs"
+                    >
+                      {codeString}
+                    </SyntaxHighlighter>
+                  );
+                }
+
+                return (
+                  <code className={`${className} bg-charyo-600/50 rounded px-1 text-xs`} {...props}>
+                    {children}
+                  </code>
+                );
+              },
+            }}
+            remarkPlugins={[remarkGfm]}
+          >
+            {messageContent as string}
+          </ReactMarkdown>
+        )}
       </div>
+      {isUser && (
+        <Avatar
+          icon={<User className="w-4 h-4" />}
+          classNames={{
+            base: "bg-ualert-600",
+            icon: "text-notpurple-500",
+          }}
+          size="sm"
+        />
+      )}
     </div>
   );
 };

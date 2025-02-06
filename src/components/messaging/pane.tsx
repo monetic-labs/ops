@@ -1,8 +1,7 @@
 "use client";
 
-import React, { useCallback, useEffect, useRef, useState } from "react";
-
-import { useResizePanel } from "@/hooks/messaging/useResizePanel";
+import React, { useCallback, useEffect, useRef } from "react";
+import { Drawer, DrawerContent, DrawerHeader, DrawerBody, DrawerFooter } from "@nextui-org/drawer";
 
 import { ChatHeader } from "./header";
 import { ChatBody } from "./body";
@@ -16,17 +15,13 @@ interface ChatPaneProps {
 }
 
 /**
- * ChatPane component that provides a resizable messaging interface.
- * Includes a backdrop, header, message body, input footer, and resize handle.
+ * ChatPane component that provides a messaging interface using NextUI's Drawer.
  */
 export const ChatPane: React.FC<ChatPaneProps> = ({ isOpen, onClose }) => {
-  const { width, isResizing, resizeHandleProps } = useResizePanel();
-  const [mounted, setMounted] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  // Handle component mounting and input focus
+  // Focus input when drawer opens
   useEffect(() => {
-    setMounted(true);
     if (isOpen) {
       const timer = setTimeout(() => {
         inputRef.current?.focus();
@@ -36,61 +31,69 @@ export const ChatPane: React.FC<ChatPaneProps> = ({ isOpen, onClose }) => {
     }
   }, [isOpen]);
 
-  // Handle escape key to close pane
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape" && isOpen && !isResizing) {
+  const handleKeyDown = useCallback(
+    (e: React.KeyboardEvent) => {
+      if (e.key === "Escape") {
         onClose();
       }
-    };
-
-    window.addEventListener("keydown", handleKeyDown);
-
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [isOpen, isResizing, onClose]);
-
-  const handleClose = useCallback(() => {
-    if (!isResizing) {
-      onClose();
-    }
-  }, [isResizing, onClose]);
-
-  if (!mounted) return null;
+    },
+    [onClose]
+  );
 
   return (
-    <>
-      {/* Backdrop */}
-      <button
-        aria-label="Close chat"
-        className={`fixed inset-0 bg-black/50 transition-opacity duration-300
-          ${isOpen ? "opacity-100" : "opacity-0 pointer-events-none"}`}
-        data-state={isOpen ? "open" : "closed"}
-        data-testid="chat-backdrop"
-        type="button"
-        onClick={handleClose}
-      />
-
-      {/* Chat Container */}
-      <div
-        className={`fixed left-0 top-0 h-full bg-charyo-500/80 shadow-lg transform 
-          transition-transform duration-300 z-50 flex flex-col
-          ${isOpen ? "translate-x-0" : "-translate-x-full"}`}
-        data-state={isOpen ? "open" : "closed"}
-        data-testid="chat-pane-container"
-        style={{ width: `${width}px` }}
-      >
-        <ChatHeader onClose={handleClose} />
-        <ChatBody />
-        <ChatFooter inputRef={inputRef} />
-
-        {/* Resize Handle */}
-        <div
-          className={`absolute right-0 top-0 w-1 h-full cursor-ew-resize hover:bg-ualert-500/50
-            ${isResizing ? "bg-ualert-500/50" : "bg-transparent"}`}
-          {...resizeHandleProps}
-          data-testid="chat-pane-resize-handle"
-        />
-      </div>
-    </>
+    <Drawer
+      isOpen={isOpen}
+      onClose={onClose}
+      onKeyDown={handleKeyDown}
+      placement="left"
+      size="md"
+      backdrop="transparent"
+      classNames={{
+        base: [
+          "bg-gradient-to-b from-charyo-500/95 to-charyo-600/95",
+          "backdrop-blur-md",
+          "text-notpurple-500",
+          "shadow-2xl",
+          "dark:shadow-charyo-900/20",
+        ].join(" "),
+        header: "border-b border-charyo-400/20",
+        body: "p-0 scrollbar-thin scrollbar-track-charyo-600 scrollbar-thumb-charyo-400/50",
+        footer: "border-t border-charyo-400/20 bg-charyo-500/50 backdrop-blur-xl",
+        wrapper: ["max-w-[420px] w-full", "rounded-r-2xl", "shadow-xl shadow-charyo-900/10"].join(" "),
+      }}
+      hideCloseButton={true}
+      motionProps={{
+        variants: {
+          enter: {
+            x: 0,
+            opacity: 1,
+            transition: {
+              duration: 0.3,
+              ease: [0.4, 0, 0.2, 1],
+            },
+          },
+          exit: {
+            x: -420,
+            opacity: 0,
+            transition: {
+              duration: 0.2,
+              ease: [0.4, 0, 1, 1],
+            },
+          },
+        },
+      }}
+    >
+      <DrawerContent>
+        <DrawerHeader className="px-4 py-3 flex justify-between">
+          <ChatHeader onClose={onClose} />
+        </DrawerHeader>
+        <DrawerBody className="flex flex-col">
+          <ChatBody />
+        </DrawerBody>
+        <DrawerFooter className="px-2 py-2">
+          <ChatFooter inputRef={inputRef} />
+        </DrawerFooter>
+      </DrawerContent>
+    </Drawer>
   );
 };

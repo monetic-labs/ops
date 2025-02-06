@@ -19,6 +19,10 @@ export interface BaseMessage {
     timestamp?: number;
     userId?: string;
   };
+  attachment?: {
+    type: "image" | "screenshot";
+    url?: string;
+  };
 }
 
 /** Interface for typing indicator messages */
