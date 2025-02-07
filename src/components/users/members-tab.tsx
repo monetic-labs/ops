@@ -27,33 +27,42 @@ export default function MembersTab({ userId, isCreateModalOpen, setIsCreateModal
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
 
-  const canManageUsers = userRole === PersonRole.ADMIN || userRole === PersonRole.SUPER_ADMIN;
-  const isEditable =
-    userRole === PersonRole.SUPER_ADMIN ||
-    (userRole === PersonRole.ADMIN && selectedUser?.role !== PersonRole.SUPER_ADMIN);
+  // Debug logs
+  console.log("Current userId:", userId);
+  console.log("Current userRole:", userRole);
+  console.log("Selected user:", selectedUser);
+  console.log("Edit modal open:", isEditModalOpen);
+
+  const canManageUsers = userRole === PersonRole.SUPER_ADMIN;
+  const isEditable = userRole === PersonRole.SUPER_ADMIN;
+
   const availableRoles = Object.values(PersonRole).filter((role) => {
     if (userRole === PersonRole.SUPER_ADMIN) return true;
-    if (userRole === PersonRole.ADMIN) return role !== PersonRole.SUPER_ADMIN;
-    return role === PersonRole.MEMBER;
+    return false;
   });
 
-  useEffect(() => {
-    const fetchUsers = async () => {
-      setIsLoading(true);
-      try {
-        const users = await pylon.getUsers();
-        setUsers(users);
-        setUserRole(users.find((user) => user.id === userId)?.role || null);
-        setError(null);
-      } catch (err) {
-        console.error("Error fetching users:", err);
-        setError(err as Error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
+  const fetchUsers = async () => {
+    setIsLoading(true);
+    try {
+      const fetchedUsers = await pylon.getUsers();
+      console.log("Fetched users:", fetchedUsers);
+      setUsers(fetchedUsers);
+      const currentUser = fetchedUsers.find((user) => user.id === userId);
+      console.log("Current user found:", currentUser);
+      setUserRole(currentUser?.role || null);
+      setError(null);
+    } catch (err) {
+      console.error("Error fetching users:", err);
+      setError(err as Error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
-    fetchUsers();
+  useEffect(() => {
+    if (userId) {
+      fetchUsers();
+    }
   }, [userId]);
 
   const memberColumns: Column<MerchantUserGetOutput>[] = [
@@ -117,8 +126,70 @@ export default function MembersTab({ userId, isCreateModalOpen, setIsCreateModal
   ];
 
   const handleUserClick = (user: MerchantUserGetOutput) => {
+    console.log("User clicked:", user);
+    console.log("Can manage users:", canManageUsers);
+    if (!canManageUsers) {
+      console.log("Cannot manage users, returning");
+      return;
+    }
     setSelectedUser(user);
     setIsEditModalOpen(true);
+    console.log("Edit modal should be open now");
+  };
+
+  const handleCreateUser = async (newUser: MerchantUserGetOutput) => {
+    try {
+      await fetchUsers();
+      setIsCreateModalOpen(false);
+    } catch (err) {
+      console.error("Error after creating user:", err);
+      setError(err as Error);
+    }
+  };
+
+  const handleUpdateUser = async (updatedUser: MerchantUserGetOutput) => {
+    try {
+      await pylon.updateUser(updatedUser.id, {
+        firstName: updatedUser.firstName,
+        lastName: updatedUser.lastName,
+        username: updatedUser.username,
+        email: updatedUser.email,
+        role: updatedUser.role,
+        phone: updatedUser.phone,
+      });
+
+      // Update the local state instead of refetching
+      setUsers(users.map((user) => (user.id === updatedUser.id ? updatedUser : user)));
+      handleCloseEditModal();
+    } catch (err) {
+      console.error("Error updating user:", err);
+      setError(err as Error);
+    }
+  };
+
+  const handleRemoveUser = async (userId: string) => {
+    try {
+      const success = await pylon.deleteUser(userId);
+      if (success) {
+        // Update the local state instead of refetching
+        setUsers(users.filter((user) => user.id !== userId));
+        handleCloseEditModal();
+      } else {
+        throw new Error("Failed to remove user");
+      }
+    } catch (err) {
+      console.error("Error removing user:", err);
+      setError(err as Error);
+    }
+  };
+
+  const handleCloseEditModal = () => {
+    setIsEditModalOpen(false);
+    setSelectedUser(null);
+  };
+
+  const handleCloseCreateModal = () => {
+    setIsCreateModalOpen(false);
   };
 
   return (
@@ -126,59 +197,39 @@ export default function MembersTab({ userId, isCreateModalOpen, setIsCreateModal
       <DataTable
         aria-label="Members table"
         columns={memberColumns}
-        emptyContent={<EmptyContent message="Add your first member" onAction={() => setIsCreateModalOpen(true)} />}
+        emptyContent={
+          canManageUsers ? (
+            <EmptyContent message="Add your first member" onAction={() => setIsCreateModalOpen(true)} />
+          ) : (
+            <EmptyContent message="No members found" />
+          )
+        }
         errorMessage="Failed to load members"
         isError={!!error}
         isLoading={isLoading}
         items={users}
         onRowAction={handleUserClick}
+        selectionMode="none"
       />
 
       {selectedUser && (
         <UserEditModal
           availableRoles={availableRoles}
           isEditable={isEditable}
-          isOpen={isEditModalOpen && canManageUsers}
+          isOpen={isEditModalOpen}
           isSelf={selectedUser.id === userId}
           user={selectedUser}
-          onClose={() => {
-            setSelectedUser(null);
-            setIsEditModalOpen(false);
-          }}
-          onRemove={async (userId) => {
-            const success = await pylon.deleteUser(selectedUser.id);
-            if (success) {
-              setUsers(users.filter((user) => user.id !== selectedUser.id));
-              setSelectedUser(null);
-              setIsEditModalOpen(false);
-            } else {
-              alert("Failed to remove user");
-            }
-          }}
-          onSave={async (updatedUser) => {
-            const returnedUser = await pylon.updateUser(updatedUser.id, {
-              firstName: updatedUser.firstName,
-              lastName: updatedUser.lastName,
-              username: updatedUser.username,
-              email: updatedUser.email,
-              role: updatedUser.role,
-              phone: updatedUser.phone,
-            });
-            setUsers(users.map((user) => (user.id === returnedUser.id ? returnedUser : user)));
-            setSelectedUser(null);
-            setIsEditModalOpen(false);
-          }}
+          onClose={handleCloseEditModal}
+          onRemove={handleRemoveUser}
+          onSave={handleUpdateUser}
         />
       )}
 
       <CreateUserModal
         availableRoles={availableRoles}
-        isOpen={isCreateModalOpen && canManageUsers}
-        onClose={() => setIsCreateModalOpen(false)}
-        onSave={(newUser) => {
-          setUsers([...users, newUser]);
-          setIsCreateModalOpen(false);
-        }}
+        isOpen={isCreateModalOpen}
+        onClose={handleCloseCreateModal}
+        onSave={handleCreateUser}
       />
     </div>
   );

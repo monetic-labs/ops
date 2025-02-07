@@ -140,7 +140,9 @@ export default function CardList() {
         aria-label="Card list table"
         columns={cardColumns}
         errorMessage="Failed to load cards"
-        emptyContent={<EmptyContent message="Create your first card" onAction={() => setIsCreateModalOpen(true)} />}
+        emptyContent={
+          <EmptyContent type="primary" message="Create your first card" onAction={() => setIsCreateModalOpen(true)} />
+        }
         isError={isError}
         isLoading={isLoading}
         items={cards}

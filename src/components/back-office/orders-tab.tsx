@@ -176,7 +176,9 @@ const OrdersTab = forwardRef<OrdersTabRef>((_, ref) => {
       <DataTable
         aria-label="Orders table"
         columns={orderColumns}
-        emptyContent={<EmptyContent message="Create your first order" onAction={() => setIsModalOpen(true)} />}
+        emptyContent={
+          <EmptyContent type="primary" message="Create your first order" onAction={() => setIsModalOpen(true)} />
+        }
         errorMessage="Failed to load orders"
         isError={!!error}
         isLoading={isLoading}

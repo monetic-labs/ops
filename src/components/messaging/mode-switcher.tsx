@@ -46,6 +46,7 @@ export const ModeSwitcher: React.FC = () => {
           <Tab
             key="bot"
             data-testid="bot-tab"
+            isDisabled={true}
             title={
               <div className="flex items-center gap-2" data-testid="bot-tab-content">
                 <Bot size={18} />

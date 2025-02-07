@@ -1,41 +1,30 @@
-// Note: This can't be a client component
-import { cookies } from "next/headers";
-import { jwtDecode } from "jwt-decode";
-import { redirect } from "next/navigation";
+"use client";
 
-import { MERCHANT_COOKIE_NAME } from "@/utils/constants";
-import MerchantServicesTabs from "@/app/(protected)/tabs";
-import AccountMeta from "@/components/account-contract/account-meta";
+import { useEffect, useState } from "react";
 
-type JwtPayload = {
-  userId: string;
-  merchantId: number;
-  sessionId: string;
-  iat: number;
-  exp: number;
-};
+import AccountOverview from "@/components/account-contract/account-meta";
+import MerchantServicesTabs from "./tabs";
+import pylon from "@/libs/pylon-sdk";
 
-export default function Home() {
-  const authToken = cookies().get(MERCHANT_COOKIE_NAME);
+export default function DashboardPage() {
+  const [userId, setUserId] = useState("");
 
-  // If no token, redirect to auth
-  if (!authToken?.value) {
-    redirect("/auth");
-  }
+  useEffect(() => {
+    const fetchUser = async () => {
+      const result = await pylon.getUserById();
+      setUserId(result.id);
+    };
 
-  try {
-    const { userId } = jwtDecode<JwtPayload>(authToken.value);
+    fetchUser();
+  }, []);
 
-    return (
-      <section className="flex flex-col items-center justify-center w-full">
-        <div className="flex flex-col w-full space-y-6">
-          <AccountMeta />
-          <MerchantServicesTabs userId={userId} />
-        </div>
-      </section>
-    );
-  } catch (error) {
-    console.error("Error decoding token:", error);
-    redirect("/auth");
-  }
+  return (
+    <>
+      {/* Account Overview Card */}
+      <AccountOverview />
+
+      {/* Services Tabs Card */}
+      <MerchantServicesTabs userId={userId} />
+    </>
+  );
 }

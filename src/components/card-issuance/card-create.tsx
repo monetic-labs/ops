@@ -1,81 +1,81 @@
-import React, { useMemo, useState } from "react";
-import { Select, SelectItem } from "@nextui-org/select";
-import { CardType } from "@backpack-fux/pylon-sdk";
+import React, { useState } from "react";
+import { CardType, CardStatus, ISO3166Alpha2Country } from "@backpack-fux/pylon-sdk";
 import { z } from "zod";
-import { Controller, useForm } from "react-hook-form";
+import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@nextui-org/button";
-import { CardStatus, ISO3166Alpha2Country } from "@backpack-fux/pylon-sdk";
 
-import {
-  CreateCardSchema,
-  CreateCardModalProps,
-  CardShippingDetailsSchema,
-  limitCyclesObject,
-  shippingMethodOptions,
-  cardDeliveryCountries,
-  getRegionsForCountry,
-} from "@/data";
+import { CreateCardSchema } from "@/validations/card";
 import pylon from "@/libs/pylon-sdk";
 import { FormModal } from "@/components/generics/form-modal";
 
-import { FormInput } from "../generics/form-input";
+import { BasicInfoStep } from "./steps/basic-info";
+import { CardLimitsStep } from "./steps/card-limits";
+import { ShippingDetailsStep } from "./steps/shipping-details";
+
+interface CreateCardModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+}
+
+type FormData = z.infer<typeof CreateCardSchema>;
 
 export default function CreateCardModal({ isOpen, onClose }: CreateCardModalProps) {
   const [error, setError] = useState<string | null>();
-  const [cardType, setCardType] = useState(CardType.VIRTUAL);
   const [loading, setLoading] = useState(false);
-  const {
-    control: controlFirstForm,
-    formState: { errors: firstFormErrors },
-    handleSubmit: handleFirstFormSubmit,
-    getValues,
-    reset: resetFirstForm,
-  } = useForm<z.infer<typeof CreateCardSchema>>({
+  const [currentStep, setCurrentStep] = useState(1);
+
+  const form = useForm<FormData>({
     resolver: zodResolver(CreateCardSchema),
-    defaultValues: { displayName: "", ownerFirstName: "", ownerLastName: "", ownerEmail: "", limitAmount: 0 },
-  });
-
-  const {
-    control,
-    formState: { errors },
-    handleSubmit,
-    reset,
-    watch,
-  } = useForm({
-    resolver: zodResolver(CardShippingDetailsSchema),
     defaultValues: {
-      street1: "",
-      street2: "",
-      city: "",
-      region: "",
-      postalCode: "",
-      country: "",
-      phoneNumber: "",
-      phoneCountryCode: "",
-      shippingMethod: undefined,
+      displayName: "",
+      ownerFirstName: "",
+      ownerLastName: "",
+      ownerEmail: "",
+      cardType: CardType.VIRTUAL,
+      limitAmount: 0,
+      limitFrequency: undefined,
+      shipping: undefined,
     },
+    mode: "onTouched",
   });
 
-  const onSubmitSecondForm = async (secondData: z.infer<typeof CardShippingDetailsSchema>) => {
+  const cardType = form.watch("cardType");
+  const totalSteps = cardType === CardType.PHYSICAL ? 3 : 2;
+
+  const onSubmit = async (data: FormData) => {
     try {
       setLoading(true);
-      const data = getValues();
+      setError(null);
 
-      await pylon.createPhysicalCard({
-        displayName: data.displayName,
-        limit: { amount: data.limitAmount, frequency: data.limitFrequency },
-        owner: { firstName: data.ownerFirstName, lastName: data.ownerLastName, email: data.ownerEmail },
-        status: CardStatus.ACTIVE,
-        shipping: {
-          ...secondData,
-          countryCode: secondData.country as ISO3166Alpha2Country,
-          line1: secondData.street1,
-          line2: secondData.street2,
-        },
-      });
-      reset();
-      resetFirstForm();
+      if (data.cardType === CardType.PHYSICAL) {
+        if (!data.shipping) {
+          setError("Shipping details are required for physical cards");
+          return;
+        }
+
+        await pylon.createPhysicalCard({
+          displayName: data.displayName,
+          limit: { amount: data.limitAmount, frequency: data.limitFrequency },
+          owner: { firstName: data.ownerFirstName, lastName: data.ownerLastName, email: data.ownerEmail },
+          status: CardStatus.ACTIVE,
+          shipping: {
+            ...data.shipping,
+            countryCode: data.shipping.country as ISO3166Alpha2Country,
+            line1: data.shipping.street1,
+            line2: data.shipping.street2,
+          },
+        });
+      } else {
+        await pylon.createVirtualCard({
+          displayName: data.displayName,
+          limit: { amount: data.limitAmount, frequency: data.limitFrequency },
+          owner: { firstName: data.ownerFirstName, lastName: data.ownerLastName, email: data.ownerEmail },
+          status: CardStatus.ACTIVE,
+        });
+      }
+
+      form.reset();
       window.location.reload();
     } catch (error: any) {
       setError(error.message);
@@ -84,293 +84,102 @@ export default function CreateCardModal({ isOpen, onClose }: CreateCardModalProp
       setLoading(false);
     }
   };
-  const onSubmitFirstForm = async (data: z.infer<typeof CreateCardSchema>) => {
-    try {
-      setLoading(true);
-      switch (cardType) {
-        case CardType.PHYSICAL: {
-          handleSubmit(onSubmitSecondForm)();
-          break;
-        }
-        case CardType.VIRTUAL: {
-          await pylon.createVirtualCard({
-            displayName: data.displayName,
-            limit: { amount: data.limitAmount, frequency: data.limitFrequency },
-            owner: { firstName: data.ownerFirstName, lastName: data.ownerLastName, email: data.ownerEmail },
-            status: CardStatus.ACTIVE,
-          });
-          resetFirstForm();
-          window.location.reload();
-          break;
-        }
-        default: {
-          break;
-        }
-      }
-    } catch (error: any) {
-      setError(error.message);
-      console.error(error);
-    } finally {
-      setLoading(false);
+
+  const renderStepIndicator = () => (
+    <div className="flex items-center justify-center gap-2 mb-6">
+      {Array.from({ length: totalSteps }).map((_, index) => (
+        <div
+          key={index}
+          className={`h-2 rounded-full transition-all duration-300 ${
+            index + 1 === currentStep
+              ? "w-8 bg-primary"
+              : index + 1 < currentStep
+                ? "w-2 bg-primary/60"
+                : "w-2 bg-content3"
+          }`}
+        />
+      ))}
+    </div>
+  );
+
+  const renderStepTitle = () => {
+    switch (currentStep) {
+      case 1:
+        return "Card Type & Basic Info";
+      case 2:
+        return "Card Limits & Settings";
+      case 3:
+        return "Shipping Details";
+      default:
+        return "";
     }
   };
 
-  const country = watch("country");
-
-  const regions = useMemo(() => getRegionsForCountry(country), [country]);
+  const renderCurrentStep = () => {
+    switch (currentStep) {
+      case 1:
+        return <BasicInfoStep form={form} />;
+      case 2:
+        return <CardLimitsStep form={form} />;
+      case 3:
+        return cardType === CardType.PHYSICAL ? <ShippingDetailsStep form={form} /> : null;
+      default:
+        return null;
+    }
+  };
 
   return (
-    <FormModal isOpen={isOpen} isValid={true} title="Create New Card" onClose={onClose} onSubmit={() => {}}>
-      <>
-        <Select
-          data-testid="card-selector"
-          defaultSelectedKeys={[CardType.VIRTUAL]}
-          label="Card Type"
-          placeholder="Select card type"
-          value={cardType}
-          onChange={(e) => setCardType(e.target.value as CardType)}
-        >
-          <SelectItem key={CardType.VIRTUAL} value={CardType.VIRTUAL}>
-            Virtual
-          </SelectItem>
-          <SelectItem key={CardType.PHYSICAL} data-testid="card-physical" value={CardType.PHYSICAL}>
-            Physical
-          </SelectItem>
-        </Select>
-        <FormInput
-          about="Enter card name"
-          control={controlFirstForm}
-          data-testid="card-displayName"
-          errorMessage={firstFormErrors.displayName?.message}
-          label="Card Name"
-          name="displayName"
-          placeholder="Enter card name"
-        />
-        <FormInput
-          about="Enter card holder's first name"
-          control={controlFirstForm}
-          data-testid="card-firstName"
-          errorMessage={firstFormErrors.ownerFirstName?.message}
-          label="Card holder's first name"
-          name="ownerFirstName"
-          placeholder="Enter card holder's first name"
-        />
-        <FormInput
-          about="Enter card holder's last name"
-          control={controlFirstForm}
-          data-testid="card-lastName"
-          errorMessage={firstFormErrors.ownerLastName?.message}
-          label="Card holder's last name"
-          name="ownerLastName"
-          placeholder="Enter card holder's last name"
-        />
-        <FormInput
-          about="Enter card holder's email"
-          control={controlFirstForm}
-          data-testid="card-email"
-          errorMessage={firstFormErrors.ownerEmail?.message}
-          label="Card holder's email"
-          name="ownerEmail"
-          placeholder="Enter card holder's email"
-          type="email"
-        />
-        <FormInput
-          about="Limit Amount"
-          control={controlFirstForm}
-          data-testid="card-limitAmount"
-          errorMessage={firstFormErrors.limitAmount?.message}
-          label="Enter limit amount"
-          min={1}
-          name="limitAmount"
-          placeholder="Enter limit amount"
-          type="number"
-        />
-
-        <Controller
-          control={controlFirstForm}
-          name="limitFrequency"
-          render={({ field, formState: { errors } }) => {
-            return (
-              <div>
-                <Select
-                  data-testid="card-limitCycle"
-                  label="Card limit cycle"
-                  placeholder="Select card limit cycle"
-                  value={field.value}
-                  onChange={field.onChange}
-                >
-                  {limitCyclesObject.map((t) => (
-                    <SelectItem key={t.value} data-testid={t.value} value={t.value}>
-                      {t.label}
-                    </SelectItem>
-                  ))}
-                </Select>
-                {errors.limitFrequency?.message && (
-                  <p className="mt-1 text-sm text-ualert-500">{errors.limitFrequency?.message}</p>
-                )}
-              </div>
-            );
-          }}
-        />
-
-        {cardType === CardType.PHYSICAL ? (
-          <>
-            <p>Shipping Details</p>
-            <FormInput
-              about="Enter address line 1"
-              control={control}
-              data-testid="card-address"
-              errorMessage={errors.street1?.message}
-              label="Address Line 1"
-              name="street1"
-              placeholder="Enter address line 1"
-            />
-            <FormInput
-              about="Enter address line 2 (optional)"
-              control={control}
-              data-testid="card-address2"
-              errorMessage={errors.street2?.message}
-              label="Address Line 2"
-              name="street2"
-              placeholder="Enter address line 2 (optional)"
-            />
-            <FormInput
-              about="Enter city"
-              control={control}
-              data-testid="card-city"
-              errorMessage={errors.city?.message}
-              label="City"
-              name="city"
-              placeholder="Enter city"
-            />
-
-            <FormInput
-              about="Enter postal code"
-              control={control}
-              data-testid="card-postalCode"
-              errorMessage={errors.postalCode?.message}
-              label="Postal Code"
-              name="postalCode"
-              placeholder="Enter postal code"
-            />
-
-            <Controller
-              control={control}
-              name="country"
-              render={({ field, formState: { errors } }) => {
-                return (
-                  <div>
-                    <Select
-                      data-testid="card-country"
-                      label="Country"
-                      placeholder="Select country"
-                      value={field.value}
-                      onChange={field.onChange}
-                    >
-                      {cardDeliveryCountries.map((t) => (
-                        <SelectItem key={t.value} data-testid={t.value} value={t.value}>
-                          {t.label}
-                        </SelectItem>
-                      ))}
-                    </Select>
-                    {errors.country?.message && (
-                      <p className="mt-1 text-sm text-ualert-500">{errors.country?.message}</p>
-                    )}
-                  </div>
-                );
-              }}
-            />
-
-            <Controller
-              control={control}
-              name="region"
-              render={({ field, formState: { errors } }) => {
-                return (
-                  <div>
-                    <Select
-                      data-testid="card-region"
-                      label="Region"
-                      placeholder="Select region"
-                      value={field.value}
-                      onChange={field.onChange}
-                    >
-                      {regions.map((t) => (
-                        <SelectItem key={t.value} data-testid={t.value} value={t.value}>
-                          {t.label}
-                        </SelectItem>
-                      ))}
-                    </Select>
-                    {errors.region?.message && <p className="mt-1 text-sm text-ualert-500">{errors.region?.message}</p>}
-                  </div>
-                );
-              }}
-            />
-
-            <FormInput
-              about="Enter phone number"
-              control={control}
-              data-testid="card-phoneNumber"
-              errorMessage={errors.phoneNumber?.message}
-              label="Phone Number"
-              name="phoneNumber"
-              placeholder="Enter phone number"
-            />
-            <FormInput
-              about="Enter phone country code"
-              control={control}
-              data-testid="card-phoneCountryCode"
-              errorMessage={errors.phoneCountryCode?.message}
-              label="Phone Country Code"
-              maxLength={3}
-              name="phoneCountryCode"
-              placeholder="Enter phone country code (e.g., 1)"
-            />
-            <Controller
-              control={control}
-              name="shippingMethod"
-              render={({ field, formState: { errors } }) => {
-                return (
-                  <div>
-                    <Select
-                      data-testid="card-shippingMethod"
-                      label="Shipping method"
-                      placeholder="Select shipping method"
-                      value={field.value}
-                      onChange={field.onChange}
-                    >
-                      {shippingMethodOptions.map((t) => (
-                        <SelectItem key={t.value} data-testid={t.value} value={t.value}>
-                          {t.label}
-                        </SelectItem>
-                      ))}
-                    </Select>
-                    {errors.shippingMethod?.message && (
-                      <p className="mt-1 text-sm text-ualert-500">{errors.shippingMethod?.message}</p>
-                    )}
-                  </div>
-                );
-              }}
-            />
-          </>
-        ) : null}
-        {error ? <p className="text-danger-300">{error}</p> : null}
-        <div className="flex justify-between">
-          <Button
-            className={`bg-ualert-500 text-notpurple-500 w-full sm:w-auto`}
-            data-testid="card-createButton"
-            isDisabled={loading}
-            isLoading={loading}
-            onPress={() => {
-              if (loading) return;
-              setError(null);
-
-              handleFirstFormSubmit(onSubmitFirstForm)();
-            }}
-          >
-            Create Card
-          </Button>
+    <FormModal
+      isOpen={isOpen}
+      isValid={true}
+      title={
+        <div className="space-y-2">
+          <h3 className="text-xl font-normal text-foreground">Create New Card</h3>
+          <p className="text-sm text-foreground/60">{renderStepTitle()}</p>
         </div>
-      </>
+      }
+      onClose={onClose}
+      onSubmit={() => {}}
+    >
+      <div className="space-y-6">
+        {renderStepIndicator()}
+        {renderCurrentStep()}
+        {error && <p className="text-danger mt-4">{error}</p>}
+        <div className="flex gap-2 justify-end">
+          {currentStep > 1 && (
+            <Button
+              className="bg-content2 text-foreground hover:bg-content3"
+              variant="flat"
+              onPress={() => setCurrentStep((prev) => prev - 1)}
+            >
+              Previous
+            </Button>
+          )}
+          {currentStep === 1 && (
+            <Button className="bg-content2 text-foreground hover:bg-content3" variant="flat" onPress={onClose}>
+              Cancel
+            </Button>
+          )}
+          {currentStep < totalSteps ? (
+            <Button
+              className="bg-primary text-primary-foreground hover:opacity-90"
+              onPress={() => setCurrentStep((prev) => prev + 1)}
+            >
+              Next
+            </Button>
+          ) : (
+            <Button
+              className="bg-primary text-primary-foreground hover:opacity-90"
+              data-testid="card-createButton"
+              isDisabled={loading}
+              isLoading={loading}
+              onPress={() => form.handleSubmit(onSubmit)()}
+            >
+              Create Card
+            </Button>
+          )}
+        </div>
+      </div>
     </FormModal>
   );
 }

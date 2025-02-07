@@ -1,0 +1,69 @@
+import { CardLimitFrequency } from "@backpack-fux/pylon-sdk";
+import { Controller, UseFormReturn } from "react-hook-form";
+import { Input } from "@nextui-org/input";
+import { Select, SelectItem } from "@nextui-org/select";
+import { DollarSign, Clock } from "lucide-react";
+import { z } from "zod";
+
+import { CreateCardSchema } from "@/validations/card";
+
+interface CardLimitsStepProps {
+  form: UseFormReturn<z.infer<typeof CreateCardSchema>>;
+}
+
+const LIMIT_FREQUENCIES = [
+  { value: CardLimitFrequency.DAY, label: "Daily" },
+  { value: CardLimitFrequency.WEEK, label: "Weekly" },
+  { value: CardLimitFrequency.MONTH, label: "Monthly" },
+];
+
+export function CardLimitsStep({ form }: CardLimitsStepProps) {
+  const {
+    control,
+    register,
+    formState: { errors },
+  } = form;
+
+  return (
+    <div className="space-y-6">
+      {/* Spending Limit Section */}
+      <div className="flex gap-4">
+        <Input
+          isRequired
+          type="number"
+          label="Card Limit"
+          placeholder="5000"
+          className="w-1/2"
+          startContent={<DollarSign className="text-foreground/50 w-4 h-4 pointer-events-none flex-shrink-0" />}
+          {...register("limitAmount", { valueAsNumber: true })}
+          isInvalid={!!errors.limitAmount}
+          errorMessage={errors.limitAmount?.message}
+        />
+
+        <Controller
+          control={control}
+          name="limitFrequency"
+          render={({ field }) => (
+            <Select
+              isRequired
+              label="Limit Cycle"
+              placeholder="Select cycle"
+              className="w-1/2"
+              selectedKeys={field.value ? [field.value] : []}
+              onChange={field.onChange}
+              startContent={<Clock className="text-foreground/50 w-4 h-4 pointer-events-none flex-shrink-0" />}
+              isInvalid={!!errors.limitFrequency}
+              errorMessage={errors.limitFrequency?.message}
+            >
+              {LIMIT_FREQUENCIES.map((frequency) => (
+                <SelectItem key={frequency.value} value={frequency.value}>
+                  {frequency.label}
+                </SelectItem>
+              ))}
+            </Select>
+          )}
+        />
+      </div>
+    </div>
+  );
+}

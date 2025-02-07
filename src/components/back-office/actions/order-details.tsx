@@ -31,6 +31,19 @@ export function PaymentDetails({ isOpen, response, onClose }: PaymentDetailsResp
     console.log("Support clicked");
   };
 
+  const getStatusColor = (status: string) => {
+    switch (status.toLowerCase()) {
+      case "sent_for_settlement":
+        return "text-orange-500";
+      case "settled":
+        return "text-success";
+      case "failed":
+        return "text-danger";
+      default:
+        return "text-foreground";
+    }
+  };
+
   return (
     <Modal className="max-w-md mx-auto" isOpen={isOpen} scrollBehavior="inside" onClose={onClose}>
       <ModalContent>
@@ -38,7 +51,7 @@ export function PaymentDetails({ isOpen, response, onClose }: PaymentDetailsResp
           <>
             <ModalHeader className="flex flex-col items-center">
               <h2 className="text-2xl font-bold">Details Response</h2>
-              <p className="text-sm text-gray-500">Transaction ID: {response.transactionId}</p>
+              <p className="text-sm text-foreground/60">Transaction ID: {response.transactionId}</p>
             </ModalHeader>
             <Divider />
             <ModalBody>
@@ -46,15 +59,7 @@ export function PaymentDetails({ isOpen, response, onClose }: PaymentDetailsResp
                 {/* Transaction details */}
                 <div className="grid grid-cols-2 gap-2">
                   <span>Response Status:</span>
-                  <span
-                    className={`text-right font-bold ${
-                      response.transactionStatus === "Approved"
-                        ? "text-ualert-100"
-                        : response.transactionStatus === "Failed"
-                          ? "text-ualert-300"
-                          : "text-ualert-500"
-                    }`}
-                  >
+                  <span className={`text-right font-bold ${getStatusColor(response.transactionStatus)}`}>
                     {response.transactionStatus}
                   </span>
                   <span>Processor:</span>
@@ -140,7 +145,7 @@ export function PaymentDetails({ isOpen, response, onClose }: PaymentDetailsResp
                 {
                   label: "Close",
                   onClick: onClose,
-                  className: "bg-ualert-500 text-notpurple-500",
+                  className: "bg-content2 text-foreground hover:bg-content3",
                 },
               ]}
               onSupportClick={handleSupportClick}

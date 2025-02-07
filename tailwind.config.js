@@ -69,7 +69,7 @@ module.exports = {
             background: "#FFFFFF",
             foreground: "#11181C",
             primary: {
-              DEFAULT: "#ff00c7",
+              DEFAULT: "#134E4A",
               foreground: "#FFFFFF",
             },
             content1: {
@@ -92,7 +92,7 @@ module.exports = {
               DEFAULT: "rgba(17, 24, 28, 0.08)",
             },
             focus: {
-              DEFAULT: "#ff00c7",
+              DEFAULT: "#134E4A",
             },
             border: {
               DEFAULT: "rgba(17, 24, 28, 0.1)",
@@ -102,7 +102,7 @@ module.exports = {
               foreground: "#11181C",
             },
             danger: {
-              DEFAULT: "#ff00c7",
+              DEFAULT: "#DC2626",
               foreground: "#FFFFFF",
             },
           },
@@ -124,7 +124,7 @@ module.exports = {
             background: "#000000",
             foreground: "#ECEDEE",
             primary: {
-              DEFAULT: "#ff00c7",
+              DEFAULT: "#0D9488",
               foreground: "#FFFFFF",
             },
             content1: {
@@ -147,7 +147,7 @@ module.exports = {
               DEFAULT: "rgba(236, 237, 238, 0.08)",
             },
             focus: {
-              DEFAULT: "#ff00c7",
+              DEFAULT: "#0D9488",
             },
             border: {
               DEFAULT: "rgba(236, 237, 238, 0.1)",
@@ -157,7 +157,7 @@ module.exports = {
               foreground: "#000000",
             },
             danger: {
-              DEFAULT: "#ff00c7",
+              DEFAULT: "#DC2626",
               foreground: "#FFFFFF",
             },
           },

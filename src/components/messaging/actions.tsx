@@ -9,21 +9,23 @@ import { useMessagingState, useMessagingActions } from "@/libs/messaging/store";
 import { useSupportScreenshot } from "@/hooks/messaging/useSupportService";
 
 export const ChatActions: React.FC = () => {
-  const { mode } = useMessagingState();
+  const { mode, pendingAttachment } = useMessagingState();
   const { captureScreenshot } = useSupportScreenshot();
   const { message: messageActions } = useMessagingActions();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [lastScreenshotTime, setLastScreenshotTime] = useState<number>(0);
+  const [isCapturing, setIsCapturing] = useState(false);
   const SCREENSHOT_COOLDOWN = 5000; // 5 seconds cooldown between screenshots
 
   const handleScreenshot = async () => {
     // Check rate limit
     const now = Date.now();
     if (now - lastScreenshotTime < SCREENSHOT_COOLDOWN) {
-      // You can add a toast notification here if you want to inform the user
       console.log("Please wait before taking another screenshot");
       return;
     }
+
+    setIsCapturing(true);
 
     // Find all elements that might have backdrop blur
     const drawer = document.querySelector('[role="dialog"]');
@@ -57,14 +59,15 @@ export const ChatActions: React.FC = () => {
 
       if (success) {
         setLastScreenshotTime(now);
-        // Set pending attachment in the store without sending
+        // Set pending attachment in the store with the actual screenshot URL
         messageActions.setPendingAttachment({
           type: "screenshot",
           file: null,
-          preview: "Screenshot ready to send",
+          preview: success === true ? "Screenshot ready to send" : success,
         });
       }
     } finally {
+      setIsCapturing(false);
       // Restore all original styles
       originalStyles.forEach((style, element) => {
         if (style) {
@@ -103,12 +106,16 @@ export const ChatActions: React.FC = () => {
   // Only show in support mode
   if (mode !== "support") return null;
 
+  const isDisabled = Boolean(pendingAttachment) || isCapturing;
+
   return (
     <div className="flex items-center gap-1" data-testid="chat-actions">
       <Tooltip content="Take Screenshot" placement="top">
         <Button
           isIconOnly
           className="bg-transparent text-default-500 hover:text-white"
+          isDisabled={isDisabled}
+          isLoading={isCapturing}
           radius="full"
           size="sm"
           variant="light"
@@ -122,6 +129,7 @@ export const ChatActions: React.FC = () => {
         <Button
           isIconOnly
           className="bg-transparent text-default-500 hover:text-white"
+          isDisabled={isDisabled}
           radius="full"
           size="sm"
           variant="light"
@@ -131,7 +139,14 @@ export const ChatActions: React.FC = () => {
         </Button>
       </Tooltip>
 
-      <input ref={fileInputRef} accept="image/*" className="hidden" type="file" onChange={handleImageUpload} />
+      <input
+        ref={fileInputRef}
+        accept="image/*"
+        className="hidden"
+        disabled={isDisabled}
+        type="file"
+        onChange={handleImageUpload}
+      />
     </div>
   );
 };

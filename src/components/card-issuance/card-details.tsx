@@ -1,9 +1,8 @@
 import { Button } from "@nextui-org/button";
 import { Chip } from "@nextui-org/chip";
-import { Input } from "@nextui-org/input";
-import { Modal, ModalBody, ModalContent, ModalHeader } from "@nextui-org/modal";
-import { Snippet } from "@nextui-org/snippet";
-import { useEffect, useState } from "react";
+import { Modal, ModalBody, ModalContent } from "@nextui-org/modal";
+import { Divider } from "@nextui-org/divider";
+import { useState, useEffect } from "react";
 import {
   CardLimitFrequency,
   CardStatus,
@@ -11,15 +10,16 @@ import {
   UpdateMerchantCardDataInput,
 } from "@backpack-fux/pylon-sdk";
 import { z } from "zod";
-import { Controller, useForm } from "react-hook-form";
+import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Select, SelectItem } from "@nextui-org/select";
+import { XIcon, DollarSign, Calendar, CreditCard, Mail, MapPin, Lock, User, Eye, EyeOff } from "lucide-react";
 
 import pylon from "@/libs/pylon-sdk";
 import { formatAmountUSD } from "@/utils/helpers";
-import { limitCyclesObject, limitStatesObject, UpateCardSchema } from "@/data";
+import { UpateCardSchema } from "@/data";
+import { useCardSensitiveInfo } from "@/hooks/card-issuance/useCardSensitiveInfo";
 
-import { FormInput } from "../generics/form-input";
+import CardEdit from "./card-edit";
 
 type HybridCard = MerchantCardGetOutput["cards"][number] & {
   avatar?: string;
@@ -31,35 +31,38 @@ type HybridCard = MerchantCardGetOutput["cards"][number] & {
 
 interface CardDetailsModalProps {
   isOpen: boolean;
-  onClose: (card: HybridCard) => void;
+  onClose: () => void;
   card: HybridCard | null;
 }
 
 export default function CardDetailsModal({ isOpen, onClose, card: propsCard }: CardDetailsModalProps) {
   const [card, setCard] = useState<HybridCard | null>(propsCard);
   const [isEditing, setIsEditing] = useState(false);
-  const [cvv, setCvv] = useState<string | null>();
-  const [pan, setPan] = useState<string | null>();
   const [updateError, setUpdateError] = useState<string | null>();
   const [loading, setLoading] = useState(false);
 
-  useEffect(() => {
-    setCard(propsCard);
-  }, [propsCard]);
+  const {
+    sensitiveInfo,
+    isLoading: isLoadingSensitive,
+    error: sensitiveError,
+    isVisible,
+    toggleVisibility,
+  } = useCardSensitiveInfo(card?.id || "");
 
   useEffect(() => {
-    if (card && !card.cardShippingDetails) {
-      pylon
-        .decryptVirtualCard(card.id)
-        .catch(console.log)
-        .then((details) => {
-          if (details) {
-            setCvv(details.decryptedCvc);
-            setPan(details.decryptedPan);
-          }
-        });
-    }
-  }, [card, setCvv, setPan]);
+    setCard(propsCard);
+    setIsEditing(false);
+    setUpdateError(null);
+  }, [propsCard]);
+
+  const form = useForm<z.input<typeof UpateCardSchema>>({
+    resolver: zodResolver(UpateCardSchema),
+    defaultValues: {
+      status: card?.status || CardStatus.NOT_ACTIVATED,
+      limitAmount: card?.limit?.toString() || "0",
+      limitFrequency: card?.limitFrequency || CardLimitFrequency.MONTH,
+    },
+  });
 
   const handleEdit = async (data: z.input<typeof UpateCardSchema>) => {
     if (!card) return;
@@ -97,6 +100,7 @@ export default function CardDetailsModal({ isOpen, onClose, card: propsCard }: C
           status: (data.status as CardStatus) || c.status,
         };
       });
+      setIsEditing(false);
     } catch (error: any) {
       setUpdateError(error.message);
     } finally {
@@ -104,213 +108,195 @@ export default function CardDetailsModal({ isOpen, onClose, card: propsCard }: C
     }
   };
 
-  const {
-    control,
-    formState: { errors },
-    handleSubmit,
-    reset,
-  } = useForm<z.input<typeof UpateCardSchema>>({
-    resolver: zodResolver(UpateCardSchema),
-    defaultValues: {
-      status: card?.status || CardStatus.NOT_ACTIVATED,
-      limitAmount: card?.limit?.toString() || "0",
-      limitFrequency: card?.limitFrequency || CardLimitFrequency.MONTH,
-    },
-  });
-
-  // Reset form when card changes
-  useEffect(() => {
-    if (card) {
-      reset({
-        status: card.status,
-        limitAmount: card.limit?.toString() || "0",
-        limitFrequency: card.limitFrequency,
-      });
-    }
-  }, [card, reset]);
-
   if (!card) return null;
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case "ACTIVE":
+        return "success";
+      case "LOCKED":
+        return "danger";
+      default:
+        return "default";
+    }
+  };
+
+  const renderReadOnlyField = (label: string, value: string | number, icon?: React.ReactNode, endContent?: string) => (
+    <div className="flex items-center justify-between gap-2 bg-content2 p-2.5 rounded-medium">
+      <div className="flex items-center gap-2">
+        {icon && <span className="text-foreground/50">{icon}</span>}
+        <span className="text-sm text-foreground/60">{label}</span>
+      </div>
+      <div className="flex items-center gap-2">
+        <span className="text-sm font-medium">{value}</span>
+        {endContent && <span className="text-xs text-foreground/50">{endContent}</span>}
+      </div>
+    </div>
+  );
 
   return (
     <Modal
-      isOpen={isOpen}
-      size="2xl"
-      onClose={() => {
-        onClose(card);
+      hideCloseButton
+      classNames={{
+        base: "bg-content1",
+        backdrop: "bg-black/80",
       }}
+      isOpen={isOpen}
+      size="md"
+      onClose={onClose}
     >
-      {isEditing ? (
-        <ModalContent>
-          <ModalHeader className="flex items-center">
-            <p>Edit card - {card.displayName}</p>
-          </ModalHeader>
-          <ModalBody>
-            <FormInput
-              about="Limit Amount"
-              control={control}
-              data-testid="card-limitAmount"
-              errorMessage={errors.limitAmount?.message}
-              label="Limit amount"
-              min={1}
-              name="limitAmount"
-              placeholder="Limit amount"
-              type="number"
-            />
-
-            <Controller
-              control={control}
-              name="limitFrequency"
-              render={({ field, formState: { errors } }) => (
-                <div>
-                  <Select
-                    data-testid="card-limitFrequency"
-                    defaultSelectedKeys={[card.limitFrequency]}
-                    label="Card limit cycle"
-                    placeholder="Select card limit cycle"
-                    value={field.value}
-                    onChange={field.onChange}
-                  >
-                    {limitCyclesObject.map((t) => (
-                      <SelectItem key={t.value} data-testid={t.value} value={t.value}>
-                        {t.label}
-                      </SelectItem>
-                    ))}
-                  </Select>
-                  {errors.limitFrequency?.message && (
-                    <p className="mt-1 text-sm text-ualert-500">{errors.limitFrequency?.message}</p>
-                  )}
-                </div>
-              )}
-            />
-
-            <Controller
-              control={control}
-              name="status"
-              render={({ field, formState: { errors } }) => (
-                <div>
-                  <Select
-                    data-testid="card-status"
-                    defaultSelectedKeys={[card.status]}
-                    label="Status"
-                    placeholder="Select status"
-                    value={field.value}
-                    onChange={field.onChange}
-                  >
-                    {limitStatesObject.map((t) => (
-                      <SelectItem key={t.value} data-testid={t.value} value={t.value}>
-                        {t.label}
-                      </SelectItem>
-                    ))}
-                  </Select>
-                  {errors.status?.message && <p className="mt-1 text-sm text-ualert-500">{errors.status?.message}</p>}
-                </div>
-              )}
-            />
-          </ModalBody>
-          {updateError ? <p className="text-danger-300 px-6">{updateError}</p> : null}
-          <div className="flex items-center px-6 mb-6 mt-4 justify-end">
-            <Button
-              className="text-notpurple-500 w-full sm:w-auto mr-4"
-              onClick={() => {
-                setIsEditing(false);
-              }}
-            >
-              Cancel
-            </Button>
-            <Button
-              className="bg-ualert-500 text-notpurple-500 w-full sm:w-auto"
-              disabled={loading}
-              isLoading={loading}
-              onClick={handleSubmit(handleEdit)}
-            >
-              Save
-            </Button>
-          </div>
-        </ModalContent>
-      ) : (
-        <ModalContent>
-          <ModalHeader className="flex items-center">
-            <p>Card Details</p>
-          </ModalHeader>
-          <ModalBody>
-            <Input isReadOnly={!isEditing} label="Card Name" value={card.displayName} />
-            <div className="mt-4">
-              <div className="flex items-center gap-2 mb-2">
-                <Chip color={card.status === "ACTIVE" ? "success" : "danger"} variant="flat">
+      <ModalContent>
+        {isEditing ? (
+          <CardEdit
+            cardName={card.displayName}
+            error={updateError}
+            form={form}
+            isLoading={loading}
+            onCancel={() => setIsEditing(false)}
+            onSubmit={form.handleSubmit(handleEdit)}
+          />
+        ) : (
+          <>
+            <div className="flex flex-col px-6 py-4 border-b border-divider">
+              <div className="flex items-center justify-between">
+                <h3 className="text-xl font-normal text-foreground">{card.displayName}</h3>
+                <Button
+                  isIconOnly
+                  className="text-foreground/60 hover:text-foreground transition-colors"
+                  variant="light"
+                  onClick={onClose}
+                >
+                  <XIcon size={18} />
+                </Button>
+              </div>
+              <div className="flex items-center gap-2 mt-4">
+                <Chip
+                  className="h-7 px-3"
+                  color={getStatusColor(card.status)}
+                  startContent={card.status === "ACTIVE" ? <Lock className="w-3 h-3" /> : <Lock className="w-3 h-3" />}
+                  variant="flat"
+                >
                   {card.status}
                 </Chip>
-                <Chip color="primary" variant="flat">
+                <Chip
+                  className="h-7 px-3"
+                  color="primary"
+                  startContent={<CreditCard className="w-3 h-3" />}
+                  variant="flat"
+                >
                   {card.cardShippingDetails ? "PHYSICAL" : "VIRTUAL"}
                 </Chip>
               </div>
-              <p className="text-small text-default-500 mb-2">
-                Limit: ${formatAmountUSD(card.limit)} per {card.limitFrequency}
-              </p>
             </div>
-            <div className="flex flex-col md:flex-row gap-4">
-              {pan ? (
-                <div className="flex-grow space-y-2">
-                  <p className="text-small text-default-500">Card Number</p>
-                  <Snippet codeString={pan} color="default" symbol="" variant="flat">
-                    {card.lastFour}
-                  </Snippet>
-                </div>
-              ) : null}
-              <div className="w-full md:w-1/4 space-y-2">
-                <p className="text-small text-default-500">Expiration Date</p>
-                <Snippet
-                  codeString={card.expirationMonth + "/" + card.expirationYear}
-                  color="default"
-                  symbol=""
-                  variant="flat"
-                >
-                  {card.expirationMonth + "/" + card.expirationYear}
-                </Snippet>
-              </div>
-              {cvv ? (
-                <div className="w-full md:w-1/6 space-y-2">
-                  <p className="text-small text-default-500">CVV</p>
-                  <Snippet codeString={cvv} color="default" symbol="" variant="flat">
-                    {cvv}
-                  </Snippet>
-                </div>
-              ) : null}
-            </div>
-            <Input
-              isReadOnly={!isEditing}
-              label="Holder"
-              value={card.cardOwner.firstName + " " + card.cardOwner.lastName}
-            />
-            {card.cardShippingDetails ? (
-              <Input
-                isReadOnly={!isEditing}
-                label="Billing Address"
-                value={`${card.cardShippingDetails.line1}, ${card.cardShippingDetails.city}, ${card.cardShippingDetails.postalCode}, ${card.cardShippingDetails.country}`}
-              />
-            ) : null}
+            <ModalBody className="p-6 space-y-4 max-h-[60vh] overflow-y-auto">
+              <div className="space-y-2">
+                {renderReadOnlyField(
+                  "Card Limit",
+                  formatAmountUSD(card.limit),
+                  <DollarSign className="w-4 h-4" />,
+                  `per ${card.limitFrequency.toLowerCase()}`
+                )}
 
-            <Input isReadOnly={!isEditing} label="Email" value={card.cardOwner.email} />
-          </ModalBody>
-          <div className="flex items-center px-6 mb-6 mt-4 justify-end">
-            <Button
-              className="text-notpurple-500 w-full sm:w-auto mr-4"
-              onClick={() => {
-                setIsEditing(true);
-              }}
-            >
-              Edit
-            </Button>
-            <Button
-              className="bg-ualert-500 text-notpurple-500 w-full sm:w-auto"
-              onClick={() => {
-                onClose(card);
-              }}
-            >
-              Close
-            </Button>
-          </div>
-        </ModalContent>
-      )}
+                <div className="grid grid-cols-2 gap-2">
+                  {renderReadOnlyField(
+                    "Expiration",
+                    `${card.expirationMonth}/${card.expirationYear}`,
+                    <Calendar className="w-4 h-4" />
+                  )}
+                  {!card.cardShippingDetails && (
+                    <div className="flex items-center justify-between gap-2 bg-content2 p-2.5 rounded-medium">
+                      <div className="flex items-center gap-2">
+                        <span className="text-foreground/50">
+                          <Lock className="w-4 h-4" />
+                        </span>
+                        <span className="text-sm text-foreground/60">CVV</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        {isVisible ? (
+                          <span className="text-sm font-medium">{sensitiveInfo?.cvv}</span>
+                        ) : (
+                          <span className="text-sm font-medium">•••</span>
+                        )}
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {!card.cardShippingDetails && (
+                  <>
+                    <div className="flex items-center justify-between gap-2 bg-content2 p-2.5 rounded-medium">
+                      <div className="flex items-center gap-2">
+                        <span className="text-foreground/50">
+                          <CreditCard className="w-4 h-4" />
+                        </span>
+                        <span className="text-sm text-foreground/60">Card Number</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        {isVisible ? (
+                          <span className="text-sm font-medium">{sensitiveInfo?.pan}</span>
+                        ) : (
+                          <span className="text-sm font-medium">•••• •••• •••• {card.lastFour}</span>
+                        )}
+                      </div>
+                    </div>
+                    <div className="flex items-center justify-end gap-2">
+                      <Button
+                        className="text-foreground/60 hover:text-foreground bg-content2/50 hover:bg-content2"
+                        endContent={isVisible ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                        size="sm"
+                        variant="flat"
+                        isLoading={isLoadingSensitive}
+                        onPress={toggleVisibility}
+                      >
+                        {isVisible ? "Hide Details" : "Show Details"}
+                      </Button>
+                    </div>
+                    {sensitiveError && <p className="text-danger text-sm mt-1">{sensitiveError}</p>}
+                  </>
+                )}
+              </div>
+
+              <Divider className="my-2" />
+
+              <div className="space-y-2">
+                {renderReadOnlyField(
+                  "Card Holder",
+                  `${card.cardOwner.firstName} ${card.cardOwner.lastName}`,
+                  <User className="w-4 h-4" />
+                )}
+                {renderReadOnlyField("Email", card.cardOwner.email, <Mail className="w-4 h-4" />)}
+              </div>
+
+              {card.cardShippingDetails && (
+                <>
+                  <Divider className="my-2" />
+                  <div>
+                    {renderReadOnlyField(
+                      "Shipping Address",
+                      `${card.cardShippingDetails.line1}${
+                        card.cardShippingDetails.line2 ? `, ${card.cardShippingDetails.line2}` : ""
+                      }, ${card.cardShippingDetails.city}, ${card.cardShippingDetails.countryCode} ${
+                        card.cardShippingDetails.postalCode
+                      }`,
+                      <MapPin className="w-4 h-4" />
+                    )}
+                  </div>
+                </>
+              )}
+            </ModalBody>
+            <div className="px-6 py-4 border-t border-divider">
+              <div className="flex justify-end gap-3 w-full">
+                <Button className="bg-content2 text-foreground hover:bg-content3" onClick={onClose}>
+                  Close
+                </Button>
+                <Button className="bg-primary text-primary-foreground" onClick={() => setIsEditing(true)}>
+                  Edit
+                </Button>
+              </div>
+            </div>
+          </>
+        )}
+      </ModalContent>
     </Modal>
   );
 }

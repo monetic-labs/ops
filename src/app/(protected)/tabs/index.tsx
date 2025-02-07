@@ -10,11 +10,9 @@ import {
   CardCompanyStatus as RainKybStatus,
 } from "@backpack-fux/pylon-sdk";
 
-import WidgetManagement from "@/components/back-office/widget-tab";
 import BackOfficeTabs from "@/components/back-office/back-office";
 import BillPayTabs from "@/components/bill-pay/bill-pay";
 import CardServicesTabs from "@/components/card-issuance";
-import ComplianceTable from "@/components/compliance/compliance";
 import UserTab from "@/components/users";
 import { tabsConfig } from "@/config/tabs";
 import { useGetComplianceStatus } from "@/hooks/merchant/useGetComplianceStatus";
@@ -62,10 +60,6 @@ export default function MerchantServicesTabs({ userId }: { userId: string }) {
         return <BackOfficeTabs handleSubTabChange={handleSubTabChange} />;
       case "users":
         return <UserTab userId={userId} />;
-      case "widget-mgmt":
-        return <WidgetManagement />;
-      case "compliance":
-        return <ComplianceTable />;
       default:
         return <div>Tab content not here</div>;
     }

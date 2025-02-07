@@ -17,7 +17,7 @@ export const ChatFooter = React.memo<ChatFooterProps>(({ inputRef }) => {
       <div className="px-2">
         <ModeSwitcher />
       </div>
-      <Divider className="bg-charyo-400/20" />
+      <Divider className="bg-divider" />
       <div className="px-2">
         <ChatActions />
       </div>

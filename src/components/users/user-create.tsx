@@ -15,6 +15,8 @@ interface CreateUserModalProps {
 }
 
 export default function CreateUserModal({ isOpen, availableRoles, onClose, onSave }: CreateUserModalProps) {
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [newUser, setNewUser] = useState<MerchantUserGetOutput>({
     id: "",
     firstName: "",
@@ -47,12 +49,36 @@ export default function CreateUserModal({ isOpen, availableRoles, onClose, onSav
     };
 
     setErrors(newErrors);
-
     return !Object.values(newErrors).some((error) => error);
   };
 
+  const resetForm = () => {
+    setNewUser({
+      id: "",
+      firstName: "",
+      lastName: "",
+      email: "",
+      role: PersonRole.MEMBER,
+    });
+    setErrors({
+      firstName: "",
+      lastName: "",
+      email: "",
+    });
+    setError(null);
+  };
+
+  const handleClose = () => {
+    resetForm();
+    onClose();
+  };
+
   const handleSave = async () => {
-    if (validateFields()) {
+    if (!validateFields()) return;
+
+    try {
+      setIsLoading(true);
+      setError(null);
       const user = await pylon.createUser({
         email: newUser.email.toLowerCase(),
         firstName: newUser.firstName.charAt(0).toUpperCase() + newUser.firstName.slice(1),
@@ -62,24 +88,25 @@ export default function CreateUserModal({ isOpen, availableRoles, onClose, onSav
 
       if (user) {
         onSave(user);
-        setNewUser({
-          id: "",
-          firstName: "",
-          lastName: "",
-          email: "",
-          role: PersonRole.MEMBER,
-        });
-        onClose();
+        resetForm();
       } else {
-        alert("Failed to create user");
+        throw new Error("Failed to create user");
       }
+    } catch (err) {
+      console.error("Error creating user:", err);
+      setError(err instanceof Error ? err.message : "Failed to create user");
+    } finally {
+      setIsLoading(false);
     }
   };
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose}>
+    <Modal isOpen={isOpen} onClose={handleClose}>
       <ModalContent>
-        <ModalHeader>Create New User</ModalHeader>
+        <ModalHeader className="flex flex-col gap-1">
+          <h3 className="text-xl font-normal">Create New User</h3>
+          {error && <p className="text-danger text-sm">{error}</p>}
+        </ModalHeader>
         <ModalBody>
           <Input
             errorMessage={errors.firstName}
@@ -119,8 +146,15 @@ export default function CreateUserModal({ isOpen, availableRoles, onClose, onSav
           </Select>
         </ModalBody>
         <ModalFooter>
-          <Button onPress={onClose}>Cancel</Button>
-          <Button className="bg-ualert-500 text-notpurple-500" onPress={handleSave}>
+          <Button className="bg-content2 text-foreground hover:bg-content3" onPress={handleClose}>
+            Cancel
+          </Button>
+          <Button
+            className="bg-primary text-primary-foreground"
+            isDisabled={isLoading}
+            isLoading={isLoading}
+            onPress={handleSave}
+          >
             Create
           </Button>
         </ModalFooter>

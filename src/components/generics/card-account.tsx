@@ -15,6 +15,7 @@ interface AccountCardProps {
   comingSoon?: boolean;
   isHoverable?: boolean;
   className?: string;
+  iconClassName?: string;
 }
 
 export function AccountCard(props: AccountCardProps) {
@@ -28,7 +29,8 @@ export function AccountCard(props: AccountCardProps) {
   };
 
   const getIconClasses = (size: number) => {
-    return `w-${size} h-${size} ${props.disabled ? "text-default-400" : "text-default-600"}`;
+    if (props.iconClassName) return `w-${size} h-${size} ${props.iconClassName}`;
+    return `w-${size} h-${size} ${props.disabled ? "text-foreground/40" : "text-primary"}`;
   };
 
   const renderComingSoonOverlay = () => {

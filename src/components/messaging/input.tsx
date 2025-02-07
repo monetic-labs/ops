@@ -15,6 +15,7 @@ import { useAgentService } from "@/hooks/messaging/useAgentService";
 import { useMentions } from "@/hooks/messaging/useMentions";
 import { useSupportService } from "@/hooks/messaging/useSupportService";
 import { MentionOption } from "@/types/messaging";
+import { useTheme } from "@/hooks/useTheme";
 import pylon from "@/libs/pylon-sdk";
 
 import { MentionList } from "./mention-list";
@@ -24,8 +25,9 @@ export const MessageInput = forwardRef<HTMLInputElement>((_, ref) => {
   const { mode, inputValues, pendingAttachment } = state;
   const [showEmoji, setShowEmoji] = useState(false);
   const [isSending, setIsSending] = useState(false);
+  const { resolvedTheme } = useTheme();
   const {
-    message: { setInputValue, setPendingAttachment },
+    message: { setInputValue, setPendingAttachment, appendMessage },
   } = useMessagingActions();
 
   // Services
@@ -101,7 +103,9 @@ export const MessageInput = forwardRef<HTMLInputElement>((_, ref) => {
 
       try {
         setIsSending(true);
-        if (pendingAttachment) {
+
+        // Support mode with attachment
+        if (mode === "support" && pendingAttachment) {
           if (pendingAttachment.type === "image" && pendingAttachment.file) {
             // Get upload URL from Pylon
             const {
@@ -131,33 +135,69 @@ export const MessageInput = forwardRef<HTMLInputElement>((_, ref) => {
               },
             });
 
-            // Send message with file and caption
+            // Send message with file and caption using Pylon directly
             await pylon.createTelegramMessage({
               text: text || "Image Attachment",
               file: accessUrl,
             });
+
+            // Add to local chat logs using store action
+            appendMessage({
+              id: crypto.randomUUID(),
+              text: text || "Image Attachment",
+              type: "user",
+              timestamp: Date.now(),
+              status: "sent",
+              attachment: {
+                type: "image",
+                url: pendingAttachment.preview || accessUrl,
+              },
+            });
           } else if (pendingAttachment.type === "screenshot") {
-            // For screenshots, we already have the file uploaded, just send the message
+            // For screenshots, we already have the file uploaded
             await pylon.createTelegramMessage({
               text: text || "Screenshot",
               file: pendingAttachment.preview,
             });
+
+            // Add to local chat logs using store action
+            appendMessage({
+              id: crypto.randomUUID(),
+              text: text || "Screenshot",
+              type: "user",
+              timestamp: Date.now(),
+              status: "sent",
+              attachment: {
+                type: "screenshot",
+                url: pendingAttachment.preview,
+              },
+            });
           }
-          // Clear the attachment after sending
+          // Clear attachment after sending
           setPendingAttachment(null);
         } else {
-          // Regular text message
+          // Regular text message for both modes
           await activeService.sendMessage(text.trim());
         }
 
+        // Always clear input after successful send
         setInputValue({ mode, value: "" });
       } catch (error) {
         console.error("Failed to send message:", error);
+        // Add error message to chat
+        appendMessage({
+          id: crypto.randomUUID(),
+          text: "Failed to send message. Please try again.",
+          type: "system",
+          timestamp: Date.now(),
+          status: "error",
+          category: "error",
+        });
       } finally {
         setIsSending(false);
       }
     },
-    [mode, inputValues, pendingAttachment, activeService, setInputValue, setPendingAttachment, isSending]
+    [mode, inputValues, pendingAttachment, activeService, appendMessage, setInputValue, setPendingAttachment, isSending]
   );
 
   const onEmojiSelect = useCallback(
@@ -191,7 +231,7 @@ export const MessageInput = forwardRef<HTMLInputElement>((_, ref) => {
   return (
     <form className="flex flex-col gap-2 p-2" data-testid="chat-input-form" onSubmit={handleSubmit}>
       {pendingAttachment && (
-        <Card className="p-2 bg-charyo-600/50">
+        <Card className={`p-2 bg-content2/50 ${isSending ? "opacity-50" : ""}`}>
           <div className="flex items-center justify-between gap-2">
             <div className="flex items-center gap-2">
               {pendingAttachment.type === "image" && pendingAttachment.preview && (
@@ -201,13 +241,15 @@ export const MessageInput = forwardRef<HTMLInputElement>((_, ref) => {
                   src={pendingAttachment.preview}
                 />
               )}
-              <span className="text-sm text-white/80">
+              <span className="text-sm text-foreground/80">
                 {pendingAttachment.type === "screenshot" ? "Screenshot" : "Image"} attachment
+                {isSending && " (sending...)"}
               </span>
             </div>
             <Button
               isIconOnly
-              className="bg-transparent text-white/60 hover:text-white"
+              className="bg-transparent text-foreground/60 hover:text-foreground"
+              isDisabled={isSending}
               size="sm"
               variant="light"
               onPress={handleClearAttachment}
@@ -219,67 +261,79 @@ export const MessageInput = forwardRef<HTMLInputElement>((_, ref) => {
       )}
 
       <div className="relative flex items-end gap-2">
-        <Input
-          ref={ref}
-          classNames={{
-            base: "max-w-full",
-            mainWrapper: "max-w-full",
-            input: "text-sm",
-            inputWrapper: "bg-charyo-600/50 hover:bg-charyo-600/70 transition-colors",
-          }}
-          data-testid="chat-input"
-          disabled={isSending}
-          placeholder={`Type a message to ${mode === "support" ? "support" : "agent"}...`}
-          radius="lg"
-          size="sm"
-          type="text"
-          value={inputValues[mode]}
-          variant="bordered"
-          onChange={handleChange}
-          onKeyDown={handleKeyDown}
-          endContent={
-            <Popover placement="top" isOpen={showEmoji} onOpenChange={setShowEmoji}>
-              <PopoverTrigger>
-                <Button
-                  isIconOnly
-                  className="bg-transparent text-default-400 hover:text-default-500"
-                  disabled={isSending}
-                  radius="full"
-                  size="sm"
-                  variant="light"
-                >
-                  <Smile className="w-4 h-4" />
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="p-0">
-                <Picker data={data} onEmojiSelect={onEmojiSelect} />
-              </PopoverContent>
-            </Popover>
-          }
-        />
+        <div className="flex-1 relative">
+          <Input
+            ref={ref}
+            classNames={{
+              base: "max-w-full",
+              mainWrapper: "max-w-full",
+              input: "text-sm text-foreground placeholder:text-foreground/50 pr-[45px]",
+              inputWrapper: [
+                "bg-content3/50",
+                "hover:bg-content3/70",
+                "transition-colors",
+                "!cursor-text",
+                "h-unit-10",
+                "rounded-full",
+                "border-none",
+                "data-[hover=true]:bg-content3/70",
+                "group-data-[focus=true]:bg-content3/70",
+                isSending && "opacity-50",
+              ].join(" "),
+            }}
+            data-testid="chat-input"
+            isDisabled={isSending}
+            placeholder={`Type a message to ${mode === "support" ? "support" : "agent"}...`}
+            radius="full"
+            size="sm"
+            type="text"
+            value={inputValues[mode]}
+            variant="flat"
+            onChange={handleChange}
+            onKeyDown={handleKeyDown}
+            endContent={
+              <div className="absolute right-2 top-1/2 -translate-y-1/2">
+                <Popover placement="top" isOpen={showEmoji} onOpenChange={setShowEmoji}>
+                  <PopoverTrigger>
+                    <Button
+                      isIconOnly
+                      className="bg-transparent text-foreground/60 hover:text-foreground min-w-unit-8 w-unit-8 h-unit-8"
+                      isDisabled={isSending}
+                      radius="full"
+                      size="sm"
+                      variant="light"
+                    >
+                      <Smile className="w-4 h-4" />
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent>
+                    <Picker data={data} onEmojiSelect={onEmojiSelect} theme={resolvedTheme} />
+                  </PopoverContent>
+                </Popover>
+              </div>
+            }
+          />
+        </div>
 
         <Button
           isIconOnly
-          className="bg-ualert-500 text-notpurple-500"
-          data-testid="chat-submit"
-          isDisabled={(!inputValues[mode].trim() && !pendingAttachment) || isSending}
+          className="bg-primary text-primary-foreground hover:opacity-90 min-w-unit-10 w-unit-10 h-unit-10 shrink-0"
+          isDisabled={isSending || (!inputValues[mode].trim() && !pendingAttachment)}
           isLoading={isSending}
           radius="full"
           type="submit"
         >
-          <Send className="w-4 h-4" />
+          {!isSending && <Send className="w-4 h-4" />}
         </Button>
+      </div>
 
+      {mentionState.isOpen && mentionOptions.length > 0 && (
         <MentionList
           options={mentionOptions}
-          position={mentionState.position}
-          searchText={mentionState.searchText}
           selectedIndex={mentionState.selectedIndex}
-          setSelectedIndex={(index) => setMentionState({ selectedIndex: index })}
-          visible={mentionState.isOpen}
           onSelect={handleMentionSelect}
         />
-      </div>
+      )}
     </form>
   );
 });

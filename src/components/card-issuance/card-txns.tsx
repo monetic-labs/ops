@@ -14,6 +14,19 @@ interface TransactionDetailsModalProps {
 }
 
 export default function TransactionDetailsModal({ isOpen, onClose, transaction }: TransactionDetailsModalProps) {
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case "COMPLETED":
+        return "text-success";
+      case "PENDING":
+        return "text-orange-500";
+      case "FAILED":
+        return "text-danger";
+      default:
+        return "text-foreground";
+    }
+  };
+
   return (
     <Modal isOpen={isOpen} size="lg" onClose={onClose}>
       <ModalContent>
@@ -21,7 +34,7 @@ export default function TransactionDetailsModal({ isOpen, onClose, transaction }
           <>
             <ModalHeader className="flex flex-col items-center">
               <h2 className="text-2xl font-bold">Transaction Receipt</h2>
-              <p className="text-sm text-gray-500 truncate max-w-[200px] sm:max-w-[300px]">
+              <p className="text-sm text-foreground/60 truncate max-w-[200px] sm:max-w-[300px]">
                 Transaction ID: {transaction.id}
               </p>
             </ModalHeader>
@@ -72,13 +85,7 @@ export default function TransactionDetailsModal({ isOpen, onClose, transaction }
                 <div className="flex justify-between">
                   <span>Status:</span>
                   <span
-                    className={`truncate max-w-[200px] sm:max-w-[300px] text-right font-bold ${
-                      transaction.status === "COMPLETED"
-                        ? "text-ugh-400"
-                        : transaction.status === "PENDING"
-                          ? "text-yellow-500"
-                          : "text-red-500"
-                    }`}
+                    className={`truncate max-w-[200px] sm:max-w-[300px] text-right font-bold ${getStatusColor(transaction.status)}`}
                   >
                     {transaction.status}
                   </span>
@@ -87,8 +94,8 @@ export default function TransactionDetailsModal({ isOpen, onClose, transaction }
             </ModalBody>
             <Divider />
             <ModalFooter className="flex flex-col items-center">
-              <p className="text-sm text-gray-500 mb-2 truncate">Thank you for your business!</p>
-              <Button className="bg-ualert-500" onPress={onClose}>
+              <p className="text-sm text-foreground/60 mb-2 truncate">Thank you for your business!</p>
+              <Button className="bg-content2 text-foreground hover:bg-content3" onPress={onClose}>
                 Close
               </Button>
             </ModalFooter>

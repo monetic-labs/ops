@@ -49,17 +49,13 @@ export const ChatPane: React.FC<ChatPaneProps> = ({ isOpen, onClose }) => {
       size="md"
       backdrop="transparent"
       classNames={{
-        base: [
-          "bg-gradient-to-b from-charyo-500/95 to-charyo-600/95",
-          "backdrop-blur-md",
-          "text-notpurple-500",
-          "shadow-2xl",
-          "dark:shadow-charyo-900/20",
-        ].join(" "),
-        header: "border-b border-charyo-400/20",
-        body: "p-0 scrollbar-thin scrollbar-track-charyo-600 scrollbar-thumb-charyo-400/50",
-        footer: "border-t border-charyo-400/20 bg-charyo-500/50 backdrop-blur-xl",
-        wrapper: ["max-w-[420px] w-full", "rounded-r-2xl", "shadow-xl shadow-charyo-900/10"].join(" "),
+        base: ["bg-content1/95", "backdrop-blur-md", "text-foreground", "shadow-2xl", "dark:shadow-content1/20"].join(
+          " "
+        ),
+        header: "border-b border-divider",
+        body: "p-0 scrollbar-thin scrollbar-track-content2 scrollbar-thumb-content3",
+        footer: "border-t border-divider bg-content2/50 backdrop-blur-xl",
+        wrapper: ["max-w-[420px] w-full", "rounded-r-2xl", "shadow-xl shadow-content1/10"].join(" "),
       }}
       hideCloseButton={true}
       motionProps={{

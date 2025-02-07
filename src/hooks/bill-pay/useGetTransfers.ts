@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { MerchantDisbursementEventGetOutput, Pagination } from "@backpack-fux/pylon-sdk";
 
 import pylon from "@/libs/pylon-sdk";
@@ -27,6 +27,10 @@ export const useGetTransfers = ({ before, after }: { before?: string; after?: st
       setIsLoading(false);
     }
   };
+
+  useEffect(() => {
+    fetchTransfers();
+  }, [before, after]); // Re-fetch when pagination params change
 
   return { transfers, pagination, isLoading, error, fetchTransfers };
 };

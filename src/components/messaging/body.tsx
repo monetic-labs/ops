@@ -55,7 +55,11 @@ export const ChatBody: React.FC = () => {
   }, [messages]);
 
   return (
-    <div className="flex-1 overflow-y-auto p-4 space-y-4" data-testid="chat-body" style={{ maxHeight: "100%" }}>
+    <div
+      className="flex-1 overflow-y-auto p-4 space-y-4 scrollbar-thin scrollbar-track-content2 scrollbar-thumb-content3"
+      data-testid="chat-body"
+      style={{ maxHeight: "100%" }}
+    >
       {messages.map((message) => (
         <MessageBubble key={message.id} contentTestId={`message-item`} data-testid="message-item" message={message} />
       ))}

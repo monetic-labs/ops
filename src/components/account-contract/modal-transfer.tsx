@@ -80,7 +80,7 @@ export default function TransferModal({ isOpen, onClose }: TransferModalProps) {
       <Modal
         hideCloseButton
         classNames={{
-          base: "bg-[#0A0A0A]",
+          base: "bg-content1",
           backdrop: "bg-black/80",
           body: "p-0",
         }}
@@ -89,12 +89,12 @@ export default function TransferModal({ isOpen, onClose }: TransferModalProps) {
         onClose={handleClose}
       >
         <ModalContent>
-          <div className="flex items-center justify-between px-5 py-4 border-b border-[#1a1a1a]">
-            <h3 className="text-xl font-normal text-white">Transfer Between Accounts</h3>
+          <div className="flex items-center justify-between px-5 py-4 border-b border-divider">
+            <h3 className="text-xl font-normal text-foreground">Transfer Between Accounts</h3>
             <div className="flex items-center gap-3">
               <Button
                 isIconOnly
-                className="text-gray-400 hover:text-white transition-colors"
+                className="text-foreground/60 hover:text-foreground transition-colors"
                 variant="light"
                 onClick={handleClose}
               >
@@ -105,9 +105,9 @@ export default function TransferModal({ isOpen, onClose }: TransferModalProps) {
 
           <ModalBody className="p-4">
             <div className="space-y-3">
-              <div className="rounded-2xl bg-[#141414] p-4 border border-[#1a1a1a] hover:border-[#2a2a2a] transition-colors">
+              <div className="rounded-2xl bg-content2 p-4 border border-divider hover:border-divider/60 transition-colors">
                 <div className="flex justify-between mb-2">
-                  <span className="text-sm text-gray-400">From</span>
+                  <span className="text-sm text-foreground/60">From</span>
                   {fromAccount && <BalanceDisplay balance={fromAccount.balance || 0} onClick={handleSetMaxAmount} />}
                 </div>
                 <div className="flex items-center gap-3">
@@ -117,7 +117,7 @@ export default function TransferModal({ isOpen, onClose }: TransferModalProps) {
                     onChange={setAmount}
                   />
                   <Button
-                    className="h-11 px-4 bg-[#1a1a1a] hover:bg-[#222222] text-white border border-[#2a2a2a] transition-all duration-200"
+                    className="h-11 px-4 bg-content3 hover:bg-content4 text-foreground border border-divider/60 transition-all duration-200"
                     radius="lg"
                     onClick={() => setIsFromAccountModalOpen(true)}
                   >
@@ -125,18 +125,17 @@ export default function TransferModal({ isOpen, onClose }: TransferModalProps) {
                   </Button>
                 </div>
                 {fromAccount && parseFloat(amount) > (fromAccount.balance || 0) && (
-                  <div className="mt-2 text-sm text-red-500">Insufficient balance</div>
+                  <div className="mt-2 text-sm text-danger">Insufficient balance</div>
                 )}
               </div>
 
               <div className="flex justify-center -my-2 z-10">
                 <Button
                   isIconOnly
-                  className="bg-[#0A0A0A] border border-[#1a1a1a] w-8 h-8 text-gray-400 hover:text-white hover:border-[#2a2a2a] transition-all duration-200"
+                  className="bg-content1 border border-divider w-8 h-8 text-foreground/60 hover:text-foreground hover:border-divider/60 transition-all duration-200"
                   radius="full"
                   onClick={() => {
                     const temp = fromAccount;
-
                     setFromAccount(toAccount);
                     setToAccount(temp);
                   }}
@@ -145,13 +144,13 @@ export default function TransferModal({ isOpen, onClose }: TransferModalProps) {
                 </Button>
               </div>
 
-              <div className="rounded-2xl bg-[#141414] p-4 border border-[#1a1a1a] hover:border-[#2a2a2a] transition-colors">
+              <div className="rounded-2xl bg-content2 p-4 border border-divider hover:border-divider/60 transition-colors">
                 <div className="flex justify-between mb-2">
-                  <span className="text-sm text-gray-400">To</span>
+                  <span className="text-sm text-foreground/60">To</span>
                   {toAccount && <BalanceDisplay balance={toAccount.balance || 0} />}
                 </div>
                 <Button
-                  className="w-full h-14 bg-[#1a1a1a] hover:bg-[#222222] text-white border border-[#2a2a2a] transition-all duration-200"
+                  className="w-full h-14 bg-content3 hover:bg-content4 text-foreground border border-divider/60 transition-all duration-200"
                   onClick={() => setIsToAccountModalOpen(true)}
                 >
                   {toAccount ? toAccount.name : "Select Account"}
@@ -160,29 +159,31 @@ export default function TransferModal({ isOpen, onClose }: TransferModalProps) {
 
               {fromAccount && toAccount && amount && (
                 <>
-                  <Divider className="my-4 bg-[#1a1a1a]" />
+                  <Divider className="my-4 bg-divider" />
                   <div className="space-y-3 px-1">
                     <div className="flex justify-between">
                       <div className="flex items-center gap-2">
-                        <span className="text-gray-400">Estimated Time</span>
+                        <span className="text-foreground/60">Estimated Time</span>
                         <Tooltip
-                          className="bg-[#1a1a1a] text-white"
+                          className="bg-content2 text-foreground"
                           content="Internal transfers may vary with network activity but usually complete within 1 minute"
                         >
-                          <InfoIcon className="text-gray-400 cursor-help" size={14} />
+                          <InfoIcon className="text-foreground/60 cursor-help" size={14} />
                         </Tooltip>
                       </div>
-                      <span className="text-white font-medium">Instant</span>
+                      <span className="text-foreground font-medium">Instant</span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-gray-400">Transfer Fee</span>
-                      <span className="text-white font-medium">$0.00</span>
+                      <span className="text-foreground/60">Transfer Fee</span>
+                      <span className="text-foreground font-medium">$0.00</span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-gray-400">Expected Output</span>
+                      <span className="text-foreground/60">Expected Output</span>
                       <span
                         className={`font-medium ${
-                          fromAccount && parseFloat(amount) > (fromAccount.balance || 0) ? "text-red-500" : "text-white"
+                          fromAccount && parseFloat(amount) > (fromAccount.balance || 0)
+                            ? "text-danger"
+                            : "text-foreground"
                         }`}
                       >
                         {formatUSD(parseFloat(amount) || 0)}
@@ -196,7 +197,7 @@ export default function TransferModal({ isOpen, onClose }: TransferModalProps) {
 
           <div className="p-4 pt-2">
             <Button
-              className="w-full h-12 text-base font-medium bg-[#2152ff] hover:bg-[#1a47ff] text-white transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full h-12 text-base font-medium bg-primary hover:opacity-90 text-primary-foreground transition-opacity duration-200 disabled:opacity-50"
               isDisabled={!fromAccount || !toAccount || !amount || !isAmountValid()}
               size="lg"
               onClick={handleTransfer}

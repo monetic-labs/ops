@@ -22,8 +22,9 @@ export function AccountSelectionModal({
   return (
     <Modal
       classNames={{
-        base: "bg-[#0A0A0A]",
-        wrapper: "bg-black/80",
+        base: "bg-background dark:bg-content1",
+        backdrop: "bg-black/10 dark:bg-black/80",
+        wrapper: "backdrop-blur-sm",
       }}
       isOpen={isOpen}
       size="sm"
@@ -31,15 +32,15 @@ export function AccountSelectionModal({
     >
       <ModalContent>
         <ModalBody className="p-4">
-          <h3 className="text-xl font-normal text-white mb-4">{title}</h3>
+          <h3 className="text-xl font-normal text-foreground mb-4">{title}</h3>
           <div className="space-y-2">
             {accounts.map((account) => (
               <button
                 key={account.id}
-                className={`w-full p-4 rounded-xl border ${
+                className={`w-full p-4 rounded-xl border cursor-pointer ${
                   selectedAccountId === account.id
-                    ? "border-blue-500 bg-blue-500/10"
-                    : "border-[#1a1a1a] hover:border-[#2a2a2a] bg-[#141414]"
+                    ? "border-primary bg-primary/10 dark:bg-primary/20"
+                    : "border-divider/60 dark:border-divider hover:border-divider bg-background/40 dark:bg-content2 hover:bg-content2 dark:hover:bg-content3"
                 } transition-all duration-200`}
                 onClick={() => {
                   onSelect(account);
@@ -47,9 +48,9 @@ export function AccountSelectionModal({
                 }}
               >
                 <div className="flex items-center justify-between">
-                  <span className="text-white">{account.name}</span>
+                  <span className="text-foreground font-medium">{account.name}</span>
                   {account.balance !== undefined && (
-                    <span className="text-gray-400">${account.balance.toLocaleString()}</span>
+                    <span className="text-foreground/60">${account.balance.toLocaleString()}</span>
                   )}
                 </div>
               </button>

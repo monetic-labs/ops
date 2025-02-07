@@ -7,12 +7,12 @@ import { Input } from "@nextui-org/input";
 import { Spinner } from "@nextui-org/spinner";
 import { Tabs, Tab } from "@nextui-org/tabs";
 
-import { FormButton } from "@/components/generics/form-button";
 import { FormCard } from "@/components/generics/form-card";
 import { BootstrapSection } from "@/components/embeddings/bootstrap-section";
 import DocumentManager from "@/components/embeddings/doc-manager";
 import KnowledgeBaseStats from "@/components/embeddings/kb-stats";
 import { useDocumentProcessor } from "@/hooks/embeddings/useDocumentProcessor";
+import { Button } from "@nextui-org/button";
 
 const UploadForm = ({
   file,
@@ -57,9 +57,9 @@ const UploadForm = ({
         value={category}
         onChange={(e) => setCategory(e.target.value)}
       />
-      <FormButton className="w-full" disabled={!file || processing} type="submit">
+      <Button className="w-full" disabled={!file || processing} type="submit">
         {processing ? <Spinner color="current" size="sm" /> : "Upload and Generate Embedding"}
-      </FormButton>
+      </Button>
       {status?.type && (
         <div
           className={`p-4 rounded ${

@@ -241,6 +241,10 @@ export const Navbar = () => {
     }
   };
 
+  console.log(isAuthenticated);
+  console.log(user);
+  console.log(merchant);
+
   return (
     <NextUINavbar
       classNames={{
@@ -257,7 +261,7 @@ export const Navbar = () => {
       <NavbarContent className="flex-none" justify="start">
         <NavbarBrand as="li" className="gap-3 max-w-fit">
           <NextLink className="flex justify-start items-center gap-1" href={isAuthenticated ? "/" : "/auth"}>
-            <Backpack className="dark:text-white" size={24} strokeWidth={1.5} />
+            <Backpack className="text-primary" size={24} strokeWidth={1.5} />
           </NextLink>
         </NavbarBrand>
       </NavbarContent>

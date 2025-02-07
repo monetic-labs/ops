@@ -59,49 +59,48 @@ export default function ModalFooterWithSupport({
   };
 
   return (
-    <>
-      <ModalFooter className="flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-2 max-h-[50vh] overflow-y-auto">
-        <Tooltip content="When you hit support, a screenshot of the current page will be sent to the support team so we can get immediately into helping you.">
+    <ModalFooter className="flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-2 max-h-[50vh] overflow-y-auto">
+      <Tooltip content="When you hit support, a screenshot of the current page will be sent to the support team so we can get immediately into helping you.">
+        <Button
+          className="text-foreground w-2/3 sm:w-auto mx-auto sm:mx-0 order-2 sm:order-none"
+          variant="light"
+          onPress={handleSupportClick}
+        >
+          Support
+          <div className="hidden sm:flex items-center gap-1 text-xs">
+            <Kbd className="px-2 py-0.5" keys={["command"]}>
+              K
+            </Kbd>
+          </div>
+        </Button>
+      </Tooltip>
+      <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto order-1 sm:order-none">
+        {onNewSenderChange && isNewSender !== undefined && (
+          <div className="flex flex-row items-center gap-2 justify-between px-2">
+            <span className="items-center font-mono text-foreground">New Sender?</span>
+            <Switch
+              defaultSelected
+              aria-label="New Customer"
+              color="primary"
+              data-testid="new-sender-toggle"
+              isSelected={isNewSender}
+              onValueChange={onNewSenderChange}
+            />
+          </div>
+        )}
+        {actions.map((action, index) => (
           <Button
-            className="text-notpurple-500 w-2/3 sm:w-auto mx-auto sm:mx-0 order-2 sm:order-none"
-            variant="light"
-            onPress={handleSupportClick}
+            key={index}
+            aria-label={action.label}
+            className={`bg-primary text-primary-foreground w-full sm:w-auto ${action.className || ""}`}
+            data-testid={`${action.label.toLowerCase()}-modal-button`}
+            isDisabled={action.isDisabled}
+            onPress={action.onClick}
           >
-            Support
-            <div className="hidden sm:flex items-center gap-1 text-xs">
-              <Kbd className="px-2 py-0.5" keys={["command"]}>
-                K
-              </Kbd>
-            </div>
+            {action.label}
           </Button>
-        </Tooltip>
-        <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto order-1 sm:order-none">
-          {onNewSenderChange && isNewSender !== undefined && (
-            <div className="flex flex-row items-center gap-2 justify-between px-2">
-              <span className="items-center font-mono">New Sender?</span>
-              <Switch
-                defaultSelected
-                aria-label="New Customer"
-                color="secondary"
-                data-testid="new-sender-toggle"
-                isSelected={isNewSender}
-                onValueChange={onNewSenderChange}
-              />
-            </div>
-          )}
-          {actions.map((action, index) => (
-            <Button
-              key={index}
-              aria-label={action.label}
-              className={`bg-ualert-500 text-notpurple-500 w-full sm:w-auto ${action.className || ""}`}
-              data-testid={`${action.label.toLowerCase()}-modal-button`}
-              isDisabled={action.isDisabled}
-            >
-              {action.label}
-            </Button>
-          ))}
-        </div>
-      </ModalFooter>
-    </>
+        ))}
+      </div>
+    </ModalFooter>
   );
 }

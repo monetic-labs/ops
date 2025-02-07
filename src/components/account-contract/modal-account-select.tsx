@@ -30,8 +30,8 @@ export default function AccountSelectionModal({
   return (
     <Modal
       classNames={{
-        base: "bg-[#0A0A0A]",
-        wrapper: "bg-black/80",
+        base: "bg-background dark:bg-content1",
+        backdrop: "bg-black/10 dark:bg-black/80",
         body: "p-0",
       }}
       isOpen={isOpen}
@@ -39,7 +39,7 @@ export default function AccountSelectionModal({
       onClose={onClose}
     >
       <ModalContent>
-        <ModalHeader className="px-5 py-4 text-xl font-normal text-white border-b border-[#1a1a1a]">
+        <ModalHeader className="px-5 py-4 text-xl font-normal text-foreground border-b border-divider">
           {title}
         </ModalHeader>
         <ModalBody className="px-4 py-4">
@@ -47,10 +47,10 @@ export default function AccountSelectionModal({
             {accounts.map((account) => (
               <Button
                 key={account.id}
-                className={`w-full h-16 p-3 justify-between items-center border transition-all duration-200 ${
+                className={`w-full h-16 p-3 justify-between items-center border cursor-pointer transition-all duration-200 ${
                   selectedAccountId === account.id
-                    ? "bg-[#1a1a1a] border-[#2a2a2a]"
-                    : "bg-[#141414] border-[#1a1a1a] hover:border-[#2a2a2a] hover:bg-[#181818]"
+                    ? "bg-content2 dark:bg-content3 border-divider"
+                    : "bg-background/40 dark:bg-content2 border-divider/60 hover:border-divider hover:bg-content2 dark:hover:bg-content3"
                 }`}
                 onClick={() => {
                   onSelect(account);
@@ -58,8 +58,8 @@ export default function AccountSelectionModal({
                 }}
               >
                 <div className="flex flex-col items-start">
-                  <span className="text-white text-base font-medium">{account.name}</span>
-                  <BalanceDisplay balance={account.balance || 0} className="text-gray-400" prefix="" />
+                  <span className="text-foreground text-base font-medium">{account.name}</span>
+                  <BalanceDisplay balance={account.balance || 0} className="text-foreground/60" prefix="" />
                 </div>
               </Button>
             ))}

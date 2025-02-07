@@ -30,7 +30,7 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({ message, contentTe
   const isUser = "role" in message ? message.role === "user" : message.type === "user";
 
   const getBubbleStyle = () => {
-    return isUser ? "bg-ualert-500 text-notpurple-500 ml-auto" : "bg-charyo-500/50 text-notpurple-500 mr-auto";
+    return isUser ? "bg-primary text-primary-foreground ml-auto" : "bg-content2 text-foreground mr-auto";
   };
 
   const getMessageId = () => {
@@ -85,24 +85,24 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({ message, contentTe
 
     // If there's an attachment, show it with the message
     if (hasAttachment && message.attachment) {
-      const attachmentContent = (
+      return (
         <div className="space-y-2">
           <div className="flex items-center gap-2">
             {message.attachment.type === "screenshot" ? (
-              <Camera className="w-4 h-4 text-white/80" />
+              <Camera className="w-4 h-4 text-foreground/80" />
             ) : (
-              <ImageIcon className="w-4 h-4 text-white/80" />
+              <ImageIcon className="w-4 h-4 text-foreground/80" />
             )}
-            <span className="text-white/80 text-sm">
+            <span className="text-foreground/80 text-sm">
               {message.attachment.type === "screenshot" ? "Screenshot" : "Image"}
             </span>
           </div>
           {message.attachment.url && (
-            <div className="mt-2 rounded-md overflow-hidden max-w-[200px]">
+            <div className="mt-2 rounded-md overflow-hidden">
               <img
                 src={message.attachment.url}
                 alt={`${message.attachment.type} attachment`}
-                className="w-full h-auto object-cover"
+                className="w-full max-w-[300px] h-auto object-cover rounded-md"
               />
             </div>
           )}
@@ -111,7 +111,6 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({ message, contentTe
           )}
         </div>
       );
-      return attachmentContent;
     }
 
     // Apply special formatting for agent messages
@@ -127,13 +126,13 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({ message, contentTe
   const contentBubbleTestId = `${bubbleTestId}-content`;
 
   return (
-    <div className="flex items-start gap-3 message-${getMessageType()}" data-testid={bubbleTestId}>
+    <div className={`flex items-start gap-3 message-${getMessageType()}`} data-testid={bubbleTestId}>
       {!isUser && (
         <Avatar
           icon={<User className="w-4 h-4" />}
           classNames={{
-            base: "bg-charyo-600",
-            icon: "text-notpurple-500",
+            base: "bg-content3",
+            icon: "text-foreground",
           }}
           size="sm"
         />
@@ -143,7 +142,7 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({ message, contentTe
           messageContent
         ) : (
           <ReactMarkdown
-            className="break-words prose prose-invert max-w-none text-sm"
+            className="break-words prose dark:prose-invert max-w-none text-sm"
             components={{
               code({ node, inline, className, children, ...props }: CodeProps) {
                 const match = /language-(\w+)/.exec(className || "");
@@ -155,7 +154,7 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({ message, contentTe
                       PreTag="div"
                       language={match[1]}
                       style={vscDarkPlus}
-                      className="rounded-md !bg-charyo-600/50 text-xs"
+                      className="rounded-md !bg-content3/50 text-xs"
                     >
                       {codeString}
                     </SyntaxHighlighter>
@@ -163,7 +162,7 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({ message, contentTe
                 }
 
                 return (
-                  <code className={`${className} bg-charyo-600/50 rounded px-1 text-xs`} {...props}>
+                  <code className={`${className} bg-content3/50 rounded px-1 text-xs`} {...props}>
                     {children}
                   </code>
                 );
@@ -179,8 +178,8 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({ message, contentTe
         <Avatar
           icon={<User className="w-4 h-4" />}
           classNames={{
-            base: "bg-ualert-600",
-            icon: "text-notpurple-500",
+            base: "bg-primary",
+            icon: "text-primary-foreground",
           }}
           size="sm"
         />

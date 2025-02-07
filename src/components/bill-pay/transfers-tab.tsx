@@ -57,15 +57,31 @@ const transferColumns: Column<MerchantDisbursementEventGetOutput>[] = [
     ),
   },
   {
-    name: "BANK INFO",
-    uid: "contact.bankInfo",
+    name: "BANK NAME",
+    uid: "contact.bankName",
     align: "end",
     render: (transfer: MerchantDisbursementEventGetOutput) => (
-      <div className="space-y-1">
-        <div className="text-sm truncate max-w-[150px] sm:max-w-[200px]">Name: {transfer.contact.bankName}</div>
-        <div className="text-sm truncate max-w-[150px] sm:max-w-[200px]">Routing: {transfer.contact.routingNumber}</div>
-        <div className="text-sm truncate max-w-[150px] sm:max-w-[200px]">Account: {transfer.contact.accountNumber}</div>
-      </div>
+      <span className="text-sm truncate max-w-[150px] sm:max-w-[200px]">{transfer.contact.bankName}</span>
+    ),
+  },
+  {
+    name: "ROUTING",
+    uid: "contact.routingNumber",
+    align: "end",
+    render: (transfer: MerchantDisbursementEventGetOutput) => (
+      <span className="text-sm font-mono truncate max-w-[150px] sm:max-w-[200px]">
+        {transfer.contact.routingNumber}
+      </span>
+    ),
+  },
+  {
+    name: "ACCOUNT",
+    uid: "contact.accountNumber",
+    align: "end",
+    render: (transfer: MerchantDisbursementEventGetOutput) => (
+      <span className="text-sm font-mono truncate max-w-[150px] sm:max-w-[200px]">
+        {transfer.contact.accountNumber}
+      </span>
     ),
   },
 ];
@@ -84,7 +100,13 @@ export default function Transfers() {
       <DataTable
         aria-label="Transfers table"
         columns={transferColumns}
-        emptyContent={<EmptyContent message="Create your first transfer" onAction={() => setIsCreateModalOpen(true)} />}
+        emptyContent={
+          <EmptyContent
+            type="primary"
+            message="Create your first transfer"
+            onAction={() => setIsCreateModalOpen(true)}
+          />
+        }
         errorMessage="Failed to load transfers"
         isError={!!error}
         isLoading={isLoading}

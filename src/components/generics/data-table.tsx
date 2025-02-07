@@ -102,11 +102,28 @@ export function DataTable<T extends { id: string | number }>({
   );
 }
 
-export function EmptyContent({ message, onAction }: { message: string; onAction?: () => void }) {
+interface EmptyContentProps {
+  message: string;
+  onAction?: () => void;
+  type?: "default" | "primary";
+}
+
+export function EmptyContent({ message, onAction, type = "default" }: EmptyContentProps) {
+  const getButtonClasses = () => {
+    switch (type) {
+      case "primary":
+        return "bg-primary/10 hover:bg-primary/20 text-foreground/30 border-primary/20";
+      case "default":
+        return "bg-content2 hover:bg-content3 text-foreground border-divider";
+      default:
+        return "bg-content2 hover:bg-content3 text-foreground border-divider";
+    }
+  };
+
   if (onAction) {
     return (
       <Button
-        className="bg-default-100 hover:bg-default-200 text-foreground"
+        className={`${getButtonClasses()} border transition-colors`}
         radius="lg"
         size="sm"
         variant="flat"
@@ -120,7 +137,7 @@ export function EmptyContent({ message, onAction }: { message: string; onAction?
 
   return (
     <div className="w-full flex items-center justify-center">
-      <p className="text-foreground/60 text-sm">{message}</p>
+      <p className={`text-sm ${type === "default" ? "text-foreground/60" : `text-${type}`}`}>{message}</p>
     </div>
   );
 }
