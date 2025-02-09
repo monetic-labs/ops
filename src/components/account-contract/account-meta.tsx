@@ -1,254 +1,103 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
-import { Card } from "@nextui-org/card";
-import { Button } from "@nextui-org/button";
-import {
-  ArrowDownLeft,
-  ArrowUpRight,
-  Building2,
-  CreditCard,
-  PiggyBank,
-  PlusCircle,
-  ChevronLeft,
-  ChevronRight,
-} from "lucide-react";
+import { useState } from "react";
+import { useAccounts } from "@/contexts/AccountContext";
+import type { Account } from "@/contexts/AccountContext";
+import { Card, CardBody } from "@nextui-org/card";
+import { AccountHeader } from "./components/AccountHeader";
+import { AccountBalance } from "./components/AccountBalance";
+import { AccountNavigation } from "./components/AccountNavigation";
+import { ActivityView } from "./views/ActivityView";
+import { OperatorsView } from "./views/OperatorsView";
+import { PoliciesView } from "./views/PoliciesView";
+import { SendView } from "./views/SendView";
+import { ReceiveView } from "./views/ReceiveView";
+import type { TransferActivity } from "./types";
 
-import useAccountContracts from "@/hooks/account-contracts/useAccountContracts";
-import AddFundsModal from "@/components/account-contract/modal-add-funds";
-import WithdrawFundsModal from "@/components/account-contract/modal-withdraw-funds";
-import PortfolioModal from "@/components/account-contract/modal-portfolio";
-import { AccountCard } from "@/components/generics/card-account";
-import TransferModal from "@/components/account-contract/modal-transfer";
+export default function AccountMeta() {
+  const { accounts, getEnabledAccounts } = useAccounts();
+  const [selectedAccount, setSelectedAccount] = useState<Account>(accounts[0]);
+  const [activeTab, setActiveTab] = useState<string>("activity");
+  const [isSendModalOpen, setIsSendModalOpen] = useState(false);
+  const [isReceiveModalOpen, setIsReceiveModalOpen] = useState(false);
+  const [amount, setAmount] = useState("");
+  const [toAccount, setToAccount] = useState<Account | null>(null);
+  const [activities] = useState<TransferActivity[]>([]);
 
-const accounts = [
-  {
-    id: "settlement",
-    name: "Settlement",
-    currency: "USD",
-    balance: 456104.2,
-    icon: Building2,
-  },
-  {
-    id: "rain",
-    name: "Rain Card",
-    currency: "USD",
-    balance: 31383.43,
-    icon: CreditCard,
-  },
-  {
-    id: "savings",
-    name: "Savings",
-    currency: "USD",
-    balance: 0,
-    disabled: true,
-    comingSoon: true,
-    icon: PiggyBank,
-  },
-  {
-    id: "new-account",
-    name: "New Account",
-    currency: "USD",
-    disabled: true,
-    comingSoon: true,
-    isCreateAccount: true,
-    icon: PlusCircle,
-  },
-];
+  const totalBalance = accounts.reduce((sum: number, account: Account) => sum + (account.balance || 0), 0);
+  const enabledAccounts = getEnabledAccounts();
 
-const CARD_WIDTH = 240; // Changed from 280
-const CONTAINER_PADDING = 32;
+  const handleSend = () => {
+    setIsSendModalOpen(true);
+  };
 
-interface BalanceOverviewProps {
-  onAddFunds: () => void;
-  onTransfer: () => void;
-}
+  const handleReceive = () => {
+    setIsReceiveModalOpen(true);
+  };
 
-function BalanceOverview({ onAddFunds, onTransfer }: BalanceOverviewProps) {
-  return (
-    <div className="w-full p-6 space-y-6">
-      <div className="w-full text-center space-y-2">
-        <p className="text-foreground/60 text-sm">Total Balance</p>
-        <h1 className="text-4xl font-bold text-foreground">$487,487.63</h1>
-        <p className="text-foreground/40 text-sm">Available for use</p>
-      </div>
+  const isAmountValid = () => {
+    if (!amount || !selectedAccount) return false;
+    const numericAmount = parseFloat(amount);
+    return numericAmount > 0 && numericAmount <= (selectedAccount.balance || 0);
+  };
 
-      <div className="w-full flex justify-center gap-3">
-        <Button
-          className="bg-content1 hover:bg-content2 text-foreground border border-border px-6 py-2 h-11"
-          startContent={<ArrowUpRight className="w-4 h-4" />}
-          onPress={onTransfer}
-        >
-          Send
-        </Button>
-        <Button
-          className="bg-content1 hover:bg-content2 text-foreground border border-border px-6 py-2 h-11"
-          startContent={<ArrowDownLeft className="w-4 h-4" />}
-          onPress={onAddFunds}
-        >
-          Receive
-        </Button>
-      </div>
-    </div>
-  );
-}
+  const handleTransfer = () => {
+    if (!selectedAccount || !toAccount || !isAmountValid()) return;
+    // Implement transfer logic here
+    setIsSendModalOpen(false);
+  };
 
-interface AccountsPaginationProps {
-  currentPage: number;
-  totalPages: number;
-  onPrevPage: () => void;
-  onNextPage: () => void;
-}
+  if (isSendModalOpen) {
+    return (
+      <SendView
+        selectedAccount={selectedAccount}
+        onClose={() => setIsSendModalOpen(false)}
+        toAccount={toAccount}
+        amount={amount}
+        setAmount={setAmount}
+        onSelectToAccount={() => setToAccount(accounts[1])}
+        isAmountValid={isAmountValid}
+        onTransfer={handleTransfer}
+      />
+    );
+  }
 
-function AccountsPagination({ currentPage, totalPages, onPrevPage, onNextPage }: AccountsPaginationProps) {
-  if (totalPages <= 1) return null;
-
-  return (
-    <div className="w-full flex items-center justify-center gap-4 pb-4">
-      <Button
-        isIconOnly
-        className="bg-content2/60 text-foreground/60 hover:text-foreground w-8 h-8 min-w-0"
-        isDisabled={currentPage === 0}
-        size="sm"
-        variant="flat"
-        onPress={onPrevPage}
-      >
-        <ChevronLeft className="w-4 h-4" />
-      </Button>
-
-      <div className="flex items-center gap-1">
-        {Array.from({ length: totalPages }).map((_, index) => (
-          <div
-            key={index}
-            className={`w-1.5 h-1.5 rounded-full transition-all ${
-              currentPage === index ? "bg-foreground w-2" : "bg-foreground/40"
-            }`}
-          />
-        ))}
-      </div>
-
-      <Button
-        isIconOnly
-        className="bg-content2/60 text-foreground/60 hover:text-foreground w-8 h-8 min-w-0"
-        isDisabled={currentPage === totalPages - 1}
-        size="sm"
-        variant="flat"
-        onPress={onNextPage}
-      >
-        <ChevronRight className="w-4 h-4" />
-      </Button>
-    </div>
-  );
-}
-
-interface AccountsGridProps {
-  accounts: typeof accounts;
-  currentPage: number;
-  itemsPerPage: number;
-  onAccountClick: () => void;
-}
-
-function AccountsGrid({ accounts, currentPage, itemsPerPage, onAccountClick }: AccountsGridProps) {
-  const visibleAccounts = accounts.slice(currentPage * itemsPerPage, (currentPage + 1) * itemsPerPage);
-
-  return (
-    <div className="w-full h-[160px]">
-      <div className="w-full py-4 mt-2 h-full">
-        <div className="w-full flex justify-center px-4 gap-4 h-full overflow-x-auto">
-          {visibleAccounts.map((account) => (
-            <div key={account.id} style={{ width: `${CARD_WIDTH}px`, flex: `0 0 ${CARD_WIDTH}px` }}>
-              <AccountCard
-                balance={account.balance}
-                className="h-full"
-                comingSoon={account.comingSoon}
-                currency={account.currency}
-                disabled={account.disabled}
-                icon={account.icon}
-                isCreateAccount={account.isCreateAccount}
-                name={account.name}
-                variant="account"
-                onClick={() => !account.disabled && !account.isCreateAccount && onAccountClick()}
-              />
-            </div>
-          ))}
-        </div>
-      </div>
-    </div>
-  );
-}
-
-export default function AccountOverview() {
-  const [isAddFundsOpen, setIsAddFundsOpen] = useState(false);
-  const [isWithdrawFundsOpen, setIsWithdrawFundsOpen] = useState(false);
-  const [isTransferOpen, setIsTransferOpen] = useState(false);
-  const [isPortfolioOpen, setIsPortfolioOpen] = useState(false);
-  const [currentPage, setCurrentPage] = useState(0);
-  const [itemsPerPage, setItemsPerPage] = useState(4);
-
-  const containerRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const updateItemsPerPage = () => {
-      if (containerRef.current) {
-        const containerWidth = containerRef.current.offsetWidth - CONTAINER_PADDING;
-        const newItemsPerPage = Math.max(1, Math.floor(containerWidth / CARD_WIDTH));
-
-        setItemsPerPage(newItemsPerPage);
-        // Reset to first page if current page would be invalid with new items per page
-        const newTotalPages = Math.ceil(accounts.length / newItemsPerPage);
-
-        if (currentPage >= newTotalPages) {
-          setCurrentPage(0);
-        }
-      }
-    };
-
-    // Initial calculation
-    updateItemsPerPage();
-
-    // Update on window resize
-    const resizeObserver = new ResizeObserver(updateItemsPerPage);
-
-    if (containerRef.current) {
-      resizeObserver.observe(containerRef.current);
-    }
-
-    return () => {
-      resizeObserver.disconnect();
-    };
-  }, [currentPage]);
-
-  const { available, pending, spent, isLoading } = useAccountContracts();
-
-  const totalPages = Math.ceil(accounts.length / itemsPerPage);
-
-  const handlePrevPage = () => setCurrentPage((prev) => Math.max(0, prev - 1));
-  const handleNextPage = () => setCurrentPage((prev) => Math.min(totalPages - 1, prev + 1));
+  if (isReceiveModalOpen) {
+    return (
+      <ReceiveView
+        selectedAccount={selectedAccount}
+        onClose={() => setIsReceiveModalOpen(false)}
+        selectedSettlementAccount={accounts[0]}
+        onChangeSettlementAccount={setSelectedAccount}
+        availableAccounts={enabledAccounts}
+      />
+    );
+  }
 
   return (
     <Card className="w-full bg-content1/90 border border-border backdrop-blur-sm">
-      <BalanceOverview onAddFunds={() => setIsAddFundsOpen(true)} onTransfer={() => setIsTransferOpen(true)} />
+      <CardBody className="p-0">
+        <div className="flex flex-col">
+          <AccountHeader
+            selectedAccount={selectedAccount}
+            accounts={accounts}
+            onAccountSelect={setSelectedAccount}
+            totalBalance={totalBalance.toString()}
+          />
 
-      <div ref={containerRef} className="w-full relative px-4 border-t border-border">
-        <AccountsGrid
-          accounts={accounts}
-          currentPage={currentPage}
-          itemsPerPage={itemsPerPage}
-          onAccountClick={() => setIsTransferOpen(true)}
-        />
+          <div className="p-6 space-y-6">
+            <AccountBalance account={selectedAccount} onSend={handleSend} onReceive={handleReceive} />
 
-        <AccountsPagination
-          currentPage={currentPage}
-          totalPages={totalPages}
-          onNextPage={handleNextPage}
-          onPrevPage={handlePrevPage}
-        />
-      </div>
+            <AccountNavigation selectedTab={activeTab} onTabChange={setActiveTab} />
 
-      <AddFundsModal isOpen={isAddFundsOpen} onClose={() => setIsAddFundsOpen(false)} />
-      <WithdrawFundsModal isOpen={isWithdrawFundsOpen} onClose={() => setIsWithdrawFundsOpen(false)} />
-      <TransferModal isOpen={isTransferOpen} onClose={() => setIsTransferOpen(false)} />
-      <PortfolioModal isOpen={isPortfolioOpen} onClose={() => setIsPortfolioOpen(false)} />
+            <div>
+              {activeTab === "activity" && <ActivityView activities={activities} />}
+              {activeTab === "operators" && <OperatorsView />}
+              {activeTab === "policies" && <PoliciesView />}
+            </div>
+          </div>
+        </div>
+      </CardBody>
     </Card>
   );
 }

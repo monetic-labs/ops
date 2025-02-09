@@ -43,6 +43,9 @@ export default function UserTab({ userId }: { userId: string }) {
           disabledKeys={["developer"]}
           selectedKey={selectedTab}
           variant="bordered"
+          classNames={{
+            tabList: "border-small",
+          }}
           onSelectionChange={(key) => setSelectedTab(key as string)}
         >
           {userTabsConfig.map((tab) => (

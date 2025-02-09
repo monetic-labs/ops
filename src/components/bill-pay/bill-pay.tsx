@@ -46,6 +46,9 @@ export default function BillPayTabs({ handleSubTabChange }: BillPayTabsProps) {
           aria-label="Service options"
           selectedKey={selectedService}
           variant="bordered"
+          classNames={{
+            tabList: "border-small",
+          }}
           onSelectionChange={(key) => setSelectedService(key as string)}
         >
           {billPayConfig.map((tab) => (

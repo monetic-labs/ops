@@ -35,6 +35,9 @@ export default function CardServicesTabs({ handleSubTabChange }: CardServicesTab
           aria-label="Service options"
           selectedKey={selectedService}
           variant="bordered"
+          classNames={{
+            tabList: "border-small",
+          }}
           onSelectionChange={(key) => setSelectedService(key as string)}
         >
           {cardServicesConfig.map((tab) => (

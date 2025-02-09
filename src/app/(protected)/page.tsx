@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 
-import AccountOverview from "@/components/account-contract/account-meta";
+import AccountMeta from "@/components/account-contract/account-meta";
 import MerchantServicesTabs from "./tabs";
 import pylon from "@/libs/pylon-sdk";
 
@@ -21,7 +21,7 @@ export default function DashboardPage() {
   return (
     <>
       {/* Account Overview Card */}
-      <AccountOverview />
+      <AccountMeta />
 
       {/* Services Tabs Card */}
       <MerchantServicesTabs userId={userId} />

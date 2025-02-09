@@ -9,6 +9,8 @@ import {
   BridgeComplianceKycStatus as BridgeKybStatus,
   CardCompanyStatus as RainKybStatus,
 } from "@backpack-fux/pylon-sdk";
+import { Button } from "@nextui-org/button";
+import { CreditCard, Building2, Users, Settings, Receipt } from "lucide-react";
 
 import BackOfficeTabs from "@/components/back-office/back-office";
 import BillPayTabs from "@/components/bill-pay/bill-pay";
@@ -21,12 +23,11 @@ export default function MerchantServicesTabs({ userId }: { userId: string }) {
   const { complianceStatus } = useGetComplianceStatus();
   const router = useRouter();
   const searchParams = useSearchParams();
-  const initialTab = searchParams?.get("tab") || tabsConfig[0].id;
+  const initialTab = searchParams?.get("tab") || "bill-pay";
   const [selectedService, setSelectedService] = useState<string>(initialTab);
 
   const handleTabChange = (key: string) => {
     const params = new URLSearchParams(searchParams?.toString() || "");
-
     params.set("tab", key);
     params.delete("subtab");
     router.push(`/?${params.toString()}`);
@@ -52,12 +53,12 @@ export default function MerchantServicesTabs({ userId }: { userId: string }) {
 
   const renderTabContent = (tabId: string) => {
     switch (tabId) {
-      case "card-issuance":
-        return <CardServicesTabs handleSubTabChange={handleSubTabChange} />;
       case "bill-pay":
         return <BillPayTabs handleSubTabChange={handleSubTabChange} />;
       case "back-office":
         return <BackOfficeTabs handleSubTabChange={handleSubTabChange} />;
+      case "card-issuance":
+        return <CardServicesTabs handleSubTabChange={handleSubTabChange} />;
       case "users":
         return <UserTab userId={userId} />;
       default:
@@ -65,61 +66,72 @@ export default function MerchantServicesTabs({ userId }: { userId: string }) {
     }
   };
 
+  const navigationItems = [
+    {
+      id: "bill-pay",
+      label: "Bill Pay",
+      icon: <Receipt className="w-4 h-4" />,
+      tooltip: "Pay vendors and manage recurring payments",
+    },
+    {
+      id: "back-office",
+      label: "Back Office",
+      icon: <Building2 className="w-4 h-4" />,
+      tooltip: "Manage your business operations",
+    },
+    {
+      id: "card-issuance",
+      label: "Card Issuance",
+      icon: <CreditCard className="w-4 h-4" />,
+      tooltip: "Issue and manage corporate cards",
+    },
+    {
+      id: "users",
+      label: "Users",
+      icon: <Users className="w-4 h-4" />,
+      tooltip: "Manage team members and permissions",
+    },
+  ];
+
   return (
     <div className="w-full">
       <Card className="w-full bg-content1/90 border border-default-200/50 backdrop-blur-sm">
         <CardBody className="w-full p-0">
-          <Tabs
-            aria-label="Service options"
-            classNames={{
-              base: "w-full",
-              tabList: "w-full relative px-6 py-2 gap-6",
-              cursor: "w-full bg-notpurple-500 h-[2px]",
-              tab: "max-w-fit px-0 h-12",
-              panel: "w-full p-0",
-            }}
-            selectedKey={selectedService}
-            variant="underlined"
-            onSelectionChange={(key) => handleTabChange(key as string)}
-          >
-            {tabsConfig.map((tab) => (
-              <Tab
-                key={tab.id}
-                title={
-                  <Tooltip
-                    classNames={{
-                      content: "text-default-600 rounded-lg shadow-xl bg-content2/90 text-sm",
-                    }}
-                    closeDelay={0}
-                    content={tab.content}
-                    delay={0}
-                    motionProps={{
-                      variants: {
-                        exit: {
-                          opacity: 0,
-                          transition: {
-                            duration: 0.1,
-                            ease: "easeIn",
-                          },
-                        },
-                        enter: {
-                          opacity: 1,
-                          transition: {
-                            duration: 0.15,
-                            ease: "easeOut",
-                          },
-                        },
-                      },
-                    }}
+          <div className="w-full border-b border-border">
+            <div className="flex items-center gap-2 px-6">
+              {navigationItems.map((item) => (
+                <Tooltip
+                  key={item.id}
+                  content={item.tooltip}
+                  classNames={{
+                    content: "bg-content2/90 text-foreground text-xs px-2 py-1",
+                  }}
+                  delay={500}
+                  closeDelay={0}
+                >
+                  <Button
+                    className={`
+                      flex items-center gap-2 px-4 py-2 min-h-[48px] rounded-none border-b-2 
+                      ${
+                        selectedService === item.id
+                          ? "border-primary text-foreground bg-content2/40"
+                          : "border-transparent text-foreground/60 hover:text-foreground hover:bg-content2/20"
+                      }
+                      transition-colors
+                    `}
+                    variant="light"
+                    onPress={() => handleTabChange(item.id)}
                   >
-                    <span className="cursor-pointer">{tab.label}</span>
-                  </Tooltip>
-                }
-              >
-                <div className="w-full px-6 py-4">{renderTabContent(tab.id)}</div>
-              </Tab>
-            ))}
-          </Tabs>
+                    {item.icon}
+                    <span className="hidden sm:inline">{item.label}</span>
+                  </Button>
+                </Tooltip>
+              ))}
+            </div>
+          </div>
+
+          {/* Tab Content */}
+          <div className="w-full px-6 py-4">{renderTabContent(selectedService)}</div>
         </CardBody>
       </Card>
     </div>

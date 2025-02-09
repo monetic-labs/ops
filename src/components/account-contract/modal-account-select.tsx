@@ -59,7 +59,7 @@ export default function AccountSelectionModal({
               >
                 <div className="flex flex-col items-start">
                   <span className="text-foreground text-base font-medium">{account.name}</span>
-                  <BalanceDisplay balance={account.balance || 0} className="text-foreground/60" prefix="" />
+                  <BalanceDisplay balance={account.balance || 0} />
                 </div>
               </Button>
             ))}

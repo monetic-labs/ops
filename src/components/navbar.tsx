@@ -146,7 +146,15 @@ const AuthenticatedNav = ({
             isIconOnly
             className="bg-transparent text-foreground/60 hover:text-foreground"
             variant="light"
-            onPress={() => window.open("https://support.backpack.fux", "_blank")}
+            onPress={() => {
+              const event = new KeyboardEvent("keydown", {
+                key: "k",
+                code: "KeyK",
+                ctrlKey: true,
+                metaKey: true,
+              });
+              window.dispatchEvent(event);
+            }}
           >
             <HelpCircle className="w-5 h-5" />
           </Button>

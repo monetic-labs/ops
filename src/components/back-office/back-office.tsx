@@ -114,6 +114,9 @@ export default function BackOfficeTabs({ handleSubTabChange }: BackOfficeTabsPro
             aria-label="Service options"
             selectedKey={selectedService}
             variant="bordered"
+            classNames={{
+              tabList: "border-small",
+            }}
             onSelectionChange={(key) => setSelectedService(key as string)}
           >
             {backOfficeConfig.map((tab) => (

@@ -57,6 +57,10 @@ module.exports = {
       animation: {
         shake: "shake 0.2s ease-in-out 0s 2",
       },
+      boxShadow: {
+        hover: "0 4px 12px rgba(0, 0, 0, 0.08)",
+        card: "0 2px 6px rgba(0, 0, 0, 0.04)",
+      },
     },
   },
   darkMode: "class",
@@ -89,13 +93,13 @@ module.exports = {
               foreground: "#11181C",
             },
             divider: {
-              DEFAULT: "rgba(17, 24, 28, 0.08)",
+              DEFAULT: "rgba(17, 24, 28, 0.12)",
             },
             focus: {
               DEFAULT: "#134E4A",
             },
             border: {
-              DEFAULT: "rgba(17, 24, 28, 0.1)",
+              DEFAULT: "rgba(17, 24, 28, 0.15)",
             },
             success: {
               DEFAULT: "#00FF84",
