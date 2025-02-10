@@ -13,6 +13,7 @@ import { PoliciesView } from "./views/PoliciesView";
 import { SendView } from "./views/SendView";
 import { ReceiveView } from "./views/ReceiveView";
 import type { TransferActivity } from "./types";
+import { motion, AnimatePresence } from "framer-motion";
 
 export default function AccountMeta() {
   const { accounts, getEnabledAccounts } = useAccounts();
@@ -23,6 +24,7 @@ export default function AccountMeta() {
   const [amount, setAmount] = useState("");
   const [toAccount, setToAccount] = useState<Account | null>(null);
   const [activities] = useState<TransferActivity[]>([]);
+  const [isExpanded, setIsExpanded] = useState(true);
 
   const totalBalance = accounts.reduce((sum: number, account: Account) => sum + (account.balance || 0), 0);
   const enabledAccounts = getEnabledAccounts();
@@ -33,6 +35,11 @@ export default function AccountMeta() {
 
   const handleReceive = () => {
     setIsReceiveModalOpen(true);
+  };
+
+  const handleAccountSelect = (account: Account) => {
+    setSelectedAccount(account);
+    setIsExpanded(true); // Expand when selecting a new account
   };
 
   const isAmountValid = () => {
@@ -84,21 +91,38 @@ export default function AccountMeta() {
           <AccountHeader
             selectedAccount={selectedAccount}
             accounts={accounts}
-            onAccountSelect={setSelectedAccount}
+            onAccountSelect={handleAccountSelect}
             totalBalance={totalBalance.toString()}
+            isExpanded={isExpanded}
+            onToggleExpand={() => setIsExpanded(!isExpanded)}
           />
 
-          <div className="p-6 space-y-6">
-            <AccountBalance account={selectedAccount} onSend={handleSend} onReceive={handleReceive} />
+          <AnimatePresence>
+            {isExpanded && (
+              <motion.div
+                initial={{ height: 0, opacity: 0 }}
+                animate={{ height: "auto", opacity: 1 }}
+                exit={{ height: 0, opacity: 0 }}
+                transition={{
+                  duration: 0.3,
+                  ease: "easeInOut",
+                }}
+                className="overflow-hidden"
+              >
+                <div className="p-6 space-y-6 border-t border-border">
+                  <AccountBalance account={selectedAccount} onSend={handleSend} onReceive={handleReceive} />
 
-            <AccountNavigation selectedTab={activeTab} onTabChange={setActiveTab} />
+                  <AccountNavigation selectedTab={activeTab} onTabChange={setActiveTab} />
 
-            <div>
-              {activeTab === "activity" && <ActivityView activities={activities} />}
-              {activeTab === "operators" && <OperatorsView />}
-              {activeTab === "policies" && <PoliciesView />}
-            </div>
-          </div>
+                  <div>
+                    {activeTab === "activity" && <ActivityView activities={activities} />}
+                    {activeTab === "operators" && <OperatorsView />}
+                    {activeTab === "policies" && <PoliciesView />}
+                  </div>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
       </CardBody>
     </Card>

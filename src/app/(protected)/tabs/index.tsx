@@ -30,7 +30,13 @@ export default function MerchantServicesTabs({ userId }: { userId: string }) {
     const params = new URLSearchParams(searchParams?.toString() || "");
     params.set("tab", key);
     params.delete("subtab");
-    // Use replace to prevent scroll to top
+
+    // Scroll to tabs when changing tabs to ensure account view collapses
+    window.scrollTo({
+      top: 200,
+      behavior: "smooth",
+    });
+
     router.replace(`/?${params.toString()}`, { scroll: false });
     setSelectedService(key);
   };
