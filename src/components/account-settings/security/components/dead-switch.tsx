@@ -20,14 +20,14 @@ export const DeadSwitch = ({ selectedDeadSwitch, onDeadSwitchChange }: DeadSwitc
           <Clock className="w-5 h-5 text-primary" />
           <h4 className="text-lg font-medium">Dead Switch</h4>
         </div>
-        <Chip className="bg-default-100" size="sm" variant="flat">
+        <Chip className="bg-content3 text-foreground/60" size="sm" variant="flat">
           Coming Soon
         </Chip>
       </div>
 
-      <Card className="bg-[#141414] border-[#1a1a1a] opacity-60">
+      <Card className="bg-content2 border-divider opacity-60">
         <CardBody className="p-4 space-y-4">
-          <p className="text-sm text-gray-400">
+          <p className="text-sm text-foreground/60">
             Dead Switch automatically transfers account access to designated guardians after a period of inactivity.
           </p>
 
@@ -35,6 +35,8 @@ export const DeadSwitch = ({ selectedDeadSwitch, onDeadSwitchChange }: DeadSwitc
             isDisabled
             classNames={{
               trigger: "p-3",
+              value: "text-foreground",
+              label: "text-foreground/60",
             }}
             label="Select Inactivity Period"
             selectedKeys={[selectedDeadSwitch]}
@@ -44,7 +46,7 @@ export const DeadSwitch = ({ selectedDeadSwitch, onDeadSwitchChange }: DeadSwitc
               <SelectItem key={option.value} textValue={option.label} value={option.value}>
                 <div className="flex flex-col">
                   <span>{option.label}</span>
-                  <span className="text-tiny text-default-400">{option.description}</span>
+                  <span className="text-tiny text-foreground/40">{option.description}</span>
                 </div>
               </SelectItem>
             ))}

@@ -249,10 +249,6 @@ export const Navbar = () => {
     }
   };
 
-  console.log(isAuthenticated);
-  console.log(user);
-  console.log(merchant);
-
   return (
     <NextUINavbar
       classNames={{

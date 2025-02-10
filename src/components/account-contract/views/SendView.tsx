@@ -2,7 +2,8 @@ import { Button } from "@nextui-org/button";
 import { Card, CardBody } from "@nextui-org/card";
 import { ArrowRight, Info, X } from "lucide-react";
 import { Tooltip } from "@nextui-org/tooltip";
-import React from "react";
+import { Modal, ModalContent, ModalHeader, ModalBody } from "@nextui-org/modal";
+import React, { useEffect, useState } from "react";
 
 import { Account } from "@/contexts/AccountContext";
 import { MoneyInput } from "@/components/generics/money-input";
@@ -10,29 +11,52 @@ import { BalanceDisplay } from "@/components/generics/balance-display";
 
 interface SendViewProps {
   selectedAccount: Account;
+  setSelectedAccount: (account: Account) => void;
   onClose: () => void;
   toAccount: Account | null;
+  setToAccount: (account: Account | null) => void;
   amount: string;
   setAmount: (amount: string) => void;
   onSelectToAccount: () => void;
   isAmountValid: () => boolean;
   onTransfer: () => void;
+  availableAccounts: Account[];
 }
 
 export function SendView({
   selectedAccount,
+  setSelectedAccount,
   onClose,
   toAccount,
+  setToAccount,
   amount,
   setAmount,
   onSelectToAccount,
   isAmountValid,
   onTransfer,
+  availableAccounts,
 }: SendViewProps) {
+  const [isAccountSelectionOpen, setIsAccountSelectionOpen] = useState(false);
+
   const handleSetMaxAmount = () => {
     if (selectedAccount?.balance) {
       setAmount(selectedAccount.balance.toString());
     }
+  };
+
+  useEffect(() => {
+    const eligibleAccounts = availableAccounts.filter((acc) => acc.id !== selectedAccount.id && !acc.disabled);
+
+    if (eligibleAccounts.length === 1 && !toAccount) {
+      const selectedDestination = eligibleAccounts[0];
+      onSelectToAccount();
+    }
+  }, [availableAccounts, selectedAccount, toAccount]);
+
+  const handleAccountSelection = (account: Account) => {
+    const selectedDestination = account;
+    onSelectToAccount();
+    setIsAccountSelectionOpen(false);
   };
 
   return (
@@ -62,23 +86,55 @@ export function SendView({
             <div className="flex flex-col gap-6 max-w-xl mx-auto">
               {/* Transfer Route Display */}
               <div className="flex items-center justify-between gap-4 bg-content2 p-4 rounded-xl">
-                <div className="flex items-center gap-3">
-                  {selectedAccount.icon && <selectedAccount.icon className="w-5 h-5 text-foreground/60" />}
-                  <span className="font-medium">{selectedAccount.name}</span>
+                <div className="flex flex-col gap-2">
+                  <div className="flex items-center gap-3">
+                    {selectedAccount.icon && <selectedAccount.icon className="w-5 h-5 text-foreground/60" />}
+                    <span className="font-medium">{selectedAccount.name}</span>
+                  </div>
+                  {amount && (
+                    <span
+                      className={`text-sm ${parseFloat(amount) > (selectedAccount?.balance || 0) ? "text-danger" : "text-foreground/60"}`}
+                    >
+                      New balance: ${((selectedAccount?.balance || 0) - parseFloat(amount || "0")).toLocaleString()}
+                    </span>
+                  )}
                 </div>
-                <ArrowRight className="w-5 h-5 text-foreground/40" />
-                <div className="flex items-center gap-3">
-                  <Button className="font-medium bg-content3 hover:bg-content4 h-9" onClick={onSelectToAccount}>
-                    {toAccount ? (
-                      <div className="flex items-center gap-2">
-                        {toAccount.icon &&
-                          React.createElement(toAccount.icon, { className: "w-5 h-5 text-foreground/60" })}
-                        {toAccount.name}
-                      </div>
-                    ) : (
-                      "Select Account"
-                    )}
-                  </Button>
+                <Button
+                  isIconOnly
+                  variant="light"
+                  className="min-w-0 p-2 hover:bg-content3"
+                  onPress={() => {
+                    if (toAccount) {
+                      const temp = selectedAccount;
+                      setSelectedAccount(toAccount);
+                      setToAccount(temp);
+                    }
+                  }}
+                >
+                  <ArrowRight className="w-5 h-5 text-foreground/40" />
+                </Button>
+                <div className="flex flex-col gap-2">
+                  <div className="flex items-center gap-3 justify-end">
+                    <Button
+                      className="font-medium bg-content3 hover:bg-content4 h-9"
+                      onClick={() => setIsAccountSelectionOpen(true)}
+                    >
+                      {toAccount ? (
+                        <div className="flex items-center gap-2">
+                          {toAccount.icon &&
+                            React.createElement(toAccount.icon, { className: "w-5 h-5 text-foreground/60" })}
+                          {toAccount.name}
+                        </div>
+                      ) : (
+                        "Select Account"
+                      )}
+                    </Button>
+                  </div>
+                  {amount && toAccount && (
+                    <span className="text-sm text-foreground/60 text-right">
+                      New balance: ${((toAccount.balance || 0) + parseFloat(amount || "0")).toLocaleString()}
+                    </span>
+                  )}
                 </div>
               </div>
 
@@ -95,24 +151,6 @@ export function SendView({
                   value={amount}
                   onChange={setAmount}
                 />
-                {amount && (
-                  <div className="mt-3 flex flex-col gap-1 text-sm">
-                    <div className="flex justify-between items-center text-foreground/60">
-                      <span>{selectedAccount.name}</span>
-                      <span className={parseFloat(amount) > (selectedAccount?.balance || 0) ? "text-danger" : ""}>
-                        New balance: ${((selectedAccount?.balance || 0) - parseFloat(amount || "0")).toLocaleString()}
-                      </span>
-                    </div>
-                    {toAccount && (
-                      <div className="flex justify-between items-center text-foreground/60">
-                        <span>{toAccount.name}</span>
-                        <span>
-                          New balance: ${((toAccount.balance || 0) + parseFloat(amount || "0")).toLocaleString()}
-                        </span>
-                      </div>
-                    )}
-                  </div>
-                )}
               </div>
 
               {/* Transfer Information */}
@@ -177,6 +215,31 @@ export function SendView({
           </div>
         </div>
       </CardBody>
+
+      <Modal isOpen={isAccountSelectionOpen} onClose={() => setIsAccountSelectionOpen(false)} size="lg">
+        <ModalContent>
+          <ModalHeader>Select Destination Account</ModalHeader>
+          <ModalBody className="gap-3 p-6">
+            {availableAccounts
+              .filter((acc) => acc.id !== selectedAccount.id && !acc.disabled)
+              .map((account) => (
+                <Button
+                  key={account.id}
+                  className="w-full justify-start h-auto p-4 bg-content2 hover:bg-content3"
+                  onPress={() => handleAccountSelection(account)}
+                >
+                  <div className="flex items-center gap-3">
+                    {account.icon && React.createElement(account.icon, { className: "w-5 h-5 text-foreground/60" })}
+                    <div className="flex flex-col items-start">
+                      <span className="font-medium">{account.name}</span>
+                      <span className="text-sm text-foreground/60">${account.balance?.toLocaleString()}</span>
+                    </div>
+                  </div>
+                </Button>
+              ))}
+          </ModalBody>
+        </ModalContent>
+      </Modal>
     </Card>
   );
 }

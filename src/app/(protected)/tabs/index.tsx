@@ -30,15 +30,16 @@ export default function MerchantServicesTabs({ userId }: { userId: string }) {
     const params = new URLSearchParams(searchParams?.toString() || "");
     params.set("tab", key);
     params.delete("subtab");
-    router.push(`/?${params.toString()}`);
+    // Use replace to prevent scroll to top
+    router.replace(`/?${params.toString()}`, { scroll: false });
     setSelectedService(key);
   };
 
   const handleSubTabChange = (key: string) => {
     const params = new URLSearchParams(searchParams?.toString() || "");
-
     params.set("subtab", key);
-    router.push(`/?${params.toString()}`);
+    // Use replace to prevent scroll to top
+    router.replace(`/?${params.toString()}`, { scroll: false });
   };
 
   useEffect(() => {
@@ -98,7 +99,7 @@ export default function MerchantServicesTabs({ userId }: { userId: string }) {
       <Card className="w-full bg-content1/90 border border-default-200/50 backdrop-blur-sm">
         <CardBody className="w-full p-0">
           <div className="w-full border-b border-border">
-            <div className="flex items-center gap-2 px-6">
+            <div className="flex items-center sm:gap-2 px-6">
               {navigationItems.map((item) => (
                 <Tooltip
                   key={item.id}

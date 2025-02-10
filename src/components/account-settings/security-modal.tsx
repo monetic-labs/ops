@@ -140,7 +140,6 @@ export const SecuritySettingsModal = ({ isOpen, onClose }: SecuritySettingsModal
     <Modal
       hideCloseButton
       classNames={{
-        base: "bg-[#0A0A0A]",
         backdrop: "bg-black/80",
         body: "p-0",
       }}
@@ -150,15 +149,15 @@ export const SecuritySettingsModal = ({ isOpen, onClose }: SecuritySettingsModal
       onClose={onClose}
     >
       <ModalContent>
-        <div className="flex items-center justify-between p-6 border-b border-[#1a1a1a]">
+        <div className="flex items-center justify-between p-6 border-b border-divider">
           <div className="flex flex-col">
-            <h3 className="text-xl font-normal text-white">Security Settings</h3>
-            <p className="text-sm text-gray-400">Configure your account recovery options</p>
+            <h3 className="text-xl font-normal text-foreground">Security Settings</h3>
+            <p className="text-sm text-foreground/60">Configure your account recovery options</p>
           </div>
           <div className="flex items-center gap-3">
             <Button
               isIconOnly
-              className="text-gray-400 hover:text-white transition-colors"
+              className="text-foreground/60 hover:text-foreground transition-colors"
               variant="light"
               onClick={onClose}
             >
@@ -172,11 +171,11 @@ export const SecuritySettingsModal = ({ isOpen, onClose }: SecuritySettingsModal
             <RecoveryWarning configuredCount={configuredCount} />
             <RecoveryHeader configuredCount={configuredCount} />
             <Accordion
-              className="p-0 gap-0 flex flex-col bg-[#141414] rounded-lg border border-[#1a1a1a]"
+              className="p-0 gap-0 flex flex-col bg-content2 rounded-lg border border-divider"
               itemClasses={{
-                base: "border-b border-[#1a1a1a] last:border-0",
+                base: "border-b border-divider last:border-0",
                 title: "font-medium",
-                trigger: "px-4 py-3 flex data-[hover=true]:bg-[#1a1a1a] rounded-none",
+                trigger: "px-4 py-3 flex data-[hover=true]:bg-content3 rounded-none",
                 indicator: "text-medium",
                 content: "pt-0",
               }}

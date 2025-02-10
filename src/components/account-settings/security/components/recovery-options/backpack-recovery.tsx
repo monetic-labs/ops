@@ -24,10 +24,12 @@ export const BackpackRecovery = ({ isEnabled, onToggle }: BackpackRecoveryProps)
 
   return (
     <div className="p-4">
-      <Card className="space-y-4 p-4">
+      <Card className="space-y-4 p-4 bg-content2 border-divider">
         <div className="flex flex-col gap-2">
           <div className="flex items-center justify-between">
-            <p className="text-sm text-gray-400">Allow Backpack to help recover your account in case of emergency</p>
+            <p className="text-sm text-foreground/60">
+              Allow Backpack to help recover your account in case of emergency
+            </p>
             <Switch
               color="primary"
               isDisabled={isLoading}
@@ -36,7 +38,7 @@ export const BackpackRecovery = ({ isEnabled, onToggle }: BackpackRecoveryProps)
               onValueChange={handleToggle}
             />
           </div>
-          <div className="text-xs text-gray-500 space-y-2">
+          <div className="text-xs text-foreground/50 space-y-2">
             <p>By enabling Backpack Recovery, you understand and agree that:</p>
             <ul className="list-disc pl-4 space-y-1">
               <li>Backpack will act as a guardian for your account for recovery purposes only</li>

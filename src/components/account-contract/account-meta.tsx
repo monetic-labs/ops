@@ -51,13 +51,16 @@ export default function AccountMeta() {
     return (
       <SendView
         selectedAccount={selectedAccount}
+        setSelectedAccount={setSelectedAccount}
         onClose={() => setIsSendModalOpen(false)}
         toAccount={toAccount}
+        setToAccount={setToAccount}
         amount={amount}
         setAmount={setAmount}
         onSelectToAccount={() => setToAccount(accounts[1])}
         isAmountValid={isAmountValid}
         onTransfer={handleTransfer}
+        availableAccounts={enabledAccounts}
       />
     );
   }

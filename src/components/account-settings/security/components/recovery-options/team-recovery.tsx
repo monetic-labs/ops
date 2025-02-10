@@ -18,12 +18,12 @@ export const TeamRecovery = ({ configuredTeamMember, onSelectTeamMember, onRemov
   return (
     <div className="space-y-4">
       {configuredTeamMember ? (
-        <div className="flex items-center justify-between p-3 bg-[#1a1a1a] rounded-lg">
+        <div className="flex items-center justify-between p-3 bg-content2 rounded-lg">
           <div className="flex items-center gap-3">
             <Avatar className="bg-default-300" name={configuredTeamMember.displayName} size="sm" />
             <div className="flex flex-col">
               <span className="text-sm font-medium">{configuredTeamMember.displayName}</span>
-              <span className="text-xs text-default-500">{configuredTeamMember.email}</span>
+              <span className="text-xs text-foreground/60">{configuredTeamMember.email}</span>
             </div>
             <Chip color="success" size="sm" variant="flat">
               Configured
@@ -46,7 +46,7 @@ export const TeamRecovery = ({ configuredTeamMember, onSelectTeamMember, onRemov
                 <Avatar className="bg-default-300" name={member.data?.displayName} size="sm" />
                 <div className="flex flex-col">
                   <span className="text-sm">{member.data?.displayName}</span>
-                  <span className="text-xs text-default-500">{member.data?.email}</span>
+                  <span className="text-xs text-foreground/60">{member.data?.email}</span>
                 </div>
               </div>
             ) : null;

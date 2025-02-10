@@ -17,7 +17,6 @@ export const ModeSwitcher: React.FC = () => {
   const handleModeChange = useCallback(
     (newMode: string | number) => {
       const modeValue = newMode as "bot" | "support";
-
       setMode(modeValue as MessageMode);
     },
     [setMode, searchParams]
@@ -28,7 +27,7 @@ export const ModeSwitcher: React.FC = () => {
 
     if (urlMode && urlMode !== mode) {
       console.log("Syncing mode with URL:", urlMode);
-      setMode(urlMode as MessageMode);
+      setMode(urlMode);
     }
   }, [searchParams, mode, setMode]);
 
@@ -39,7 +38,7 @@ export const ModeSwitcher: React.FC = () => {
           className="w-full"
           data-testid="mode-tabs"
           disableAnimation={true}
-          selectedKey={mode}
+          selectedKey={"support"} // Default to support mode
           variant="solid"
           onSelectionChange={handleModeChange}
         >

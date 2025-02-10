@@ -25,9 +25,9 @@ export const EmailVerification = ({
       {configuredEmails.length > 0 && (
         <div className="space-y-2">
           {configuredEmails.map((email) => (
-            <div key={email.email} className="flex items-center justify-between p-3 bg-[#1a1a1a] rounded-lg">
+            <div key={email.email} className="flex items-center justify-between p-3 bg-content2 rounded-lg">
               <div className="flex items-center gap-3">
-                <Mail className="w-4 h-4 text-default-500" />
+                <Mail className="w-4 h-4 text-foreground/60" />
                 <span>{email.email}</span>
                 {email.isVerified ? (
                   <Chip color="success" size="sm" variant="flat">
@@ -62,7 +62,7 @@ export const EmailVerification = ({
 
       {verifyingEmail && (
         <div className="space-y-2">
-          <p className="text-sm text-default-400">Enter the verification code sent to {verifyingEmail}</p>
+          <p className="text-sm text-foreground/60">Enter the verification code sent to {verifyingEmail}</p>
           <div className="flex flex-col sm:flex-row gap-2">
             <div className="w-full sm:flex-1">
               <InputOtp
