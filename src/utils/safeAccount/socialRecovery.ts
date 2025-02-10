@@ -39,11 +39,22 @@ class SocialRecoveryManager {
   }
 
   public async createRevokeGuardianTransaction(accountAddress: Address, guardianAddress: Address, threshold: bigint) {
+    // Get current guardians to calculate new threshold
+    const currentGuardians = await this.getGuardians(accountAddress);
+    const newGuardiansCount = currentGuardians.length - 1; // Subtracting the one being removed
+
+    // Calculate appropriate threshold based on remaining guardians
+    let newThreshold = threshold;
+    if (newGuardiansCount <= 2) {
+      // If we'll have 2 or fewer guardians left, require all of them
+      newThreshold = BigInt(newGuardiansCount);
+    }
+
     return this.srm.createRevokeGuardianWithThresholdMetaTransaction(
       this.rpcUrl,
       accountAddress,
       guardianAddress,
-      threshold
+      newThreshold
     );
   }
 }

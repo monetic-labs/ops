@@ -36,7 +36,7 @@ export type OrgMember = {
   role: "OWNER" | "ADMIN" | "MEMBER";
 };
 
-export type EmailVerificationProps = {
+export interface EmailVerificationProps {
   configuredEmails: ConfiguredEmail[];
   currentEmail: string;
   verifyingEmail: string | null;
@@ -47,7 +47,8 @@ export type EmailVerificationProps = {
   onRemoveEmail: (email: string) => void;
   onEmailChange: (email: string) => void;
   onOtpChange: (otp: string) => void;
-};
+  pendingDeletions?: string[];
+}
 
 export type PhoneVerificationProps = {
   configuredPhone: ConfiguredPhone | null;
@@ -67,3 +68,9 @@ export type TeamRecoveryProps = {
   onSelectTeamMember: (memberId: string) => void;
   onRemoveTeamMember: () => void;
 };
+
+export interface PendingChanges {
+  toAdd: string[];
+  toDelete: string[];
+  onChainTransactions: any[]; // TODO: Type this properly
+}

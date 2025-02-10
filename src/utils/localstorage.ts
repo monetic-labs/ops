@@ -41,7 +41,8 @@ export class LocalStorage {
     walletAddress: string,
     settlementAddress: string,
     passkeyId: string,
-    isLogin: boolean
+    isLogin: boolean,
+    credentialId?: string
   ) {
     const currentState = this.getItem(this.BACKPACK_STATE_KEY);
     const parsedState = currentState ? JSON.parse(currentState, this.reviver) : {};
@@ -53,6 +54,7 @@ export class LocalStorage {
         walletAddress,
         settlementAddress,
         passkeyId,
+        credentialId,
         isLogin,
         timestamp: Date.now(),
       },

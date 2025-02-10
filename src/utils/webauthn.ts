@@ -89,7 +89,7 @@ export class WebAuthnHelper {
    * Logs in with an existing passkey
    * @returns The credential and public key if successful
    */
-  async loginWithPasskey(): Promise<WebauthnPublicKey> {
+  async loginWithPasskey(): Promise<{ publicKey: WebauthnPublicKey; credentialId: string }> {
     try {
       const challengeStr = await this.requestChallenge();
       const challenge = Bytes.fromString(challengeStr);
@@ -120,7 +120,10 @@ export class WebAuthnHelper {
       this.publicKey = { x, y };
       this.credentialId = credential.id;
 
-      return this.publicKey;
+      return {
+        publicKey: this.publicKey,
+        credentialId: credential.id,
+      };
     } catch (error) {
       console.error("Error logging in with passkey:", error);
       throw new Error("Failed to authenticate with passkey");

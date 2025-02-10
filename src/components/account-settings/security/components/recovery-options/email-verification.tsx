@@ -19,44 +19,47 @@ export const EmailVerification = ({
   onRemoveEmail,
   onEmailChange,
   onOtpChange,
+  pendingDeletions = [],
 }: EmailVerificationProps) => {
   return (
     <div className="space-y-4">
       {configuredEmails.length > 0 && (
         <div className="space-y-2">
-          {configuredEmails.map((email) => (
-            <div key={email.email} className="flex items-center justify-between p-3 bg-content2 rounded-lg">
-              <div className="flex items-center gap-3">
-                <Mail className="w-4 h-4 text-foreground/60" />
-                <span>{email.email}</span>
-                {email.isVerified ? (
-                  <Chip color="success" size="sm" variant="flat">
-                    Verified
-                  </Chip>
-                ) : email.email === verifyingEmail ? (
-                  <Chip color="warning" size="sm" variant="flat">
-                    Verifying
-                  </Chip>
-                ) : (
-                  <Chip color="warning" size="sm" variant="flat">
-                    Pending
-                  </Chip>
+          {configuredEmails
+            .filter((email) => !pendingDeletions.includes(email.recoveryWalletId || ""))
+            .map((email) => (
+              <div key={email.email} className="flex items-center justify-between p-3 bg-content2 rounded-lg">
+                <div className="flex items-center gap-3">
+                  <Mail className="w-4 h-4 text-foreground/60" />
+                  <span>{email.email}</span>
+                  {email.isVerified ? (
+                    <Chip color="success" size="sm" variant="flat">
+                      Verified
+                    </Chip>
+                  ) : email.email === verifyingEmail ? (
+                    <Chip color="warning" size="sm" variant="flat">
+                      Verifying
+                    </Chip>
+                  ) : (
+                    <Chip color="warning" size="sm" variant="flat">
+                      Pending
+                    </Chip>
+                  )}
+                </div>
+                {email.isVerified && (
+                  <Button
+                    isIconOnly
+                    color="danger"
+                    isDisabled={email.email === verifyingEmail}
+                    size="sm"
+                    variant="light"
+                    onClick={() => onRemoveEmail(email.email)}
+                  >
+                    <XIcon className="w-4 h-4" />
+                  </Button>
                 )}
               </div>
-              {email.isVerified && (
-                <Button
-                  isIconOnly
-                  color="danger"
-                  isDisabled={email.email === verifyingEmail}
-                  size="sm"
-                  variant="light"
-                  onClick={() => onRemoveEmail(email.email)}
-                >
-                  <XIcon className="w-4 h-4" />
-                </Button>
-              )}
-            </div>
-          ))}
+            ))}
         </div>
       )}
 

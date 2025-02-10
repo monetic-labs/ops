@@ -71,7 +71,7 @@ export default function AuthPage() {
 
       if (isLogin) {
         // Login with passkey
-        const webauthnPublicKey = await webauthnHelper.loginWithPasskey();
+        const { publicKey: webauthnPublicKey, credentialId } = await webauthnHelper.loginWithPasskey();
         const safeOwner = new WebAuthnSafeAccountHelper(webauthnPublicKey);
         const walletAddress = safeOwner.getAddress();
 
@@ -79,7 +79,7 @@ export default function AuthPage() {
         const settlementAddress = safeSettlement.getAddress();
 
         // Store login state
-        LocalStorage.setSafeUser(webauthnPublicKey, walletAddress, settlementAddress, "", true);
+        LocalStorage.setSafeUser(webauthnPublicKey, walletAddress, settlementAddress, "", true, credentialId);
         router.push("/");
       } else {
         if (hasPasskey) {

@@ -15,14 +15,19 @@ type GracePeriodProps = {
 export const GracePeriod = ({ selectedGracePeriod, onGracePeriodChange }: GracePeriodProps) => {
   return (
     <div className="space-y-4">
-      <div className="flex items-center gap-2">
-        <div className="p-2 bg-teal-500/10 rounded-lg">
-          <Timer className="w-5 h-5 text-teal-500" />
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <div className="p-2 bg-teal-500/10 rounded-lg">
+            <Timer className="w-5 h-5 text-teal-500" />
+          </div>
+          <h4 className="text-lg font-medium">Grace Period</h4>
         </div>
-        <h4 className="text-lg font-medium">Grace Period</h4>
+        <Chip className="bg-content3 text-foreground/60" size="sm" variant="flat">
+          Coming Soon
+        </Chip>
       </div>
 
-      <Card className="bg-content2 border-divider">
+      <Card className="bg-content2 border-divider opacity-60">
         <CardBody className="p-4 space-y-4">
           <p className="text-sm text-foreground/60">
             The grace period adds a timelock to recovery attempts, allowing you to detect and stop any unauthorized
@@ -30,6 +35,7 @@ export const GracePeriod = ({ selectedGracePeriod, onGracePeriodChange }: GraceP
           </p>
 
           <Select
+            isDisabled
             classNames={{
               trigger: "p-3",
               value: "text-foreground",
