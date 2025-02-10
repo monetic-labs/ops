@@ -1,4 +1,5 @@
 import { Mail, Phone, Key, Backpack, Users } from "lucide-react";
+import { RecoveryMethod } from "./types";
 
 export const GRACE_PERIOD_OPTIONS = [
   { label: "3 Days", value: "3", description: "Shortest timelock, suitable for frequent users" },
@@ -54,6 +55,7 @@ export const RECOVERY_OPTIONS = [
     icon: Mail,
     isConfigured: false,
     isComingSoon: false,
+    method: "EMAIL" as RecoveryMethod,
   },
   {
     id: "phone",
@@ -62,6 +64,7 @@ export const RECOVERY_OPTIONS = [
     icon: Phone,
     isConfigured: false,
     isComingSoon: false,
+    method: "PHONE" as RecoveryMethod,
   },
   {
     id: "backpack",
@@ -70,6 +73,7 @@ export const RECOVERY_OPTIONS = [
     icon: Backpack,
     isConfigured: false,
     isComingSoon: false,
+    method: "BACKPACK" as RecoveryMethod,
   },
   {
     id: "team",
@@ -78,6 +82,7 @@ export const RECOVERY_OPTIONS = [
     icon: Users,
     isConfigured: false,
     isComingSoon: true,
+    method: "TEAM" as RecoveryMethod,
   },
   {
     id: "wallet",
@@ -86,5 +91,6 @@ export const RECOVERY_OPTIONS = [
     icon: Key,
     isConfigured: false,
     isComingSoon: true,
+    method: "HARDWARE" as RecoveryMethod,
   },
 ];

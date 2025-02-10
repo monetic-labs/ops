@@ -16,7 +16,9 @@ export const GracePeriod = ({ selectedGracePeriod, onGracePeriodChange }: GraceP
   return (
     <div className="space-y-4">
       <div className="flex items-center gap-2">
-        <Timer className="w-5 h-5 text-primary" />
+        <div className="p-2 bg-teal-500/10 rounded-lg">
+          <Timer className="w-5 h-5 text-teal-500" />
+        </div>
         <h4 className="text-lg font-medium">Grace Period</h4>
       </div>
 
@@ -32,6 +34,7 @@ export const GracePeriod = ({ selectedGracePeriod, onGracePeriodChange }: GraceP
               trigger: "p-3",
               value: "text-foreground",
               label: "text-foreground/60",
+              base: "bg-content2",
             }}
             label="Select Grace Period"
             selectedKeys={[selectedGracePeriod]}
@@ -43,7 +46,7 @@ export const GracePeriod = ({ selectedGracePeriod, onGracePeriodChange }: GraceP
                   <div className="flex items-center gap-2">
                     <span>{option.label}</span>
                     {option.isRecommended && (
-                      <Chip className="ml-2" color="primary" size="sm" variant="flat">
+                      <Chip className="ml-2 bg-teal-500/10 text-teal-500" size="sm" variant="flat">
                         Recommended
                       </Chip>
                     )}

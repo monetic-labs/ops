@@ -1,14 +1,16 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Modal, ModalContent, ModalBody } from "@nextui-org/modal";
 import { Button } from "@nextui-org/button";
 import { Accordion, AccordionItem } from "@nextui-org/accordion";
 import { Chip } from "@nextui-org/chip";
 import { XIcon } from "lucide-react";
+import { Address } from "viem";
 
+import pylon from "@/libs/pylon-sdk";
 import { RECOVERY_OPTIONS, MOCK_ORG_MEMBERS, OrgMember } from "./security/constants";
-import { SecuritySettingsModalProps, ConfiguredEmail, ConfiguredPhone } from "./security/types";
+import { SecuritySettingsModalProps, ConfiguredEmail, ConfiguredPhone, RecoveryWallet } from "./security/types";
 import { DeadSwitch } from "./security/components/dead-switch";
 import { EmailVerification } from "./security/components/recovery-options/email-verification";
 import { PhoneVerification } from "./security/components/recovery-options/phone-verification";
@@ -17,6 +19,9 @@ import { BackpackRecovery } from "./security/components/recovery-options/backpac
 import { GracePeriod } from "./security/components/grace-period";
 import { RecoveryWarning } from "./security/components/recovery-warning";
 import { RecoveryHeader } from "./security/components/recovery-header";
+import { useAccounts } from "@/contexts/AccountContext";
+import { socialRecovery } from "@/utils/safeAccount/socialRecovery";
+import { RecoveryWalletMethod } from "@backpack-fux/pylon-sdk";
 
 export const SecuritySettingsModal = ({ isOpen, onClose }: SecuritySettingsModalProps) => {
   const [selectedGracePeriod, setSelectedGracePeriod] = useState<string>("7");
@@ -26,6 +31,21 @@ export const SecuritySettingsModal = ({ isOpen, onClose }: SecuritySettingsModal
   const [verifyingEmail, setVerifyingEmail] = useState<string | null>(null);
   const [otpValue, setOtpValue] = useState("");
   const [isBackpackRecoveryEnabled, setIsBackpackRecoveryEnabled] = useState(false);
+  const [recoveryWallets, setRecoveryWallets] = useState<RecoveryWallet[]>([]);
+  const { user } = useAccounts();
+
+  // Calculate total configured recovery options including Backpack
+  const configuredCount = recoveryWallets.length + (isBackpackRecoveryEnabled ? 1 : 0);
+
+  // Set threshold to match configured count, defaulting to 3
+  const [threshold, setThreshold] = useState(3);
+
+  useEffect(() => {
+    // Update threshold when configured count changes
+    if (configuredCount > 0) {
+      setThreshold(configuredCount);
+    }
+  }, [configuredCount]);
 
   // Phone verification state
   const [configuredPhone, setConfiguredPhone] = useState<ConfiguredPhone | null>(null);
@@ -36,15 +56,49 @@ export const SecuritySettingsModal = ({ isOpen, onClose }: SecuritySettingsModal
   // Team recovery state
   const [configuredTeamMember, setConfiguredTeamMember] = useState<OrgMember | null>(null);
 
-  const configuredCount =
-    configuredEmails.filter((e) => e.isVerified).length +
-    (isBackpackRecoveryEnabled ? 1 : 0) +
-    (configuredPhone?.isVerified ? 1 : 0) +
-    (configuredTeamMember ? 1 : 0) +
-    RECOVERY_OPTIONS.filter(
-      (opt) =>
-        opt.id !== "email" && opt.id !== "backpack" && opt.id !== "phone" && opt.id !== "team" && opt.isConfigured
-    ).length;
+  useEffect(() => {
+    const fetchRecoveryWallets = async () => {
+      try {
+        const wallets = await pylon.getRecoveryWallets();
+        setRecoveryWallets(wallets);
+
+        // Set configured emails
+        const emailWallets = wallets.filter((w) => w.recoveryMethod === RecoveryWalletMethod.EMAIL);
+        setConfiguredEmails(
+          emailWallets.map((w) => ({
+            email: w.identifier,
+            isVerified: true,
+            recoveryWalletId: w.id,
+          }))
+        );
+
+        // Set configured phone
+        const phoneWallet = wallets.find((w) => w.recoveryMethod === RecoveryWalletMethod.PHONE);
+        if (phoneWallet) {
+          setConfiguredPhone({
+            number: phoneWallet.identifier,
+            isVerified: true,
+            recoveryWalletId: phoneWallet.id,
+          });
+        }
+
+        // Check Backpack guardian status using Candide
+        try {
+          const isBackpackGuardian = await socialRecovery.isBackpackGuardian(user?.walletAddress as Address);
+          setIsBackpackRecoveryEnabled(isBackpackGuardian);
+        } catch (error) {
+          console.error("Failed to check Backpack guardian status:", error);
+          setIsBackpackRecoveryEnabled(false);
+        }
+      } catch (error) {
+        console.error("Failed to fetch recovery wallets:", error);
+      }
+    };
+
+    if (isOpen) {
+      fetchRecoveryWallets();
+    }
+  }, [isOpen]);
 
   const handleAddEmail = (email: string) => {
     if (!email || configuredEmails.some((e) => e.email === email)) return;
@@ -169,98 +223,103 @@ export const SecuritySettingsModal = ({ isOpen, onClose }: SecuritySettingsModal
           {/* Recovery Options Section */}
           <div className="space-y-4">
             <RecoveryWarning configuredCount={configuredCount} />
-            <RecoveryHeader configuredCount={configuredCount} />
+            <RecoveryHeader configuredCount={configuredCount} threshold={threshold} onThresholdChange={setThreshold} />
             <Accordion
               className="p-0 gap-0 flex flex-col bg-content2 rounded-lg border border-divider"
               itemClasses={{
                 base: "border-b border-divider last:border-0",
                 title: "font-medium",
-                trigger: "px-4 py-3 flex data-[hover=true]:bg-content3 rounded-none",
+                trigger: "px-4 py-3 flex data-[hover=true]:bg-transparent rounded-none",
                 indicator: "text-medium",
                 content: "pt-0",
               }}
               showDivider={false}
               variant="light"
             >
-              {RECOVERY_OPTIONS.map((option) => (
-                <AccordionItem
-                  key={option.id}
-                  aria-label={option.title}
-                  classNames={{
-                    base: option.isComingSoon ? "opacity-50" : option.isConfigured ? "bg-success/10" : "",
-                    content: "pt-6",
-                  }}
-                  isDisabled={option.isComingSoon}
-                  startContent={
-                    <option.icon
-                      className={`w-5 h-5 ${
-                        option.isConfigured
-                          ? "text-success"
-                          : option.isComingSoon
-                            ? "text-default-300"
-                            : "text-default-500"
-                      }`}
-                    />
-                  }
-                  subtitle={<p className="text-sm text-gray-400">{option.description}</p>}
-                  title={
-                    <div className="flex items-center gap-2">
-                      <span className={option.isComingSoon ? "text-default-400" : ""}>{option.title}</span>
-                      {option.isComingSoon && (
-                        <Chip className="bg-[#1a1a1a] text-default-400" size="sm" variant="flat">
-                          Coming Soon
-                        </Chip>
+              {RECOVERY_OPTIONS.map((option) => {
+                const isConfigured =
+                  option.method === "BACKPACK"
+                    ? isBackpackRecoveryEnabled
+                    : recoveryWallets.some((w) => w.recoveryMethod === option.method);
+                return (
+                  <AccordionItem
+                    key={option.id}
+                    aria-label={option.title}
+                    classNames={{
+                      base: option.isComingSoon ? "opacity-50" : isConfigured ? "bg-teal-500/10" : "",
+                      content: "pt-6",
+                    }}
+                    isDisabled={option.isComingSoon}
+                    startContent={
+                      <option.icon
+                        className={`w-5 h-5 ${
+                          isConfigured ? "text-teal-500" : option.isComingSoon ? "text-default-300" : "text-default-500"
+                        }`}
+                      />
+                    }
+                    subtitle={<p className="text-sm text-foreground/60">{option.description}</p>}
+                    title={
+                      <div className="flex items-center gap-2">
+                        <span className={option.isComingSoon ? "text-default-400" : ""}>{option.title}</span>
+                        {option.isComingSoon && (
+                          <Chip className="bg-content3 text-foreground/60" size="sm" variant="flat">
+                            Coming Soon
+                          </Chip>
+                        )}
+                        {isConfigured && (
+                          <Chip className="bg-teal-500/10 text-teal-500" size="sm" variant="flat">
+                            Configured
+                          </Chip>
+                        )}
+                      </div>
+                    }
+                  >
+                    <div className="px-4 pb-4 space-y-4">
+                      {option.id === "email" && (
+                        <EmailVerification
+                          configuredEmails={configuredEmails}
+                          currentEmail={currentEmail}
+                          otpValue={otpValue}
+                          verifyingEmail={verifyingEmail}
+                          onAddEmail={handleAddEmail}
+                          onCancelVerification={handleCancelVerification}
+                          onEmailChange={setCurrentEmail}
+                          onOtpChange={setOtpValue}
+                          onRemoveEmail={handleRemoveEmail}
+                          onVerifyOtp={handleVerifyOtp}
+                        />
                       )}
-                      {option.isConfigured && (
-                        <Chip color="success" size="sm" variant="flat">
-                          Configured
-                        </Chip>
+                      {option.id === "phone" && (
+                        <PhoneVerification
+                          configuredPhone={configuredPhone}
+                          currentPhone={currentPhone}
+                          phoneOtpValue={phoneOtpValue}
+                          verifyingPhone={verifyingPhone}
+                          onAddPhone={handleAddPhone}
+                          onCancelPhoneVerification={handleCancelPhoneVerification}
+                          onPhoneChange={setCurrentPhone}
+                          onPhoneOtpChange={setPhoneOtpValue}
+                          onRemovePhone={handleRemovePhone}
+                          onVerifyPhoneOtp={handleVerifyPhoneOtp}
+                        />
+                      )}
+                      {option.id === "team" && (
+                        <TeamRecovery
+                          configuredTeamMember={configuredTeamMember}
+                          onRemoveTeamMember={handleRemoveTeamMember}
+                          onSelectTeamMember={handleSelectTeamMember}
+                        />
+                      )}
+                      {option.id === "backpack" && (
+                        <BackpackRecovery
+                          isEnabled={isBackpackRecoveryEnabled}
+                          onToggle={handleBackpackRecoveryToggle}
+                        />
                       )}
                     </div>
-                  }
-                >
-                  <div className="px-4 pb-4 space-y-4">
-                    {option.id === "email" && (
-                      <EmailVerification
-                        configuredEmails={configuredEmails}
-                        currentEmail={currentEmail}
-                        otpValue={otpValue}
-                        verifyingEmail={verifyingEmail}
-                        onAddEmail={handleAddEmail}
-                        onCancelVerification={handleCancelVerification}
-                        onEmailChange={setCurrentEmail}
-                        onOtpChange={setOtpValue}
-                        onRemoveEmail={handleRemoveEmail}
-                        onVerifyOtp={handleVerifyOtp}
-                      />
-                    )}
-                    {option.id === "phone" && (
-                      <PhoneVerification
-                        configuredPhone={configuredPhone}
-                        currentPhone={currentPhone}
-                        phoneOtpValue={phoneOtpValue}
-                        verifyingPhone={verifyingPhone}
-                        onAddPhone={handleAddPhone}
-                        onCancelPhoneVerification={handleCancelPhoneVerification}
-                        onPhoneChange={setCurrentPhone}
-                        onPhoneOtpChange={setPhoneOtpValue}
-                        onRemovePhone={handleRemovePhone}
-                        onVerifyPhoneOtp={handleVerifyPhoneOtp}
-                      />
-                    )}
-                    {option.id === "team" && (
-                      <TeamRecovery
-                        configuredTeamMember={configuredTeamMember}
-                        onRemoveTeamMember={handleRemoveTeamMember}
-                        onSelectTeamMember={handleSelectTeamMember}
-                      />
-                    )}
-                    {option.id === "backpack" && (
-                      <BackpackRecovery isEnabled={isBackpackRecoveryEnabled} onToggle={handleBackpackRecoveryToggle} />
-                    )}
-                  </div>
-                </AccordionItem>
-              ))}
+                  </AccordionItem>
+                );
+              })}
             </Accordion>
           </div>
 

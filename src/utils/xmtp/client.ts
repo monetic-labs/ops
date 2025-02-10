@@ -48,7 +48,7 @@ export class XMTPService {
     return {
       getAddress: async () => this.account.getAddress(),
       signMessage: async (message: string) => {
-        const webAuthn = new WebAuthnHelper(window.location.hostname);
+        const webAuthn = new WebAuthnHelper({});
         const { rawSignature } = await webAuthn.signMessage(message as Hex);
         const signature = Signature.toHex(rawSignature);
 

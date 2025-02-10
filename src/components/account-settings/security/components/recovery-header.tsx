@@ -3,38 +3,51 @@
 import { Button } from "@nextui-org/button";
 import { Tooltip } from "@nextui-org/tooltip";
 import { Shield, InfoIcon, AlertTriangle } from "lucide-react";
+import { Select, SelectItem } from "@nextui-org/select";
 
 type RecoveryHeaderProps = {
   configuredCount: number;
+  threshold: number;
+  onThresholdChange: (value: number) => void;
 };
 
-export const RecoveryHeader = ({ configuredCount }: RecoveryHeaderProps) => (
-  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-0">
-    <div className="flex items-center gap-2">
-      <Shield className="w-5 h-5 text-primary" />
-      <h4 className="text-lg font-medium">Recovery Options</h4>
-      <Tooltip
-        content={
-          <div className="max-w-xs p-2">
-            <p className="font-medium mb-2">How Recovery Works:</p>
-            <ul className="text-sm list-disc pl-4 space-y-1">
-              <li>Set up 3 different recovery methods</li>
-              <li>Any 2 methods can be used to recover access</li>
-              <li>Recovery process includes a grace period for security</li>
-              <li>All guardians must verify recovery attempts</li>
-            </ul>
-          </div>
-        }
-        placement="right"
-      >
-        <Button isIconOnly size="sm" variant="light">
-          <InfoIcon className="w-4 h-4" />
-        </Button>
-      </Tooltip>
+export const RecoveryHeader = ({ configuredCount, threshold, onThresholdChange }: RecoveryHeaderProps) => {
+  const thresholdOptions = Array.from({ length: configuredCount || 1 }, (_, i) => i + 1);
+  const totalOptions = configuredCount || 1;
+
+  return (
+    <div className="flex flex-col md:flex-row md:items-start justify-between gap-4">
+      <div className="flex items-center gap-3">
+        <div className="p-2 bg-teal-500/10 rounded-lg">
+          <Shield className="w-5 h-5 text-teal-500" />
+        </div>
+        <div>
+          <h4 className="font-medium">Recovery Options</h4>
+          <p className="text-sm text-foreground/60">Configure multiple recovery options for enhanced security</p>
+        </div>
+      </div>
+      <div className="w-44">
+        <Select
+          label="Required for Recovery"
+          defaultSelectedKeys={[threshold.toString()]}
+          selectedKeys={[threshold.toString()]}
+          size="sm"
+          onChange={(e) => {
+            const selectedValue = Number(e.target.value);
+            onThresholdChange(selectedValue);
+          }}
+          renderValue={(items) => {
+            const selected = items[0];
+            return `${selected.key} of ${totalOptions} required`;
+          }}
+        >
+          {thresholdOptions.map((value) => (
+            <SelectItem key={value} value={value}>
+              {value} of {totalOptions} required
+            </SelectItem>
+          ))}
+        </Select>
+      </div>
     </div>
-    <div className="flex items-center gap-2">
-      <AlertTriangle className="w-4 h-4 text-warning" />
-      <span className="text-sm text-warning">Requires 3 options</span>
-    </div>
-  </div>
-);
+  );
+};

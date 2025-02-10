@@ -17,7 +17,9 @@ export const DeadSwitch = ({ selectedDeadSwitch, onDeadSwitchChange }: DeadSwitc
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <Clock className="w-5 h-5 text-primary" />
+          <div className="p-2 bg-teal-500/10 rounded-lg">
+            <Clock className="w-5 h-5 text-teal-500" />
+          </div>
           <h4 className="text-lg font-medium">Dead Switch</h4>
         </div>
         <Chip className="bg-content3 text-foreground/60" size="sm" variant="flat">
@@ -37,6 +39,7 @@ export const DeadSwitch = ({ selectedDeadSwitch, onDeadSwitchChange }: DeadSwitc
               trigger: "p-3",
               value: "text-foreground",
               label: "text-foreground/60",
+              base: "bg-content2",
             }}
             label="Select Inactivity Period"
             selectedKeys={[selectedDeadSwitch]}

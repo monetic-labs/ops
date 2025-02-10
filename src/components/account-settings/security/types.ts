@@ -3,14 +3,30 @@ export type SecuritySettingsModalProps = {
   onClose: () => void;
 };
 
+export type RecoveryMethod = "PHONE" | "EMAIL" | "BACKPACK" | "TEAM" | "HARDWARE";
+
+export type RecoveryWallet = {
+  id: string;
+  identifier: string;
+  recoveryMethod: RecoveryMethod;
+  publicAddress: string;
+  userCustodialId: string;
+  custodialProvider: string;
+  updatedAt: string;
+  createdAt: string;
+  userId: string;
+};
+
 export type ConfiguredEmail = {
   email: string;
   isVerified: boolean;
+  recoveryWalletId?: string;
 };
 
 export type ConfiguredPhone = {
   number: string;
   isVerified: boolean;
+  recoveryWalletId?: string;
 };
 
 export type OrgMember = {

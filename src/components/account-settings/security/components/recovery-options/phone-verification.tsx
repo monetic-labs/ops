@@ -28,17 +28,17 @@ export const PhoneVerification = ({
         <div className="flex items-center justify-between p-3 bg-content2 rounded-lg">
           <div className="flex items-center gap-3">
             <Phone className="w-4 h-4 text-foreground/60" />
-            <span>{configuredPhone.number}</span>
+            <span>{formatPhoneNumber(configuredPhone.number.slice(1), configuredPhone.number.slice(0, 1))}</span>
             {configuredPhone.isVerified ? (
-              <Chip color="success" size="sm" variant="flat">
+              <Chip className="bg-teal-500/10 text-teal-500" size="sm" variant="flat">
                 Verified
               </Chip>
             ) : configuredPhone.number === verifyingPhone ? (
-              <Chip color="warning" size="sm" variant="flat">
+              <Chip className="bg-amber-500/10 text-amber-500" size="sm" variant="flat">
                 Verifying
               </Chip>
             ) : (
-              <Chip color="warning" size="sm" variant="flat">
+              <Chip className="bg-amber-500/10 text-amber-500" size="sm" variant="flat">
                 Pending
               </Chip>
             )}
@@ -46,7 +46,7 @@ export const PhoneVerification = ({
           {configuredPhone.isVerified && (
             <Button
               isIconOnly
-              color="danger"
+              className="text-red-500 hover:text-red-600"
               isDisabled={configuredPhone.number === verifyingPhone}
               size="sm"
               variant="light"
@@ -75,16 +75,14 @@ export const PhoneVerification = ({
             </div>
             <div className="flex gap-2 mt-2 sm:mt-0">
               <Button
-                className="flex-1 sm:flex-initial"
-                color="danger"
+                className="flex-1 sm:flex-initial text-red-500"
                 variant="light"
                 onClick={onCancelPhoneVerification}
               >
                 Cancel
               </Button>
               <Button
-                className="flex-1 sm:flex-initial"
-                color="primary"
+                className="flex-1 sm:flex-initial bg-teal-500 text-white hover:bg-teal-600"
                 isDisabled={phoneOtpValue.length !== 6}
                 onClick={onVerifyPhoneOtp}
               >
