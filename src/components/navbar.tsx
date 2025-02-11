@@ -4,15 +4,17 @@ import { NavbarBrand, NavbarContent, NavbarItem, Navbar as NextUINavbar } from "
 import { Dropdown, DropdownTrigger, DropdownMenu, DropdownItem } from "@nextui-org/dropdown";
 import { Avatar } from "@nextui-org/avatar";
 import { Button } from "@nextui-org/button";
+import { Badge } from "@nextui-org/badge";
 import { useRouter } from "next/navigation";
 import NextLink from "next/link";
-import { LogOut, User, Backpack, Shield, HelpCircle, Moon, Sun } from "lucide-react";
+import { LogOut, User, Backpack, Shield, Moon, Sun, MessageCircle, HelpCircle } from "lucide-react";
 
 import pylon from "@/libs/pylon-sdk";
 import { ExtendedMerchantUser, useAccounts } from "@/contexts/AccountContext";
 import { LocalStorage } from "@/utils/localstorage";
 import { getDisplayName } from "@/utils/helpers";
 import { useTheme } from "@/hooks/useTheme";
+import { useMessagingState, useMessagingActions } from "@/libs/messaging/store";
 
 import { ProfileSettingsModal } from "./account-settings/profile-modal";
 import { SecuritySettingsModal } from "./account-settings/security-modal";
@@ -42,6 +44,10 @@ const AuthenticatedNav = ({
   const [isSecurityOpen, setIsSecurityOpen] = useState(false);
   const [dropdownKey, setDropdownKey] = useState(0);
   const { toggleTheme, isDark } = useTheme();
+  const { unreadCount } = useMessagingState();
+  const {
+    ui: { togglePane },
+  } = useMessagingActions();
 
   const displayName = user.username || getDisplayName(user.firstName, user.lastName);
   const initials =
@@ -77,7 +83,14 @@ const AuthenticatedNav = ({
                 window.dispatchEvent(event);
               }}
             >
-              <HelpCircle className="w-5 h-5" />
+              <div className="relative">
+                {unreadCount > 0 && (
+                  <span className="absolute top-0 right-0 h-2.5 w-2.5 animate-ping rounded-full bg-primary opacity-75" />
+                )}
+                <Badge color="primary" content={unreadCount} isInvisible={!unreadCount} shape="circle" size="sm">
+                  <MessageCircle className="w-5 h-5" />
+                </Badge>
+              </div>
             </Button>
           </NavbarItem>
         </div>
@@ -146,17 +159,16 @@ const AuthenticatedNav = ({
             isIconOnly
             className="bg-transparent text-foreground/60 hover:text-foreground"
             variant="light"
-            onPress={() => {
-              const event = new KeyboardEvent("keydown", {
-                key: "k",
-                code: "KeyK",
-                ctrlKey: true,
-                metaKey: true,
-              });
-              window.dispatchEvent(event);
-            }}
+            onPress={togglePane}
           >
-            <HelpCircle className="w-5 h-5" />
+            <div className="relative">
+              {unreadCount > 0 && (
+                <span className="absolute top-0 right-0 h-2.5 w-2.5 animate-ping rounded-full bg-primary opacity-75" />
+              )}
+              <Badge color="primary" content={unreadCount} isInvisible={!unreadCount} shape="circle" size="sm">
+                <MessageCircle className="w-5 h-5" />
+              </Badge>
+            </div>
           </Button>
         </NavbarItem>
         <Dropdown key={`mobile-${dropdownKey}`} placement="bottom-end">

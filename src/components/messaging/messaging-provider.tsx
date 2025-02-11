@@ -1,41 +1,52 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useCallback } from "react";
 
 import { useMessagingStore, useMessagingActions } from "@/libs/messaging/store";
-import { MessageMode } from "@/types/messaging";
+import { useWebSocket } from "@/hooks/messaging/useWebSocket";
 
 interface MessagingProviderProps {
   children: React.ReactNode;
   userId: string;
-  initialMode?: MessageMode;
 }
 
-export const MessagingProvider = ({ children, userId, initialMode = "bot" }: MessagingProviderProps) => {
+export const MessagingProvider = ({ children, userId }: MessagingProviderProps) => {
   const {
-    message: { setMode, setActiveService },
-    connection: { connect },
+    message: { setUserId, appendMessage, clearUnreadCount },
     ui: { setWidth },
   } = useMessagingActions();
+  const isOpen = useMessagingStore((state) => state.ui.isOpen);
 
+  // Handle incoming messages
+  const handleWebSocketMessage = useCallback(
+    (message: any) => {
+      console.log("Received WebSocket message:", message);
+      appendMessage({
+        id: crypto.randomUUID(),
+        text: message.text || message,
+        type: "support",
+        timestamp: Date.now(),
+        status: "received",
+      });
+    },
+    [appendMessage]
+  );
+
+  // Initialize WebSocket connection - always keep it open for background messages
+  useWebSocket({ handleMessage: handleWebSocketMessage });
+
+  // Handle initial setup
   useEffect(() => {
-    // Set initial values
-    setMode(initialMode);
-    // Map the mode to the correct service type
-    setActiveService(initialMode === "bot" ? "openai" : "telegram");
+    setUserId(userId);
     setWidth(400);
+  }, [setWidth, setUserId, userId]);
 
-    // Initialize connection if needed
-    connect().catch((error) => {
-      console.error("Failed to establish connection:", error);
-    });
-
-    return () => {
-      const { disconnect } = useMessagingStore.getState().actions.connection;
-
-      disconnect();
-    };
-  }, [connect, setMode, setWidth, setActiveService, initialMode]);
+  // Clear unread count when chat is opened
+  useEffect(() => {
+    if (isOpen) {
+      clearUnreadCount();
+    }
+  }, [isOpen, clearUnreadCount]);
 
   return <>{children}</>;
 };

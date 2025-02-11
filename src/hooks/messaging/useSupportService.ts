@@ -85,7 +85,7 @@ export const useSupportService = (): SupportMessageService => {
 
   const setInputValue = useCallback(
     async (value: string) => {
-      await messageActions.setInputValue({ mode: "support", value });
+      await messageActions.setInputValue({ value });
     },
     [messageActions]
   );
@@ -124,21 +124,21 @@ export const useSupportService = (): SupportMessageService => {
   const handleSubmit = useCallback(
     async (e: React.FormEvent) => {
       e.preventDefault();
-      const text = state.inputValues.support;
+      const text = state.inputValue;
 
       if (!text.trim()) return;
       await sendMessage(text.trim());
     },
-    [state.inputValues.support, sendMessage]
+    [state.inputValue, sendMessage]
   );
 
   return {
     type: "telegram" as const,
     channel: "default",
-    messages: state.messages.support,
+    messages: state.messages,
     isTyping: state.isTyping,
     isLoading: false,
-    inputValue: state.inputValues.support,
+    inputValue: state.inputValue,
     setInputValue,
     sendMessage,
     handleSubmit,

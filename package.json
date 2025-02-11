@@ -22,6 +22,7 @@
     "@hookform/resolvers": "^3.9.1",
     "@nextui-org/accordion": "^2.2.2",
     "@nextui-org/autocomplete": "^2.3.2",
+    "@nextui-org/badge": "^2.2.5",
     "@nextui-org/button": "^2.2.2",
     "@nextui-org/card": "^2.2.2",
     "@nextui-org/checkbox": "^2.3.2",

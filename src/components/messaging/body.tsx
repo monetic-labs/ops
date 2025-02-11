@@ -1,38 +1,14 @@
 "use client";
 
-import React, { useRef, useEffect, useCallback } from "react";
+import React, { useRef, useEffect } from "react";
 
-import { useCurrentModeMessages, useMessagingActions, useMessagingState } from "@/libs/messaging/store";
-import { useWebSocket } from "@/hooks/messaging/useWebSocket";
+import { useCurrentModeMessages } from "@/libs/messaging/store";
 
 import { MessageBubble } from "./message-bubble";
 
 export const ChatBody: React.FC = () => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const messages = useCurrentModeMessages();
-  const { mode } = useMessagingState();
-  const { appendMessage } = useMessagingActions().message;
-
-  // Receive Telegram Support Messages
-  const handleWebSocketMessage = useCallback(
-    (message: any) => {
-      // Only handle Telegram messages in support mode
-      if (mode === "support") {
-        console.log("Received WebSocket message in support mode:", message);
-        appendMessage({
-          id: crypto.randomUUID(),
-          text: message.text || message,
-          type: "support",
-          timestamp: Date.now(),
-          status: "received",
-        });
-      }
-    },
-    [appendMessage, mode]
-  );
-
-  // Initialize WebSocket connection
-  useWebSocket({ handleMessage: handleWebSocketMessage });
 
   const scrollToBottom = () => {
     if (messagesEndRef.current) {

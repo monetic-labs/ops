@@ -5,7 +5,7 @@ export type MessageType = "user" | "bot" | "support" | "system" | "typing";
 /** Possible states of a message */
 export type MessageStatus = "sending" | "sent" | "error" | "received";
 /** Available messaging service types */
-export type MessageServiceType = "telegram" | "openai";
+export type MessageServiceType = "telegram";
 
 /** Base interface for all message types */
 export interface BaseMessage {
@@ -61,7 +61,7 @@ export interface SystemMessage extends BaseMessage {
 }
 
 export type Message = UserMessage | BotMessage | SupportMessage | SystemMessage;
-export type MessageMode = "bot" | "support";
+export type MessageMode = "support";
 
 /** Interface for mention/autocomplete options */
 export interface MentionOption {
@@ -86,16 +86,6 @@ export interface MessageService {
   getUserId: () => string;
 }
 
-/** AI agent service specific interface */
-export interface AgentMessageService extends MessageService {
-  type: "openai";
-  model: string;
-  context?: {
-    systemPrompt?: string;
-    temperature?: number;
-  };
-}
-
 /** Support service specific interface */
 export interface SupportMessageService extends MessageService {
   type: "telegram";
@@ -117,18 +107,9 @@ interface BaseMessagingContext {
   userId: string;
 }
 
-/** Agent-specific messaging context */
-export interface AgentMessageContext extends BaseMessagingContext {
-  mode: "agent";
-  service: AgentMessageService;
-  chatHelpers: UseChatHelpers;
-  isTyping: boolean;
-}
-
 /** Support-specific messaging context */
 export interface SupportMessageContext extends BaseMessagingContext {
   mode: "support";
   service: SupportMessageService;
-  chatHelpers?: never;
   isTyping: boolean;
 }

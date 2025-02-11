@@ -6,19 +6,18 @@ import { MentionOption } from "@/types/messaging";
 interface MentionListProps {
   options: MentionOption[];
   selectedIndex?: number;
+  position?: { top: number; left: number };
   onSelect: (option: MentionOption) => void;
 }
 
-export const MentionList = React.memo<MentionListProps>(({ options, selectedIndex = -1, onSelect }) => {
+export const MentionList = React.memo<MentionListProps>(({ options, selectedIndex = -1, position, onSelect }) => {
   return (
     <div
       className="absolute z-[100] bg-content1 rounded-lg shadow-lg max-h-60 overflow-y-auto 
         border border-divider w-full scrollbar-thin scrollbar-track-content2 scrollbar-thumb-content3"
       data-testid="mention-list"
       style={{
-        bottom: "100%",
-        marginBottom: "8px",
-        left: 0,
+        ...(position ? { top: position.top, left: position.left } : { bottom: "100%", marginBottom: "8px", left: 0 }),
       }}
     >
       {options.length === 0 ? (

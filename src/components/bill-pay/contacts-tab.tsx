@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect } from "react";
 import { Chip } from "@nextui-org/chip";
 import { User } from "@nextui-org/user";
 import { MerchantDisbursementCreateOutput } from "@backpack-fux/pylon-sdk";
@@ -11,7 +11,7 @@ import { useGetContacts } from "@/hooks/bill-pay/useGetContacts";
 
 const contactColumns: Column<MerchantDisbursementCreateOutput>[] = [
   {
-    name: "ACCOUNT OWNER",
+    name: "NAME",
     uid: "accountOwnerName",
     align: "start",
     render: (contact: MerchantDisbursementCreateOutput) => (
@@ -30,9 +30,9 @@ const contactColumns: Column<MerchantDisbursementCreateOutput>[] = [
     ),
   },
   {
-    name: "DISBURSEMENTS",
+    name: "METHODS",
     uid: "disbursements",
-    align: "center",
+    align: "start",
     render: (contact: MerchantDisbursementCreateOutput) => (
       <div className="flex flex-wrap gap-1">
         {contact.disbursements.map((disbursement) => (
@@ -56,7 +56,11 @@ const contactColumns: Column<MerchantDisbursementCreateOutput>[] = [
 ];
 
 export default function Contacts() {
-  const { contacts, isLoading, error } = useGetContacts();
+  const { contacts, isLoading, error, fetchContacts } = useGetContacts();
+
+  useEffect(() => {
+    fetchContacts({});
+  }, []);
 
   return (
     <DataTable

@@ -11,7 +11,6 @@ import data from "@emoji-mart/data";
 import Picker from "@emoji-mart/react";
 
 import { useMessagingState, useMessagingActions } from "@/libs/messaging/store";
-import { useAgentService } from "@/hooks/messaging/useAgentService";
 import { useMentions } from "@/hooks/messaging/useMentions";
 import { useSupportService } from "@/hooks/messaging/useSupportService";
 import { MentionOption } from "@/types/messaging";
@@ -21,8 +20,7 @@ import pylon from "@/libs/pylon-sdk";
 import { MentionList } from "./mention-list";
 
 export const MessageInput = forwardRef<HTMLInputElement>((_, ref) => {
-  const state = useMessagingState();
-  const { mode, inputValues, pendingAttachment } = state;
+  const { inputValue, pendingAttachment } = useMessagingState();
   const [showEmoji, setShowEmoji] = useState(false);
   const [isSending, setIsSending] = useState(false);
   const { resolvedTheme } = useTheme();
@@ -31,9 +29,7 @@ export const MessageInput = forwardRef<HTMLInputElement>((_, ref) => {
   } = useMessagingActions();
 
   // Services
-  const agentService = useAgentService();
   const supportService = useSupportService();
-  const activeService = mode === "support" ? supportService : agentService;
 
   // Mentions
   const {
@@ -48,15 +44,15 @@ export const MessageInput = forwardRef<HTMLInputElement>((_, ref) => {
   const handleChange = useCallback(
     async (e: React.ChangeEvent<HTMLInputElement>) => {
       const newValue = e.target.value;
-      setInputValue({ mode, value: newValue });
+      setInputValue({ value: newValue });
       handleMentionInputChange(newValue, e.target.selectionStart || 0, e.target);
     },
-    [mode, setInputValue, handleMentionInputChange]
+    [setInputValue, handleMentionInputChange]
   );
 
   const handleMentionSelect = useCallback(
     async (option: MentionOption) => {
-      const currentInput = inputValues[mode];
+      const currentInput = inputValue;
       const cursorPos = (document.querySelector('[data-testid="chat-input"]') as HTMLInputElement)?.selectionStart || 0;
       const textBeforeCursor = currentInput.slice(0, cursorPos);
       const textAfterCursor = currentInput.slice(cursorPos);
@@ -67,7 +63,7 @@ export const MessageInput = forwardRef<HTMLInputElement>((_, ref) => {
       const selectedMention = handleSelectMention(option);
       const newValue = textBeforeCursor.slice(0, lastAtIndex) + selectedMention.insertText + " " + textAfterCursor;
 
-      setInputValue({ mode, value: newValue });
+      setInputValue({ value: newValue });
 
       setTimeout(() => {
         const input = document.querySelector('[data-testid="chat-input"]') as HTMLInputElement;
@@ -78,7 +74,7 @@ export const MessageInput = forwardRef<HTMLInputElement>((_, ref) => {
         }
       }, 0);
     },
-    [mode, inputValues, handleSelectMention, setInputValue]
+    [inputValue, handleSelectMention, setInputValue]
   );
 
   const handleKeyDown = useCallback(
@@ -96,7 +92,7 @@ export const MessageInput = forwardRef<HTMLInputElement>((_, ref) => {
   const handleSubmit = useCallback(
     async (e: React.FormEvent) => {
       e.preventDefault();
-      const text = inputValues[mode];
+      const text = inputValue;
 
       if (!text.trim() && !pendingAttachment) return;
       if (isSending) return; // Prevent duplicate submissions
@@ -104,8 +100,8 @@ export const MessageInput = forwardRef<HTMLInputElement>((_, ref) => {
       try {
         setIsSending(true);
 
-        // Support mode with attachment
-        if (mode === "support" && pendingAttachment) {
+        // Handle attachment
+        if (pendingAttachment) {
           if (pendingAttachment.type === "image" && pendingAttachment.file) {
             // Get upload URL from Pylon
             const {
@@ -176,12 +172,12 @@ export const MessageInput = forwardRef<HTMLInputElement>((_, ref) => {
           // Clear attachment after sending
           setPendingAttachment(null);
         } else {
-          // Regular text message for both modes
-          await activeService.sendMessage(text.trim());
+          // Regular text message
+          await supportService.sendMessage(text.trim());
         }
 
         // Always clear input after successful send
-        setInputValue({ mode, value: "" });
+        setInputValue({ value: "" });
       } catch (error) {
         console.error("Failed to send message:", error);
         // Add error message to chat
@@ -197,19 +193,19 @@ export const MessageInput = forwardRef<HTMLInputElement>((_, ref) => {
         setIsSending(false);
       }
     },
-    [mode, inputValues, pendingAttachment, activeService, appendMessage, setInputValue, setPendingAttachment, isSending]
+    [inputValue, pendingAttachment, supportService, appendMessage, setInputValue, setPendingAttachment, isSending]
   );
 
   const onEmojiSelect = useCallback(
     (emoji: any) => {
       const input = document.querySelector('[data-testid="chat-input"]') as HTMLInputElement;
       const cursorPos = input?.selectionStart || 0;
-      const currentValue = inputValues[mode];
+      const currentValue = inputValue;
       const textBeforeCursor = currentValue.slice(0, cursorPos);
       const textAfterCursor = currentValue.slice(cursorPos);
       const newValue = textBeforeCursor + emoji.native + textAfterCursor;
 
-      setInputValue({ mode, value: newValue });
+      setInputValue({ value: newValue });
       setShowEmoji(false);
 
       // Set cursor position after emoji
@@ -221,7 +217,7 @@ export const MessageInput = forwardRef<HTMLInputElement>((_, ref) => {
         }
       }, 0);
     },
-    [mode, inputValues, setInputValue]
+    [inputValue, setInputValue]
   );
 
   const handleClearAttachment = () => {
@@ -246,94 +242,60 @@ export const MessageInput = forwardRef<HTMLInputElement>((_, ref) => {
                 {isSending && " (sending...)"}
               </span>
             </div>
-            <Button
-              isIconOnly
-              className="bg-transparent text-foreground/60 hover:text-foreground"
-              isDisabled={isSending}
-              size="sm"
-              variant="light"
-              onPress={handleClearAttachment}
-            >
-              <X className="w-4 h-4" />
+            <Button isIconOnly size="sm" variant="light" onPress={handleClearAttachment}>
+              <X size={16} />
             </Button>
           </div>
         </Card>
       )}
-
-      <div className="relative flex items-end gap-2">
+      <div className="flex items-end gap-2">
+        <Popover placement="top" isOpen={showEmoji} onOpenChange={setShowEmoji}>
+          <PopoverTrigger>
+            <Button isIconOnly className="mb-1" size="sm" variant="light" onPress={() => setShowEmoji(true)}>
+              <Smile size={20} />
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent>
+            <Picker data={data} onEmojiSelect={onEmojiSelect} theme={resolvedTheme} previewPosition="none" />
+          </PopoverContent>
+        </Popover>
         <div className="flex-1 relative">
           <Input
             ref={ref}
+            className="w-full"
             classNames={{
-              base: "max-w-full",
-              mainWrapper: "max-w-full",
-              input: "text-sm text-foreground placeholder:text-foreground/50 pr-[45px]",
-              inputWrapper: [
-                "bg-content3/50",
-                "hover:bg-content3/70",
-                "transition-colors",
-                "!cursor-text",
-                "h-unit-10",
-                "rounded-full",
-                "border-none",
-                "data-[hover=true]:bg-content3/70",
-                "group-data-[focus=true]:bg-content3/70",
-                isSending && "opacity-50",
-              ].join(" "),
+              input: "text-sm",
             }}
             data-testid="chat-input"
-            isDisabled={isSending}
-            placeholder={`Type a message to ${mode === "support" ? "support" : "agent"}...`}
-            radius="full"
+            disabled={isSending}
+            placeholder="Type a message..."
             size="sm"
-            type="text"
-            value={inputValues[mode]}
-            variant="flat"
+            value={inputValue}
+            variant="bordered"
             onChange={handleChange}
             onKeyDown={handleKeyDown}
-            endContent={
-              <div className="absolute right-2 top-1/2 -translate-y-1/2">
-                <Popover placement="top" isOpen={showEmoji} onOpenChange={setShowEmoji}>
-                  <PopoverTrigger>
-                    <Button
-                      isIconOnly
-                      className="bg-transparent text-foreground/60 hover:text-foreground min-w-unit-8 w-unit-8 h-unit-8"
-                      isDisabled={isSending}
-                      radius="full"
-                      size="sm"
-                      variant="light"
-                    >
-                      <Smile className="w-4 h-4" />
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent>
-                    <Picker data={data} onEmojiSelect={onEmojiSelect} theme={resolvedTheme} />
-                  </PopoverContent>
-                </Popover>
-              </div>
-            }
           />
+          {mentionState.isOpen && mentionOptions.length > 0 && (
+            <MentionList
+              options={mentionOptions}
+              position={mentionState.position}
+              selectedIndex={mentionState.selectedIndex}
+              onSelect={handleMentionSelect}
+            />
+          )}
         </div>
-
         <Button
           isIconOnly
-          className="bg-primary text-primary-foreground hover:opacity-90 min-w-unit-10 w-unit-10 h-unit-10 shrink-0"
-          isDisabled={isSending || (!inputValues[mode].trim() && !pendingAttachment)}
-          isLoading={isSending}
-          radius="full"
+          className="mb-1"
+          color="primary"
+          isDisabled={(!inputValue.trim() && !pendingAttachment) || isSending}
+          size="sm"
           type="submit"
+          variant="solid"
         >
-          {!isSending && <Send className="w-4 h-4" />}
+          <Send size={18} />
         </Button>
       </div>
-
-      {mentionState.isOpen && mentionOptions.length > 0 && (
-        <MentionList
-          options={mentionOptions}
-          selectedIndex={mentionState.selectedIndex}
-          onSelect={handleMentionSelect}
-        />
-      )}
     </form>
   );
 });
