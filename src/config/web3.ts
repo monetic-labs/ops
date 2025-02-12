@@ -8,7 +8,7 @@ import "viem/window";
 const CANDIDE_API_KEY = process.env.NEXT_PUBLIC_CANDIDE_API_KEY;
 
 if (!CANDIDE_API_KEY) {
-  throw new Error("CANDIDE_API_KEY is not set");
+  throw new Error("NEXT_PUBLIC_CANDIDE_API_KEY is not set");
 }
 
 // Chain configuration
