@@ -3,7 +3,7 @@ import { Tab, Tabs } from "@nextui-org/tabs";
 import { Address } from "viem";
 import { PlusIcon } from "lucide-react";
 
-import { billPayConfig, BillPayId } from "@/config/tabs";
+import { billPayConfig } from "@/config/tabs";
 import { DEFAULT_NEW_BILL_PAY } from "@/types/bill-pay";
 import { NewBillPay, ExistingBillPay } from "@/types/bill-pay";
 import { isTesting } from "@/utils/helpers";
@@ -44,11 +44,11 @@ export default function BillPayTabs({ handleSubTabChange }: BillPayTabsProps) {
       <div className="flex justify-between items-center mb-4">
         <Tabs
           aria-label="Service options"
-          selectedKey={selectedService}
-          variant="bordered"
           classNames={{
             tabList: "border-small",
           }}
+          selectedKey={selectedService}
+          variant="bordered"
           onSelectionChange={(key) => setSelectedService(key as string)}
         >
           {billPayConfig.map((tab) => (
@@ -56,7 +56,7 @@ export default function BillPayTabs({ handleSubTabChange }: BillPayTabsProps) {
           ))}
         </Tabs>
         {selectedService === "transfers" && (
-          <ResponsiveButton label="Create Transfer" icon={PlusIcon} onPress={() => setIsCreateModalOpen(true)} />
+          <ResponsiveButton icon={PlusIcon} label="Create Transfer" onPress={() => setIsCreateModalOpen(true)} />
         )}
       </div>
       <div className="mt-4">{renderTabContent(selectedService)}</div>

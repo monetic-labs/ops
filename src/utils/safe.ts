@@ -57,7 +57,9 @@ export const createUserOperation = async (
 export const sponsorUserOperation = async (userOp: UserOperationV7) => {
   const paymaster = new CandidePaymaster(PAYMASTER_URL);
   const [sponsoredOp] = await paymaster.createSponsorPaymasterUserOperation(userOp, BUNDLER_URL, SPONSORSHIP_POLICY_ID);
+
   Object.assign(userOp, sponsoredOp);
+
   return userOp;
 };
 
@@ -77,6 +79,7 @@ export const sendUserOperation = async (
 
   // Send operation
   const response = await account.sendUserOperation(userOp, BUNDLER_URL);
+
   return response;
 };
 

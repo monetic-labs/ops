@@ -93,6 +93,7 @@ export default function CardDetailsModal({ isOpen, onClose, card: propsCard }: C
 
       setCard((c) => {
         if (!c) return null;
+
         return {
           ...c,
           limit: Number(data.limitAmount) || c.limit,
@@ -243,9 +244,9 @@ export default function CardDetailsModal({ isOpen, onClose, card: propsCard }: C
                       <Button
                         className="text-foreground/60 hover:text-foreground bg-content2/50 hover:bg-content2"
                         endContent={isVisible ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                        isLoading={isLoadingSensitive}
                         size="sm"
                         variant="flat"
-                        isLoading={isLoadingSensitive}
                         onPress={toggleVisibility}
                       >
                         {isVisible ? "Hide Details" : "Show Details"}

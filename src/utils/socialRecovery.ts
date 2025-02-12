@@ -1,5 +1,6 @@
 import { SocialRecoveryModule, SocialRecoveryModuleGracePeriodSelector, MetaTransaction } from "abstractionkit";
 import { Address } from "viem";
+
 import { PUBLIC_RPC } from "@/config/web3";
 import { isLocal } from "@/utils/helpers";
 import { BACKPACK_GUARDIAN_ADDRESS } from "@/utils/constants";
@@ -18,6 +19,7 @@ export async function isBackpackGuardian(
   module: SocialRecoveryModule = defaultSocialRecoveryModule
 ): Promise<boolean> {
   if (isLocal) return true;
+
   return module.isGuardian(PUBLIC_RPC, accountAddress, BACKPACK_GUARDIAN_ADDRESS);
 }
 

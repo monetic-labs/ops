@@ -3,8 +3,9 @@
 import { useEffect, useState } from "react";
 
 import AccountMeta from "@/components/account-contract/account-meta";
-import MerchantServicesTabs from "./tabs";
 import pylon from "@/libs/pylon-sdk";
+
+import MerchantServicesTabs from "./tabs";
 
 export default function DashboardPage() {
   const [userId, setUserId] = useState("");
@@ -12,6 +13,7 @@ export default function DashboardPage() {
   useEffect(() => {
     const fetchUser = async () => {
       const result = await pylon.getUserById();
+
       setUserId(result.id);
     };
 

@@ -57,11 +57,13 @@ export function AccountProvider({ children }: { children: ReactNode }) {
     const fetchUser = async () => {
       if (!authState?.isLoggedIn) {
         setIsLoading(false);
+
         return;
       }
 
       try {
         const result = await pylon.getUserById();
+
         setUser(result);
       } catch (error) {
         console.error("Error fetching user data:", error);
@@ -81,12 +83,14 @@ export function AccountProvider({ children }: { children: ReactNode }) {
     const handleStorageChange = () => {
       const newAuthState = LocalStorage.getAuth();
       const newProfile = LocalStorage.getProfile();
+
       setAuthState(newAuthState);
       setProfile(newProfile);
     };
 
     window.addEventListener("storage", handleStorageChange);
     window.addEventListener("authStateChange", handleStorageChange);
+
     return () => {
       window.removeEventListener("storage", handleStorageChange);
       window.removeEventListener("authStateChange", handleStorageChange);
@@ -96,6 +100,7 @@ export function AccountProvider({ children }: { children: ReactNode }) {
   // Route protection
   useEffect(() => {
     const isPublicRoute = PUBLIC_ROUTES.some((route) => pathname?.startsWith(route));
+
     if (isLoading) return;
 
     if (!isPublicRoute && !isAuthenticated) {
@@ -114,6 +119,7 @@ export function AccountProvider({ children }: { children: ReactNode }) {
 
   const getSigningCredentials = (): WebAuthnCredentials | undefined => {
     if (!authState?.credentials) return undefined;
+
     return authState.credentials;
   };
 
@@ -156,13 +162,16 @@ export function AccountProvider({ children }: { children: ReactNode }) {
 
 export const useAccounts = () => {
   const context = useContext(AccountContext);
+
   if (!context) {
     throw new Error("useAccounts must be used within an AccountProvider");
   }
+
   return context;
 };
 
 export const useSigningCredentials = () => {
   const { getSigningCredentials } = useAccounts();
+
   return getSigningCredentials();
 };

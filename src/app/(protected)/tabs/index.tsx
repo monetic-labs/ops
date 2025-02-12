@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react";
 import { Card, CardBody } from "@nextui-org/card";
-import { Tab, Tabs } from "@nextui-org/tabs";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Tooltip } from "@nextui-org/tooltip";
 import {
@@ -10,13 +9,12 @@ import {
   CardCompanyStatus as RainKybStatus,
 } from "@backpack-fux/pylon-sdk";
 import { Button } from "@nextui-org/button";
-import { CreditCard, Building2, Users, Settings, Receipt } from "lucide-react";
+import { CreditCard, Building2, Users, Receipt } from "lucide-react";
 
 import BackOfficeTabs from "@/components/back-office/back-office";
 import BillPayTabs from "@/components/bill-pay/bill-pay";
 import CardServicesTabs from "@/components/card-issuance";
 import UserTab from "@/components/users";
-import { tabsConfig } from "@/config/tabs";
 import { useGetComplianceStatus } from "@/hooks/merchant/useGetComplianceStatus";
 
 export default function MerchantServicesTabs({ userId }: { userId: string }) {
@@ -28,6 +26,7 @@ export default function MerchantServicesTabs({ userId }: { userId: string }) {
 
   const handleTabChange = (key: string) => {
     const params = new URLSearchParams(searchParams?.toString() || "");
+
     params.set("tab", key);
     params.delete("subtab");
 
@@ -43,6 +42,7 @@ export default function MerchantServicesTabs({ userId }: { userId: string }) {
 
   const handleSubTabChange = (key: string) => {
     const params = new URLSearchParams(searchParams?.toString() || "");
+
     params.set("subtab", key);
     // Use replace to prevent scroll to top
     router.replace(`/?${params.toString()}`, { scroll: false });
@@ -109,12 +109,12 @@ export default function MerchantServicesTabs({ userId }: { userId: string }) {
               {navigationItems.map((item) => (
                 <Tooltip
                   key={item.id}
-                  content={item.tooltip}
                   classNames={{
                     content: "bg-content2/90 text-foreground text-xs px-2 py-1",
                   }}
-                  delay={500}
                   closeDelay={0}
+                  content={item.tooltip}
+                  delay={500}
                 >
                   <Button
                     className={`

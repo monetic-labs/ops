@@ -44,6 +44,7 @@ export const MessageInput = forwardRef<HTMLInputElement>((_, ref) => {
   const handleChange = useCallback(
     async (e: React.ChangeEvent<HTMLInputElement>) => {
       const newValue = e.target.value;
+
       setInputValue({ value: newValue });
       handleMentionInputChange(newValue, e.target.selectionStart || 0, e.target);
     },
@@ -67,8 +68,10 @@ export const MessageInput = forwardRef<HTMLInputElement>((_, ref) => {
 
       setTimeout(() => {
         const input = document.querySelector('[data-testid="chat-input"]') as HTMLInputElement;
+
         if (input) {
           const newCursorPos = lastAtIndex + selectedMention.insertText.length + 1;
+
           input.setSelectionRange(newCursorPos, newCursorPos);
           input.focus();
         }
@@ -81,6 +84,7 @@ export const MessageInput = forwardRef<HTMLInputElement>((_, ref) => {
     (e: React.KeyboardEvent) => {
       if (mentionState.isOpen) {
         const result = handleMentionKeyDown(e);
+
         if (result) {
           handleMentionSelect(result.option);
         }
@@ -212,6 +216,7 @@ export const MessageInput = forwardRef<HTMLInputElement>((_, ref) => {
       setTimeout(() => {
         if (input) {
           const newCursorPos = cursorPos + emoji.native.length;
+
           input.setSelectionRange(newCursorPos, newCursorPos);
           input.focus();
         }
@@ -249,14 +254,14 @@ export const MessageInput = forwardRef<HTMLInputElement>((_, ref) => {
         </Card>
       )}
       <div className="flex items-end gap-2">
-        <Popover placement="top" isOpen={showEmoji} onOpenChange={setShowEmoji}>
+        <Popover isOpen={showEmoji} placement="top" onOpenChange={setShowEmoji}>
           <PopoverTrigger>
             <Button isIconOnly className="mb-1" size="sm" variant="light" onPress={() => setShowEmoji(true)}>
               <Smile size={20} />
             </Button>
           </PopoverTrigger>
           <PopoverContent>
-            <Picker data={data} onEmojiSelect={onEmojiSelect} theme={resolvedTheme} previewPosition="none" />
+            <Picker data={data} previewPosition="none" theme={resolvedTheme} onEmojiSelect={onEmojiSelect} />
           </PopoverContent>
         </Popover>
         <div className="flex-1 relative">

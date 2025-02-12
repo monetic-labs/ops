@@ -89,6 +89,7 @@ export default function AuthPage() {
       } else {
         if (isAuthenticated) {
           setNotification("You already have a passkey. Please use it to sign in.");
+
           return;
         }
 

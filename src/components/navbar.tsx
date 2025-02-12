@@ -7,7 +7,7 @@ import { Button } from "@nextui-org/button";
 import { Badge } from "@nextui-org/badge";
 import { useRouter } from "next/navigation";
 import NextLink from "next/link";
-import { LogOut, User, Backpack, Shield, Moon, Sun, MessageCircle, HelpCircle } from "lucide-react";
+import { LogOut, User, Backpack, Shield, Moon, Sun, MessageCircle } from "lucide-react";
 import { MerchantUserGetByIdOutput as MerchantUser } from "@backpack-fux/pylon-sdk";
 
 import pylon from "@/libs/pylon-sdk";
@@ -73,6 +73,7 @@ const AuthenticatedNav = ({ user, handleSignOut }: { user: MerchantUser; handleS
                   ctrlKey: true,
                   metaKey: true,
                 });
+
                 window.dispatchEvent(event);
               }}
             >

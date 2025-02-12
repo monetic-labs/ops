@@ -64,12 +64,12 @@ export function DataTable<T extends { id: string | number }>({
 
   return (
     <Table
+      removeWrapper
       aria-label={ariaLabel}
       classNames={{
         wrapper: "bg-content1/50",
         ...classNames,
       }}
-      removeWrapper
       selectionMode={selectionMode}
     >
       <TableHeader>

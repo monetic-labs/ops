@@ -1,4 +1,5 @@
 import { useState } from "react";
+
 import pylon from "@/libs/pylon-sdk";
 
 interface SensitiveInfo {
@@ -21,12 +22,14 @@ export function useCardSensitiveInfo(cardId: string) {
   const toggleVisibility = async () => {
     if (isVisible) {
       setIsVisible(false);
+
       return;
     }
 
     // If we have cached data, use it
     if (sensitiveInfoCache[cardId]) {
       setIsVisible(true);
+
       return;
     }
 

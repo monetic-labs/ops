@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { Wallet, Landmark, Building2, CreditCard, PlusCircle, PiggyBank } from "lucide-react";
+import { Building2, CreditCard, PlusCircle, PiggyBank } from "lucide-react";
+
 import { Account } from "@/types/account";
 import { useAccounts as useAuthAccounts } from "@/contexts/AccountContext";
 

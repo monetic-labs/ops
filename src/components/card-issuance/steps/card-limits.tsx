@@ -30,14 +30,14 @@ export function CardLimitsStep({ form }: CardLimitsStepProps) {
       <div className="flex gap-4">
         <Input
           isRequired
-          type="number"
+          className="w-1/2"
           label="Card Limit"
           placeholder="5000"
-          className="w-1/2"
           startContent={<DollarSign className="text-foreground/50 w-4 h-4 pointer-events-none flex-shrink-0" />}
+          type="number"
           {...register("limitAmount", { valueAsNumber: true })}
-          isInvalid={!!errors.limitAmount}
           errorMessage={errors.limitAmount?.message}
+          isInvalid={!!errors.limitAmount}
         />
 
         <Controller
@@ -46,14 +46,14 @@ export function CardLimitsStep({ form }: CardLimitsStepProps) {
           render={({ field }) => (
             <Select
               isRequired
+              className="w-1/2"
+              errorMessage={errors.limitFrequency?.message}
+              isInvalid={!!errors.limitFrequency}
               label="Limit Cycle"
               placeholder="Select cycle"
-              className="w-1/2"
               selectedKeys={field.value ? [field.value] : []}
-              onChange={field.onChange}
               startContent={<Clock className="text-foreground/50 w-4 h-4 pointer-events-none flex-shrink-0" />}
-              isInvalid={!!errors.limitFrequency}
-              errorMessage={errors.limitFrequency?.message}
+              onChange={field.onChange}
             >
               {LIMIT_FREQUENCIES.map((frequency) => (
                 <SelectItem key={frequency.value} value={frequency.value}>

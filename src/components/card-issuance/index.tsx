@@ -33,11 +33,11 @@ export default function CardServicesTabs({ handleSubTabChange }: CardServicesTab
       <div className="flex justify-between items-center mb-4">
         <Tabs
           aria-label="Service options"
-          selectedKey={selectedService}
-          variant="bordered"
           classNames={{
             tabList: "border-small",
           }}
+          selectedKey={selectedService}
+          variant="bordered"
           onSelectionChange={(key) => setSelectedService(key as string)}
         >
           {cardServicesConfig.map((tab) => (
@@ -45,7 +45,7 @@ export default function CardServicesTabs({ handleSubTabChange }: CardServicesTab
           ))}
         </Tabs>
         {selectedService === "card-list" && (
-          <ResponsiveButton label="Create Card" icon={PlusIcon} onPress={() => setIsCreateModalOpen(true)} />
+          <ResponsiveButton icon={PlusIcon} label="Create Card" onPress={() => setIsCreateModalOpen(true)} />
         )}
       </div>
       <div className="mt-4">{renderTabContent(selectedService)}</div>

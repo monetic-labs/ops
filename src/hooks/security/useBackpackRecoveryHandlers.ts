@@ -1,4 +1,5 @@
 import { Address } from "viem";
+
 import { WebAuthnHelper } from "@/utils/webauthn";
 import { useAccounts } from "@/contexts/AccountContext";
 import { BACKPACK_GUARDIAN_ADDRESS } from "@/utils/constants";
@@ -48,6 +49,7 @@ export const useBackpackRecoveryHandlers = ({
 
         // Sign and send operation
         const signature = await webauthn.signMessage(hash);
+
         await sendUserOperation(
           walletAddress,
           userOp,
@@ -73,6 +75,7 @@ export const useBackpackRecoveryHandlers = ({
 
         // Sign and send operation
         const signature = await webauthn.signMessage(hash);
+
         await sendUserOperation(
           walletAddress,
           userOp,

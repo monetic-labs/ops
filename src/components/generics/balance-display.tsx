@@ -1,4 +1,5 @@
 import { Button } from "@nextui-org/button";
+
 import { formatUSD } from "@/utils/formatters/currency";
 
 interface BalanceDisplayProps {

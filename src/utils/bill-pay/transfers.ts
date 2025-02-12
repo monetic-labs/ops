@@ -1,12 +1,10 @@
 import { Address, encodeFunctionData, erc20Abi, Hex, parseUnits } from "viem";
 import {
   MetaTransaction,
-  createCallData,
   SignerSignaturePair,
   CandidePaymaster,
   DEFAULT_SECP256R1_PRECOMPILE_ADDRESS,
   SafeAccountV0_3_0 as SafeAccount,
-  WebauthnPublicKey,
   GasOption,
 } from "abstractionkit";
 
@@ -14,9 +12,10 @@ import { TransferStatus } from "@/components/generics/transfer-status";
 import { WebAuthnHelper } from "@/utils/webauthn";
 import { BASE_USDC } from "@/utils/constants";
 import { chain, BUNDLER_URL, PAYMASTER_URL, SPONSORSHIP_POLICY_ID, PUBLIC_RPC } from "@/config/web3";
-import { safeAbi } from "./safeAbi";
-import { useAccounts } from "@/contexts/AccountContext";
+
 import { WebAuthnCredentials } from "../localstorage";
+
+import { safeAbi } from "./safeAbi";
 
 type BuildNestedTransferParams = {
   individualSafeAddress: Address;
@@ -147,6 +146,7 @@ export const buildNestedTransfer = async ({
       BUNDLER_URL,
       SPONSORSHIP_POLICY_ID
     );
+
     settlementAccountUserOperation = sponsoredSettlementOp;
 
     // Get the hash for the settlement operation that needs to be approved
@@ -188,6 +188,7 @@ export const buildNestedTransfer = async ({
       BUNDLER_URL,
       SPONSORSHIP_POLICY_ID
     );
+
     individualAccountUserOperation = sponsoredIndividualOp;
 
     // Get the hash for the individual operation that needs to be signed
@@ -227,6 +228,7 @@ export const buildNestedTransfer = async ({
         if (!approvalReceipt.success) {
           console.error("Approval transaction failed");
           setTransferStatus(TransferStatus.ERROR);
+
           return;
         }
 

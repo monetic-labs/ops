@@ -1,9 +1,9 @@
+import type { Account } from "@/types/account";
+
 import { Button } from "@nextui-org/button";
 import { Card, CardBody } from "@nextui-org/card";
 import { X, Info, Copy, Share2 } from "lucide-react";
 import { Tooltip } from "@nextui-org/tooltip";
-import { Divider } from "@nextui-org/divider";
-import type { Account } from "@/types/account";
 
 interface ReceiveViewProps {
   selectedAccount: Account;
@@ -56,9 +56,9 @@ export function ReceiveView({
             </div>
             <Button
               isIconOnly
+              className="w-10 h-10 text-foreground/60 hover:text-foreground bg-content2/60 hover:bg-content2"
               variant="light"
               onPress={onClose}
-              className="w-10 h-10 text-foreground/60 hover:text-foreground bg-content2/60 hover:bg-content2"
             >
               <X className="w-5 h-5" />
             </Button>
@@ -109,7 +109,7 @@ export function ReceiveView({
                   {/* Minimum Deposit Notice */}
                   <div className="bg-warning/10 p-4 rounded-xl space-y-2">
                     <h4 className="text-sm font-medium flex items-center gap-2">
-                      <Info size={16} className="text-warning" />
+                      <Info className="text-warning" size={16} />
                       Minimum Deposit
                     </h4>
                     <p className="text-sm text-foreground/60">All deposits must be at least $1 USD</p>
@@ -126,8 +126,8 @@ export function ReceiveView({
                     <Button
                       className="min-w-0 h-7 px-3 text-xs bg-primary/10 text-primary hover:bg-primary/20"
                       size="sm"
-                      variant="flat"
                       startContent={<Share2 size={14} />}
+                      variant="flat"
                       onPress={handleShare}
                     >
                       Share Details
@@ -175,7 +175,7 @@ export function ReceiveView({
                       <div className="flex justify-between items-center">
                         <div className="flex items-center gap-2">
                           <span className="text-sm text-foreground/60">Routing Number</span>
-                          <Tooltip content="Use this for ACH transfers" className="bg-content2 text-foreground">
+                          <Tooltip className="bg-content2 text-foreground" content="Use this for ACH transfers">
                             <Info className="text-foreground/60 cursor-help" size={14} />
                           </Tooltip>
                         </div>

@@ -95,6 +95,7 @@ export default function InvitePage() {
 
       // Store auth state just like regular login
       const credentials = { publicKey: publicKeyCoordinates, credentialId };
+
       LocalStorage.setAuth(credentials, true);
       setAuth({ credentials, isLoggedIn: true });
 
@@ -111,6 +112,7 @@ export default function InvitePage() {
     e.preventDefault();
     if (!userDetails.phoneNumber) {
       setError("Please enter your phone number");
+
       return;
     }
     handlePasskeyRegistration();

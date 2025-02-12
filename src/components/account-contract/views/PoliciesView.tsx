@@ -7,7 +7,7 @@ export function PoliciesView() {
     <div className="space-y-4">
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
-          <Shield size={16} className="text-foreground/60" />
+          <Shield className="text-foreground/60" size={16} />
           <h3 className="text-lg font-semibold">Transfer Policies</h3>
         </div>
         <div className="flex items-center gap-2">
@@ -64,7 +64,7 @@ export function PoliciesView() {
                     </div>
                   </div>
                 </div>
-                <Button size="sm" variant="flat" className="bg-content4 shrink-0" isDisabled>
+                <Button isDisabled className="bg-content4 shrink-0" size="sm" variant="flat">
                   Edit
                 </Button>
               </div>
@@ -89,7 +89,7 @@ export function PoliciesView() {
                     </div>
                   </div>
                 </div>
-                <Button size="sm" variant="flat" className="bg-content4 shrink-0" isDisabled>
+                <Button isDisabled className="bg-content4 shrink-0" size="sm" variant="flat">
                   Edit
                 </Button>
               </div>

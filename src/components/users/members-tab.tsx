@@ -38,6 +38,7 @@ export default function MembersTab({ userId, isCreateModalOpen, setIsCreateModal
 
   const availableRoles = Object.values(PersonRole).filter((role) => {
     if (userRole === PersonRole.SUPER_ADMIN) return true;
+
     return false;
   });
 
@@ -45,9 +46,11 @@ export default function MembersTab({ userId, isCreateModalOpen, setIsCreateModal
     setIsLoading(true);
     try {
       const fetchedUsers = await pylon.getUsers();
+
       console.log("Fetched users:", fetchedUsers);
       setUsers(fetchedUsers);
       const currentUser = fetchedUsers.find((user) => user.id === userId);
+
       console.log("Current user found:", currentUser);
       setUserRole(currentUser?.role || null);
       setError(null);
@@ -71,6 +74,7 @@ export default function MembersTab({ userId, isCreateModalOpen, setIsCreateModal
       uid: "name",
       render: (user) => {
         const fullName = getFullName(user.firstName, user.lastName);
+
         return (
           <User
             avatarProps={{
@@ -130,6 +134,7 @@ export default function MembersTab({ userId, isCreateModalOpen, setIsCreateModal
     console.log("Can manage users:", canManageUsers);
     if (!canManageUsers) {
       console.log("Cannot manage users, returning");
+
       return;
     }
     setSelectedUser(user);
@@ -170,6 +175,7 @@ export default function MembersTab({ userId, isCreateModalOpen, setIsCreateModal
   const handleRemoveUser = async (userId: string) => {
     try {
       const success = await pylon.deleteUser(userId);
+
       if (success) {
         // Update the local state instead of refetching
         setUsers(users.filter((user) => user.id !== userId));
@@ -208,8 +214,8 @@ export default function MembersTab({ userId, isCreateModalOpen, setIsCreateModal
         isError={!!error}
         isLoading={isLoading}
         items={users}
-        onRowAction={handleUserClick}
         selectionMode="none"
+        onRowAction={handleUserClick}
       />
 
       {selectedUser && (

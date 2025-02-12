@@ -1,5 +1,3 @@
-import { UseChatHelpers } from "ai/react";
-
 /** Core message types supported by the system */
 export type MessageType = "user" | "bot" | "support" | "system" | "typing";
 /** Possible states of a message */

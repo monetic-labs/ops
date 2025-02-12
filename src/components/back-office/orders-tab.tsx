@@ -2,7 +2,6 @@ import React, { forwardRef, useState } from "react";
 import { Button } from "@nextui-org/button";
 import { Snippet } from "@nextui-org/snippet";
 import { GetOrderLinksOutput } from "@backpack-fux/pylon-sdk";
-import { PlusIcon } from "lucide-react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { DataTable, Column, EmptyContent } from "@/components/generics/data-table";
@@ -28,6 +27,7 @@ const OrdersTab = forwardRef<OrdersTabRef>((_, ref) => {
     queryKey: ["orders"],
     queryFn: async () => {
       const orders = await pylon.getOrderLinks();
+
       return orders;
     },
   });
@@ -36,7 +36,9 @@ const OrdersTab = forwardRef<OrdersTabRef>((_, ref) => {
   const deleteMutation = useMutation({
     mutationFn: async (orderId: string) => {
       const id = orderId.substring(orderId.lastIndexOf("/") + 1);
+
       await pylon.deleteOrderLink(id);
+
       return orderId;
     },
     onMutate: async (orderId) => {
@@ -177,7 +179,7 @@ const OrdersTab = forwardRef<OrdersTabRef>((_, ref) => {
         aria-label="Orders table"
         columns={orderColumns}
         emptyContent={
-          <EmptyContent type="primary" message="Create your first order" onAction={() => setIsModalOpen(true)} />
+          <EmptyContent message="Create your first order" type="primary" onAction={() => setIsModalOpen(true)} />
         }
         errorMessage="Failed to load orders"
         isError={!!error}

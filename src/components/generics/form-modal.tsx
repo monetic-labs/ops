@@ -1,5 +1,5 @@
 import React from "react";
-import { Modal, ModalContent, ModalHeader, ModalBody } from "@nextui-org/modal";
+import { Modal, ModalContent, ModalBody } from "@nextui-org/modal";
 import { Button } from "@nextui-org/button";
 import { X as XIcon } from "lucide-react";
 

@@ -31,10 +31,10 @@ export function ResponsiveButton({
   return (
     <Button
       className={`h-11 px-2 sm:px-6 ${className} ${buttonClasses[type]}`}
-      variant={variant}
       color={color}
-      onPress={onPress}
       isDisabled={isDisabled}
+      variant={variant}
+      onPress={onPress}
     >
       <span className="hidden sm:inline-flex items-center">
         {label}

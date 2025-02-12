@@ -1,9 +1,13 @@
 "use client";
 
-import { useState } from "react";
-import { useAccounts } from "@/hooks/useAccounts";
 import type { Account } from "@/types/account";
+import type { TransferActivity } from "./types";
+
+import { useState } from "react";
 import { Card, CardBody } from "@nextui-org/card";
+
+import { useAccounts } from "@/hooks/useAccounts";
+
 import { AccountHeader } from "./components/AccountHeader";
 import { AccountBalance } from "./components/AccountBalance";
 import { AccountNavigation } from "./components/AccountNavigation";
@@ -12,7 +16,6 @@ import { OperatorsView } from "./views/OperatorsView";
 import { PoliciesView } from "./views/PoliciesView";
 import { SendView } from "./views/SendView";
 import { ReceiveView } from "./views/ReceiveView";
-import type { TransferActivity } from "./types";
 
 export default function AccountMeta() {
   const { accounts, getEnabledAccounts } = useAccounts();
@@ -44,6 +47,7 @@ export default function AccountMeta() {
   const isAmountValid = () => {
     if (!amount || !selectedAccount) return false;
     const numericAmount = parseFloat(amount);
+
     return numericAmount > 0 && numericAmount <= (selectedAccount.balance || 0);
   };
 
@@ -56,17 +60,17 @@ export default function AccountMeta() {
   if (isSendModalOpen) {
     return (
       <SendView
-        selectedAccount={selectedAccount}
-        setSelectedAccount={setSelectedAccount}
-        onClose={() => setIsSendModalOpen(false)}
-        toAccount={toAccount}
-        setToAccount={setToAccount}
         amount={amount}
-        setAmount={setAmount}
-        onSelectToAccount={() => setToAccount(accounts[1])}
-        isAmountValid={isAmountValid}
-        onTransfer={handleTransfer}
         availableAccounts={enabledAccounts}
+        isAmountValid={isAmountValid}
+        selectedAccount={selectedAccount}
+        setAmount={setAmount}
+        setSelectedAccount={setSelectedAccount}
+        setToAccount={setToAccount}
+        toAccount={toAccount}
+        onClose={() => setIsSendModalOpen(false)}
+        onSelectToAccount={() => setToAccount(accounts[1])}
+        onTransfer={handleTransfer}
       />
     );
   }
@@ -74,11 +78,11 @@ export default function AccountMeta() {
   if (isReceiveModalOpen) {
     return (
       <ReceiveView
+        availableAccounts={enabledAccounts}
         selectedAccount={selectedAccount}
-        onClose={() => setIsReceiveModalOpen(false)}
         selectedSettlementAccount={accounts[0]}
         onChangeSettlementAccount={setSelectedAccount}
-        availableAccounts={enabledAccounts}
+        onClose={() => setIsReceiveModalOpen(false)}
       />
     );
   }
@@ -88,11 +92,11 @@ export default function AccountMeta() {
       <CardBody className="p-0">
         <div className="flex flex-col">
           <AccountHeader
-            selectedAccount={selectedAccount}
             accounts={accounts}
-            onAccountSelect={handleAccountSelect}
-            totalBalance={totalBalance.toString()}
             isExpanded={isExpanded}
+            selectedAccount={selectedAccount}
+            totalBalance={totalBalance.toString()}
+            onAccountSelect={handleAccountSelect}
             onToggleExpand={() => setIsExpanded(!isExpanded)}
           />
 
@@ -104,7 +108,7 @@ export default function AccountMeta() {
             `}
           >
             <div className="p-6 space-y-6 border-t border-border">
-              <AccountBalance account={selectedAccount} onSend={handleSend} onReceive={handleReceive} />
+              <AccountBalance account={selectedAccount} onReceive={handleReceive} onSend={handleSend} />
 
               <AccountNavigation selectedTab={activeTab} onTabChange={setActiveTab} />
 

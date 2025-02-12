@@ -91,6 +91,7 @@ export default function CreateBillPayModal({
   } = useNewDisbursement();
 
   const { credentials } = useAccounts();
+
   if (!credentials) {
     throw new Error("No credentials found");
   }
@@ -221,15 +222,15 @@ export default function CreateBillPayModal({
 
   return (
     <Modal
-      data-testid="create-transfer-modal"
-      isOpen={isOpen}
-      size="2xl"
       classNames={{
         base: "bg-content1",
         header: "border-b border-default-100",
         body: "py-6",
         closeButton: "hover:bg-default-100",
       }}
+      data-testid="create-transfer-modal"
+      isOpen={isOpen}
+      size="2xl"
       onClose={onClose}
     >
       <ModalContent className="relative">
@@ -251,6 +252,10 @@ export default function CreateBillPayModal({
               <span className="text-default-600">Fee:</span>
               <div className="flex items-center gap-2">
                 <Tooltip
+                  classNames={{
+                    base: "bg-content2/80 backdrop-blur-sm",
+                    content: "text-foreground",
+                  }}
                   content={
                     <div className="px-2 py-1 text-sm">
                       {billPay.vendorMethod === DisbursementMethod.WIRE
@@ -258,21 +263,17 @@ export default function CreateBillPayModal({
                         : "We cover these fees for you."}
                     </div>
                   }
-                  classNames={{
-                    base: "bg-content2/80 backdrop-blur-sm",
-                    content: "text-foreground",
-                  }}
                 >
                   <Info className="text-default-500 dark:text-default-400 cursor-help" size={14} />
                 </Tooltip>
-                <span data-testid="fee" className="text-default-600">
+                <span className="text-default-600" data-testid="fee">
                   {fee.toFixed(2) === "0.00" ? "Free" : `${fee * 100}%`}
                 </span>
               </div>
             </div>
             <div className="flex justify-between items-center">
               <span className="text-lg font-semibold text-foreground">Total:</span>
-              <span data-testid="total" className="text-lg font-semibold text-foreground">
+              <span className="text-lg font-semibold text-foreground" data-testid="total">
                 ${total.toFixed(2)}
               </span>
             </div>
@@ -281,12 +282,12 @@ export default function CreateBillPayModal({
         <Divider className="bg-default-100" />
         <ModalFooterWithSupport
           actions={footerActions}
-          onSupportClick={handleSupportClick}
           isNewSender={isNewSender}
           onNewSenderChange={(value) => {
             setIsNewSender(value);
             setBillPay(value ? DEFAULT_NEW_BILL_PAY : DEFAULT_EXISTING_BILL_PAY);
           }}
+          onSupportClick={handleSupportClick}
         />
       </ModalContent>
     </Modal>

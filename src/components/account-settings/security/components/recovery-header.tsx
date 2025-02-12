@@ -1,6 +1,5 @@
 "use client";
 
-import { Button } from "@nextui-org/button";
 import { Tooltip } from "@nextui-org/tooltip";
 import { Shield, InfoIcon } from "lucide-react";
 import { Select, SelectItem } from "@nextui-org/select";
@@ -64,17 +63,12 @@ export const RecoveryHeader = ({ configuredCount, threshold, onThresholdChange }
         >
           <div>
             <Select
-              label="Required for Recovery"
               defaultSelectedKeys={[threshold.toString()]}
-              selectedKeys={[threshold.toString()]}
-              size="sm"
               isDisabled={isSelectDisabled}
-              onChange={(e) => {
-                const selectedValue = Number(e.target.value);
-                onThresholdChange(selectedValue);
-              }}
+              label="Required for Recovery"
               renderValue={(items) => {
                 const selected = items[0];
+
                 return (
                   <div className="flex items-center gap-2">
                     <span>
@@ -83,6 +77,13 @@ export const RecoveryHeader = ({ configuredCount, threshold, onThresholdChange }
                     <InfoIcon className="w-4 h-4 text-foreground/60" />
                   </div>
                 );
+              }}
+              selectedKeys={[threshold.toString()]}
+              size="sm"
+              onChange={(e) => {
+                const selectedValue = Number(e.target.value);
+
+                onThresholdChange(selectedValue);
               }}
             >
               {thresholdOptions.map((value) => (

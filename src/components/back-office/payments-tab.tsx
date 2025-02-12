@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from "react";
+import React, { useState } from "react";
 import { Chip } from "@nextui-org/chip";
 import { TransactionListItem } from "@backpack-fux/pylon-sdk";
 
@@ -20,6 +20,7 @@ const paymentColumns: Column<TransactionListItem>[] = [
     render: (payment: TransactionListItem) => {
       const statusLength = payment.transactionStatusHistory.length;
       const lastStatus = payment.transactionStatusHistory[statusLength - 1].status;
+
       return (
         <Chip
           className="capitalize truncate"

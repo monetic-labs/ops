@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { CardType, CardStatus, CardLimitFrequency, CardShippingMethod } from "@backpack-fux/pylon-sdk";
+import { CardType, CardLimitFrequency, CardShippingMethod } from "@backpack-fux/pylon-sdk";
 
 export const CardBasicInfoSchema = z.object({
   displayName: z.string().min(3, "Card name must be at least 3 characters"),

@@ -19,7 +19,7 @@ export function OperatorsView() {
               <p className="text-sm text-foreground/60">Added 2 months ago</p>
             </div>
           </div>
-          <Button size="sm" variant="flat" className="bg-content3/50 hover:bg-content3">
+          <Button className="bg-content3/50 hover:bg-content3" size="sm" variant="flat">
             Manage
           </Button>
         </div>

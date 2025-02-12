@@ -1,6 +1,6 @@
-import { Modal, ModalBody, ModalContent } from "@nextui-org/modal";
-
 import type { Account } from "@/types/account";
+
+import { Modal, ModalBody, ModalContent } from "@nextui-org/modal";
 
 interface AccountSelectionModalProps {
   isOpen: boolean;

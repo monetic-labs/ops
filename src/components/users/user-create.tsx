@@ -49,6 +49,7 @@ export default function CreateUserModal({ isOpen, availableRoles, onClose, onSav
     };
 
     setErrors(newErrors);
+
     return !Object.values(newErrors).some((error) => error);
   };
 

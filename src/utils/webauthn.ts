@@ -31,6 +31,7 @@ export class WebAuthnHelper {
    */
   async requestChallenge(): Promise<string> {
     const response = await pylon.generatePasskeyChallenge();
+
     return response.challenge;
   }
 

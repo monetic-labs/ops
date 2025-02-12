@@ -1,3 +1,5 @@
+import type { Account } from "@/types/account";
+
 import { Button } from "@nextui-org/button";
 import { Card, CardBody } from "@nextui-org/card";
 import { ArrowRight, Info, X } from "lucide-react";
@@ -5,7 +7,6 @@ import { Tooltip } from "@nextui-org/tooltip";
 import { Modal, ModalContent, ModalHeader, ModalBody } from "@nextui-org/modal";
 import React, { useEffect, useState } from "react";
 
-import type { Account } from "@/types/account";
 import { MoneyInput } from "@/components/generics/money-input";
 import { BalanceDisplay } from "@/components/generics/balance-display";
 
@@ -49,12 +50,14 @@ export function SendView({
 
     if (eligibleAccounts.length === 1 && !toAccount) {
       const selectedDestination = eligibleAccounts[0];
+
       onSelectToAccount();
     }
   }, [availableAccounts, selectedAccount, toAccount]);
 
   const handleAccountSelection = (account: Account) => {
     const selectedDestination = account;
+
     onSelectToAccount();
     setIsAccountSelectionOpen(false);
   };
@@ -75,9 +78,9 @@ export function SendView({
             </div>
             <Button
               isIconOnly
+              className="w-10 h-10 text-foreground/60 hover:text-foreground bg-content2/60 hover:bg-content2"
               variant="light"
               onPress={onClose}
-              className="w-10 h-10 text-foreground/60 hover:text-foreground bg-content2/60 hover:bg-content2"
             >
               <X className="w-5 h-5" />
             </Button>
@@ -101,11 +104,12 @@ export function SendView({
                 </div>
                 <Button
                   isIconOnly
-                  variant="light"
                   className="min-w-0 p-2 hover:bg-content3"
+                  variant="light"
                   onPress={() => {
                     if (toAccount) {
                       const temp = selectedAccount;
+
                       setSelectedAccount(toAccount);
                       setToAccount(temp);
                     }
@@ -216,7 +220,7 @@ export function SendView({
         </div>
       </CardBody>
 
-      <Modal isOpen={isAccountSelectionOpen} onClose={() => setIsAccountSelectionOpen(false)} size="lg">
+      <Modal isOpen={isAccountSelectionOpen} size="lg" onClose={() => setIsAccountSelectionOpen(false)}>
         <ModalContent>
           <ModalHeader>Select Destination Account</ModalHeader>
           <ModalBody className="gap-3 p-6">

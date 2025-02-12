@@ -6,7 +6,6 @@ import { Switch } from "@nextui-org/switch";
 import { Address } from "viem";
 
 import {
-  isBackpackGuardian,
   createRevokeGuardianTransaction,
   createAddGuardianTransaction,
   createEnableModuleTransaction,
@@ -50,6 +49,7 @@ export const BackpackRecovery = ({ isEnabled, onToggle }: BackpackRecoveryProps)
 
         // Sign and send operation
         const signature = await webauthn.signMessage(hash);
+
         await sendUserOperation(
           walletAddress,
           userOp,
@@ -77,6 +77,7 @@ export const BackpackRecovery = ({ isEnabled, onToggle }: BackpackRecoveryProps)
 
         // Sign and send operation
         const signature = await webauthn.signMessage(hash);
+
         await sendUserOperation(
           walletAddress,
           userOp,

@@ -1,9 +1,10 @@
+import type { WebAuthnCredentials } from "@/utils/localstorage";
+
 import { useEffect, useState, useRef } from "react";
+import { Address } from "viem";
 
 import { XMTPService, type GroupMessage } from "@/utils/xmtp/client";
-import type { WebAuthnCredentials } from "@/utils/localstorage";
 import { createSafeAccount } from "@/utils/safe";
-import { Address } from "viem";
 
 interface ChatProps {
   account: WebAuthnCredentials;

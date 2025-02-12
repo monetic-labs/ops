@@ -3,6 +3,7 @@ import { Filter, Download, Clock, CheckCircle, PenTool } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import Image from "next/image";
 import { Tooltip } from "@nextui-org/tooltip";
+
 import { TransferActivity } from "../types";
 
 interface ActivityViewProps {
@@ -48,11 +49,11 @@ export function ActivityView({ activities }: ActivityViewProps) {
                     >
                       <div className="relative">
                         <Image
-                          src={operator.image}
                           alt={operator.name}
-                          width={24}
-                          height={24}
                           className="rounded-full border-2 border-background"
+                          height={24}
+                          src={operator.image}
+                          width={24}
                         />
                         <div
                           className={`absolute -bottom-1 -right-1 w-3 h-3 rounded-full border-2 border-background ${
@@ -64,8 +65,8 @@ export function ActivityView({ activities }: ActivityViewProps) {
                   ))}
                 </div>
                 <Button
-                  size="sm"
                   className="bg-content3 text-primary hover:bg-content4"
+                  size="sm"
                   startContent={<PenTool className="w-3 h-3" />}
                 >
                   Sign
@@ -93,18 +94,18 @@ export function ActivityView({ activities }: ActivityViewProps) {
         </div>
         <div className="flex gap-2 w-full md:w-auto">
           <Button
-            size="sm"
-            variant="flat"
             className="flex-1 md:flex-none bg-content2 hover:bg-content3"
+            size="sm"
             startContent={<Filter className="w-4 h-4" />}
+            variant="flat"
           >
             Filter
           </Button>
           <Button
-            size="sm"
-            variant="flat"
             className="flex-1 md:flex-none bg-content2 hover:bg-content3"
+            size="sm"
             startContent={<Download className="w-4 h-4" />}
+            variant="flat"
           >
             Export
           </Button>

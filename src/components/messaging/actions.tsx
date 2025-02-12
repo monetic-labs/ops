@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useRef, useState, useCallback } from "react";
+import React, { useRef, useState } from "react";
 import { Button } from "@nextui-org/button";
 import { Tooltip } from "@nextui-org/tooltip";
 import { Camera, Image } from "lucide-react";
@@ -20,8 +20,10 @@ export const ChatActions: React.FC = () => {
   const handleScreenshot = async () => {
     // Check rate limit
     const now = Date.now();
+
     if (now - lastScreenshotTime < SCREENSHOT_COOLDOWN) {
       console.log("Please wait before taking another screenshot");
+
       return;
     }
 
@@ -81,6 +83,7 @@ export const ChatActions: React.FC = () => {
 
   const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
+
     if (!file) return;
 
     try {

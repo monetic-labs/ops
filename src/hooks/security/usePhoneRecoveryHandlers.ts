@@ -1,9 +1,11 @@
-import { ConfiguredPhone } from "@/components/account-settings/security/types";
-import { PhoneVerification, PendingChanges } from "./types";
 import { RecoveryWalletMethod } from "@backpack-fux/pylon-sdk";
 import { Address } from "viem";
+
+import { ConfiguredPhone } from "@/components/account-settings/security/types";
 import pylon from "@/libs/pylon-sdk";
 import { createAddGuardianTransaction } from "@/utils/socialRecovery";
+
+import { PhoneVerification, PendingChanges } from "./types";
 
 type UsePhoneRecoveryHandlersProps = {
   configuredPhone: ConfiguredPhone | null;

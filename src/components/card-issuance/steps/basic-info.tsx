@@ -33,12 +33,12 @@ export function BasicInfoStep({ form }: BasicInfoStepProps) {
           render={({ field }) => (
             <Select
               {...field}
-              label="Card Type"
-              placeholder="Select a card type"
               className="w-full"
-              startContent={<CreditCard className="text-foreground/50 w-4 h-4 pointer-events-none flex-shrink-0" />}
               errorMessage={errors.cardType?.message}
               isInvalid={!!errors.cardType}
+              label="Card Type"
+              placeholder="Select a card type"
+              startContent={<CreditCard className="text-foreground/50 w-4 h-4 pointer-events-none flex-shrink-0" />}
             >
               {CARD_TYPES.map((type) => (
                 <SelectItem key={type.value} value={type.value}>
@@ -51,12 +51,12 @@ export function BasicInfoStep({ form }: BasicInfoStepProps) {
 
         <Input
           {...register("displayName")}
-          label="Card Name"
-          placeholder="Marketing Team Card"
           className="w-full"
-          startContent={<CreditCard className="text-foreground/50 w-4 h-4 pointer-events-none flex-shrink-0" />}
           errorMessage={errors.displayName?.message}
           isInvalid={!!errors.displayName}
+          label="Card Name"
+          placeholder="Marketing Team Card"
+          startContent={<CreditCard className="text-foreground/50 w-4 h-4 pointer-events-none flex-shrink-0" />}
         />
       </div>
 
@@ -65,34 +65,34 @@ export function BasicInfoStep({ form }: BasicInfoStepProps) {
         <div className="flex gap-4">
           <Input
             {...register("ownerFirstName")}
-            label="First Name"
-            placeholder="John"
             className="w-1/2"
-            startContent={<User className="text-foreground/50 w-4 h-4 pointer-events-none flex-shrink-0" />}
             errorMessage={errors.ownerFirstName?.message}
             isInvalid={!!errors.ownerFirstName}
+            label="First Name"
+            placeholder="John"
+            startContent={<User className="text-foreground/50 w-4 h-4 pointer-events-none flex-shrink-0" />}
           />
 
           <Input
             {...register("ownerLastName")}
-            label="Last Name"
-            placeholder="Smith"
             className="w-1/2"
-            startContent={<User className="text-foreground/50 w-4 h-4 pointer-events-none flex-shrink-0" />}
             errorMessage={errors.ownerLastName?.message}
             isInvalid={!!errors.ownerLastName}
+            label="Last Name"
+            placeholder="Smith"
+            startContent={<User className="text-foreground/50 w-4 h-4 pointer-events-none flex-shrink-0" />}
           />
         </div>
 
         <Input
           {...register("ownerEmail")}
-          type="email"
-          label="Email"
-          placeholder="john.smith@company.com"
           className="w-full"
-          startContent={<Mail className="text-foreground/50 w-4 h-4 pointer-events-none flex-shrink-0" />}
           errorMessage={errors.ownerEmail?.message}
           isInvalid={!!errors.ownerEmail}
+          label="Email"
+          placeholder="john.smith@company.com"
+          startContent={<Mail className="text-foreground/50 w-4 h-4 pointer-events-none flex-shrink-0" />}
+          type="email"
         />
       </div>
     </div>

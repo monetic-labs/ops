@@ -5,6 +5,8 @@ import {
   RecoveryWalletMethod,
   RecoveryWalletGenerateInput,
 } from "@backpack-fux/pylon-sdk";
+import { Address } from "viem";
+import { UseFormSetError } from "react-hook-form";
 
 import { WebAuthnHelper } from "@/utils/webauthn";
 import { LocalStorage, OnboardingState } from "@/utils/localstorage";
@@ -12,9 +14,7 @@ import { FormData, UserRole } from "@/validations/onboard/schemas";
 import { BACKPACK_GUARDIAN_ADDRESS } from "@/utils/constants";
 import { createAndSendSponsoredUserOp, sendUserOperation } from "@/utils/safe";
 import pylon from "@/libs/pylon-sdk";
-import { Address } from "viem";
 import { createEnableModuleTransaction, createAddGuardianTransaction } from "@/utils/socialRecovery";
-import { UseFormSetError } from "react-hook-form";
 
 interface SubmitHandlerParams {
   formData: FormData;
@@ -45,6 +45,7 @@ export const handleSubmit = async ({
         type: "validate",
         message: "Please verify your passkey before submitting",
       });
+
       return;
     }
 
@@ -208,6 +209,7 @@ export const handleSubmit = async ({
 
       // Wait for receipt
       const receipt = await response.included();
+
       if (!receipt.success) {
         throw new Error("Failed to setup social recovery");
       }

@@ -1,8 +1,9 @@
+import type { Message } from "@/types/messaging";
+
 import { useChat } from "ai/react";
 
 import { OPENAI_MODELS } from "@/knowledge-base/config";
 import { useMessagingStore, useMessagingActions } from "@/libs/messaging/store";
-import type { Message } from "@/types/messaging";
 
 /**
  * Custom hook that provides chat functionality with an AI agent.

@@ -1,4 +1,5 @@
 import { Mail, Phone, Key, Backpack, Users } from "lucide-react";
+
 import { RecoveryMethod } from "./types";
 
 export const GRACE_PERIOD_OPTIONS = [

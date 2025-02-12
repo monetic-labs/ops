@@ -1,6 +1,7 @@
+import type { Account } from "@/types/account";
+
 import { Button } from "@nextui-org/button";
 import { ArrowUpRight, ArrowDownLeft } from "lucide-react";
-import type { Account } from "@/types/account";
 
 interface AccountBalanceProps {
   account: Account;

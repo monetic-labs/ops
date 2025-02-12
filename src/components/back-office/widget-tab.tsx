@@ -1,12 +1,9 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { Select, SelectItem } from "@nextui-org/select";
 import { Network, StableCurrency } from "@backpack-fux/pylon-sdk";
 import { Autocomplete, AutocompleteItem } from "@nextui-org/autocomplete";
 
-import pylon from "@/libs/pylon-sdk";
-
 import GenerateApiKeysModal from "./actions/widgets/api-keys";
-import { RefundSuccessModal } from "./actions/order-success";
 
 const networks = ["POLYGON", "SOLANA", "BASE", "OPTIMISM", "ARBITRUM"];
 const currencies = ["USDC", "USDT", "DAI"];

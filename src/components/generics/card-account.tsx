@@ -1,5 +1,4 @@
 import { Button } from "@nextui-org/button";
-import { Card } from "@nextui-org/card";
 import { LucideIcon } from "lucide-react";
 
 interface AccountCardProps {
@@ -25,16 +24,19 @@ export function AccountCard(props: AccountCardProps) {
     const disabledClasses = props.disabled
       ? "border-default-200/50 bg-default-100/50 dark:border-default-200/30"
       : "border-default-300 bg-default-100/80 hover:bg-default-200/50";
+
     return `w-full h-full p-4 rounded-lg transition-all duration-300 relative group border ${disabledClasses} ${props.className || ""}`;
   };
 
   const getIconClasses = (size: number) => {
     if (props.iconClassName) return `w-${size} h-${size} ${props.iconClassName}`;
+
     return `w-${size} h-${size} ${props.disabled ? "text-foreground/40" : "text-primary"}`;
   };
 
   const renderComingSoonOverlay = () => {
     if (!props.comingSoon) return null;
+
     return (
       <div className="absolute inset-0 flex items-center justify-center bg-background/90 opacity-0 group-hover:opacity-100 transition-all duration-300 rounded-lg backdrop-blur-sm">
         <span className="text-sm font-medium text-foreground">Coming Soon</span>
@@ -44,6 +46,7 @@ export function AccountCard(props: AccountCardProps) {
 
   const renderBalance = () => {
     if (typeof props.balance !== "number") return null;
+
     return (
       <div className="flex flex-col items-start w-full">
         <p className={`text-lg font-semibold ${props.disabled ? "text-default-400" : "text-foreground"}`}>

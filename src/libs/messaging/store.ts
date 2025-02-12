@@ -3,14 +3,12 @@ import { devtools } from "zustand/middleware";
 import { persist } from "zustand/middleware";
 
 import {
-  MessageMode,
   Message,
   UserMessage,
   BotMessage,
   SystemMessage,
   SupportMessage,
   MessageStatus,
-  MessageServiceType,
   MessageType,
 } from "@/types/messaging";
 

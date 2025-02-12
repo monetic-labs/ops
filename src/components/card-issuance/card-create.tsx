@@ -51,6 +51,7 @@ export default function CreateCardModal({ isOpen, onClose }: CreateCardModalProp
       if (data.cardType === CardType.PHYSICAL) {
         if (!data.shipping) {
           setError("Shipping details are required for physical cards");
+
           return;
         }
 

@@ -2,12 +2,12 @@
 
 import { useState } from "react";
 import { Tab, Tabs } from "@nextui-org/tabs";
-import { Button } from "@nextui-org/button";
 import { PlusIcon } from "lucide-react";
+
+import { ResponsiveButton } from "../generics/responsive-button";
 
 import MembersTab from "./members-tab";
 import DeveloperAccess from "./developer-access";
-import { ResponsiveButton } from "../generics/responsive-button";
 
 const userTabsConfig = [
   {
@@ -40,12 +40,12 @@ export default function UserTab({ userId }: { userId: string }) {
       <div className="flex justify-between items-center">
         <Tabs
           aria-label="User management options"
-          disabledKeys={["developer"]}
-          selectedKey={selectedTab}
-          variant="bordered"
           classNames={{
             tabList: "border-small",
           }}
+          disabledKeys={["developer"]}
+          selectedKey={selectedTab}
+          variant="bordered"
           onSelectionChange={(key) => setSelectedTab(key as string)}
         >
           {userTabsConfig.map((tab) => (
@@ -53,7 +53,7 @@ export default function UserTab({ userId }: { userId: string }) {
           ))}
         </Tabs>
         {selectedTab === "members" && (
-          <ResponsiveButton label="Add User" icon={PlusIcon} onPress={() => setIsModalOpen(true)} />
+          <ResponsiveButton icon={PlusIcon} label="Add User" onPress={() => setIsModalOpen(true)} />
         )}
       </div>
       <div className="mt-4">{renderTabContent(selectedTab)}</div>

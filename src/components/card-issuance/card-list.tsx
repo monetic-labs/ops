@@ -96,6 +96,7 @@ export default function CardList() {
           .map((card) => {
             if (!card || typeof card !== "object") {
               console.warn("Invalid card object in response:", card);
+
               return null;
             }
 
@@ -113,6 +114,7 @@ export default function CardList() {
               };
             } catch (err) {
               console.warn("Error processing card:", err);
+
               return null;
             }
           })
@@ -139,17 +141,17 @@ export default function CardList() {
       <DataTable
         aria-label="Card list table"
         columns={cardColumns}
-        errorMessage="Failed to load cards"
         emptyContent={
-          <EmptyContent type="primary" message="Create your first card" onAction={() => setIsCreateModalOpen(true)} />
+          <EmptyContent message="Create your first card" type="primary" onAction={() => setIsCreateModalOpen(true)} />
         }
+        errorMessage="Failed to load cards"
         isError={isError}
         isLoading={isLoading}
         items={cards}
         onRowAction={setSelectedCard}
       />
 
-      <CardDetailsModal isOpen={!!selectedCard} card={selectedCard} onClose={() => setSelectedCard(null)} />
+      <CardDetailsModal card={selectedCard} isOpen={!!selectedCard} onClose={() => setSelectedCard(null)} />
       <CreateCardModal isOpen={isCreateModalOpen} onClose={() => setIsCreateModalOpen(false)} />
     </>
   );

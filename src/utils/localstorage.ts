@@ -1,5 +1,4 @@
 import { Address } from "viem";
-import { MerchantUserGetByIdOutput as MerchantUser } from "@backpack-fux/pylon-sdk";
 
 // Define clear interfaces
 export interface WebAuthnCredentials {
@@ -73,6 +72,7 @@ export class LocalStorage {
   // User Profile Methods
   static setProfileImage(image: string) {
     const profile = this.getProfile() || {};
+
     this.set("profile", {
       ...profile,
       profileImage: image,
@@ -87,6 +87,7 @@ export class LocalStorage {
   static removeProfileImage() {
     const profile = this.getProfile() || {};
     const { profileImage, ...rest } = profile;
+
     this.set("profile", rest);
     this.dispatchStorageChange();
   }
@@ -109,18 +110,22 @@ export class LocalStorage {
   private static get(key: string): any {
     if (typeof localStorage === "undefined") return null;
     const data = localStorage.getItem(this.KEY);
+
     if (!data) return null;
 
     const parsed = JSON.parse(data, this.reviver);
+
     return parsed[key] || null;
   }
 
   private static remove(key: string) {
     if (typeof localStorage === "undefined") return;
     const data = localStorage.getItem(this.KEY);
+
     if (!data) return;
 
     const parsed = JSON.parse(data, this.reviver);
+
     delete parsed[key];
 
     if (Object.keys(parsed).length === 0) {

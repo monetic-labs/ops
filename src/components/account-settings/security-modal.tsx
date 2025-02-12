@@ -16,9 +16,9 @@ import {
   usePhoneRecoveryHandlers,
   useBackpackRecoveryHandlers,
 } from "@/hooks/security";
+import { useAccounts } from "@/contexts/AccountContext";
 
 import { RECOVERY_OPTIONS, DEAD_SWITCH_OPTIONS, GRACE_PERIOD_OPTIONS } from "./security/constants";
-
 import { SecuritySettingsModalProps } from "./security/types";
 import { EmailVerification } from "./security/components/recovery-options/email-verification";
 import { PhoneVerification } from "./security/components/recovery-options/phone-verification";
@@ -26,7 +26,6 @@ import { BackpackRecovery } from "./security/components/recovery-options/backpac
 import { RecoveryWarning } from "./security/components/recovery-warning";
 import { RecoveryHeader } from "./security/components/recovery-header";
 import { TimeSettingCard } from "./security/components/time-setting-card";
-import { useAccounts } from "@/contexts/AccountContext";
 
 export const SecuritySettingsModal = ({ isOpen, onClose }: SecuritySettingsModalProps) => {
   // Time settings state
@@ -152,8 +151,6 @@ export const SecuritySettingsModal = ({ isOpen, onClose }: SecuritySettingsModal
 
             <Accordion
               className="p-0 gap-0 flex flex-col bg-content2 rounded-lg border border-divider"
-              variant="bordered"
-              selectionMode="multiple"
               itemClasses={{
                 base: "border-b border-divider last:border-0",
                 title: "font-medium",
@@ -161,6 +158,8 @@ export const SecuritySettingsModal = ({ isOpen, onClose }: SecuritySettingsModal
                 indicator: "text-medium",
                 content: "pt-0",
               }}
+              selectionMode="multiple"
+              variant="bordered"
             >
               {RECOVERY_OPTIONS.map((option) => {
                 const isConfigured =
@@ -217,8 +216,8 @@ export const SecuritySettingsModal = ({ isOpen, onClose }: SecuritySettingsModal
                           configuredEmails={configuredEmails}
                           currentEmail={emailVerification.currentEmail}
                           otpValue={emailVerification.otpValue}
-                          verifyingEmail={emailVerification.verifyingEmail}
                           pendingDeletions={pendingChanges.toDelete}
+                          verifyingEmail={emailVerification.verifyingEmail}
                           onAddEmail={emailHandlers.handleAddEmail}
                           onCancelVerification={emailHandlers.handleCancelVerification}
                           onEmailChange={emailVerification.setCurrentEmail}
@@ -256,23 +255,23 @@ export const SecuritySettingsModal = ({ isOpen, onClose }: SecuritySettingsModal
 
           {/* Time Settings Section */}
           <TimeSettingCard
-            title="Grace Period"
             description="The grace period adds a timelock to recovery attempts, allowing you to detect and stop any unauthorized recovery attempts."
             icon={Timer}
+            isComingSoon={true}
             options={GRACE_PERIOD_OPTIONS}
             selectedValue={selectedGracePeriod}
+            title="Grace Period"
             onValueChange={setSelectedGracePeriod}
-            isComingSoon={true}
           />
 
           <TimeSettingCard
-            title="Dead Switch"
             description="Dead Switch automatically transfers account access to designated guardians after a period of inactivity."
             icon={Clock}
+            isComingSoon={true}
             options={DEAD_SWITCH_OPTIONS}
             selectedValue={selectedDeadSwitch}
+            title="Dead Switch"
             onValueChange={setSelectedDeadSwitch}
-            isComingSoon={true}
           />
         </ModalBody>
 

@@ -1,6 +1,7 @@
+import type { Account } from "@/types/account";
+
 import { Button } from "@nextui-org/button";
 import { Modal, ModalContent, ModalHeader, ModalBody } from "@nextui-org/modal";
-import type { Account } from "@/types/account";
 
 interface AccountSelectionModalProps {
   isOpen: boolean;
@@ -20,7 +21,7 @@ export function AccountSelectionModal({
   title,
 }: AccountSelectionModalProps) {
   return (
-    <Modal isOpen={isOpen} onClose={onClose} size="lg">
+    <Modal isOpen={isOpen} size="lg" onClose={onClose}>
       <ModalContent>
         <ModalHeader>{title}</ModalHeader>
         <ModalBody className="gap-3 p-6">

@@ -1,6 +1,5 @@
 import { RecoveryWalletMethod } from "@backpack-fux/pylon-sdk";
 import { MetaTransaction } from "abstractionkit";
-import { ConfiguredEmail, ConfiguredPhone, RecoveryWallet } from "@/components/account-settings/security/types";
 
 export type RecoveryWalletGenerateInput = {
   identifier: string;

@@ -42,11 +42,6 @@ export const ChatPane: React.FC<ChatPaneProps> = ({ isOpen, onClose }) => {
 
   return (
     <Drawer
-      isOpen={isOpen}
-      onClose={onClose}
-      onKeyDown={handleKeyDown}
-      placement="left"
-      size="md"
       backdrop="transparent"
       classNames={{
         base: ["bg-content1/95", "backdrop-blur-md", "text-foreground", "shadow-2xl", "dark:shadow-content1/20"].join(
@@ -58,6 +53,7 @@ export const ChatPane: React.FC<ChatPaneProps> = ({ isOpen, onClose }) => {
         wrapper: ["max-w-[420px] w-full", "rounded-r-2xl", "shadow-xl shadow-content1/10"].join(" "),
       }}
       hideCloseButton={true}
+      isOpen={isOpen}
       motionProps={{
         variants: {
           enter: {
@@ -78,6 +74,10 @@ export const ChatPane: React.FC<ChatPaneProps> = ({ isOpen, onClose }) => {
           },
         },
       }}
+      placement="left"
+      size="md"
+      onClose={onClose}
+      onKeyDown={handleKeyDown}
     >
       <DrawerContent>
         <DrawerHeader className="px-4 py-3 flex justify-between">

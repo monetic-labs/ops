@@ -1,9 +1,11 @@
-import { ConfiguredEmail } from "@/components/account-settings/security/types";
-import { EmailVerification, PendingChanges } from "./types";
 import { RecoveryWalletMethod } from "@backpack-fux/pylon-sdk";
 import { Address } from "viem";
+
+import { ConfiguredEmail } from "@/components/account-settings/security/types";
 import pylon from "@/libs/pylon-sdk";
 import { createAddGuardianTransaction } from "@/utils/socialRecovery";
+
+import { EmailVerification, PendingChanges } from "./types";
 
 type UseEmailRecoveryHandlersProps = {
   configuredEmails: ConfiguredEmail[];
@@ -26,6 +28,7 @@ export const useEmailRecoveryHandlers = ({
     if (!email || configuredEmails.some((e) => e.email === email)) return;
 
     const newEmail = { email, isVerified: false };
+
     setConfiguredEmails((prev) => [...prev, newEmail]);
     emailVerification.setVerifyingEmail(email);
     emailVerification.setCurrentEmail("");
@@ -78,6 +81,7 @@ export const useEmailRecoveryHandlers = ({
 
   const handleRemoveEmail = (email: string) => {
     const emailToRemove = configuredEmails.find((e) => e.email === email);
+
     if (!emailToRemove?.recoveryWalletId) return;
 
     addPendingChange({

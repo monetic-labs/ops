@@ -4,8 +4,6 @@ import { MerchantCardTransactionGetOutput } from "@backpack-fux/pylon-sdk";
 import { Button } from "@nextui-org/button";
 import { Divider } from "@nextui-org/divider";
 import { Modal, ModalBody, ModalContent, ModalFooter, ModalHeader } from "@nextui-org/modal";
-import { Table, TableBody, TableColumn, TableHeader, TableRow } from "@nextui-org/table";
-import { PlusIcon } from "lucide-react";
 
 interface TransactionDetailsModalProps {
   isOpen: boolean;

@@ -102,8 +102,8 @@ export default function Transfers() {
         columns={transferColumns}
         emptyContent={
           <EmptyContent
-            type="primary"
             message="Create your first transfer"
+            type="primary"
             onAction={() => setIsCreateModalOpen(true)}
           />
         }
@@ -128,8 +128,8 @@ export default function Transfers() {
       <CreateBillPayModal
         billPay={DEFAULT_NEW_BILL_PAY}
         isOpen={isCreateModalOpen}
-        settlementAddress={settlementAddress}
         setBillPay={() => {}}
+        settlementAddress={settlementAddress}
         onClose={() => setIsCreateModalOpen(false)}
         onSave={(newBillPay) => {
           console.log("Creating transfer:", newBillPay);

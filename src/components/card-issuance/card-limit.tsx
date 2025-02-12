@@ -47,27 +47,27 @@ export default function CardLimitModal({ isOpen, onClose, cardName, currentLimit
           <p>Card: {cardName}</p>
           <p>Current Limit: {currentLimit}</p>
           <Input
-            label="New Limit Amount"
-            placeholder="Enter amount"
-            labelPlacement="outside"
-            value={amount}
             classNames={{
               label: "text-sm font-medium text-foreground/90",
               input: "text-base",
               inputWrapper: "h-12",
             }}
+            label="New Limit Amount"
+            labelPlacement="outside"
+            placeholder="Enter amount"
+            value={amount}
             onChange={(e) => setAmount(e.target.value)}
           />
           <Select
-            label="Limit Cycle"
-            placeholder="Select cycle"
-            labelPlacement="outside"
-            value={cycle}
             classNames={{
               label: "text-sm font-medium text-foreground/90",
               trigger: "h-12",
               value: "text-base",
             }}
+            label="Limit Cycle"
+            labelPlacement="outside"
+            placeholder="Select cycle"
+            value={cycle}
             onChange={(e) => setCycle(e.target.value)}
           >
             {cycles.map((c) => (

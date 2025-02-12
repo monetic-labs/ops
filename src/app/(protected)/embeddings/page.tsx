@@ -6,13 +6,13 @@ import { Divider } from "@nextui-org/divider";
 import { Input } from "@nextui-org/input";
 import { Spinner } from "@nextui-org/spinner";
 import { Tabs, Tab } from "@nextui-org/tabs";
+import { Button } from "@nextui-org/button";
 
 import { FormCard } from "@/components/generics/form-card";
 import { BootstrapSection } from "@/components/embeddings/bootstrap-section";
 import DocumentManager from "@/components/embeddings/doc-manager";
 import KnowledgeBaseStats from "@/components/embeddings/kb-stats";
 import { useDocumentProcessor } from "@/hooks/embeddings/useDocumentProcessor";
-import { Button } from "@nextui-org/button";
 
 const UploadForm = ({
   file,

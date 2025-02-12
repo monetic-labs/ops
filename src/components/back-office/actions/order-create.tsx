@@ -30,19 +30,23 @@ export default function CreateOrderModal({ isOpen, onClose, onCreate }: CreateOr
 
   const validateEmail = (email: string) => {
     const emailRegex = /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i;
+
     return emailRegex.test(email) ? "" : "Please enter a valid email address";
   };
 
   const validatePhone = (phone: string) => {
     const phoneRegex = /^\(\d{3}\)\s\d{3}-\d{4}$/;
+
     return phoneRegex.test(phone) ? "" : "Please enter a valid phone number";
   };
 
   const validateAmount = (amount: string) => {
     const numericValue = parseFloat(amount.replace(/[^\d.]/g, ""));
+
     if (isNaN(numericValue)) return "Please enter a valid amount";
     if (numericValue < 1) return "Amount must be at least $1.00";
     if (numericValue > 1000000) return "Amount cannot exceed $1,000,000";
+
     return "";
   };
 
@@ -61,6 +65,7 @@ export default function CreateOrderModal({ isOpen, onClose, onCreate }: CreateOr
       case "amount":
         const cleanValue = value.replace(/[^\d.]/g, "");
         const parts = cleanValue.split(".");
+
         if (parts.length > 2) {
           formattedValue = parts[0] + "." + parts[1];
         } else if (parts.length === 2) {
@@ -70,6 +75,7 @@ export default function CreateOrderModal({ isOpen, onClose, onCreate }: CreateOr
         }
         if (!formattedValue.endsWith(".")) {
           const numericValue = parseFloat(formattedValue);
+
           if (!isNaN(numericValue)) {
             formattedValue = formatNumber(numericValue);
           }

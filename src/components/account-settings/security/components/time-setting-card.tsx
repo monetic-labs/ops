@@ -52,13 +52,13 @@ export const TimeSettingCard = ({
           <p className="text-sm text-foreground/60">{description}</p>
 
           <Select
-            isDisabled={isComingSoon}
             classNames={{
               trigger: "p-3",
               value: "text-foreground",
               label: "text-foreground/60",
               base: "bg-content2",
             }}
+            isDisabled={isComingSoon}
             label={`Select ${title}`}
             selectedKeys={[selectedValue]}
             onChange={(e) => onValueChange(e.target.value)}

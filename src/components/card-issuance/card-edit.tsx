@@ -5,7 +5,6 @@ import { ModalBody, ModalFooter } from "@nextui-org/modal";
 import { XIcon, DollarSign, Calendar, CreditCard, Lock } from "lucide-react";
 import { Controller, UseFormReturn } from "react-hook-form";
 import { z } from "zod";
-import { CardLimitFrequency, CardStatus } from "@backpack-fux/pylon-sdk";
 
 import { limitCyclesObject, limitStatesObject, UpateCardSchema } from "@/data";
 

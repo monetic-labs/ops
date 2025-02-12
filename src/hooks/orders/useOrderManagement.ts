@@ -50,7 +50,9 @@ export const useOrderManagement = () => {
 
         if (existingIndex !== -1) {
           const newTransactions = [...prevTransactions];
+
           newTransactions[existingIndex] = updatedTransaction;
+
           return newTransactions;
         }
 

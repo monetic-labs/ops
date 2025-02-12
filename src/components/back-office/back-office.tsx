@@ -1,6 +1,5 @@
 import { useState, useRef, useEffect } from "react";
 import { Tab, Tabs } from "@nextui-org/tabs";
-import { Button } from "@nextui-org/button";
 import { PlusIcon, SaveIcon } from "lucide-react";
 import { Network, StableCurrency } from "@backpack-fux/pylon-sdk";
 
@@ -35,6 +34,7 @@ export default function BackOfficeTabs({ handleSubTabChange }: BackOfficeTabsPro
   useEffect(() => {
     const fetchSettlementAccount = async () => {
       const accountDetails = await pylon.getSettlementAccount();
+
       setSettlementAddress(accountDetails.walletAddress);
       setSelectedNetwork(accountDetails.network);
       setSelectedCurrency(accountDetails.currency);
@@ -85,13 +85,13 @@ export default function BackOfficeTabs({ handleSubTabChange }: BackOfficeTabsPro
       case "widget-management":
         return (
           <WidgetTab
-            settlementAddress={settlementAddress}
-            selectedNetwork={selectedNetwork}
-            selectedCurrency={selectedCurrency}
-            onSettlementAddressChange={setSettlementAddress}
-            onNetworkChange={setSelectedNetwork}
-            onCurrencyChange={setSelectedCurrency}
             hasChanges={hasSettingsChanges()}
+            selectedCurrency={selectedCurrency}
+            selectedNetwork={selectedNetwork}
+            settlementAddress={settlementAddress}
+            onCurrencyChange={setSelectedCurrency}
+            onNetworkChange={setSelectedNetwork}
+            onSettlementAddressChange={setSettlementAddress}
           />
         );
       default:
@@ -112,11 +112,11 @@ export default function BackOfficeTabs({ handleSubTabChange }: BackOfficeTabsPro
         <div className="flex items-center gap-4">
           <Tabs
             aria-label="Service options"
-            selectedKey={selectedService}
-            variant="bordered"
             classNames={{
               tabList: "border-small",
             }}
+            selectedKey={selectedService}
+            variant="bordered"
             onSelectionChange={(key) => setSelectedService(key as string)}
           >
             {backOfficeConfig.map((tab) => (
@@ -127,15 +127,15 @@ export default function BackOfficeTabs({ handleSubTabChange }: BackOfficeTabsPro
         <div className="flex items-center gap-2">
           {selectedService === "widget-management" && (
             <ResponsiveButton
-              label="Save Settings"
               icon={SaveIcon}
+              isDisabled={!hasSettingsChanges}
+              label="Save Settings"
               type="primary"
               onPress={handleSaveSettings}
-              isDisabled={!hasSettingsChanges}
             />
           )}
           {selectedService === "order-links" && (
-            <ResponsiveButton label="Create Order Link" icon={PlusIcon} onPress={() => setIsCreateModalOpen(true)} />
+            <ResponsiveButton icon={PlusIcon} label="Create Order Link" onPress={() => setIsCreateModalOpen(true)} />
           )}
         </div>
       </div>

@@ -100,9 +100,9 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({ message, contentTe
           {message.attachment.url && (
             <div className="mt-2 rounded-md overflow-hidden">
               <img
-                src={message.attachment.url}
                 alt={`${message.attachment.type} attachment`}
                 className="w-full max-w-[300px] h-auto object-cover rounded-md"
+                src={message.attachment.url}
               />
             </div>
           )}
@@ -129,11 +129,11 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({ message, contentTe
     <div className={`flex items-start gap-3 message-${getMessageType()}`} data-testid={bubbleTestId}>
       {!isUser && (
         <Avatar
-          icon={<User className="w-4 h-4" />}
           classNames={{
             base: "bg-content3",
             icon: "text-foreground",
           }}
+          icon={<User className="w-4 h-4" />}
           size="sm"
         />
       )}
@@ -152,9 +152,9 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({ message, contentTe
                   return (
                     <SyntaxHighlighter
                       PreTag="div"
+                      className="rounded-md !bg-content3/50 text-xs"
                       language={match[1]}
                       style={vscDarkPlus}
-                      className="rounded-md !bg-content3/50 text-xs"
                     >
                       {codeString}
                     </SyntaxHighlighter>
@@ -176,11 +176,11 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({ message, contentTe
       </div>
       {isUser && (
         <Avatar
-          icon={<User className="w-4 h-4" />}
           classNames={{
             base: "bg-primary",
             icon: "text-primary-foreground",
           }}
+          icon={<User className="w-4 h-4" />}
           size="sm"
         />
       )}
