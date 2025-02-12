@@ -1,50 +1,45 @@
-import {
-  type WebauthnPublicKey,
-  type MetaTransaction,
-  SafeAccountV0_3_0 as SafeAccount,
-  DEFAULT_SECP256R1_PRECOMPILE_ADDRESS,
-  GasOption,
-} from "abstractionkit";
+// import {
+//   type WebauthnPublicKey,
+//   type MetaTransaction,
+//   SafeAccountV0_3_0 as SafeAccount,
+//   DEFAULT_SECP256R1_PRECOMPILE_ADDRESS,
+//   GasOption,
+// } from "abstractionkit";
 
-import { BUNDLER_URL, chain, SPONSORSHIP_POLICY_ID } from "@/config/web3";
+// import { BUNDLER_URL, chain, PUBLIC_RPC, SPONSORSHIP_POLICY_ID } from "@/config/web3";
 
-import { BaseSafeAccountHelper } from "./base";
+// import { BaseSafeAccountHelper } from "./base";
 
-/**
- * Safe Account Helper for WebAuthn-based accounts
- */
-export class WebAuthnSafeAccountHelper extends BaseSafeAccountHelper {
-  constructor(webauthPublicKey: WebauthnPublicKey) {
-    // Initialize Safe account with WebAuthn public key
-    const account = SafeAccount.initializeNewAccount([webauthPublicKey], {
-      eip7212WebAuthnPrecompileVerifierForSharedSigner: DEFAULT_SECP256R1_PRECOMPILE_ADDRESS,
-    });
+// /**
+//  * Safe Account Helper for WebAuthn-based accounts
+//  */
+// export class WebAuthnSafeAccountHelper extends BaseSafeAccountHelper {
+//   constructor(webauthPublicKey: WebauthnPublicKey) {
+//     // Initialize Safe account with WebAuthn public key
+//     const account = SafeAccount.initializeNewAccount([webauthPublicKey], {
+//       eip7212WebAuthnPrecompileVerifierForSharedSigner: DEFAULT_SECP256R1_PRECOMPILE_ADDRESS,
+//     });
 
-    super(account, webauthPublicKey);
-  }
+//     super(account, webauthPublicKey);
+//   }
 
-  async createSponsoredUserOp(transactions: MetaTransaction[]) {
-    // Create initial user operation
-    const userOperation = await this.account.createUserOperation(
-      transactions,
-      chain.rpcUrls.default.http[0],
-      BUNDLER_URL,
-      {
-        expectedSigners: [this.signer],
-        eip7212WebAuthnPrecompileVerifier: DEFAULT_SECP256R1_PRECOMPILE_ADDRESS,
-        gasLevel: GasOption.Fast,
-      }
-    );
+//   async createSponsoredUserOp(transactions: MetaTransaction[]) {
+//     // Create initial user operation
+//     const userOperation = await this.account.createUserOperation(transactions, PUBLIC_RPC, BUNDLER_URL, {
+//       expectedSigners: [this.signer],
+//       eip7212WebAuthnPrecompileVerifier: DEFAULT_SECP256R1_PRECOMPILE_ADDRESS,
+//       gasLevel: GasOption.Fast,
+//     });
 
-    // Add sponsorship
-    const [sponsoredUserOp] = await this.paymaster.createSponsorPaymasterUserOperation(
-      userOperation,
-      BUNDLER_URL,
-      SPONSORSHIP_POLICY_ID
-    );
+//     // Add sponsorship
+//     const [sponsoredUserOp] = await this.paymaster.createSponsorPaymasterUserOperation(
+//       userOperation,
+//       BUNDLER_URL,
+//       SPONSORSHIP_POLICY_ID
+//     );
 
-    Object.assign(userOperation, sponsoredUserOp);
+//     Object.assign(userOperation, sponsoredUserOp);
 
-    return userOperation;
-  }
-}
+//     return userOperation;
+//   }
+// }

@@ -3,14 +3,18 @@
 import { useState } from "react";
 import { Card } from "@nextui-org/card";
 import { Switch } from "@nextui-org/switch";
+import { Address } from "viem";
 
-import { socialRecovery } from "@/utils/safeAccount/socialRecovery";
+import {
+  isBackpackGuardian,
+  createRevokeGuardianTransaction,
+  createAddGuardianTransaction,
+  createEnableModuleTransaction,
+} from "@/utils/socialRecovery";
 import { useAccounts } from "@/contexts/AccountContext";
 import { WebAuthnHelper } from "@/utils/webauthn";
 import { BACKPACK_GUARDIAN_ADDRESS } from "@/utils/constants";
-import { Address } from "viem";
-import { LocalStorage } from "@/utils/localstorage";
-import { WebAuthnSafeAccountHelper } from "@/utils/safeAccount";
+import { createAndSendSponsoredUserOp, sendUserOperation } from "@/utils/safe";
 
 type BackpackRecoveryProps = {
   isEnabled: boolean;
@@ -19,46 +23,71 @@ type BackpackRecoveryProps = {
 
 export const BackpackRecovery = ({ isEnabled, onToggle }: BackpackRecoveryProps) => {
   const [isLoading, setIsLoading] = useState(false);
-  const { user } = useAccounts();
+  const { user, credentials } = useAccounts();
 
   const handleToggle = async () => {
-    if (isLoading || !user) return;
+    if (isLoading || !user || !credentials) return;
     setIsLoading(true);
 
     try {
-      const safeUser = LocalStorage.getSafeUser();
       const webauthn = new WebAuthnHelper({
-        publicKey: safeUser?.publicKey,
-        credentialId: safeUser?.passkeyId,
+        publicKey: credentials.publicKey,
+        credentialId: credentials.credentialId,
       });
-      const userWalletAddress = user.walletAddress as Address;
-      const safeAccountHelper = new WebAuthnSafeAccountHelper(safeUser?.publicKeyCoordinates);
+      const walletAddress = user.walletAddress as Address;
+      const signer = credentials.publicKey;
 
       if (!isEnabled) {
         // Enable Backpack as guardian
-        const enableModuleTx = socialRecovery.createEnableModuleTransaction(userWalletAddress);
-        const addGuardianTx = socialRecovery.createAddGuardianTransaction(BACKPACK_GUARDIAN_ADDRESS, BigInt(2));
+        const enableModuleTx = createEnableModuleTransaction(walletAddress);
+        const addGuardianTx = createAddGuardianTransaction(BACKPACK_GUARDIAN_ADDRESS, BigInt(2));
 
-        const userOp = await safeAccountHelper.createSponsoredUserOp([enableModuleTx, addGuardianTx]);
+        // Create and sponsor user operation
+        const { userOp, hash } = await createAndSendSponsoredUserOp(walletAddress, [enableModuleTx, addGuardianTx], {
+          signer,
+          isWebAuthn: true,
+        });
 
-        const userOpHash = safeAccountHelper.getUserOpHash(userOp);
-        const signature = await webauthn.signMessage(userOpHash);
+        // Sign and send operation
+        const signature = await webauthn.signMessage(hash);
+        await sendUserOperation(
+          walletAddress,
+          userOp,
+          {
+            signer,
+            signature: signature.signature,
+          },
+          false
+        );
 
-        return await safeAccountHelper.signAndSendUserOp(userOp, signature);
+        await onToggle();
       } else {
         // Disable Backpack as guardian
-        const revokeGuardianTx = await socialRecovery.createRevokeGuardianTransaction(
-          userWalletAddress,
+        const revokeGuardianTx = await createRevokeGuardianTransaction(
+          walletAddress,
           BACKPACK_GUARDIAN_ADDRESS,
           BigInt(2)
         );
 
-        const userOp = await safeAccountHelper.createSponsoredUserOp([revokeGuardianTx]);
+        // Create and sponsor user operation
+        const { userOp, hash } = await createAndSendSponsoredUserOp(walletAddress, [revokeGuardianTx], {
+          signer,
+          isWebAuthn: true,
+        });
 
-        const userOpHash = safeAccountHelper.getUserOpHash(userOp);
-        const signature = await webauthn.signMessage(userOpHash);
+        // Sign and send operation
+        const signature = await webauthn.signMessage(hash);
+        await sendUserOperation(
+          walletAddress,
+          userOp,
+          {
+            signer,
+            signature: signature.signature,
+          },
+          false
+        );
 
-        return await safeAccountHelper.signAndSendUserOp(userOp, signature);
+        await onToggle();
       }
     } catch (error) {
       console.error("Failed to toggle Backpack recovery:", error);

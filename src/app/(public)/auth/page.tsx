@@ -6,11 +6,12 @@ import { Button } from "@nextui-org/button";
 import { Divider } from "@nextui-org/divider";
 import { Backpack, Fingerprint, KeyRound, ShieldCheck } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { Address } from "viem";
 
 import { WebAuthnHelper } from "@/utils/webauthn";
-import { PublicKeySafeAccountHelper, WebAuthnSafeAccountHelper } from "@/utils/safeAccount";
-import { LocalStorage } from "@/utils/localstorage";
 import { useAccounts } from "@/contexts/AccountContext";
+import { OnboardingState } from "@/utils/localstorage";
+import { createSafeAccount } from "@/utils/safe";
 
 const SecurityFeatures = () => (
   <div className="space-y-4 text-default-500">
@@ -48,70 +49,73 @@ export default function AuthPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [isDisabled, setIsDisabled] = useState(false);
   const [notification, setNotification] = useState<string | null>(null);
-  const [hasPasskey, setHasPasskey] = useState(false);
   const router = useRouter();
-  const { setOnboardingState } = useAccounts();
+  const { isAuthenticated, setAuth, setOnboarding } = useAccounts();
 
   useEffect(() => {
-    const safeUser = LocalStorage.getSafeUser();
-    const hasExistingPasskey = LocalStorage.hasPasskeyRegistered();
-
-    if (safeUser?.isLogin) {
+    if (isAuthenticated) {
       setIsDisabled(true);
       router.push("/");
     }
-
-    setHasPasskey(hasExistingPasskey);
-  }, [router]);
+  }, [isAuthenticated, router]);
 
   const handlePasskeyAuth = async (isLogin: boolean) => {
     setIsLoading(true);
     try {
-      const webauthnHelper = new WebAuthnHelper({});
+      const webauthnHelper = new WebAuthnHelper();
 
       if (isLogin) {
         // Login with passkey
-        const { publicKey: webauthnPublicKey, credentialId } = await webauthnHelper.loginWithPasskey();
-        const safeOwner = new WebAuthnSafeAccountHelper(webauthnPublicKey);
-        const walletAddress = safeOwner.getAddress();
+        const { publicKey, credentialId } = await webauthnHelper.loginWithPasskey();
 
-        const safeSettlement = new PublicKeySafeAccountHelper(walletAddress);
-        const settlementAddress = safeSettlement.getAddress();
+        // Create safe accounts with WebAuthn signer
+        const walletAddress = createSafeAccount({
+          signer: publicKey,
+          isWebAuthn: true,
+        });
 
-        // Store login state
-        LocalStorage.setSafeUser(webauthnPublicKey, walletAddress, settlementAddress, "", true, credentialId);
+        // Create settlement account with wallet as signer
+        const settlementAddress = createSafeAccount({
+          signer: walletAddress,
+        });
+
+        // Store login state using context
+        setAuth({
+          credentials: { publicKey, credentialId },
+          isLoggedIn: true,
+        });
+
         router.push("/");
       } else {
-        if (hasPasskey) {
+        if (isAuthenticated) {
           setNotification("You already have a passkey. Please use it to sign in.");
-
           return;
         }
 
         // Create new passkey
-        const { publicKeyCoordinates, passkeyId, credentialId } = await webauthnHelper.createPasskey();
-        const safeOwner = new WebAuthnSafeAccountHelper(publicKeyCoordinates);
-        const walletAddress = safeOwner.getAddress();
+        const { publicKeyCoordinates: publicKey, credentialId } = await webauthnHelper.createPasskey();
 
-        const safeSettlement = new PublicKeySafeAccountHelper(walletAddress);
-        const settlementAddress = safeSettlement.getAddress();
+        // Create safe accounts
+        const walletAddress = createSafeAccount({
+          signer: publicKey,
+          isWebAuthn: true,
+        });
+
+        const settlementAddress = createSafeAccount({
+          signer: walletAddress,
+        });
 
         // Store onboarding state
-        const onboardingState = {
-          passkeyId,
-          credentialId,
-          walletAddress,
-          settlementAddress,
-          publicKeyCoordinates: {
-            x: publicKeyCoordinates.x.toString(),
-            y: publicKeyCoordinates.y.toString(),
+        const onboardingState: OnboardingState = {
+          credentials: {
+            publicKey,
+            credentialId,
           },
+          walletAddress: walletAddress as Address,
+          settlementAddress: settlementAddress as Address,
         };
 
-        // Store onboarding state in context and localStorage
-        setOnboardingState(onboardingState);
-        LocalStorage.setOnboardingState(onboardingState);
-
+        setOnboarding(onboardingState);
         router.push("/onboard");
       }
     } catch (error) {
@@ -177,13 +181,13 @@ export default function AuthPage() {
             </div>
             <Button
               className="w-full bg-white/10 hover:bg-white/20 text-white h-14"
-              isDisabled={isDisabled || hasPasskey}
+              isDisabled={isDisabled}
               isLoading={isLoading}
               radius="lg"
               startContent={!isLoading && <KeyRound className="w-5 h-5" />}
               onClick={() => handlePasskeyAuth(false)}
             >
-              {hasPasskey ? "Passkey Already Exists" : "Create Passkey"}
+              {notification ? "Passkey Already Exists" : "Create Passkey"}
             </Button>
             {notification ? <div className="text-red-200 text-center"> {notification} </div> : undefined}
           </div>

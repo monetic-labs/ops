@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { NavbarBrand, NavbarContent, NavbarItem, Navbar as NextUINavbar } from "@nextui-org/navbar";
 import { Dropdown, DropdownTrigger, DropdownMenu, DropdownItem } from "@nextui-org/dropdown";
 import { Avatar } from "@nextui-org/avatar";
@@ -8,10 +8,10 @@ import { Badge } from "@nextui-org/badge";
 import { useRouter } from "next/navigation";
 import NextLink from "next/link";
 import { LogOut, User, Backpack, Shield, Moon, Sun, MessageCircle, HelpCircle } from "lucide-react";
+import { MerchantUserGetByIdOutput as MerchantUser } from "@backpack-fux/pylon-sdk";
 
 import pylon from "@/libs/pylon-sdk";
-import { ExtendedMerchantUser, useAccounts } from "@/contexts/AccountContext";
-import { LocalStorage } from "@/utils/localstorage";
+import { useAccounts } from "@/contexts/AccountContext";
 import { getDisplayName } from "@/utils/helpers";
 import { useTheme } from "@/hooks/useTheme";
 import { useMessagingState, useMessagingActions } from "@/libs/messaging/store";
@@ -31,15 +31,7 @@ const UserInfo = ({ userName, orgName }: UserInfoProps) => (
   </div>
 );
 
-const AuthenticatedNav = ({
-  user,
-  merchant,
-  handleSignOut,
-}: {
-  user: ExtendedMerchantUser;
-  merchant: { name: string };
-  handleSignOut: () => Promise<void>;
-}) => {
+const AuthenticatedNav = ({ user, handleSignOut }: { user: MerchantUser; handleSignOut: () => Promise<void> }) => {
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isSecurityOpen, setIsSecurityOpen] = useState(false);
   const [dropdownKey, setDropdownKey] = useState(0);
@@ -48,6 +40,7 @@ const AuthenticatedNav = ({
   const {
     ui: { togglePane },
   } = useMessagingActions();
+  const { profile } = useAccounts();
 
   const displayName = user.username || getDisplayName(user.firstName, user.lastName);
   const initials =
@@ -106,11 +99,11 @@ const AuthenticatedNav = ({
                     icon: "text-primary",
                   }}
                   name={initials}
-                  showFallback={!user.profileImage}
+                  showFallback={!profile?.profileImage}
                   size="sm"
-                  src={user.profileImage || undefined}
+                  src={profile?.profileImage || undefined}
                 />
-                <UserInfo orgName={merchant?.name} userName={displayName} />
+                <UserInfo orgName={user?.merchant.company.name} userName={displayName} />
               </button>
             </DropdownTrigger>
             <DropdownMenu aria-label="User menu" variant="flat">
@@ -181,14 +174,14 @@ const AuthenticatedNav = ({
                 icon: "text-primary",
               }}
               name={initials}
-              showFallback={!user.profileImage}
+              showFallback={!profile?.profileImage}
               size="sm"
-              src={user.profileImage || undefined}
+              src={profile?.profileImage || undefined}
             />
           </DropdownTrigger>
           <DropdownMenu aria-label="Mobile user menu" className="w-[280px]" variant="flat">
             <DropdownItem key="user-info" isReadOnly className="h-14 gap-2">
-              <UserInfo orgName={merchant?.name} userName={displayName} />
+              <UserInfo orgName={user?.merchant.company.name} userName={displayName} />
             </DropdownItem>
             <DropdownItem
               key="profile"
@@ -249,17 +242,22 @@ const UnauthenticatedNav = () => (
 
 export const Navbar = () => {
   const router = useRouter();
-  const { merchant, user, isAuthenticated, isLoading } = useAccounts();
+  const { user, isAuthenticated, isLoading, logout } = useAccounts();
 
   const handleSignOut = async () => {
     try {
       await pylon.logout();
-      LocalStorage.clearAuthState();
-      router.push("/auth");
+      logout();
     } catch (error) {
       console.error("Error signing out:", error);
     }
   };
+
+  useEffect(() => {
+    if (!isLoading && !isAuthenticated) {
+      router.push("/auth");
+    }
+  }, [isAuthenticated, isLoading, router]);
 
   return (
     <NextUINavbar
@@ -282,8 +280,8 @@ export const Navbar = () => {
         </NavbarBrand>
       </NavbarContent>
 
-      {isLoading ? null : isAuthenticated && user && merchant ? (
-        <AuthenticatedNav handleSignOut={handleSignOut} merchant={merchant} user={user} />
+      {isLoading ? null : isAuthenticated && user ? (
+        <AuthenticatedNav handleSignOut={handleSignOut} user={user} />
       ) : (
         <UnauthenticatedNav />
       )}

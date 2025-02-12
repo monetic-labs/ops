@@ -7,65 +7,63 @@ import { Input } from "@nextui-org/input";
 import { Avatar } from "@nextui-org/avatar";
 import { XIcon, Upload, Trash2 } from "lucide-react";
 
+import { MerchantUserGetByIdOutput as MerchantUser } from "@backpack-fux/pylon-sdk";
 import { formatPhoneNumber } from "@/utils/helpers";
-import { ExtendedMerchantUser } from "@/contexts/AccountContext";
-import { LocalStorage } from "@/utils/localstorage";
+import { useAccounts } from "@/contexts/AccountContext";
 
 interface ProfileSettingsModalProps {
   isOpen: boolean;
   onClose: () => void;
-  user: ExtendedMerchantUser;
+  user: MerchantUser;
 }
 
 export const ProfileSettingsModal = ({ isOpen, onClose, user }: ProfileSettingsModalProps) => {
-  const [profileImage, setProfileImage] = useState<string | null>(null);
+  const { profile, updateProfileImage } = useAccounts();
+  const [imageFile, setImageFile] = useState<string | null>(null);
 
+  // Reset state when modal opens/closes and when profile changes
   useEffect(() => {
-    if (isOpen) {
-      // Load profile image from localStorage when modal opens
-      const storedImage = LocalStorage.getSafeUser()?.profileImage;
+    setImageFile(profile?.profileImage || null);
+  }, [isOpen, profile?.profileImage]);
 
-      setProfileImage(storedImage || null);
-    }
-  }, [isOpen]); // Only depend on isOpen to prevent unnecessary reloads
-
-  const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
+    if (!file) return;
 
-    if (file) {
-      // Check file size (limit to 5MB)
-      if (file.size > 5 * 1024 * 1024) {
-        alert("Image size should be less than 5MB");
+    // Check file size (limit to 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      alert("Image size should be less than 5MB");
+      return;
+    }
 
-        return;
-      }
+    try {
+      const base64 = await new Promise<string>((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result as string);
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
 
-      const reader = new FileReader();
-
-      reader.onloadend = () => {
-        if (typeof reader.result === "string") {
-          const base64String = reader.result;
-
-          setProfileImage(base64String);
-          LocalStorage.setProfileImage(base64String);
-          // Force a re-render of components using the image
-          window.dispatchEvent(new Event("storage"));
-        }
-      };
-      reader.readAsDataURL(file);
+      setImageFile(base64);
+      updateProfileImage(base64);
+    } catch (error) {
+      console.error("Error uploading image:", error);
+      alert("Failed to upload image. Please try again.");
     }
   };
 
   const handleRemoveImage = () => {
-    setProfileImage(null);
-    LocalStorage.removeProfileImage();
-    // Force a re-render of components using the image
-    window.dispatchEvent(new Event("storage"));
+    setImageFile(null);
+    updateProfileImage(null);
+  };
+
+  const handleClose = () => {
+    setImageFile(profile?.profileImage || null); // Reset to current profile image
+    onClose();
   };
 
   const getInitials = (firstName?: string, lastName?: string) => {
     if (!firstName || !lastName) return "";
-
     return `${firstName[0]}${lastName[0]}`.toUpperCase();
   };
 
@@ -80,7 +78,7 @@ export const ProfileSettingsModal = ({ isOpen, onClose, user }: ProfileSettingsM
       isOpen={isOpen}
       scrollBehavior="inside"
       size="2xl"
-      onClose={onClose}
+      onClose={handleClose}
     >
       <ModalContent>
         <div className="flex items-center justify-between px-5 py-4 border-b border-divider">
@@ -93,7 +91,7 @@ export const ProfileSettingsModal = ({ isOpen, onClose, user }: ProfileSettingsM
               isIconOnly
               className="text-foreground-400 hover:text-foreground transition-colors"
               variant="light"
-              onClick={onClose}
+              onClick={handleClose}
             >
               <XIcon size={18} />
             </Button>
@@ -110,8 +108,8 @@ export const ProfileSettingsModal = ({ isOpen, onClose, user }: ProfileSettingsM
                   icon: "text-primary",
                 }}
                 name={getInitials(user.firstName, user.lastName)}
-                showFallback={!profileImage}
-                src={profileImage || undefined}
+                showFallback={!imageFile}
+                src={imageFile || undefined}
               />
               <div className="flex flex-col gap-2">
                 <Button
@@ -124,7 +122,7 @@ export const ProfileSettingsModal = ({ isOpen, onClose, user }: ProfileSettingsM
                   Change Picture
                   <input accept="image/*" className="hidden" type="file" onChange={handleImageUpload} />
                 </Button>
-                {profileImage && (
+                {imageFile && (
                   <Button
                     color="danger"
                     size="sm"

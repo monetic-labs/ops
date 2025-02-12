@@ -1,6 +1,6 @@
 import { Button } from "@nextui-org/button";
 import { Modal, ModalContent, ModalHeader, ModalBody } from "@nextui-org/modal";
-import { Account } from "@/contexts/AccountContext";
+import type { Account } from "@/types/account";
 
 interface AccountSelectionModalProps {
   isOpen: boolean;

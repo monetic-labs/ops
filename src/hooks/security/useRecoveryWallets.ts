@@ -2,8 +2,9 @@ import { useState, useEffect } from "react";
 import { RecoveryWallet, ConfiguredEmail, ConfiguredPhone } from "@/components/account-settings/security/types";
 import { RecoveryWalletMethod } from "@backpack-fux/pylon-sdk";
 import { useAccounts } from "@/contexts/AccountContext";
+import { Address } from "viem";
+import { isBackpackGuardian } from "@/utils/socialRecovery";
 import pylon from "@/libs/pylon-sdk";
-import { socialRecovery } from "@/utils/safeAccount/socialRecovery";
 
 type RecoveryWalletGenerateInput = {
   identifier: string;
@@ -43,12 +44,14 @@ export const useRecoveryWallets = (isOpen: boolean) => {
       }
 
       // Check Backpack guardian status
-      try {
-        const isBackpackGuardian = await socialRecovery.isBackpackGuardian(user?.walletAddress as `0x${string}`);
-        setIsBackpackRecoveryEnabled(isBackpackGuardian);
-      } catch (error) {
-        console.error("Failed to check Backpack guardian status:", error);
-        setIsBackpackRecoveryEnabled(false);
+      if (user?.walletAddress) {
+        try {
+          const isGuardian = await isBackpackGuardian(user.walletAddress as Address);
+          setIsBackpackRecoveryEnabled(isGuardian);
+        } catch (error) {
+          console.error("Failed to check Backpack guardian status:", error);
+          setIsBackpackRecoveryEnabled(false);
+        }
       }
     } catch (error) {
       console.error("Failed to fetch recovery wallets:", error);

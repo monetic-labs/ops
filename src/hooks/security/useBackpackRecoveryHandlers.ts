@@ -1,9 +1,13 @@
-import { PendingChanges } from "./types";
+import { Address } from "viem";
 import { WebAuthnHelper } from "@/utils/webauthn";
-import { WebAuthnSafeAccountHelper } from "@/utils/safeAccount";
-import { LocalStorage } from "@/utils/localstorage";
-import { socialRecovery } from "@/utils/safeAccount/socialRecovery";
+import { useAccounts } from "@/contexts/AccountContext";
 import { BACKPACK_GUARDIAN_ADDRESS } from "@/utils/constants";
+import {
+  createRevokeGuardianTransaction,
+  createEnableModuleTransaction,
+  createAddGuardianTransaction,
+} from "@/utils/socialRecovery";
+import { createAndSendSponsoredUserOp, sendUserOperation } from "@/utils/safe";
 
 type UseBackpackRecoveryHandlersProps = {
   isEnabled: boolean;
@@ -18,39 +22,66 @@ export const useBackpackRecoveryHandlers = ({
   threshold,
   userAddress,
 }: UseBackpackRecoveryHandlersProps) => {
+  const { credentials } = useAccounts();
+
   const handleToggle = async () => {
-    if (!userAddress) return;
+    if (!userAddress || !credentials) return;
 
     try {
-      const safeUser = LocalStorage.getSafeUser();
       const webauthn = new WebAuthnHelper({
-        publicKey: safeUser?.publicKey,
-        credentialId: safeUser?.passkeyId,
+        publicKey: credentials.publicKey,
+        credentialId: credentials.credentialId,
       });
-      const safeAccountHelper = new WebAuthnSafeAccountHelper(safeUser?.publicKeyCoordinates);
+      const walletAddress = userAddress as Address;
+      const signer = credentials.publicKey;
 
       if (!isEnabled) {
-        const enableModuleTx = socialRecovery.createEnableModuleTransaction(userAddress as `0x${string}`);
-        const addGuardianTx = socialRecovery.createAddGuardianTransaction(
-          BACKPACK_GUARDIAN_ADDRESS as `0x${string}`,
-          BigInt(threshold)
-        );
+        // Enable Backpack as guardian
+        const enableModuleTx = createEnableModuleTransaction(walletAddress);
+        const addGuardianTx = createAddGuardianTransaction(BACKPACK_GUARDIAN_ADDRESS, BigInt(threshold));
 
-        const userOp = await safeAccountHelper.createSponsoredUserOp([enableModuleTx, addGuardianTx]);
-        const userOpHash = safeAccountHelper.getUserOpHash(userOp);
-        const signature = await webauthn.signMessage(userOpHash);
-        await safeAccountHelper.signAndSendUserOp(userOp, signature);
+        // Create and sponsor user operation
+        const { userOp, hash } = await createAndSendSponsoredUserOp(walletAddress, [enableModuleTx, addGuardianTx], {
+          signer,
+          isWebAuthn: true,
+        });
+
+        // Sign and send operation
+        const signature = await webauthn.signMessage(hash);
+        await sendUserOperation(
+          walletAddress,
+          userOp,
+          {
+            signer,
+            signature: signature.signature,
+          },
+          false
+        );
       } else {
-        const revokeGuardianTx = await socialRecovery.createRevokeGuardianTransaction(
-          userAddress as `0x${string}`,
-          BACKPACK_GUARDIAN_ADDRESS as `0x${string}`,
+        // Disable Backpack as guardian
+        const revokeGuardianTx = await createRevokeGuardianTransaction(
+          walletAddress,
+          BACKPACK_GUARDIAN_ADDRESS as Address,
           BigInt(threshold)
         );
 
-        const userOp = await safeAccountHelper.createSponsoredUserOp([revokeGuardianTx]);
-        const userOpHash = safeAccountHelper.getUserOpHash(userOp);
-        const signature = await webauthn.signMessage(userOpHash);
-        await safeAccountHelper.signAndSendUserOp(userOp, signature);
+        // Create and sponsor user operation
+        const { userOp, hash } = await createAndSendSponsoredUserOp(walletAddress, [revokeGuardianTx], {
+          signer,
+          isWebAuthn: true,
+        });
+
+        // Sign and send operation
+        const signature = await webauthn.signMessage(hash);
+        await sendUserOperation(
+          walletAddress,
+          userOp,
+          {
+            signer,
+            signature: signature.signature,
+          },
+          false
+        );
       }
 
       setIsEnabled((prev) => !prev);

@@ -232,8 +232,6 @@ export default function ExistingTransferFields({
       {billPay.vendorMethod && (
         <Input
           data-testid="memo"
-          description={`${billPay.vendorMethod === DisbursementMethod.WIRE ? "This cannot be changed." : ""}`}
-          isDisabled={billPay.vendorMethod === DisbursementMethod.WIRE}
           label={
             <span data-testid="memo-label">
               {billPay.vendorMethod === DisbursementMethod.WIRE ? "Wire Message" : "ACH Reference"}

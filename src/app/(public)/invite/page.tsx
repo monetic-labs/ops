@@ -68,7 +68,7 @@ export default function InvitePage() {
   const handlePasskeyRegistration = async () => {
     setIsLoading(true);
     try {
-      const webauthnHelper = new WebAuthnHelper(window.location.hostname);
+      const webauthnHelper = new WebAuthnHelper();
 
       // Create passkey
       const { publicKeyCoordinates, passkeyId } = await webauthnHelper.createPasskey();

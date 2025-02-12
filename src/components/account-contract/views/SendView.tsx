@@ -5,7 +5,7 @@ import { Tooltip } from "@nextui-org/tooltip";
 import { Modal, ModalContent, ModalHeader, ModalBody } from "@nextui-org/modal";
 import React, { useEffect, useState } from "react";
 
-import { Account } from "@/contexts/AccountContext";
+import type { Account } from "@/types/account";
 import { MoneyInput } from "@/components/generics/money-input";
 import { BalanceDisplay } from "@/components/generics/balance-display";
 

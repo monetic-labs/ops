@@ -1,11 +1,11 @@
 import { useState, useEffect, useCallback } from "react";
 import { Address, formatUnits } from "viem";
-import { useAppKitAccount } from "@reown/appkit/react";
 import { useDebounce } from "use-debounce";
 
 import { publicClient } from "@/config/web3";
-import { BASE_USDC, MOCK_BALANCE, MOCK_SETTLEMENT_ADDRESS } from "@/utils/constants";
+import { BASE_USDC, MOCK_BALANCE } from "@/utils/constants";
 import { formatDecimals, isTesting } from "@/utils/helpers";
+import { useAccounts } from "@/contexts/AccountContext";
 
 type UseBalanceProps = {
   amount: string;
@@ -19,8 +19,8 @@ export const useBalance = ({ amount, isModalOpen }: UseBalanceProps) => {
   const [lastFetchTime, setLastFetchTime] = useState(0);
   const [debouncedAmount] = useDebounce(amount, 500); // 500ms delay
 
-  const appKitAccount = useAppKitAccount();
-  const account = isTesting ? MOCK_SETTLEMENT_ADDRESS : appKitAccount.address;
+  const { user } = useAccounts();
+  const account = user?.merchant.settlement.walletAddress as Address;
 
   const getUserBalance = useCallback(async (): Promise<string> => {
     if (isTesting) return MOCK_BALANCE;
@@ -30,7 +30,7 @@ export const useBalance = ({ amount, isModalOpen }: UseBalanceProps) => {
       address: BASE_USDC.ADDRESS,
       abi: BASE_USDC.ABI,
       functionName: "balanceOf",
-      args: [account as Address],
+      args: [account],
     });
     const formattedBalance = formatUnits(balanceResult, BASE_USDC.DECIMALS);
 
@@ -79,7 +79,7 @@ export const useBalance = ({ amount, isModalOpen }: UseBalanceProps) => {
 
     const intervalId = setInterval(() => {
       fetchBalance();
-    }, 300_000); // 1 minute
+    }, 300_000); // 5 minutes
 
     return () => clearInterval(intervalId);
   }, [isModalOpen, account]);

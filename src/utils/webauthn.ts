@@ -20,7 +20,7 @@ export class WebAuthnHelper {
   private publicKey: WebauthnPublicKey | null = null;
   private credentialId: string | null = null;
 
-  constructor({ publicKey, credentialId }: { publicKey?: WebauthnPublicKey; credentialId?: string }) {
+  constructor({ publicKey, credentialId }: { publicKey?: WebauthnPublicKey; credentialId?: string } = {}) {
     this.publicKey = publicKey || null;
     this.credentialId = credentialId || null;
   }
@@ -174,7 +174,7 @@ export class WebAuthnHelper {
     // Get signature and WebAuthn data using ox
     const { signature, metadata } = await sign({
       challenge: message,
-      credentialId: this.credentialId,
+      credentialId: this.credentialId || undefined,
       userVerification: "required",
     });
 

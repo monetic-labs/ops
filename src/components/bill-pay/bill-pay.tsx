@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { Tab, Tabs } from "@nextui-org/tabs";
-import { useAppKitAccount } from "@reown/appkit/react";
 import { Address } from "viem";
 import { PlusIcon } from "lucide-react";
 
@@ -10,6 +9,7 @@ import { NewBillPay, ExistingBillPay } from "@/types/bill-pay";
 import { isTesting } from "@/utils/helpers";
 import { MOCK_SETTLEMENT_ADDRESS } from "@/utils/constants";
 import { ResponsiveButton } from "@/components/generics/responsive-button";
+import { useAccounts } from "@/contexts/AccountContext";
 
 import CreateBillPayModal from "./bill-actions/create";
 import TransfersTab from "./transfers-tab";
@@ -24,9 +24,9 @@ export default function BillPayTabs({ handleSubTabChange }: BillPayTabsProps) {
   const [selectedService, setSelectedService] = useState<string>(billPayConfig[0].id);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
-  const appKitAccount = useAppKitAccount();
-  const isConnected = isTesting ? true : appKitAccount.isConnected;
-  const settlementAddress = isTesting ? MOCK_SETTLEMENT_ADDRESS : appKitAccount.address;
+  const { user } = useAccounts();
+  const settlementAccount = user?.merchant.settlement.walletAddress as Address;
+  const settlementAddress = isTesting ? MOCK_SETTLEMENT_ADDRESS : settlementAccount;
 
   const renderTabContent = (tabId: string) => {
     switch (tabId) {
@@ -63,9 +63,8 @@ export default function BillPayTabs({ handleSubTabChange }: BillPayTabsProps) {
       <CreateBillPayModal
         billPay={billPay}
         isOpen={isCreateModalOpen}
-        isWalletConnected={isConnected}
         setBillPay={setBillPay}
-        settlementAddress={settlementAddress as Address}
+        settlementAddress={settlementAddress}
         onClose={() => {
           setIsCreateModalOpen(false);
           setBillPay(DEFAULT_NEW_BILL_PAY);

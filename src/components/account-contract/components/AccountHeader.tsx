@@ -1,7 +1,7 @@
 import { Button } from "@nextui-org/button";
 import { Dropdown, DropdownTrigger, DropdownMenu, DropdownItem } from "@nextui-org/dropdown";
 import { ChevronDown, ChevronUp } from "lucide-react";
-import { Account } from "@/contexts/AccountContext";
+import type { Account } from "@/types/account";
 import { formatUSD } from "@/utils/formatters/currency";
 
 interface AccountHeaderProps {

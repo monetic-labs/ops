@@ -8,6 +8,8 @@ export enum TransferStatus {
   WAITING = "waiting",
   SENT = "sent",
   ERROR = "error",
+  SIGNING = "signing",
+  PROCESSING = "processing",
 }
 
 const getTransferStatusDescription = (status: TransferStatus) => {

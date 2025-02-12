@@ -3,7 +3,7 @@ import { EmailVerification, PendingChanges } from "./types";
 import { RecoveryWalletMethod } from "@backpack-fux/pylon-sdk";
 import { Address } from "viem";
 import pylon from "@/libs/pylon-sdk";
-import { socialRecovery } from "@/utils/safeAccount/socialRecovery";
+import { createAddGuardianTransaction } from "@/utils/socialRecovery";
 
 type UseEmailRecoveryHandlersProps = {
   configuredEmails: ConfiguredEmail[];
@@ -58,7 +58,7 @@ export const useEmailRecoveryHandlers = ({
       if (newWallets?.[0]) {
         addPendingChange({
           onChainTransactions: [
-            socialRecovery.createAddGuardianTransaction(newWallets[0].publicAddress as Address, BigInt(threshold)),
+            createAddGuardianTransaction(newWallets[0].publicAddress as Address, BigInt(threshold)),
           ],
         });
       }

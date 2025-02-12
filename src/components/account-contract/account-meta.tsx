@@ -1,8 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { useAccounts } from "@/contexts/AccountContext";
-import type { Account } from "@/contexts/AccountContext";
+import { useAccounts } from "@/hooks/useAccounts";
+import type { Account } from "@/types/account";
 import { Card, CardBody } from "@nextui-org/card";
 import { AccountHeader } from "./components/AccountHeader";
 import { AccountBalance } from "./components/AccountBalance";

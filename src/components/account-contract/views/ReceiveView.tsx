@@ -3,7 +3,7 @@ import { Card, CardBody } from "@nextui-org/card";
 import { X, Info, Copy, Share2 } from "lucide-react";
 import { Tooltip } from "@nextui-org/tooltip";
 import { Divider } from "@nextui-org/divider";
-import { Account } from "@/contexts/AccountContext";
+import type { Account } from "@/types/account";
 
 interface ReceiveViewProps {
   selectedAccount: Account;

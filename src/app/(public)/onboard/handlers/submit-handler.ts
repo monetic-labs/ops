@@ -1,4 +1,3 @@
-import { SocialRecoveryModule, SocialRecoveryModuleGracePeriodSelector } from "abstractionkit";
 import {
   ISO3166Alpha2Country,
   ISO3166Alpha3Country,
@@ -8,18 +7,20 @@ import {
 } from "@backpack-fux/pylon-sdk";
 
 import { WebAuthnHelper } from "@/utils/webauthn";
-import { WebAuthnSafeAccountHelper } from "@/utils/safeAccount";
-import { LocalStorage } from "@/utils/localstorage";
+import { LocalStorage, OnboardingState } from "@/utils/localstorage";
 import { FormData, UserRole } from "@/validations/onboard/schemas";
-import { OnboardingState } from "@/contexts/AccountContext";
 import { BACKPACK_GUARDIAN_ADDRESS } from "@/utils/constants";
+import { createAndSendSponsoredUserOp, sendUserOperation } from "@/utils/safe";
 import pylon from "@/libs/pylon-sdk";
+import { Address } from "viem";
+import { createEnableModuleTransaction, createAddGuardianTransaction } from "@/utils/socialRecovery";
+import { UseFormSetError } from "react-hook-form";
 
 interface SubmitHandlerParams {
   formData: FormData;
   onboardingState: OnboardingState;
   updateStatusStep: (step: number, isComplete: boolean) => void;
-  setError: (field: any, error: { type: string; message: string }) => void;
+  setError: UseFormSetError<FormData>;
   onSuccess: () => void;
 }
 
@@ -33,21 +34,17 @@ export const handleSubmit = async ({
   try {
     // Quick signature check to verify user still has the passkey
     const webauthnHelper = new WebAuthnHelper({
-      credentialId: onboardingState.credentialId,
-      publicKey: {
-        x: BigInt(onboardingState.publicKeyCoordinates.x),
-        y: BigInt(onboardingState.publicKeyCoordinates.y),
-      },
+      credentialId: onboardingState.credentials.credentialId,
+      publicKey: onboardingState.credentials.publicKey,
     });
 
     try {
       await webauthnHelper.verifyPasskey();
     } catch (error) {
-      setError("root", {
+      setError("companyName", {
         type: "validate",
         message: "Please verify your passkey before submitting",
       });
-
       return;
     }
 
@@ -150,7 +147,7 @@ export const handleSubmit = async ({
             countryOfIssue: user.countryOfIssue,
             walletAddress: index === 0 ? onboardingState.walletAddress : undefined,
             role,
-            passkeyId: index === 0 ? onboardingState.passkeyId : undefined,
+            passkeyId: index === 0 ? onboardingState.credentials.credentialId : undefined,
             address: {
               line1: user.streetAddress1,
               line2: user.streetAddress2 || undefined,
@@ -177,49 +174,49 @@ export const handleSubmit = async ({
 
       const recoveryWallets = await pylon.generateRecoveryWallets(recoveryInputs);
 
-      // Initialize social recovery module with 7 days grace period
-      const srm = new SocialRecoveryModule(SocialRecoveryModuleGracePeriodSelector.After7Days);
-
-      // Create enable module transaction
-      const enableModuleTransaction = srm.createEnableModuleMetaTransaction(onboardingState.walletAddress);
-      const addGuardianTransactions = [
-        srm.createAddGuardianWithThresholdMetaTransaction(BACKPACK_GUARDIAN_ADDRESS, BigInt(2)),
-        ...recoveryWallets.map((wallet) =>
-          srm.createAddGuardianWithThresholdMetaTransaction(wallet.publicAddress, BigInt(2))
-        ),
+      // Create social recovery transactions
+      const guardianAddresses = [
+        BACKPACK_GUARDIAN_ADDRESS as Address,
+        ...recoveryWallets.map((wallet) => wallet.publicAddress as Address),
       ];
 
-      // Create WebAuthn safe account helper for executing transactions
-      const individualAccount = new WebAuthnSafeAccountHelper({
-        x: BigInt(onboardingState.publicKeyCoordinates.x),
-        y: BigInt(onboardingState.publicKeyCoordinates.y),
+      // Create enable module and add guardian transactions
+      const enableModuleTx = createEnableModuleTransaction(onboardingState.walletAddress);
+      const addGuardianTxs = guardianAddresses.map((address) => createAddGuardianTransaction(address, BigInt(2)));
+
+      const socialRecoveryTxs = [enableModuleTx, ...addGuardianTxs];
+
+      // Create and sponsor user operation
+      const { userOp, hash } = await createAndSendSponsoredUserOp(onboardingState.walletAddress, socialRecoveryTxs, {
+        signer: onboardingState.credentials.publicKey,
+        isWebAuthn: true,
       });
 
-      // Execute social recovery module setup transactions
-      const userOperation = await individualAccount.createSponsoredUserOp([
-        enableModuleTransaction,
-        ...addGuardianTransactions,
-      ]);
+      // Sign the operation
+      const signature = await webauthnHelper.signMessage(hash);
 
-      // Sign and send the user operation
-      const userOpHash = individualAccount.getUserOpHash(userOperation);
-      const signature = await webauthnHelper.signMessage(userOpHash);
+      // Send the operation
+      const response = await sendUserOperation(
+        onboardingState.walletAddress,
+        userOp,
+        {
+          signer: onboardingState.credentials.publicKey,
+          signature: signature.signature,
+        },
+        false // not init since account already deployed
+      );
 
-      await individualAccount.signAndSendUserOp(userOperation, signature);
+      // Wait for receipt
+      const receipt = await response.included();
+      if (!receipt.success) {
+        throw new Error("Failed to setup social recovery");
+      }
 
       // Update second status step
       updateStatusStep(1, true);
 
       // Store user data with consolidated state management
-      LocalStorage.setSafeUser(
-        onboardingState.publicKeyCoordinates,
-        onboardingState.walletAddress,
-        onboardingState.settlementAddress,
-        onboardingState.passkeyId,
-        true
-      );
-      // Only mark passkey as registered after successful merchant creation
-      LocalStorage.setPasskeyRegistered(onboardingState.passkeyId);
+      LocalStorage.setAuth(onboardingState.credentials, true);
 
       // Update final status step
       updateStatusStep(2, true);
@@ -231,15 +228,18 @@ export const handleSubmit = async ({
     console.error("error: ", error);
     if (error.response?.data?.errors) {
       Object.entries(error.response.data.errors).forEach(([key, value]) => {
-        setError(key as any, {
-          type: "required",
-          message: value as string,
-        });
+        // Only set error for known form fields
+        if (key in formData) {
+          setError(key as keyof FormData, {
+            type: "required",
+            message: value as string,
+          });
+        }
       });
     } else {
-      setError("root", {
+      setError("companyName", {
         type: "validate",
-        message: error.message,
+        message: error.message || "An unknown error occurred",
       });
     }
     throw error;

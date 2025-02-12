@@ -3,7 +3,9 @@ import { Hex } from "viem";
 import { Signature } from "ox";
 
 import { WebAuthnHelper } from "@/utils/webauthn";
-import { WebAuthnSafeAccountHelper } from "@/utils/safeAccount";
+import { useAccounts } from "@/contexts/AccountContext";
+import { createSafeAccount } from "@/utils/safe";
+import { WebAuthnCredentials } from "../localstorage";
 
 export interface GroupMessage {
   id: string;
@@ -15,21 +17,22 @@ export interface GroupMessage {
 export class XMTPService {
   private static clients: Map<string, Client> = new Map();
   private client: Client | null = null;
-  private account: WebAuthnSafeAccountHelper;
+  private readonly walletAddress: string;
+  private readonly credentials: WebAuthnCredentials | undefined;
   private readonly BACKPACK_GROUP_PREFIX = "backpack:merchant:";
   private readonly XMTP_ENV: "local" | "dev" | "production" | undefined;
   private readonly SUPPORT_ADDRESS: string;
   private initialized: Promise<void>;
   private conversation: Promise<any>;
 
-  constructor(account: WebAuthnSafeAccountHelper, merchantId?: string) {
-    this.account = account;
+  constructor(walletAddress: string, merchantId?: string, credentials?: WebAuthnCredentials) {
+    this.walletAddress = walletAddress;
+    this.credentials = credentials;
 
     // Environment-specific XMTP configurations
     this.XMTP_ENV = process.env.NEXT_PUBLIC_XMTP_ENV === "production" ? "production" : "dev";
 
     const supportAddress = process.env.NEXT_PUBLIC_BACKPACK_SUPPORT_ADDRESS;
-
     if (!supportAddress) {
       throw new Error("NEXT_PUBLIC_BACKPACK_SUPPORT_ADDRESS is not set");
     }
@@ -46,13 +49,17 @@ export class XMTPService {
 
   private toXmtpSigner(): Signer {
     return {
-      getAddress: async () => this.account.getAddress(),
+      getAddress: async () => this.walletAddress,
       signMessage: async (message: string) => {
-        const webAuthn = new WebAuthnHelper({});
-        const { rawSignature } = await webAuthn.signMessage(message as Hex);
-        const signature = Signature.toHex(rawSignature);
+        if (!this.credentials) throw new Error("No credentials found");
 
-        return signature as string;
+        const webAuthn = new WebAuthnHelper({
+          publicKey: this.credentials.publicKey,
+          credentialId: this.credentials.credentialId,
+        });
+
+        const { rawSignature } = await webAuthn.signMessage(message as Hex);
+        return Signature.toHex(rawSignature) as string;
       },
     };
   }
@@ -62,19 +69,16 @@ export class XMTPService {
   }
 
   private async initializeClient(): Promise<void> {
-    const address = this.account.getAddress();
-
     // Return existing client if available
-    if (XMTPService.clients.has(address)) {
-      this.client = XMTPService.clients.get(address)!;
-
+    if (XMTPService.clients.has(this.walletAddress)) {
+      this.client = XMTPService.clients.get(this.walletAddress)!;
       return;
     }
 
     try {
       // Create a new XMTP client using the WebAuthn signer
       this.client = await Client.create(this.toXmtpSigner(), { env: this.XMTP_ENV });
-      XMTPService.clients.set(address, this.client);
+      XMTPService.clients.set(this.walletAddress, this.client);
     } catch (error) {
       console.error("Error creating XMTP client:", error);
       throw error;
@@ -86,7 +90,6 @@ export class XMTPService {
       return await Client.canMessage(address, { env: this.XMTP_ENV });
     } catch (error) {
       console.error("Error checking XMTP identity:", error);
-
       return false;
     }
   }
@@ -121,7 +124,6 @@ export class XMTPService {
   async sendGroupMessage(merchantId: string, content: string): Promise<void> {
     await this.conversation;
     const conversation = await this.initMerchantGroup(merchantId);
-
     await conversation.send(content);
   }
 
@@ -142,9 +144,7 @@ export class XMTPService {
 
   disconnect() {
     if (this.client) {
-      const address = this.account.getAddress();
-
-      XMTPService.clients.delete(address);
+      XMTPService.clients.delete(this.walletAddress);
       this.client = null;
     }
   }

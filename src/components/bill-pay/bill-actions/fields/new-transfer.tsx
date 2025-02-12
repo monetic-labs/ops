@@ -258,9 +258,6 @@ export default function NewTransferFields({ billPay, setBillPay, settlementBalan
       </Autocomplete>
       <Input
         data-testid="memo"
-        description={`${
-          billPay.vendorMethod === DisbursementMethod.WIRE ? "This cannot be changed after the sender is created." : ""
-        }`}
         label={`${billPay.vendorMethod === DisbursementMethod.WIRE ? "Wire Message" : "ACH Reference"}`}
         maxLength={billPay.vendorMethod === DisbursementMethod.WIRE ? 35 : 10}
         placeholder="e.g. Payment for invoice #123456"

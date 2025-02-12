@@ -1,3 +1,5 @@
+"use client";
+
 import { useEffect, useMemo, useState } from "react";
 import { Info } from "lucide-react";
 import { Modal, ModalBody, ModalContent, ModalHeader } from "@nextui-org/modal";
@@ -9,12 +11,10 @@ import {
   MerchantDisbursementCreateOutput,
 } from "@backpack-fux/pylon-sdk";
 import { Address } from "viem";
-import { Button } from "@nextui-org/button";
 
 import { useExistingDisbursement } from "@/hooks/bill-pay/useExistingDisbursement";
-import { modal } from "@/contexts/reown";
 import TransferStatusView, { TransferStatus } from "@/components/generics/transfer-status";
-import { buildTransfer } from "@/utils/reown";
+import { buildNestedTransfer } from "@/utils/bill-pay/transfers";
 import { useBalance } from "@/hooks/account-contracts/useBalance";
 import { validateBillPay } from "@/validations/bill-pay";
 import {
@@ -25,6 +25,7 @@ import {
   NewBillPay,
 } from "@/types/bill-pay";
 import { useNewDisbursement } from "@/hooks/bill-pay/useNewDisbursement";
+import { useAccounts } from "@/contexts/AccountContext";
 
 import ModalFooterWithSupport from "../../generics/footer-modal-support";
 
@@ -37,7 +38,6 @@ type CreateBillPayModalProps = {
   onSave: (billPay: NewBillPay | ExistingBillPay) => void;
   billPay: NewBillPay | ExistingBillPay;
   setBillPay: (billPay: NewBillPay | ExistingBillPay) => void;
-  isWalletConnected: boolean;
   settlementAddress: Address;
 };
 
@@ -65,11 +65,11 @@ export default function CreateBillPayModal({
   isOpen,
   onClose,
   onSave,
-  isWalletConnected,
   billPay,
   setBillPay,
   settlementAddress,
 }: CreateBillPayModalProps) {
+  const { user } = useAccounts();
   const [isNewSender, setIsNewSender] = useState(false);
   const [transferStatus, setTransferStatus] = useState<TransferStatus>(TransferStatus.IDLE);
   const [formIsValid, setFormIsValid] = useState(false);
@@ -90,6 +90,11 @@ export default function CreateBillPayModal({
     createNewDisbursement,
   } = useNewDisbursement();
 
+  const { credentials } = useAccounts();
+  if (!credentials) {
+    throw new Error("No credentials found");
+  }
+
   useEffect(() => {
     const formValid = validateBillPay(billPay, settlementBalance);
 
@@ -109,7 +114,7 @@ export default function CreateBillPayModal({
   }, [billPay.amount, fee]);
 
   const handleSave = async () => {
-    if (!isWalletConnected || !settlementAddress) return;
+    if (!settlementAddress || !user?.walletAddress) return;
     setTransferStatus(TransferStatus.PREPARING);
     let timeout: number = 0;
 
@@ -149,11 +154,14 @@ export default function CreateBillPayModal({
       }
 
       const liquidationAddress = getLiquidationAddress(response, isExistingBillPay(billPay));
-      const txHash = await buildTransfer({
+
+      const txHash = await buildNestedTransfer({
+        individualSafeAddress: user.walletAddress as Address,
+        settlementAddress,
         liquidationAddress,
         amount: billPay.amount,
-        settlementAddress,
         setTransferStatus,
+        credentials,
       });
 
       console.log("Transaction hash:", txHash);
@@ -181,14 +189,6 @@ export default function CreateBillPayModal({
     console.log("Support clicked");
   };
 
-  const footerActions = [
-    {
-      label: "Create",
-      onClick: handleSave,
-      isDisabled: !formIsValid || !isWalletConnected,
-    },
-  ];
-
   const renderTransferFields = () => {
     return isNewSender ? (
       <NewTransferFields
@@ -206,36 +206,18 @@ export default function CreateBillPayModal({
     );
   };
 
-  const renderFeeAndTotal = () => {
-    return (
-      <ModalBody className="px-10">
-        <div className="space-y-2 font-mono text-sm">
-          <div className="flex justify-between">
-            <span>Fee:</span>
-            <div className="flex items-center gap-2">
-              <Tooltip
-                content={
-                  billPay.vendorMethod === DisbursementMethod.WIRE
-                    ? "We pass on the fees from the receiving bank. We do not add any additional fees."
-                    : "We cover these fees for you."
-                }
-                onTouchStart={(e) => {
-                  console.log("Touch started");
-                }}
-              >
-                <Info className="text-gray-500 cursor-pointer" size={14} />
-              </Tooltip>
-              <span data-testid="fee">{fee.toFixed(2) === "0.00" ? "Free" : `${fee * 100}%`}</span>
-            </div>
-          </div>
-          <div className="flex justify-between text-lg font-bold">
-            <span>Total:</span>
-            <span data-testid="total">${total.toFixed(2)}</span>
-          </div>
-        </div>
-      </ModalBody>
-    );
-  };
+  const footerActions = [
+    {
+      label: "Create Transfer",
+      onClick: handleSave,
+      isDisabled: !formIsValid,
+      className: `${
+        !formIsValid
+          ? "bg-content2 text-default-400 cursor-not-allowed"
+          : "bg-primary text-primary-foreground hover:opacity-90 transition-opacity"
+      } px-6`,
+    },
+  ];
 
   return (
     <Modal
@@ -298,27 +280,14 @@ export default function CreateBillPayModal({
         </ModalBody>
         <Divider className="bg-default-100" />
         <ModalFooterWithSupport
-          actions={[
-            {
-              label: "Create Transfer",
-              onClick: handleSave,
-              isDisabled: !formIsValid || !isWalletConnected,
-              className: `${
-                !formIsValid || !isWalletConnected
-                  ? "bg-default-100 text-default-400"
-                  : "bg-notpurple-500 text-white hover:bg-notpurple-600"
-              } px-6`,
-            },
-          ]}
+          actions={footerActions}
           onSupportClick={handleSupportClick}
+          isNewSender={isNewSender}
+          onNewSenderChange={(value) => {
+            setIsNewSender(value);
+            setBillPay(value ? DEFAULT_NEW_BILL_PAY : DEFAULT_EXISTING_BILL_PAY);
+          }}
         />
-        {!isWalletConnected && (
-          <div className="absolute inset-0 bg-background/50 backdrop-blur-sm z-10 rounded-lg flex items-center justify-center">
-            <div className="bg-content2/90 backdrop-blur-sm p-4 rounded-lg shadow-lg text-center">
-              <p className="text-foreground font-medium">Please connect your wallet to continue</p>
-            </div>
-          </div>
-        )}
       </ModalContent>
     </Modal>
   );

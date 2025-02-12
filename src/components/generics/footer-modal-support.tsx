@@ -77,7 +77,7 @@ export default function ModalFooterWithSupport({
       <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto order-1 sm:order-none">
         {onNewSenderChange && isNewSender !== undefined && (
           <div className="flex flex-row items-center gap-2 justify-between px-2">
-            <span className="items-center font-mono text-foreground">New Sender?</span>
+            <span className="items-center text-xs text-default-400">New Sender</span>
             <Switch
               defaultSelected
               aria-label="New Customer"

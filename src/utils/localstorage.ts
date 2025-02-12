@@ -1,210 +1,144 @@
+import { Address } from "viem";
+import { MerchantUserGetByIdOutput as MerchantUser } from "@backpack-fux/pylon-sdk";
+
+// Define clear interfaces
+export interface WebAuthnCredentials {
+  publicKey: {
+    x: bigint;
+    y: bigint;
+  };
+  credentialId: string;
+}
+
+export interface AuthState {
+  credentials: WebAuthnCredentials;
+  isLoggedIn: boolean;
+}
+
+export interface OnboardingState {
+  credentials: WebAuthnCredentials;
+  walletAddress: Address;
+  settlementAddress: Address;
+}
+
+export interface UserProfile {
+  profileImage?: string;
+}
+
 export class LocalStorage {
-  private static getItem(key: string): string | null {
-    return typeof localStorage !== "undefined" ? localStorage.getItem(key) : null;
-  }
+  private static KEY = "@backpack/state";
 
-  private static setItem(key: string, value: string): void {
-    if (typeof localStorage !== "undefined") {
-      localStorage.setItem(key, value);
-    }
-  }
-
-  private static removeItem(key: string): void {
-    if (typeof localStorage !== "undefined") {
-      localStorage.removeItem(key);
-    }
-  }
-
-  private static BACKPACK_STATE_KEY = "@backpack/service:state";
-
-  // Custom replacer for JSON.stringify to handle BigInt
   private static replacer(key: string, value: any) {
-    if (typeof value === "bigint") {
-      return value.toString();
-    }
-
-    return value;
+    return typeof value === "bigint" ? value.toString() : value;
   }
 
-  // Custom reviver for JSON.parse to handle BigInt strings
   private static reviver(key: string, value: any) {
-    // Check if the value matches a BigInt string pattern
-    if (typeof value === "string" && /^-?\d+n?$/.test(value)) {
-      return BigInt(value.replace("n", ""));
-    }
-
-    return value;
+    return typeof value === "string" && /^-?\d+n?$/.test(value) ? BigInt(value.replace("n", "")) : value;
   }
 
-  static setSafeUser(
-    publicKey: any,
-    walletAddress: string,
-    settlementAddress: string,
-    passkeyId: string,
-    isLogin: boolean,
-    credentialId?: string
-  ) {
-    const currentState = this.getItem(this.BACKPACK_STATE_KEY);
-    const parsedState = currentState ? JSON.parse(currentState, this.reviver) : {};
-
-    const updatedState = {
-      ...parsedState,
-      user: {
-        publicKey,
-        walletAddress,
-        settlementAddress,
-        passkeyId,
-        credentialId,
-        isLogin,
-        timestamp: Date.now(),
-      },
+  // Core Authentication Methods
+  static setAuth(credentials: WebAuthnCredentials, isLoggedIn: boolean) {
+    const state = {
+      credentials,
+      isLoggedIn,
+      timestamp: Date.now(),
     };
 
-    this.setItem(this.BACKPACK_STATE_KEY, JSON.stringify(updatedState, this.replacer));
+    this.set("auth", state);
+    this.dispatchAuthChange();
+  }
 
-    // Dispatch custom event for auth state changes
+  static getAuth(): AuthState | null {
+    return this.get("auth");
+  }
+
+  static clearAuth() {
+    this.remove("auth");
+    this.dispatchAuthChange();
+  }
+
+  // Onboarding Methods (Temporary State)
+  static setOnboarding(state: OnboardingState) {
+    this.set("onboarding", { ...state, timestamp: Date.now() });
+  }
+
+  static getOnboarding(): OnboardingState | null {
+    return this.get("onboarding");
+  }
+
+  static clearOnboarding() {
+    this.remove("onboarding");
+  }
+
+  // User Profile Methods
+  static setProfileImage(image: string) {
+    const profile = this.getProfile() || {};
+    this.set("profile", {
+      ...profile,
+      profileImage: image,
+    });
+    this.dispatchStorageChange();
+  }
+
+  static getProfile(): UserProfile | null {
+    return this.get("profile");
+  }
+
+  static removeProfileImage() {
+    const profile = this.getProfile() || {};
+    const { profileImage, ...rest } = profile;
+    this.set("profile", rest);
+    this.dispatchStorageChange();
+  }
+
+  // Private Helper Methods
+  private static set(key: string, value: any) {
+    if (typeof localStorage === "undefined") return;
+
+    // Get existing data
+    const existingData = localStorage.getItem(this.KEY);
+    const data = existingData ? JSON.parse(existingData, this.reviver) : {};
+
+    // Merge new data
+    data[key] = value;
+
+    // Save merged data
+    localStorage.setItem(this.KEY, JSON.stringify(data, this.replacer));
+  }
+
+  private static get(key: string): any {
+    if (typeof localStorage === "undefined") return null;
+    const data = localStorage.getItem(this.KEY);
+    if (!data) return null;
+
+    const parsed = JSON.parse(data, this.reviver);
+    return parsed[key] || null;
+  }
+
+  private static remove(key: string) {
+    if (typeof localStorage === "undefined") return;
+    const data = localStorage.getItem(this.KEY);
+    if (!data) return;
+
+    const parsed = JSON.parse(data, this.reviver);
+    delete parsed[key];
+
+    if (Object.keys(parsed).length === 0) {
+      localStorage.removeItem(this.KEY);
+    } else {
+      localStorage.setItem(this.KEY, JSON.stringify(parsed, this.replacer));
+    }
+  }
+
+  private static dispatchAuthChange() {
     if (typeof window !== "undefined") {
       window.dispatchEvent(new Event("authStateChange"));
     }
   }
 
-  static getSafeUser() {
-    const state = this.getItem(this.BACKPACK_STATE_KEY);
-
-    if (!state) return null;
-    const parsedState = JSON.parse(state, this.reviver);
-
-    return parsedState.user || null;
-  }
-
-  static setOnboardingState(state: {
-    passkeyId: string;
-    walletAddress: string;
-    settlementAddress: string;
-    publicKeyCoordinates: { x: string; y: string };
-  }) {
-    const currentState = this.getItem(this.BACKPACK_STATE_KEY);
-    const parsedState = currentState ? JSON.parse(currentState, this.reviver) : {};
-
-    const updatedState = {
-      ...parsedState,
-      onboarding: {
-        ...state,
-        timestamp: Date.now(),
-        isOnboarding: true,
-      },
-    };
-
-    this.setItem(this.BACKPACK_STATE_KEY, JSON.stringify(updatedState, this.replacer));
-  }
-
-  static getOnboardingState() {
-    const state = this.getItem(this.BACKPACK_STATE_KEY);
-
-    if (!state) return null;
-    const parsedState = JSON.parse(state, this.reviver);
-
-    return parsedState.onboarding || null;
-  }
-
-  static clearOnboardingState() {
-    const currentState = this.getItem(this.BACKPACK_STATE_KEY);
-
-    if (!currentState) return;
-
-    const parsedState = JSON.parse(currentState, this.reviver);
-
-    delete parsedState.onboarding;
-    this.setItem(this.BACKPACK_STATE_KEY, JSON.stringify(parsedState, this.replacer));
-  }
-
-  static setPasskeyRegistered(passkeyId: string) {
-    const currentState = this.getItem(this.BACKPACK_STATE_KEY);
-    const parsedState = currentState ? JSON.parse(currentState, this.reviver) : {};
-
-    const updatedState = {
-      ...parsedState,
-      passkey: {
-        passkeyId,
-        isRegistered: true,
-        timestamp: Date.now(),
-      },
-    };
-
-    this.setItem(this.BACKPACK_STATE_KEY, JSON.stringify(updatedState, this.replacer));
-  }
-
-  static hasPasskeyRegistered() {
-    const state = this.getItem(this.BACKPACK_STATE_KEY);
-
-    if (!state) return false;
-    const parsedState = JSON.parse(state, this.reviver);
-
-    return parsedState.passkey?.isRegistered || false;
-  }
-
-  static getPasskeyId() {
-    const state = this.getItem(this.BACKPACK_STATE_KEY);
-
-    if (!state) return null;
-    const parsedState = JSON.parse(state, this.reviver);
-
-    return parsedState.passkey?.passkeyId || null;
-  }
-
-  static clearAll() {
-    this.removeItem(this.BACKPACK_STATE_KEY);
-  }
-
-  static clearAuthState() {
-    const currentState = this.getItem(this.BACKPACK_STATE_KEY);
-
-    if (!currentState) return;
-
-    const parsedState = JSON.parse(currentState, this.reviver);
-
-    if (parsedState.user) {
-      // Preserve passkey data but clear login state
-      parsedState.user.isLogin = false;
-      this.setItem(this.BACKPACK_STATE_KEY, JSON.stringify(parsedState, this.replacer));
-    }
-  }
-
-  // Profile image methods
-  static setProfileImage(base64Image: string) {
-    const currentState = this.getItem(this.BACKPACK_STATE_KEY);
-    const parsedState = currentState ? JSON.parse(currentState, this.reviver) : {};
-
-    const updatedState = {
-      ...parsedState,
-      user: {
-        ...parsedState.user,
-        profileImage: base64Image,
-      },
-    };
-
-    this.setItem(this.BACKPACK_STATE_KEY, JSON.stringify(updatedState, this.replacer));
-  }
-
-  static getProfileImage(): string | null {
-    const state = this.getItem(this.BACKPACK_STATE_KEY);
-
-    if (!state) return null;
-    const parsedState = JSON.parse(state, this.reviver);
-
-    return parsedState.user?.profileImage || null;
-  }
-
-  static removeProfileImage() {
-    const currentState = this.getItem(this.BACKPACK_STATE_KEY);
-
-    if (!currentState) return;
-
-    const parsedState = JSON.parse(currentState, this.reviver);
-
-    if (parsedState.user) {
-      delete parsedState.user.profileImage;
-      this.setItem(this.BACKPACK_STATE_KEY, JSON.stringify(parsedState, this.replacer));
+  private static dispatchStorageChange() {
+    if (typeof window !== "undefined") {
+      window.dispatchEvent(new Event("storage"));
     }
   }
 }

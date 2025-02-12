@@ -13,8 +13,8 @@ import { statusColorMap } from "@/data";
 import { getOpepenAvatar, formatNumber, isTesting } from "@/utils/helpers";
 import { useGetTransfers } from "@/hooks/bill-pay/useGetTransfers";
 import { DEFAULT_NEW_BILL_PAY } from "@/types/bill-pay";
-import { useAppKitAccount } from "@reown/appkit/react";
 import { MOCK_SETTLEMENT_ADDRESS } from "@/utils/constants";
+import { useAccounts } from "@/contexts/AccountContext";
 
 const transferColumns: Column<MerchantDisbursementEventGetOutput>[] = [
   {
@@ -92,8 +92,8 @@ export default function Transfers() {
   const [selectedTransfer, setSelectedTransfer] = useState<MerchantDisbursementEventGetOutput | null>(null);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
-  const appKitAccount = useAppKitAccount();
-  const isConnected = isTesting ? true : appKitAccount.isConnected;
+  const { user } = useAccounts();
+  const settlementAddress = isTesting ? MOCK_SETTLEMENT_ADDRESS : (user?.merchant.settlement.walletAddress as Address);
 
   return (
     <>
@@ -128,8 +128,7 @@ export default function Transfers() {
       <CreateBillPayModal
         billPay={DEFAULT_NEW_BILL_PAY}
         isOpen={isCreateModalOpen}
-        isWalletConnected={isConnected}
-        settlementAddress={(isTesting ? MOCK_SETTLEMENT_ADDRESS : appKitAccount.address) as Address}
+        settlementAddress={settlementAddress}
         setBillPay={() => {}}
         onClose={() => setIsCreateModalOpen(false)}
         onSave={(newBillPay) => {

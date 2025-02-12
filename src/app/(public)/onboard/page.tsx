@@ -9,8 +9,7 @@ import { Accordion, AccordionItem } from "@nextui-org/accordion";
 import { Modal, ModalContent } from "@nextui-org/modal";
 
 import { schema, FormData } from "@/validations/onboard/schemas";
-import { LocalStorage } from "@/utils/localstorage";
-import { OnboardingState } from "@/contexts/AccountContext";
+import { LocalStorage, OnboardingState } from "@/utils/localstorage";
 import { StatusModal, StatusStep } from "@/components/onboard/status-modal";
 
 import { CircleWithNumber, CheckCircleIcon } from "./components/StepIndicator";
@@ -30,7 +29,7 @@ export default function OnboardPage() {
   ]);
 
   const [onboardingState] = useState<OnboardingState>(() => {
-    const state = LocalStorage.getOnboardingState();
+    const state = LocalStorage.getOnboarding();
 
     if (!state) {
       router.push("/auth");

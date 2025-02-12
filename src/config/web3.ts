@@ -9,7 +9,7 @@ import "viem/window";
 // // Magic
 // export const magic = new Magic(MAGIC_PUBLISHABLE_API_KEY, {
 //   network: {
-//     rpcUrl: chain.rpcUrls.default.http[0],
+//     rpcUrl: PUBLIC_RPC,
 //     chainId: chain.id,
 //   },
 //   deferPreload: true,
@@ -30,6 +30,7 @@ if (!MAGIC_PUBLISHABLE_API_KEY) {
 
 // Chain configuration
 export const chain = isLocal ? baseSepolia : base;
+export const PUBLIC_RPC = chain.rpcUrls.default.http[0];
 
 // Chain name mapping
 export const getChainName = (chain: Chain): string => {
