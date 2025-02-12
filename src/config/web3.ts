@@ -6,10 +6,10 @@ import "viem/window";
 
 // Environment variables validation
 const CANDIDE_API_KEY = process.env.NEXT_PUBLIC_CANDIDE_API_KEY;
+if (!CANDIDE_API_KEY) throw new Error("NEXT_PUBLIC_CANDIDE_API_KEY is not set");
 
-if (!CANDIDE_API_KEY) {
-  throw new Error("NEXT_PUBLIC_CANDIDE_API_KEY is not set");
-}
+const policyId = process.env.NEXT_PUBLIC_CANDIDE_BASE_SPONSORSHIP_POLICY_ID;
+if (!policyId) throw new Error("CANDIDE_BASE_SEPOLIA_SPONSORSHIP_POLICY_ID is not set");
 
 // Chain configuration
 export const chain = isLocal ? baseSepolia : base;
@@ -30,20 +30,9 @@ export const getChainName = (chain: Chain): string => {
 // Get sponsorship policy ID based on chain
 const getSponsorshipPolicyId = (chain: Chain): string => {
   switch (chain.id) {
-    case 84532: {
-      const policyId = process.env.NEXT_PUBLIC_CANDIDE_BASE_SEPOLIA_SPONSORSHIP_POLICY_ID;
-
-      if (!policyId) throw new Error("CANDIDE_BASE_SEPOLIA_SPONSORSHIP_POLICY_ID is not set");
-
+    case 8453:
+    case 84532:
       return policyId;
-    }
-    case 8453: {
-      const policyId = process.env.CANDIDE_BASE_SPONSORSHIP_POLICY_ID;
-
-      if (!policyId) throw new Error("CANDIDE_BASE_SPONSORSHIP_POLICY_ID is not set");
-
-      return policyId;
-    }
     default:
       throw new Error(`No sponsorship policy ID configured for chain ID: ${chain.id}`);
   }
