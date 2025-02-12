@@ -113,3 +113,11 @@ export interface SupportMessageContext extends BaseMessagingContext {
   service: SupportMessageService;
   isTyping: boolean;
 }
+
+/** Agent-specific messaging context */
+export interface AgentMessageContext extends BaseMessagingContext {
+  mode: "agent";
+  type: "openai";
+  model: string;
+  isLoading: boolean;
+}

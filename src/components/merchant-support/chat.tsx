@@ -1,10 +1,12 @@
 import { useEffect, useState, useRef } from "react";
 
-import { WebAuthnSafeAccountHelper } from "@/utils/safeAccount";
 import { XMTPService, type GroupMessage } from "@/utils/xmtp/client";
+import type { WebAuthnCredentials } from "@/utils/localstorage";
+import { createSafeAccount } from "@/utils/safe";
+import { Address } from "viem";
 
 interface ChatProps {
-  account: WebAuthnSafeAccountHelper;
+  account: WebAuthnCredentials;
   merchantId: string;
 }
 
@@ -13,7 +15,8 @@ export function MerchantSupportChat({ account, merchantId }: ChatProps) {
   const [newMessage, setNewMessage] = useState("");
   const [isLoading, setIsLoading] = useState(true);
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const xmtpService = useRef<XMTPService>(new XMTPService(account, merchantId));
+  const walletAddress = createSafeAccount({ signer: account.publicKey, isWebAuthn: true }) as Address;
+  const xmtpService = useRef<XMTPService>(new XMTPService(walletAddress, merchantId, account));
 
   // Scroll to bottom of messages
   const scrollToBottom = () => {
@@ -23,7 +26,7 @@ export function MerchantSupportChat({ account, merchantId }: ChatProps) {
   // Handle cleanup on unmount or account/merchant change
   useEffect(() => {
     // If account or merchant changes, create new service
-    xmtpService.current = new XMTPService(account, merchantId);
+    xmtpService.current = new XMTPService(walletAddress, merchantId, account);
 
     // Cleanup on unmount or account change
     return () => {
@@ -82,10 +85,10 @@ export function MerchantSupportChat({ account, merchantId }: ChatProps) {
       {/* Messages Container */}
       <div className="flex-1 overflow-y-auto p-4">
         {messages.map((msg) => (
-          <div key={msg.id} className={`mb-4 ${msg.senderAddress === account.getAddress() ? "ml-auto" : "mr-auto"}`}>
+          <div key={msg.id} className={`mb-4 ${msg.senderAddress === walletAddress ? "ml-auto" : "mr-auto"}`}>
             <div
               className={`max-w-[70%] rounded-lg p-3 ${
-                msg.senderAddress === account.getAddress() ? "bg-blue-500 text-white ml-auto" : "bg-gray-100"
+                msg.senderAddress === walletAddress ? "bg-blue-500 text-white ml-auto" : "bg-gray-100"
               }`}
             >
               <p className="text-sm">{msg.content}</p>

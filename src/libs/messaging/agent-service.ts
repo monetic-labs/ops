@@ -17,7 +17,7 @@ interface AgentState {
 }
 
 export const useAgentStore = create<AgentState>((set, get) => ({
-  type: "openai",
+  type: "telegram", // TODO: change to openai
   chatHelpers: null,
   messages: [],
   isLoading: false,

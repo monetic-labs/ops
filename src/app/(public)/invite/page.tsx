@@ -13,6 +13,7 @@ import { Address } from "viem";
 
 import { WebAuthnHelper } from "@/utils/webauthn";
 import { LocalStorage } from "@/utils/localstorage";
+import { useAccounts } from "@/contexts/AccountContext";
 import pylon from "@/libs/pylon-sdk";
 
 interface UserInviteDetails {
@@ -34,8 +35,10 @@ export default function InvitePage() {
     email: "",
     phoneNumber: "",
   });
+
   const router = useRouter();
   const searchParams = useSearchParams();
+  const { setAuth } = useAccounts();
   const token = searchParams?.get("token");
 
   useEffect(() => {
@@ -71,7 +74,7 @@ export default function InvitePage() {
       const webauthnHelper = new WebAuthnHelper();
 
       // Create passkey
-      const { publicKeyCoordinates, passkeyId } = await webauthnHelper.createPasskey();
+      const { publicKeyCoordinates, passkeyId, credentialId } = await webauthnHelper.createPasskey();
 
       // Initialize Safe account with WebAuthn public key
       const safeAccount = SafeAccount.initializeNewAccount([publicKeyCoordinates], {
@@ -90,8 +93,11 @@ export default function InvitePage() {
         passkeyId,
       });
 
-      // Store user data and redirect to dashboard
-      LocalStorage.setSafeUser(publicKeyCoordinates, walletAddress, walletAddress, passkeyId, true);
+      // Store auth state just like regular login
+      const credentials = { publicKey: publicKeyCoordinates, credentialId };
+      LocalStorage.setAuth(credentials, true);
+      setAuth({ credentials, isLoggedIn: true });
+
       router.push("/");
     } catch (error) {
       console.error("Registration error:", error);
@@ -105,7 +111,6 @@ export default function InvitePage() {
     e.preventDefault();
     if (!userDetails.phoneNumber) {
       setError("Please enter your phone number");
-
       return;
     }
     handlePasskeyRegistration();

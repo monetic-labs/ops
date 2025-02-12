@@ -13,7 +13,6 @@ import { PoliciesView } from "./views/PoliciesView";
 import { SendView } from "./views/SendView";
 import { ReceiveView } from "./views/ReceiveView";
 import type { TransferActivity } from "./types";
-import { motion, AnimatePresence } from "framer-motion";
 
 export default function AccountMeta() {
   const { accounts, getEnabledAccounts } = useAccounts();
@@ -97,32 +96,25 @@ export default function AccountMeta() {
             onToggleExpand={() => setIsExpanded(!isExpanded)}
           />
 
-          <AnimatePresence>
-            {isExpanded && (
-              <motion.div
-                initial={{ height: 0, opacity: 0 }}
-                animate={{ height: "auto", opacity: 1 }}
-                exit={{ height: 0, opacity: 0 }}
-                transition={{
-                  duration: 0.3,
-                  ease: "easeInOut",
-                }}
-                className="overflow-hidden"
-              >
-                <div className="p-6 space-y-6 border-t border-border">
-                  <AccountBalance account={selectedAccount} onSend={handleSend} onReceive={handleReceive} />
+          <div
+            className={`
+              transform transition-all duration-300 ease-in-out
+              ${isExpanded ? "opacity-100 max-h-[2000px]" : "opacity-0 max-h-0"}
+              overflow-hidden
+            `}
+          >
+            <div className="p-6 space-y-6 border-t border-border">
+              <AccountBalance account={selectedAccount} onSend={handleSend} onReceive={handleReceive} />
 
-                  <AccountNavigation selectedTab={activeTab} onTabChange={setActiveTab} />
+              <AccountNavigation selectedTab={activeTab} onTabChange={setActiveTab} />
 
-                  <div>
-                    {activeTab === "activity" && <ActivityView activities={activities} />}
-                    {activeTab === "operators" && <OperatorsView />}
-                    {activeTab === "policies" && <PoliciesView />}
-                  </div>
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
+              <div>
+                {activeTab === "activity" && <ActivityView activities={activities} />}
+                {activeTab === "operators" && <OperatorsView />}
+                {activeTab === "policies" && <PoliciesView />}
+              </div>
+            </div>
+          </div>
         </div>
       </CardBody>
     </Card>

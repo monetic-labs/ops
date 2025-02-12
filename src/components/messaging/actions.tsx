@@ -135,6 +135,7 @@ export const ChatActions: React.FC = () => {
           variant="light"
           onPress={() => fileInputRef.current?.click()}
         >
+          {/* eslint-disable-next-line */}
           <Image className="w-4 h-4" />
         </Button>
       </Tooltip>

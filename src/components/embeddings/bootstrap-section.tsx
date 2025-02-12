@@ -1,10 +1,9 @@
 import { Card, CardHeader, CardBody } from "@nextui-org/card";
 import { Divider } from "@nextui-org/divider";
 import { Spinner } from "@nextui-org/spinner";
+import { Button } from "@nextui-org/button";
 
 import { useBootstrapProcessor } from "@/hooks/embeddings/useBootstrapProcessor";
-
-import { FormButton } from "../generics/form-button";
 
 export const BootstrapSection = () => {
   const { runBootstrap, isBootstrapping, bootstrapStatus } = useBootstrapProcessor();
@@ -21,9 +20,9 @@ export const BootstrapSection = () => {
       <CardBody>
         <div className="space-y-4">
           <div className="flex items-center space-x-4">
-            <FormButton className="w-full" disabled={isBootstrapping} onClick={runBootstrap}>
+            <Button className="w-full" disabled={isBootstrapping} onPress={runBootstrap}>
               {isBootstrapping ? <Spinner color="current" size="sm" /> : "Bootstrap Knowledge Base"}
-            </FormButton>
+            </Button>
             {bootstrapStatus?.type && (
               <div
                 className={`p-4 rounded ${

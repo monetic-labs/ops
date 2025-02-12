@@ -3,7 +3,7 @@
 import React from "react";
 import { Button } from "@nextui-org/button";
 import { Chip } from "@nextui-org/chip";
-import { XIcon, Bot, MessageCircle } from "lucide-react";
+import { XIcon, MessageCircle } from "lucide-react";
 
 import { useMessagingState } from "@/libs/messaging/store";
 
@@ -19,17 +19,8 @@ export const ChatHeader: React.FC<ChatHeaderProps> = ({ onClose }) => {
     <header className="flex items-center justify-between w-full" data-testid="chat-header">
       <div className="flex items-center gap-3">
         <h2 className="text-lg font-semibold text-foreground flex items-center gap-2" data-testid="chat-title">
-          {mode === "bot" ? (
-            <>
-              <Bot className="w-5 h-5 text-primary" />
-              <span>Atlas Assistant</span>
-            </>
-          ) : (
-            <>
-              <MessageCircle className="w-5 h-5 text-primary" />
-              <span>Support Chat</span>
-            </>
-          )}
+          <MessageCircle className="w-5 h-5 text-primary" />
+          <span>Support Chat</span>
         </h2>
         <Chip
           className="border-divider bg-content2/50 text-foreground/80 text-tiny"
