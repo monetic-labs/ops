@@ -4,28 +4,11 @@ import { baseSepolia, base } from "viem/chains";
 import { isLocal } from "@/utils/helpers";
 import "viem/window";
 
-// import { Magic } from "magic-sdk";
-
-// // Magic
-// export const magic = new Magic(MAGIC_PUBLISHABLE_API_KEY, {
-//   network: {
-//     rpcUrl: PUBLIC_RPC,
-//     chainId: chain.id,
-//   },
-//   deferPreload: true,
-// });
-
 // Environment variables validation
 const CANDIDE_API_KEY = process.env.NEXT_PUBLIC_CANDIDE_API_KEY;
 
 if (!CANDIDE_API_KEY) {
   throw new Error("CANDIDE_API_KEY is not set");
-}
-
-const MAGIC_PUBLISHABLE_API_KEY = process.env.NEXT_PUBLIC_MAGIC_PUBLISHABLE_API_KEY;
-
-if (!MAGIC_PUBLISHABLE_API_KEY) {
-  throw new Error("MAGIC_PUBLISHABLE_API_KEY is not set");
 }
 
 // Chain configuration
