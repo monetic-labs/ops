@@ -6,6 +6,7 @@ import { Select, SelectItem } from "@nextui-org/select";
 import { useState } from "react";
 
 import pylon from "@/libs/pylon-sdk";
+import { capitalizeFirstChar } from "@/utils/helpers";
 
 interface CreateUserModalProps {
   isOpen: boolean;
@@ -23,6 +24,7 @@ export default function CreateUserModal({ isOpen, availableRoles, onClose, onSav
     lastName: "",
     email: "",
     role: PersonRole.MEMBER,
+    pendingInvite: null,
   });
 
   const [errors, setErrors] = useState({
@@ -60,6 +62,7 @@ export default function CreateUserModal({ isOpen, availableRoles, onClose, onSav
       lastName: "",
       email: "",
       role: PersonRole.MEMBER,
+      pendingInvite: null,
     });
     setErrors({
       firstName: "",
@@ -80,15 +83,30 @@ export default function CreateUserModal({ isOpen, availableRoles, onClose, onSav
     try {
       setIsLoading(true);
       setError(null);
-      const user = await pylon.createUser({
-        email: newUser.email.toLowerCase(),
-        firstName: newUser.firstName.charAt(0).toUpperCase() + newUser.firstName.slice(1),
-        lastName: newUser.lastName.charAt(0).toUpperCase() + newUser.lastName.slice(1),
-        role: newUser.role,
+      const user = await pylon.issueInvite({
+        invites: [
+          {
+            email: newUser.email.toLowerCase(),
+            firstName: capitalizeFirstChar(newUser.firstName),
+            lastName: capitalizeFirstChar(newUser.lastName),
+            role: newUser.role,
+          },
+        ],
       });
 
       if (user) {
-        onSave(user);
+        onSave({
+          id: crypto.randomUUID(),
+          firstName: capitalizeFirstChar(newUser.firstName),
+          lastName: capitalizeFirstChar(newUser.lastName),
+          email: newUser.email.toLowerCase(),
+          role: newUser.role,
+          pendingInvite: {
+            id: user.invitedUsers[0].id,
+            isUsed: false,
+            expiresAt: user.invitedUsers[0].expiresAt,
+          },
+        });
         resetForm();
       } else {
         throw new Error("Failed to create user");

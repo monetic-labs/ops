@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-import { isLocal, formatPhoneNumber } from "@/utils/helpers";
+import { isLocal, formatPhoneNumber, capitalizeFirstChar } from "@/utils/helpers";
 
 // Add validation patterns
 const emailRegex = /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i;
@@ -98,7 +98,7 @@ const getZodFieldValidation = (schema: z.ZodType, value: unknown, fieldPath: str
   if (!value && isRequired) {
     return {
       isInvalid: true,
-      errorMessage: `${fieldPath.charAt(0).toUpperCase() + fieldPath.slice(1)} is required`,
+      errorMessage: `${capitalizeFirstChar(fieldPath)} is required`,
       isRequired,
     };
   }

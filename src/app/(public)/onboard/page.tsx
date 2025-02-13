@@ -7,10 +7,13 @@ import { useForm, FormProvider } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Accordion, AccordionItem } from "@nextui-org/accordion";
 import { Modal, ModalContent } from "@nextui-org/modal";
+import { Button } from "@nextui-org/button";
+import { Sun, Moon } from "lucide-react";
 
 import { schema, FormData } from "@/validations/onboard/schemas";
 import { LocalStorage, OnboardingState } from "@/utils/localstorage";
 import { StatusModal, StatusStep } from "@/components/onboard/status-modal";
+import { useTheme } from "@/hooks/useTheme";
 
 import { CircleWithNumber, CheckCircleIcon } from "./components/StepIndicator";
 import { getDefaultValues, getFieldsForStep } from "./types";
@@ -19,6 +22,7 @@ import { getSteps } from "./config/steps";
 
 export default function OnboardPage() {
   const router = useRouter();
+  const { toggleTheme, isDark } = useTheme();
   const [currentStep, setCurrentStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isRedirecting, setIsRedirecting] = useState(false);
@@ -140,41 +144,74 @@ export default function OnboardPage() {
   const steps = getSteps();
 
   return (
-    <section className="w-full relative z-10 max-w-3xl mx-auto px-4 py-8">
-      <Suspense fallback={<Spinner className="w-full h-full" />}>
-        <FormProvider {...methods}>
-          <form noValidate onSubmit={onSubmit}>
-            <Accordion className="bg-charyo-500" selectedKeys={[currentStep.toString()]} variant="shadow">
-              {steps.map((step, index) => (
-                <AccordionItem
-                  key={step.number}
-                  aria-label={step.title}
-                  classNames={{
-                    title: "text-lg font-bold text-notpurple-500",
-                    heading: "pointer-events-none cursor-default",
-                    content: "p-6 text-notpurple-500",
-                    indicator: "text-notpurple-500",
-                  }}
-                  isDisabled={index > currentStep}
-                  startContent={
-                    currentStep > Number(step.number) ? <CheckCircleIcon /> : <CircleWithNumber number={step.number} />
-                  }
-                  title={step.title}
-                >
-                  {step.content({
-                    isValidating,
-                    onNext: handleNext,
-                    onPrevious: handlePrevious,
-                    onStepChange: handleEdit,
-                    isSubmitting,
-                    isValid,
-                  })}
-                </AccordionItem>
-              ))}
-            </Accordion>
-          </form>
-        </FormProvider>
-      </Suspense>
+    <section className="w-full relative z-10 max-w-3xl mx-auto px-4 py-12">
+      {/* Theme Toggle */}
+      <Button
+        isIconOnly
+        className="fixed top-4 right-4 z-50 bg-content1/10 backdrop-blur-lg border border-border"
+        radius="lg"
+        variant="flat"
+        onPress={toggleTheme}
+      >
+        {isDark ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
+      </Button>
+
+      <div className="mb-8 text-center">
+        <h1 className="text-3xl font-semibold text-foreground mb-2">Complete Your Setup</h1>
+        <p className="text-foreground/60">Let's get your business account ready for use</p>
+      </div>
+
+      <div className="relative">
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-background/50 to-background/80 rounded-2xl" />
+        <div className="relative bg-content1/40 backdrop-blur-xl border border-border rounded-2xl shadow-xl">
+          <FormProvider {...methods}>
+            <form noValidate onSubmit={onSubmit}>
+              <Accordion className="p-1" selectedKeys={[currentStep.toString()]} variant="shadow">
+                {steps.map((step, index) => (
+                  <AccordionItem
+                    key={step.number}
+                    aria-label={step.title}
+                    classNames={{
+                      base: [
+                        "bg-content1/40 backdrop-blur-xl border-none rounded-xl mb-2 last:mb-0",
+                        "data-[open=true]:bg-content2/40",
+                        currentStep > Number(step.number) && "opacity-80",
+                      ]
+                        .filter(Boolean)
+                        .join(" "),
+                      title: [
+                        "text-lg font-semibold",
+                        currentStep > Number(step.number) ? "text-foreground/60" : "text-foreground",
+                      ].join(" "),
+                      trigger: "px-8 py-4 data-[hover=true]:bg-content2/40 rounded-xl transition-colors",
+                      indicator: "text-foreground/40",
+                      content: "px-8 py-6",
+                    }}
+                    isDisabled={index > currentStep - 1}
+                    startContent={
+                      currentStep > Number(step.number) ? (
+                        <CheckCircleIcon />
+                      ) : (
+                        <CircleWithNumber number={step.number} />
+                      )
+                    }
+                    title={step.title}
+                  >
+                    {step.content({
+                      isValidating,
+                      onNext: handleNext,
+                      onPrevious: handlePrevious,
+                      onStepChange: handleEdit,
+                      isSubmitting,
+                      isValid,
+                    })}
+                  </AccordionItem>
+                ))}
+              </Accordion>
+            </form>
+          </FormProvider>
+        </div>
+      </div>
 
       {/* Status Modal */}
       <StatusModal isOpen={isSubmitting} steps={statusSteps} />
@@ -183,7 +220,7 @@ export default function OnboardPage() {
       <Modal
         hideCloseButton
         classNames={{
-          base: "bg-zinc-900/95 shadow-xl border border-white/10",
+          base: "bg-content1/95 backdrop-blur-xl border border-border shadow-2xl",
           body: "p-0",
         }}
         isDismissable={false}
@@ -193,10 +230,10 @@ export default function OnboardPage() {
         <ModalContent>
           <div className="p-8">
             <div className="flex flex-col items-center justify-center gap-4">
-              <Spinner color="white" size="lg" />
+              <Spinner color="primary" size="lg" />
               <div className="text-center">
-                <h2 className="text-xl font-semibold text-white mb-2">Checking Compliance Status</h2>
-                <p className="text-white/60">Please wait while we verify your account...</p>
+                <h2 className="text-xl font-semibold text-foreground mb-2">Checking Compliance Status</h2>
+                <p className="text-foreground/60">Please wait while we verify your account...</p>
               </div>
             </div>
           </div>

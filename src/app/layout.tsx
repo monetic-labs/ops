@@ -12,7 +12,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 
   return (
     <html suppressHydrationWarning lang="en">
-      <body className="min-h-screen font-sans antialiased bg-background text-foreground">
+      <body className="min-h-screen font-sans antialiased bg-background text-foreground dark:bg-gradient-to-br dark:from-charyo-950 dark:via-charyo-900 dark:to-notpurple-900">
         <AuthProvider token={authToken?.value}>
           <AccountProvider>
             <Providers themeProps={{ attribute: "class", defaultTheme: "dark", themes: ["light", "dark"] }}>

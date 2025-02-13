@@ -12,6 +12,7 @@ import pylon from "@/libs/pylon-sdk";
 
 import CreateUserModal from "./user-create";
 import UserEditModal from "./user-edit";
+import { useAccounts } from "@/hooks/useAccounts";
 
 interface MembersTabProps {
   userId: string;
@@ -20,39 +21,19 @@ interface MembersTabProps {
 }
 
 export default function MembersTab({ userId, isCreateModalOpen, setIsCreateModalOpen }: MembersTabProps) {
+  // All hooks must be at the top
+  const { user } = useAccounts();
   const [users, setUsers] = useState<MerchantUserGetOutput[]>([]);
   const [selectedUser, setSelectedUser] = useState<MerchantUserGetOutput | null>(null);
-  const [userRole, setUserRole] = useState<PersonRole | null>(null);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
 
-  // Debug logs
-  console.log("Current userId:", userId);
-  console.log("Current userRole:", userRole);
-  console.log("Selected user:", selectedUser);
-  console.log("Edit modal open:", isEditModalOpen);
-
-  const canManageUsers = userRole === PersonRole.SUPER_ADMIN;
-  const isEditable = userRole === PersonRole.SUPER_ADMIN;
-
-  const availableRoles = Object.values(PersonRole).filter((role) => {
-    if (userRole === PersonRole.SUPER_ADMIN) return true;
-
-    return false;
-  });
-
-  const fetchUsers = async () => {
+  async function fetchUsers() {
     setIsLoading(true);
     try {
       const fetchedUsers = await pylon.getUsers();
-
-      console.log("Fetched users:", fetchedUsers);
       setUsers(fetchedUsers);
-      const currentUser = fetchedUsers.find((user) => user.id === userId);
-
-      console.log("Current user found:", currentUser);
-      setUserRole(currentUser?.role || null);
       setError(null);
     } catch (err) {
       console.error("Error fetching users:", err);
@@ -60,13 +41,23 @@ export default function MembersTab({ userId, isCreateModalOpen, setIsCreateModal
     } finally {
       setIsLoading(false);
     }
-  };
+  }
 
   useEffect(() => {
-    if (userId) {
+    if (userId && user) {
       fetchUsers();
     }
-  }, [userId]);
+  }, [userId, user]);
+
+  if (!user) return null;
+
+  const canManageUsers = user.role === PersonRole.SUPER_ADMIN;
+  const isEditable = user.role === PersonRole.SUPER_ADMIN;
+
+  const availableRoles = Object.values(PersonRole).filter((role) => {
+    if (user.role === PersonRole.SUPER_ADMIN) return true;
+    return false;
+  });
 
   const memberColumns: Column<MerchantUserGetOutput>[] = [
     {
@@ -90,6 +81,25 @@ export default function MembersTab({ userId, isCreateModalOpen, setIsCreateModal
           >
             {fullName}
           </User>
+        );
+      },
+    },
+    {
+      name: "STATUS",
+      uid: "status",
+      render: (user) => {
+        const isPending = user.pendingInvite?.isUsed === false;
+        const isExpired = isPending && user.pendingInvite && new Date(user.pendingInvite.expiresAt) < new Date();
+
+        return (
+          <Chip
+            className="capitalize"
+            color={isPending ? (isExpired ? "danger" : "warning") : "success"}
+            size="sm"
+            variant="flat"
+          >
+            {isPending ? (isExpired ? "Invite Expired" : "Invite Pending") : "Active"}
+          </Chip>
         );
       },
     },
@@ -173,16 +183,27 @@ export default function MembersTab({ userId, isCreateModalOpen, setIsCreateModal
   };
 
   const handleRemoveUser = async (userId: string) => {
-    try {
-      const success = await pylon.deleteUser(userId);
+    const userToRemove = users.find((u) => u.id === userId);
+    if (!userToRemove) return;
 
-      if (success) {
-        // Update the local state instead of refetching
-        setUsers(users.filter((user) => user.id !== userId));
-        handleCloseEditModal();
+    try {
+      if (userToRemove.pendingInvite && !userToRemove.pendingInvite.isUsed) {
+        // For pending invites, use cancelInvite with the invite ID
+        const success = await pylon.cancelInvite(userToRemove.pendingInvite.id);
+        if (!success) {
+          throw new Error("Failed to cancel invite");
+        }
       } else {
-        throw new Error("Failed to remove user");
+        // For active users, use deleteUser with the user ID
+        const success = await pylon.deleteUser(userId);
+        if (!success) {
+          throw new Error("Failed to remove user");
+        }
       }
+
+      // Update the local state
+      setUsers(users.filter((user) => user.id !== userId));
+      handleCloseEditModal();
     } catch (err) {
       console.error("Error removing user:", err);
       setError(err as Error);
@@ -221,7 +242,7 @@ export default function MembersTab({ userId, isCreateModalOpen, setIsCreateModal
       {selectedUser && (
         <UserEditModal
           availableRoles={availableRoles}
-          isEditable={isEditable}
+          isEditable={isEditable && !selectedUser.pendingInvite}
           isOpen={isEditModalOpen}
           isSelf={selectedUser.id === userId}
           user={selectedUser}

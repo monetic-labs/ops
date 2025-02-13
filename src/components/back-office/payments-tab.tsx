@@ -5,7 +5,7 @@ import { TransactionListItem } from "@backpack-fux/pylon-sdk";
 import { DataTable, EmptyContent, Column } from "@/components/generics/data-table";
 import pylon from "@/libs/pylon-sdk";
 import { useOrderManagement } from "@/hooks/orders/useOrderManagement";
-import { centsToDollars, getTimeAgo, mapCurrencyToSymbol } from "@/utils/helpers";
+import { capitalizeFirstChar, centsToDollars, getTimeAgo, mapCurrencyToSymbol } from "@/utils/helpers";
 import { paymentsStatusColorMap } from "@/data";
 
 import { PaymentDetails } from "./actions/order-details";
@@ -38,7 +38,7 @@ const paymentColumns: Column<TransactionListItem>[] = [
     uid: "paymentMethod",
     render: (payment: TransactionListItem) => (
       <span className="truncate block max-w-[150px] sm:max-w-[200px]">
-        {`${payment.paymentMethod.charAt(0).toUpperCase()}${payment.paymentMethod.slice(1).toLowerCase()}`}
+        {capitalizeFirstChar(payment.paymentMethod)}
       </span>
     ),
   },

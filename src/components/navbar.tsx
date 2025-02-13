@@ -5,7 +5,7 @@ import { Dropdown, DropdownTrigger, DropdownMenu, DropdownItem } from "@nextui-o
 import { Avatar } from "@nextui-org/avatar";
 import { Button } from "@nextui-org/button";
 import { Badge } from "@nextui-org/badge";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import NextLink from "next/link";
 import { LogOut, User, Backpack, Shield, Moon, Sun, MessageCircle } from "lucide-react";
 import { MerchantUserGetByIdOutput as MerchantUser } from "@backpack-fux/pylon-sdk";
@@ -231,19 +231,39 @@ const AuthenticatedNav = ({ user, handleSignOut }: { user: MerchantUser; handleS
   );
 };
 
-const UnauthenticatedNav = () => (
-  <NavbarContent justify="end">
-    <NavbarItem>
-      <NextLink className="text-white/60 hover:text-white transition-colors" href="/auth">
-        Sign In
-      </NextLink>
-    </NavbarItem>
-  </NavbarContent>
-);
+const UnauthenticatedNav = () => {
+  const { toggleTheme, isDark } = useTheme();
+  const pathname = usePathname();
+  const isAuthPage = pathname === "/auth";
+
+  return (
+    <NavbarContent justify="end">
+      <NavbarItem>
+        <Button
+          isIconOnly
+          className="bg-transparent text-foreground/60 hover:text-foreground"
+          variant="light"
+          onPress={toggleTheme}
+        >
+          {isDark ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
+        </Button>
+      </NavbarItem>
+      {!isAuthPage && (
+        <NavbarItem>
+          <Button className="bg-primary/10 hover:bg-primary/20 text-primary" variant="flat" as={NextLink} href="/auth">
+            Sign In
+          </Button>
+        </NavbarItem>
+      )}
+    </NavbarContent>
+  );
+};
 
 export const Navbar = () => {
   const router = useRouter();
   const { user, isAuthenticated, isLoading, logout } = useAccounts();
+  const pathname = usePathname();
+  const isPublicRoute = pathname?.startsWith("/auth") || pathname?.startsWith("/invite");
 
   const handleSignOut = async () => {
     try {
@@ -255,10 +275,10 @@ export const Navbar = () => {
   };
 
   useEffect(() => {
-    if (!isLoading && !isAuthenticated) {
+    if (!isLoading && !isAuthenticated && !isPublicRoute) {
       router.push("/auth");
     }
-  }, [isAuthenticated, isLoading, router]);
+  }, [isAuthenticated, isLoading, router, isPublicRoute]);
 
   return (
     <NextUINavbar

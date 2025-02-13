@@ -5,7 +5,7 @@ import { CheckCircle, Edit, UserRound } from "lucide-react";
 import { Button } from "@nextui-org/button";
 
 import { FormData } from "@/validations/onboard/schemas";
-import { formatCompanyType, formatEIN, formatPersonRole, formatPhoneNumber, truncateAddress } from "@/utils/helpers";
+import { capitalizeFirstChar, formatCompanyType, formatEIN, formatPersonRole, formatPhoneNumber, truncateAddress } from "@/utils/helpers";
 
 export const ReviewStep = ({ onStepChange }: { onStepChange: (step: number) => void }) => {
   const { watch } = useFormContext<FormData>();
@@ -13,12 +13,12 @@ export const ReviewStep = ({ onStepChange }: { onStepChange: (step: number) => v
 
   const EditButton = ({ step }: { step: number }) => (
     <Button
-      className="text-[#E31B88] hover:text-[#cc0077]"
+      className="text-primary hover:text-primary/80"
       size="sm"
       variant="light"
       onClick={() => onStepChange(step)}
     >
-      <Edit className="text-[#E31B88] hover:text-[#cc0077]" size={16} />
+      <Edit className="text-primary hover:text-primary/80" size={16} />
       Edit
     </Button>
   );
@@ -126,7 +126,7 @@ export const ReviewStep = ({ onStepChange }: { onStepChange: (step: number) => v
                         <CheckCircle className="h-3 w-3 text-default-500" />
                         {role
                           .split("_")
-                          .map((word: string) => word.charAt(0).toUpperCase() + word.slice(1))
+                          .map((word: string) => capitalizeFirstChar(word))
                           .join(" ")}
                       </span>
                     ))}

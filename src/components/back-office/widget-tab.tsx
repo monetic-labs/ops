@@ -4,6 +4,7 @@ import { Network, StableCurrency } from "@backpack-fux/pylon-sdk";
 import { Autocomplete, AutocompleteItem } from "@nextui-org/autocomplete";
 
 import GenerateApiKeysModal from "./actions/widgets/api-keys";
+import { capitalizeFirstChar } from "@/utils/helpers";
 
 const networks = ["POLYGON", "SOLANA", "BASE", "OPTIMISM", "ARBITRUM"];
 const currencies = ["USDC", "USDT", "DAI"];
@@ -66,7 +67,7 @@ export default function WidgetManagement({
       >
         {networks.map((network) => (
           <SelectItem key={network} value={network}>
-            {network.charAt(0).toUpperCase() + network.slice(1).toLowerCase()}
+            {capitalizeFirstChar(network)}
           </SelectItem>
         ))}
       </Select>

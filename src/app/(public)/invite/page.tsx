@@ -15,13 +15,14 @@ import { WebAuthnHelper } from "@/utils/webauthn";
 import { LocalStorage } from "@/utils/localstorage";
 import { useAccounts } from "@/contexts/AccountContext";
 import pylon from "@/libs/pylon-sdk";
+import { formatPhoneNumber } from "@/utils/helpers";
 
 interface UserInviteDetails {
   company: string;
   firstName: string;
   lastName: string;
   email: string;
-  phoneNumber: string;
+  phoneNumber: string | null;
 }
 
 export default function InvitePage() {
@@ -33,7 +34,7 @@ export default function InvitePage() {
     firstName: "",
     lastName: "",
     email: "",
-    phoneNumber: "",
+    phoneNumber: null,
   });
 
   const router = useRouter();
@@ -43,32 +44,40 @@ export default function InvitePage() {
 
   useEffect(() => {
     const verifyInvite = async () => {
-      if (!token) return;
+      if (!token) {
+        setError("Invalid invite link - no token provided");
+        return;
+      }
 
       try {
-        // @ts-ignore - Method will be added to SDK
-        const response = await pylon.verifyInvite(token);
-
+        const response = await pylon.getInvite(token);
         setUserDetails({
-          company: response.company,
+          company: response.merchant,
           firstName: response.firstName,
           lastName: response.lastName,
           email: response.email,
-          phoneNumber: "",
+          phoneNumber: null,
         });
       } catch (error) {
         console.error("Verification error:", error);
         setError("Invalid or expired invite link");
-        router.push("/auth");
+        setTimeout(() => {
+          router.push("/auth");
+        }, 3000); // Delay to allow error message to be displayed
       } finally {
         setIsVerifying(false);
       }
     };
 
     verifyInvite();
-  }, [token, router]);
+  }, [token]);
 
   const handlePasskeyRegistration = async () => {
+    if (!userDetails.phoneNumber) {
+      setError("Please enter your phone number");
+      return;
+    }
+
     setIsLoading(true);
     try {
       const webauthnHelper = new WebAuthnHelper();
@@ -84,10 +93,7 @@ export default function InvitePage() {
 
       const walletAddress = safeAccount.accountAddress as Address;
 
-      // TODO: Call pylon.redeemInvite with token and passkey data
-      // @ts-ignore - Method will be added to SDK
-      await pylon.redeemInvite({
-        token: token!,
+      await pylon.redeemInvite(token!, {
         phoneNumber: userDetails.phoneNumber,
         walletAddress,
         passkeyId,
@@ -128,22 +134,23 @@ export default function InvitePage() {
 
   return (
     <div className="w-full sm:max-w-md">
-      <Card className="bg-transparent sm:bg-zinc-800/90 backdrop-blur-xl border-none shadow-none sm:shadow-2xl">
+      <Card className="bg-transparent dark:sm:bg-content1 sm:bg-white border-none shadow-none sm:shadow-2xl">
         <CardHeader className="flex flex-col gap-2 p-6 sm:px-8 sm:pt-8">
           <div className="flex items-center gap-3">
-            <div className="p-2 rounded-xl bg-white/5">
-              <Backpack className="w-5 h-5 text-white/70" />
+            <div className="p-2 rounded-xl bg-primary/10">
+              <Backpack className="w-5 h-5 text-primary" />
             </div>
-            <h1 className="text-xl sm:text-2xl font-semibold text-white">Complete Registration</h1>
+            <h1 className="text-xl sm:text-2xl font-semibold text-foreground">Complete Registration</h1>
           </div>
-          <p className="text-white/60 text-sm sm:text-base">Set up your account with a passkey</p>
+          <p className="text-foreground/60 text-sm sm:text-base">Set up your account with a passkey</p>
         </CardHeader>
         <CardBody className="px-6 pb-6 sm:px-8 flex flex-col gap-6">
           <form className="space-y-4" onSubmit={handleSubmit}>
             <Input
               isDisabled
               classNames={{
-                input: "text-white/60",
+                input: "text-foreground/60",
+                label: "text-foreground/90",
               }}
               label="Company"
               value={userDetails.company}
@@ -151,7 +158,8 @@ export default function InvitePage() {
             <Input
               isDisabled
               classNames={{
-                input: "text-white/60",
+                input: "text-foreground/60",
+                label: "text-foreground/90",
               }}
               label="First Name"
               value={userDetails.firstName}
@@ -159,7 +167,8 @@ export default function InvitePage() {
             <Input
               isDisabled
               classNames={{
-                input: "text-white/60",
+                input: "text-foreground/60",
+                label: "text-foreground/90",
               }}
               label="Last Name"
               value={userDetails.lastName}
@@ -167,20 +176,29 @@ export default function InvitePage() {
             <Input
               isDisabled
               classNames={{
-                input: "text-white/60",
+                input: "text-foreground/60",
+                label: "text-foreground/90",
               }}
               label="Email"
               value={userDetails.email}
             />
             <Input
               required
+              classNames={{
+                label: "text-foreground/90",
+                input: "text-foreground",
+              }}
               label="Phone Number"
               placeholder="Enter your phone number"
-              value={userDetails.phoneNumber}
-              onChange={(e) => setUserDetails({ ...userDetails, phoneNumber: e.target.value })}
+              startContent={<div className="text-foreground/60 text-sm">+1</div>}
+              value={userDetails.phoneNumber ? formatPhoneNumber(userDetails.phoneNumber) : ""}
+              onChange={(e) => {
+                const rawNumber = e.target.value.replace(/\D/g, "");
+                setUserDetails({ ...userDetails, phoneNumber: rawNumber });
+              }}
             />
             <Button
-              className="w-full bg-white/10 hover:bg-white/20 text-white h-14"
+              className="w-full bg-primary/10 hover:bg-primary/20 text-primary h-14"
               isLoading={isLoading}
               radius="lg"
               startContent={!isLoading && <Fingerprint className="w-5 h-5" />}
@@ -189,7 +207,7 @@ export default function InvitePage() {
               Register with Passkey
             </Button>
           </form>
-          {error && <div className="text-red-500 text-center text-sm">{error}</div>}
+          {error && <div className="text-danger text-center text-sm">{error}</div>}
         </CardBody>
       </Card>
     </div>

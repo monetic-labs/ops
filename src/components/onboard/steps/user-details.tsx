@@ -10,7 +10,7 @@ import { Checkbox } from "@nextui-org/checkbox";
 
 import postcodeMap from "@/data/postcodes-map.json";
 import { FormData } from "@/validations/onboard/schemas";
-import { formatPersonRole } from "@/utils/helpers";
+import { capitalizeFirstChar, formatPersonRole } from "@/utils/helpers";
 
 const formatSSN = (value: string) => {
   if (!value) return "";
@@ -44,7 +44,7 @@ export const UserDetailsStep = () => {
                 <span key={role} className="mr-2">
                   {role
                     .split("_")
-                    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+                    .map((word) => capitalizeFirstChar(word))
                     .join(" ")}
                 </span>
               ))}

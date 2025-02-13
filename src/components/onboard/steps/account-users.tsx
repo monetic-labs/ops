@@ -7,7 +7,7 @@ import { Controller } from "react-hook-form";
 import { Input } from "@nextui-org/input";
 
 import { UserRole } from "@/validations/onboard/schemas";
-import { formatPhoneNumber } from "@/utils/helpers";
+import { capitalizeFirstChar, formatPhoneNumber } from "@/utils/helpers";
 
 import { FormField } from "../form-fields";
 
@@ -52,7 +52,7 @@ const RoleCheckbox = ({
         <span className="text-medium font-semibold">
           {role
             .split("_")
-            .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+            .map((word) => capitalizeFirstChar(word))
             .join(" ")}
         </span>
         <span className="text-small text-default-500">{description}</span>

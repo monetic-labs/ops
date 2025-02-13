@@ -3,6 +3,7 @@ import { useMemo, useCallback } from "react";
 import { useMessagingStore, useMessagingActions } from "@/libs/messaging/store";
 import { MentionOption } from "@/types/messaging";
 import graphData from "@/knowledge-base/v0/graph/graph.json";
+import { capitalizeFirstChar } from "@/utils/helpers";
 
 export const useMentions = () => {
   const mentionState = useMessagingStore((state) => state.mention);
@@ -20,7 +21,7 @@ export const useMentions = () => {
         value: id,
         label: id
           .split("-")
-          .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+          .map((word) => capitalizeFirstChar(word))
           .join(" "),
         description: node.description,
         type: node.type,

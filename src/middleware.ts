@@ -10,8 +10,17 @@ const PUBLIC_ROUTES = ["/auth"];
 const PROTECTED_ROUTES = ["/", "/kyb", "/onboard"];
 
 export async function middleware(request: NextRequest) {
-  const { pathname } = request.nextUrl;
+  const { pathname, searchParams } = request.nextUrl;
   const authToken = request.cookies.get(MERCHANT_COOKIE_NAME);
+
+  // Special handling for invite route
+  if (pathname.startsWith("/invite")) {
+    const token = searchParams.get("token");
+    if (!token) {
+      return NextResponse.redirect(new URL("/auth", request.url));
+    }
+    return NextResponse.next();
+  }
 
   // Special handling for auth route
   if (pathname.startsWith("/auth")) {
@@ -20,7 +29,6 @@ export async function middleware(request: NextRequest) {
     if (authToken) {
       return NextResponse.redirect(new URL("/", request.url));
     }
-
     return NextResponse.next();
   }
 
@@ -57,7 +65,6 @@ export async function middleware(request: NextRequest) {
 
     if (!complianceResponse.ok) {
       console.error("Failed to fetch compliance status");
-
       return NextResponse.next();
     }
 
@@ -83,7 +90,6 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(new URL("/auth", request.url));
   }
 }
-
 export const config = {
   matcher: [
     /*

@@ -148,7 +148,7 @@ export const formatCompanyType = (value: string) => {
 export const formatPersonRole = (value: string) => {
   return value
     .split("_")
-    .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+    .map((word) => capitalizeFirstChar(word))
     .join(" ");
 };
 

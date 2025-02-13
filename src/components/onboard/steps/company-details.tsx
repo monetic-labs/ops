@@ -3,6 +3,7 @@
 import { useFormContext, Controller } from "react-hook-form";
 import { ChangeEvent, useCallback, useEffect } from "react";
 import { Input } from "@nextui-org/input";
+import { Globe } from "lucide-react";
 
 import postcodeMap from "@/data/postcodes-map.json";
 
@@ -86,7 +87,8 @@ export const CompanyDetailsStep = () => {
             placeholder="example.com"
             startContent={
               <div className="pointer-events-none flex items-center">
-                <span className="text-default-400 text-small">https://</span>
+                <Globe className="text-foreground/40 w-4 h-4 mr-1" />
+                <span className="text-foreground/40 text-small">https://</span>
               </div>
             }
             type="text"

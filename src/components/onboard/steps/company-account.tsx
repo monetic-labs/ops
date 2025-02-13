@@ -4,6 +4,7 @@ import { useFormContext, Controller } from "react-hook-form";
 import { Select, SelectItem } from "@nextui-org/select";
 import { CardCompanyType } from "@backpack-fux/pylon-sdk";
 import { Input } from "@nextui-org/input";
+import { Building2, Hash, Receipt } from "lucide-react";
 
 import { formatCompanyType, formatEIN } from "@/utils/helpers";
 
@@ -33,6 +34,9 @@ export const CompanyAccountStep = () => {
           maxLength={12}
           name="companyRegistrationNumber"
           placeholder="1234567"
+          startContent={<Hash className="text-foreground/40 w-4 h-4 flex-shrink-0" />}
+          errorMessage={errors?.companyRegistrationNumber?.message?.toString()}
+          isInvalid={!!errors?.companyRegistrationNumber}
         />
         <Controller
           control={control}
@@ -45,10 +49,10 @@ export const CompanyAccountStep = () => {
               label="Company Tax ID"
               maxLength={10}
               placeholder="12-3456789"
+              startContent={<Receipt className="text-foreground/40 w-4 h-4 flex-shrink-0" />}
               value={field.value ? formatEIN(field.value) : ""}
               onChange={(e) => {
                 const digits = e.target.value.replace(/\D/g, "");
-
                 if (digits.length <= 9) {
                   field.onChange(digits);
                 }
@@ -68,6 +72,7 @@ export const CompanyAccountStep = () => {
               label="Company Type"
               placeholder="Select Company Type"
               selectedKeys={companyType ? [companyType] : []}
+              startContent={<Building2 className="text-foreground/40 w-4 h-4 flex-shrink-0" />}
               onChange={(e) => field.onChange(e.target.value)}
             >
               {Object.values(CardCompanyType).map((type) => (
@@ -84,6 +89,9 @@ export const CompanyAccountStep = () => {
           maxLength={100}
           name="companyDescription"
           placeholder="Describe your company"
+          description="Optional - Describe your company's main business activities"
+          errorMessage={errors?.companyDescription?.message?.toString()}
+          isInvalid={!!errors?.companyDescription}
         />
       </div>
     </div>

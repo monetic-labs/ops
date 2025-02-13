@@ -30,6 +30,7 @@ export default function UserEditModal({
   const [isRemoveConfirmOpen, setIsRemoveConfirmOpen] = useState(false);
 
   const fullName = `${user.firstName} ${user.lastName}`;
+  const isPendingInvite = user.pendingInvite && !user.pendingInvite.isUsed;
 
   const handleSave = () => {
     onSave(editedUser);
@@ -110,10 +111,10 @@ export default function UserEditModal({
           <div className="flex justify-between w-full">
             <Button
               className="bg-danger text-danger-foreground"
-              isDisabled={isSelf || !isEditable}
+              isDisabled={isSelf || (!isEditable && !isPendingInvite)}
               onPress={() => setIsRemoveConfirmOpen(true)}
             >
-              Remove User
+              {isPendingInvite ? "Cancel Invite" : "Remove User"}
             </Button>
             <div className="flex gap-2">
               <Button className="bg-content2 text-foreground hover:bg-content3" onPress={onClose}>
@@ -131,10 +132,13 @@ export default function UserEditModal({
       <Modal isOpen={isRemoveConfirmOpen} onClose={() => setIsRemoveConfirmOpen(false)}>
         <ModalContent>
           <ModalHeader className="flex flex-col gap-1">
-            <h3 className="text-xl font-normal">Confirm Removal</h3>
+            <h3 className="text-xl font-normal">Confirm {isPendingInvite ? "Cancellation" : "Removal"}</h3>
           </ModalHeader>
           <ModalBody>
-            <p>Are you sure you want to remove {fullName}? This action cannot be undone.</p>
+            <p>
+              Are you sure you want to {isPendingInvite ? "cancel the invitation for" : "remove"} {fullName}?
+              {isPendingInvite ? " This will invalidate their invitation link." : " This action cannot be undone."}
+            </p>
           </ModalBody>
           <ModalFooter>
             <Button
@@ -144,7 +148,7 @@ export default function UserEditModal({
               Cancel
             </Button>
             <Button className="bg-danger text-danger-foreground" onPress={handleRemove}>
-              Remove
+              {isPendingInvite ? "Cancel Invite" : "Remove"}
             </Button>
           </ModalFooter>
         </ModalContent>

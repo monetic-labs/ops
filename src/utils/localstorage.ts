@@ -38,7 +38,13 @@ export class LocalStorage {
   // Core Authentication Methods
   static setAuth(credentials: WebAuthnCredentials, isLoggedIn: boolean) {
     const state = {
-      credentials,
+      credentials: {
+        publicKey: {
+          x: String(credentials.publicKey.x),
+          y: String(credentials.publicKey.y),
+        },
+        credentialId: credentials.credentialId,
+      },
       isLoggedIn,
       timestamp: Date.now(),
     };
