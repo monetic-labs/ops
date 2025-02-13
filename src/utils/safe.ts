@@ -63,6 +63,61 @@ export const sponsorUserOperation = async (userOp: UserOperationV7) => {
   return userOp;
 };
 
+/**
+ * Formats signatures for a user operation with proper WebAuthn configuration
+ */
+export const formatWebAuthnSignature = (
+  signerSignaturePair: SignerSignaturePair,
+  options: {
+    isInit?: boolean;
+    precompileAddress?: Address;
+  } = {}
+): string => {
+  const { isInit = false, precompileAddress = DEFAULT_SECP256R1_PRECOMPILE_ADDRESS } = options;
+
+  return SafeAccount.formatSignaturesToUseroperationSignature([signerSignaturePair], {
+    isInit,
+    eip7212WebAuthnPrecompileVerifier: precompileAddress,
+  });
+};
+
+/**
+ * Creates a user operation with proper signature formatting
+ */
+export const createSignedUserOperation = (
+  account: SafeAccount,
+  userOp: UserOperationV7,
+  signature: SignerSignaturePair,
+  options: {
+    isInit?: boolean;
+    precompileAddress?: Address;
+  } = {}
+): UserOperationV7 => {
+  userOp.signature = formatWebAuthnSignature(signature, options);
+  return userOp;
+};
+
+/**
+ * Creates a settlement operation with an approved signature
+ */
+export const createSettlementOperationWithApproval = (
+  individualAccountAddress: Address,
+  settlementAccountUserOperation: UserOperationV7,
+  precompileAddress: Address = DEFAULT_SECP256R1_PRECOMPILE_ADDRESS
+): UserOperationV7 => {
+  const approvedSignature = ("0x000000000000000000000000" +
+    individualAccountAddress.slice(2) +
+    "000000000000000000000000000000000000000000000000000000000000000001") as Hex;
+
+  return createSignedUserOperation(
+    new SafeAccount(individualAccountAddress),
+    settlementAccountUserOperation,
+    { signer: individualAccountAddress, signature: approvedSignature },
+    { precompileAddress }
+  );
+};
+
+// Clean up the sendUserOperation function to use the new utilities
 export const sendUserOperation = async (
   walletAddress: Address,
   userOp: UserOperationV7,
@@ -70,17 +125,49 @@ export const sendUserOperation = async (
   isInit = false
 ) => {
   const account = new SafeAccount(walletAddress);
+  const signedOp = await createSignedUserOperation(account, userOp, signature, { isInit });
+  return account.sendUserOperation(signedOp, BUNDLER_URL);
+};
 
-  // Format signature
-  userOp.signature = SafeAccount.formatSignaturesToUseroperationSignature([signature], {
-    isInit,
-    eip7212WebAuthnPrecompileVerifier: DEFAULT_SECP256R1_PRECOMPILE_ADDRESS,
-  });
+// Improve error handling in tracking functions
+export const trackUserOperationResponse = async (
+  response: UserOperationResponse,
+  callbacks: OperationTrackingCallbacks = {}
+): Promise<void> => {
+  const { onSent, onError, onSuccess } = callbacks;
 
-  // Send operation
-  const response = await account.sendUserOperation(userOp, BUNDLER_URL);
+  try {
+    onSent?.();
+    const receipt = await response.included();
 
-  return response;
+    if (!receipt.success) {
+      throw new Error("Operation execution failed");
+    }
+
+    onSuccess?.();
+  } catch (error) {
+    const formattedError = error instanceof Error ? error : new Error("Unknown error occurred");
+    onError?.(formattedError);
+    throw formattedError;
+  }
+};
+
+/**
+ * Sends a user operation and tracks its status with improved error handling
+ */
+export const sendAndTrackUserOperation = async (
+  account: SafeAccount,
+  userOp: UserOperationV7,
+  callbacks: OperationTrackingCallbacks = {}
+): Promise<void> => {
+  try {
+    const response = await account.sendUserOperation(userOp, BUNDLER_URL);
+    await trackUserOperationResponse(response, callbacks);
+  } catch (error) {
+    const formattedError = error instanceof Error ? error : new Error("Failed to send or track operation");
+    callbacks.onError?.(formattedError);
+    throw formattedError;
+  }
 };
 
 // Utility Functions
@@ -122,4 +209,15 @@ export const createAndSendSponsoredUserOp = async (
     userOp: sponsoredOp,
     hash,
   };
+};
+
+// Add new types and utilities for settlement operations
+export type UserOperationResponse = {
+  included: () => Promise<{ success: boolean }>;
+};
+
+export type OperationTrackingCallbacks = {
+  onSent?: () => void;
+  onError?: (error: Error) => void;
+  onSuccess?: () => void;
 };

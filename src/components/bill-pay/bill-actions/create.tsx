@@ -157,7 +157,7 @@ export default function CreateBillPayModal({
       const liquidationAddress = getLiquidationAddress(response, isExistingBillPay(billPay));
 
       const txHash = await buildNestedTransfer({
-        individualSafeAddress: user.walletAddress as Address,
+        individualAddress: user.walletAddress as Address,
         settlementAddress,
         liquidationAddress,
         amount: billPay.amount,

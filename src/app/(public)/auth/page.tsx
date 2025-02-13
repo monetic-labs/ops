@@ -144,7 +144,7 @@ export default function AuthPage() {
                 <div className="space-y-1">
                   <div className="text-2xl font-semibold text-primary">Enterprise Grade</div>
                   <div className="text-sm text-foreground/60">
-                    Battle-tested security with $100B+ protected powered by Safe
+                    Safe accounts securing $100B+ in value
                     <div className="absolute invisible group-hover:visible bg-content1 text-foreground p-3 rounded-lg shadow-xl border border-primary/10 w-72 -translate-y-full -translate-x-1/2 left-1/2 top-0 mt-2">
                       <p className="text-xs leading-relaxed">
                         All funds are FDIC insured. We're also working on additional on-chain insurance through Nexus
@@ -183,7 +183,7 @@ export default function AuthPage() {
                   label: "Operating Account",
                   details: [
                     { secondary: "Primary", detail: "Team access & payments" },
-                    { secondary: "ACH/Wire", detail: "Send money anywhere" },
+                    { secondary: "ACH & Wire", detail: "Send money anywhere" },
                     { secondary: "Cards", detail: "Virtual card creation" },
                   ],
                 },
