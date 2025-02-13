@@ -5,7 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { Card, CardBody, CardHeader } from "@nextui-org/card";
 import { Button } from "@nextui-org/button";
 import { Input } from "@nextui-org/input";
-import { Backpack, Fingerprint } from "lucide-react";
+import { Backpack, Fingerprint, Sun, Moon } from "lucide-react";
 import { Spinner } from "@nextui-org/spinner";
 import { SafeAccountV0_3_0 as SafeAccount, DEFAULT_SECP256R1_PRECOMPILE_ADDRESS } from "abstractionkit";
 import { entryPoint07Address } from "viem/account-abstraction";
@@ -16,6 +16,7 @@ import { LocalStorage } from "@/utils/localstorage";
 import { useAccounts } from "@/contexts/AccountContext";
 import pylon from "@/libs/pylon-sdk";
 import { formatPhoneNumber } from "@/utils/helpers";
+import { useTheme } from "@/hooks/useTheme";
 
 interface UserInviteDetails {
   company: string;
@@ -26,6 +27,7 @@ interface UserInviteDetails {
 }
 
 export default function InvitePage() {
+  const { toggleTheme, isDark } = useTheme();
   const [isLoading, setIsLoading] = useState(false);
   const [isVerifying, setIsVerifying] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -118,7 +120,6 @@ export default function InvitePage() {
     e.preventDefault();
     if (!userDetails.phoneNumber) {
       setError("Please enter your phone number");
-
       return;
     }
     handlePasskeyRegistration();
@@ -126,90 +127,113 @@ export default function InvitePage() {
 
   if (isVerifying) {
     return (
-      <div className="w-full h-[50vh] flex items-center justify-center">
-        <Spinner color="white" size="lg" />
+      <div className="min-h-screen w-full flex items-center justify-center">
+        <Spinner color="primary" size="lg" />
       </div>
     );
   }
 
   return (
-    <div className="w-full sm:max-w-md">
-      <Card className="bg-transparent dark:sm:bg-content1 sm:bg-white border-none shadow-none sm:shadow-2xl">
-        <CardHeader className="flex flex-col gap-2 p-6 sm:px-8 sm:pt-8">
-          <div className="flex items-center gap-3">
-            <div className="p-2 rounded-xl bg-primary/10">
-              <Backpack className="w-5 h-5 text-primary" />
+    <div className="min-h-screen w-full flex flex-col items-center justify-center relative">
+      {/* Theme Toggle */}
+      <Button
+        isIconOnly
+        className="fixed top-4 right-4 z-50 bg-content1/10 backdrop-blur-lg border border-border"
+        radius="lg"
+        variant="flat"
+        onPress={toggleTheme}
+      >
+        {isDark ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
+      </Button>
+
+      <div className="w-full sm:max-w-md px-4">
+        <Card className="bg-transparent dark:sm:bg-content1 sm:bg-white border-none shadow-none sm:shadow-2xl">
+          <CardHeader className="flex flex-col gap-2 p-6 sm:px-8 sm:pt-8">
+            <div className="flex items-center gap-3">
+              <div className="p-2 rounded-xl bg-primary/10">
+                <Backpack className="w-5 h-5 text-primary" />
+              </div>
+              <h1 className="text-xl sm:text-2xl font-semibold text-foreground">Complete Registration</h1>
             </div>
-            <h1 className="text-xl sm:text-2xl font-semibold text-foreground">Complete Registration</h1>
-          </div>
-          <p className="text-foreground/60 text-sm sm:text-base">Set up your account with a passkey</p>
-        </CardHeader>
-        <CardBody className="px-6 pb-6 sm:px-8 flex flex-col gap-6">
-          <form className="space-y-4" onSubmit={handleSubmit}>
-            <Input
-              isDisabled
-              classNames={{
-                input: "text-foreground/60",
-                label: "text-foreground/90",
-              }}
-              label="Company"
-              value={userDetails.company}
-            />
-            <Input
-              isDisabled
-              classNames={{
-                input: "text-foreground/60",
-                label: "text-foreground/90",
-              }}
-              label="First Name"
-              value={userDetails.firstName}
-            />
-            <Input
-              isDisabled
-              classNames={{
-                input: "text-foreground/60",
-                label: "text-foreground/90",
-              }}
-              label="Last Name"
-              value={userDetails.lastName}
-            />
-            <Input
-              isDisabled
-              classNames={{
-                input: "text-foreground/60",
-                label: "text-foreground/90",
-              }}
-              label="Email"
-              value={userDetails.email}
-            />
-            <Input
-              required
-              classNames={{
-                label: "text-foreground/90",
-                input: "text-foreground",
-              }}
-              label="Phone Number"
-              placeholder="Enter your phone number"
-              startContent={<div className="text-foreground/60 text-sm">+1</div>}
-              value={userDetails.phoneNumber ? formatPhoneNumber(userDetails.phoneNumber) : ""}
-              onChange={(e) => {
-                const rawNumber = e.target.value.replace(/\D/g, "");
-                setUserDetails({ ...userDetails, phoneNumber: rawNumber });
-              }}
-            />
-            <Button
-              className="w-full bg-primary/10 hover:bg-primary/20 text-primary h-14"
-              isLoading={isLoading}
-              radius="lg"
-              startContent={!isLoading && <Fingerprint className="w-5 h-5" />}
-              type="submit"
-            >
-              Register with Passkey
-            </Button>
-          </form>
-          {error && <div className="text-danger text-center text-sm">{error}</div>}
-        </CardBody>
-      </Card>
+            <p className="text-foreground/60 text-sm sm:text-base">Set up your account with a passkey</p>
+          </CardHeader>
+          <CardBody className="px-6 pb-6 sm:px-8 flex flex-col gap-6">
+            <form className="space-y-4" onSubmit={handleSubmit}>
+              <Input
+                isDisabled
+                classNames={{
+                  base: "max-w-full",
+                  label: "text-foreground/90",
+                  input: "text-foreground/60",
+                  inputWrapper: "bg-content2 data-[hover=true]:bg-content3 group-data-[focus=true]:bg-content2",
+                }}
+                label="Company"
+                value={userDetails.company}
+              />
+              <Input
+                isDisabled
+                classNames={{
+                  base: "max-w-full",
+                  label: "text-foreground/90",
+                  input: "text-foreground/60",
+                  inputWrapper: "bg-content2 data-[hover=true]:bg-content3 group-data-[focus=true]:bg-content2",
+                }}
+                label="First Name"
+                value={userDetails.firstName}
+              />
+              <Input
+                isDisabled
+                classNames={{
+                  base: "max-w-full",
+                  label: "text-foreground/90",
+                  input: "text-foreground/60",
+                  inputWrapper: "bg-content2 data-[hover=true]:bg-content3 group-data-[focus=true]:bg-content2",
+                }}
+                label="Last Name"
+                value={userDetails.lastName}
+              />
+              <Input
+                isDisabled
+                classNames={{
+                  base: "max-w-full",
+                  label: "text-foreground/90",
+                  input: "text-foreground/60",
+                  inputWrapper: "bg-content2 data-[hover=true]:bg-content3 group-data-[focus=true]:bg-content2",
+                }}
+                label="Email"
+                value={userDetails.email}
+              />
+              <Input
+                required
+                classNames={{
+                  base: "max-w-full",
+                  label: "text-foreground/90",
+                  input: "text-foreground",
+                  inputWrapper: "bg-content2 data-[hover=true]:bg-content3 group-data-[focus=true]:bg-content2",
+                }}
+                label="Phone Number"
+                placeholder="Enter your phone number"
+                startContent={<div className="text-foreground/60 text-sm">+1</div>}
+                value={userDetails.phoneNumber ? formatPhoneNumber(userDetails.phoneNumber) : ""}
+                onChange={(e) => {
+                  const rawNumber = e.target.value.replace(/\D/g, "");
+                  setUserDetails({ ...userDetails, phoneNumber: rawNumber });
+                }}
+              />
+              <Button
+                className="w-full bg-primary/10 hover:bg-primary/20 text-primary h-14"
+                isLoading={isLoading}
+                radius="lg"
+                startContent={!isLoading && <Fingerprint className="w-5 h-5" />}
+                type="submit"
+              >
+                Register with Passkey
+              </Button>
+            </form>
+            {error && <div className="text-danger text-center text-sm">{error}</div>}
+          </CardBody>
+        </Card>
+      </div>
     </div>
   );
 }

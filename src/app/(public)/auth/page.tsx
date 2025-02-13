@@ -127,7 +127,7 @@ export default function AuthPage() {
             <div className="space-y-4">
               <h2 className="text-5xl font-semibold text-foreground space-y-2">
                 <span className="block">Business Banking</span>
-                <span className="block text-primary">on your Terms</span>
+                <span className="block text-primary">on your terms</span>
               </h2>
               <p className="text-lg text-foreground/60">
                 Your business deserves better than traditional banking. Full control over your accounts, team access
