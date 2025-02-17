@@ -215,11 +215,11 @@ export class WebAuthnHelper {
 
   private static getHostName(): string {
     if (isProduction) {
-      return "backpack.network";
+      return "services.backpack.network";
     } else if (isLocal) {
       return "localhost";
     } else if (isStaging) {
-      return "staging.backpack.network";
+      return "staging.services.backpack.network";
     } else throw new Error("Invalid environment");
   }
 }
