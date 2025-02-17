@@ -69,7 +69,14 @@ export default function CreateBillPayModal({
   setBillPay,
   settlementAddress,
 }: CreateBillPayModalProps) {
-  const { user } = useAccounts();
+  const { user, credentials, isAuthenticated } = useAccounts();
+  if (!credentials) {
+    if (isAuthenticated) {
+      throw new Error("No credentials found");
+    }
+    return null;
+  }
+
   const [isNewSender, setIsNewSender] = useState(false);
   const [transferStatus, setTransferStatus] = useState<TransferStatus>(TransferStatus.IDLE);
   const [formIsValid, setFormIsValid] = useState(false);
@@ -89,12 +96,6 @@ export default function CreateBillPayModal({
     error: newDisbursementError,
     createNewDisbursement,
   } = useNewDisbursement();
-
-  const { credentials } = useAccounts();
-
-  if (!credentials) {
-    throw new Error("No credentials found");
-  }
 
   useEffect(() => {
     const formValid = validateBillPay(billPay, settlementBalance);

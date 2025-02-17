@@ -265,15 +265,6 @@ export const Navbar = () => {
   const pathname = usePathname();
   const isPublicRoute = pathname?.startsWith("/auth") || pathname?.startsWith("/invite");
 
-  const handleSignOut = async () => {
-    try {
-      await pylon.logout();
-      logout();
-    } catch (error) {
-      console.error("Error signing out:", error);
-    }
-  };
-
   useEffect(() => {
     if (!isLoading && !isAuthenticated && !isPublicRoute) {
       router.push("/auth");
@@ -302,7 +293,7 @@ export const Navbar = () => {
       </NavbarContent>
 
       {isLoading ? null : isAuthenticated && user ? (
-        <AuthenticatedNav handleSignOut={handleSignOut} user={user} />
+        <AuthenticatedNav handleSignOut={async () => logout()} user={user} />
       ) : (
         <UnauthenticatedNav />
       )}

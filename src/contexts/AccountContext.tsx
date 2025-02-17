@@ -110,11 +110,21 @@ export function AccountProvider({ children }: { children: ReactNode }) {
     }
   }, [isAuthenticated, isLoading, pathname, router]);
 
-  const handleLogout = () => {
-    LocalStorage.clearAuth();
-    setAuthState(null);
-    setUser(undefined);
-    router.replace("/auth");
+  const handleLogout = async () => {
+    try {
+      await pylon.logout();
+      LocalStorage.clearAuth();
+      // Batch state updates
+      setAuthState(prev => {
+        setUser(undefined);
+        return null;
+      });
+      // Wait for state updates to complete
+      await new Promise(resolve => setTimeout(resolve, 0));
+      router.replace("/auth");
+    } catch (error) {
+      console.error("Logout failed:", error);
+    }
   };
 
   const getSigningCredentials = (): WebAuthnCredentials | undefined => {
