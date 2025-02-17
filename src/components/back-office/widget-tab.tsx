@@ -3,8 +3,9 @@ import { Select, SelectItem } from "@nextui-org/select";
 import { Network, StableCurrency } from "@backpack-fux/pylon-sdk";
 import { Autocomplete, AutocompleteItem } from "@nextui-org/autocomplete";
 
-import GenerateApiKeysModal from "./actions/widgets/api-keys";
 import { capitalizeFirstChar } from "@/utils/helpers";
+
+import GenerateApiKeysModal from "./actions/widgets/api-keys";
 
 const networks = ["POLYGON", "SOLANA", "BASE", "OPTIMISM", "ARBITRUM"];
 const currencies = ["USDC", "USDT", "DAI"];

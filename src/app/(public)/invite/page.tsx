@@ -48,11 +48,13 @@ export default function InvitePage() {
     const verifyInvite = async () => {
       if (!token) {
         setError("Invalid invite link - no token provided");
+
         return;
       }
 
       try {
         const response = await pylon.getInvite(token);
+
         setUserDetails({
           company: response.merchant,
           firstName: response.firstName,
@@ -77,6 +79,7 @@ export default function InvitePage() {
   const handlePasskeyRegistration = async () => {
     if (!userDetails.phoneNumber) {
       setError("Please enter your phone number");
+
       return;
     }
 
@@ -120,6 +123,7 @@ export default function InvitePage() {
     e.preventDefault();
     if (!userDetails.phoneNumber) {
       setError("Please enter your phone number");
+
       return;
     }
     handlePasskeyRegistration();
@@ -217,6 +221,7 @@ export default function InvitePage() {
                 value={userDetails.phoneNumber ? formatPhoneNumber(userDetails.phoneNumber) : ""}
                 onChange={(e) => {
                   const rawNumber = e.target.value.replace(/\D/g, "");
+
                   setUserDetails({ ...userDetails, phoneNumber: rawNumber });
                 }}
               />

@@ -16,9 +16,11 @@ export async function middleware(request: NextRequest) {
   // Special handling for invite route
   if (pathname.startsWith("/invite")) {
     const token = searchParams.get("token");
+
     if (!token) {
       return NextResponse.redirect(new URL("/auth", request.url));
     }
+
     return NextResponse.next();
   }
 
@@ -29,6 +31,7 @@ export async function middleware(request: NextRequest) {
     if (authToken) {
       return NextResponse.redirect(new URL("/", request.url));
     }
+
     return NextResponse.next();
   }
 
@@ -65,6 +68,7 @@ export async function middleware(request: NextRequest) {
 
     if (!complianceResponse.ok) {
       console.error("Failed to fetch compliance status");
+
       return NextResponse.next();
     }
 

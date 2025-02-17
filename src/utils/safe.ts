@@ -94,6 +94,7 @@ export const createSignedUserOperation = (
   } = {}
 ): UserOperationV7 => {
   userOp.signature = formatWebAuthnSignature(signature, options);
+
   return userOp;
 };
 
@@ -126,6 +127,7 @@ export const sendUserOperation = async (
 ) => {
   const account = new SafeAccount(walletAddress);
   const signedOp = await createSignedUserOperation(account, userOp, signature, { isInit });
+
   return account.sendUserOperation(signedOp, BUNDLER_URL);
 };
 
@@ -147,6 +149,7 @@ export const trackUserOperationResponse = async (
     onSuccess?.();
   } catch (error) {
     const formattedError = error instanceof Error ? error : new Error("Unknown error occurred");
+
     onError?.(formattedError);
     throw formattedError;
   }
@@ -162,9 +165,11 @@ export const sendAndTrackUserOperation = async (
 ): Promise<void> => {
   try {
     const response = await account.sendUserOperation(userOp, BUNDLER_URL);
+
     await trackUserOperationResponse(response, callbacks);
   } catch (error) {
     const formattedError = error instanceof Error ? error : new Error("Failed to send or track operation");
+
     callbacks.onError?.(formattedError);
     throw formattedError;
   }

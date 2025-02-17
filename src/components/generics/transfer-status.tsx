@@ -36,6 +36,7 @@ export default function TransferStatusView({ status }: TransferStatusViewProps) 
   if (status === TransferStatus.IDLE) return null;
 
   const config = statusConfig[status];
+
   if (!config) return null;
 
   return (

@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useState } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Spinner } from "@nextui-org/spinner";
 import { useForm, FormProvider } from "react-hook-form";
@@ -158,7 +158,7 @@ export default function OnboardPage() {
 
       <div className="mb-8 text-center">
         <h1 className="text-3xl font-semibold text-foreground mb-2">Complete Your Setup</h1>
-        <p className="text-foreground/60">Let's get your business account ready for use</p>
+        <p className="text-foreground/60">Let&apos;s get your business account ready for use</p>
       </div>
 
       <div className="relative">

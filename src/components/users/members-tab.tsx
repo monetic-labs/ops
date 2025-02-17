@@ -9,10 +9,10 @@ import { DataTable, Column, EmptyContent } from "@/components/generics/data-tabl
 import { formatPhoneNumber, getFullName, getOpepenAvatar } from "@/utils/helpers";
 import { usersStatusColorMap } from "@/data";
 import pylon from "@/libs/pylon-sdk";
+import { useAccounts } from "@/hooks/useAccounts";
 
 import CreateUserModal from "./user-create";
 import UserEditModal from "./user-edit";
-import { useAccounts } from "@/hooks/useAccounts";
 
 interface MembersTabProps {
   userId: string;
@@ -33,6 +33,7 @@ export default function MembersTab({ userId, isCreateModalOpen, setIsCreateModal
     setIsLoading(true);
     try {
       const fetchedUsers = await pylon.getUsers();
+
       setUsers(fetchedUsers);
       setError(null);
     } catch (err) {
@@ -56,6 +57,7 @@ export default function MembersTab({ userId, isCreateModalOpen, setIsCreateModal
 
   const availableRoles = Object.values(PersonRole).filter((role) => {
     if (user.role === PersonRole.SUPER_ADMIN) return true;
+
     return false;
   });
 
@@ -184,18 +186,21 @@ export default function MembersTab({ userId, isCreateModalOpen, setIsCreateModal
 
   const handleRemoveUser = async (userId: string) => {
     const userToRemove = users.find((u) => u.id === userId);
+
     if (!userToRemove) return;
 
     try {
       if (userToRemove.pendingInvite && !userToRemove.pendingInvite.isUsed) {
         // For pending invites, use cancelInvite with the invite ID
         const success = await pylon.cancelInvite(userToRemove.pendingInvite.id);
+
         if (!success) {
           throw new Error("Failed to cancel invite");
         }
       } else {
         // For active users, use deleteUser with the user ID
         const success = await pylon.deleteUser(userId);
+
         if (!success) {
           throw new Error("Failed to remove user");
         }

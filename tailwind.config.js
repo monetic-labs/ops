@@ -48,14 +48,23 @@ module.exports = {
         },
       },
       keyframes: {
-        shake: {
-          "0%, 100%": { transform: "translateX(0)" },
-          "25%": { transform: "translateX(-5px)" },
-          "75%": { transform: "translateX(5px)" },
+        slideLeft: {
+          '0%': { transform: 'translateX(100%)', opacity: '0' },
+          '100%': { transform: 'translateX(0)', opacity: '1' },
+        },
+        slideRight: {
+          '0%': { transform: 'translateX(-100%)', opacity: '0' },
+          '100%': { transform: 'translateX(0)', opacity: '1' },
+        },
+        fadeIn: {
+          '0%': { opacity: '0' },
+          '100%': { opacity: '1' },
         },
       },
       animation: {
-        shake: "shake 0.2s ease-in-out 0s 2",
+        'slide-left': 'slideLeft 0.3s ease-in-out',
+        'slide-right': 'slideRight 0.3s ease-in-out',
+        'fade-in': 'fadeIn 0.2s ease-in-out',
       },
       boxShadow: {
         hover: "0 4px 12px rgba(0, 0, 0, 0.08)",

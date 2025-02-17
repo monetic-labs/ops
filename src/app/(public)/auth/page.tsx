@@ -1,10 +1,22 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Card, CardBody, CardHeader } from "@nextui-org/card";
+import { Card, CardBody } from "@nextui-org/card";
 import { Button } from "@nextui-org/button";
 import { Divider } from "@nextui-org/divider";
-import { Backpack, Fingerprint, KeyRound, ShieldCheck, Sun, Moon, Signature, ShieldPlus, Cable } from "lucide-react";
+import {
+  Backpack,
+  Fingerprint,
+  KeyRound,
+  ShieldCheck,
+  Sun,
+  Moon,
+  Signature,
+  ShieldPlus,
+  Cable,
+  ChevronLeft,
+  ChevronRight,
+} from "lucide-react";
 import { useRouter } from "next/navigation";
 import { Address } from "viem";
 
@@ -14,7 +26,7 @@ import { OnboardingState } from "@/utils/localstorage";
 import { createSafeAccount } from "@/utils/safe";
 import { useTheme } from "@/hooks/useTheme";
 
-export default function AuthPage() {
+const AuthPage = () => {
   const { toggleTheme, isDark } = useTheme();
   const [isLoading, setIsLoading] = useState(false);
   const [isDisabled, setIsDisabled] = useState(false);
@@ -101,6 +113,41 @@ export default function AuthPage() {
     }
   };
 
+  const cards = [
+    {
+      amount: "130,347.50",
+      label: "Operating Account",
+      details: [
+        { secondary: "Primary", detail: "Team access & payments" },
+        { secondary: "ACH & Wire", detail: "Send money anywhere" },
+        { secondary: "Cards", detail: "Virtual card creation" },
+      ],
+    },
+    {
+      amount: "8,942.51",
+      label: "Treasury",
+      details: [
+        { secondary: "High-Yield", detail: "Secure capital allocation" },
+        { secondary: "4.25% APY", detail: "Competitive returns" },
+        { secondary: "Flexible", detail: "Instant access to funds" },
+      ],
+    },
+    {
+      amount: "5,721.90",
+      label: "Card Issuing",
+      details: [
+        { secondary: "Active", detail: "Team expenses & vendors" },
+        { secondary: "Virtual", detail: "Instant card creation" },
+        { secondary: "Card Controls", detail: "Set spending limits" },
+      ],
+    },
+  ];
+
+  const [selectedCardIndex, setSelectedCardIndex] = useState(0);
+  const handleCardChange = (index: number) => {
+    setSelectedCardIndex(index);
+  };
+
   return (
     <div className="min-h-screen w-full grid lg:grid-cols-2">
       {/* Theme Toggle */}
@@ -147,9 +194,9 @@ export default function AuthPage() {
                     Safe accounts securing $100B+ in value
                     <div className="absolute invisible group-hover:visible bg-content1 text-foreground p-3 rounded-lg shadow-xl border border-primary/10 w-72 -translate-y-full -translate-x-1/2 left-1/2 top-0 mt-2">
                       <p className="text-xs leading-relaxed">
-                        All funds are FDIC insured. We're also working on additional on-chain insurance through Nexus
-                        Mutual, providing coverage beyond traditional limits while maintaining self-custody of your
-                        assets.
+                        All funds are FDIC insured. We&apos;re also working on additional on-chain insurance through
+                        Nexus Mutual, providing coverage beyond traditional limits while maintaining self-custody of
+                        your assets.
                       </p>
                     </div>
                   </div>
@@ -176,106 +223,119 @@ export default function AuthPage() {
             </div>
 
             {/* Animated Cards */}
-            <div className="relative h-[200px] w-full">
-              {[
-                {
-                  amount: "130,347.50",
-                  label: "Operating Account",
-                  details: [
-                    { secondary: "Primary", detail: "Team access & payments" },
-                    { secondary: "ACH & Wire", detail: "Send money anywhere" },
-                    { secondary: "Cards", detail: "Virtual card creation" },
-                  ],
-                },
-                {
-                  amount: "8,942.51",
-                  label: "Treasury",
-                  details: [
-                    { secondary: "High-Yield", detail: "Secure capital allocation" },
-                    { secondary: "4.25% APY", detail: "Competitive returns" },
-                    { secondary: "Flexible", detail: "Instant access to funds" },
-                  ],
-                },
-                {
-                  amount: "5,721.90",
-                  label: "Card Issuing",
-                  details: [
-                    { secondary: "Active", detail: "Team expenses & vendors" },
-                    { secondary: "Virtual", detail: "Instant card creation" },
-                    { secondary: "Card Controls", detail: "Set spending limits" },
-                  ],
-                },
-              ].map((card, index) => (
-                <div
-                  key={index}
-                  className="absolute inset-0 transition-all duration-500 ease-in-out hover:-translate-y-2"
-                  style={{
-                    transform: `translateY(${index * 4}px) scale(${1 - index * 0.02})`,
-                    zIndex: 3 - index,
-                  }}
-                >
-                  <div
-                    className={`${index === 0 ? "bg-content1" : "bg-content1/80"} backdrop-blur-xl border border-primary/10 rounded-2xl p-6 space-y-4`}
-                  >
-                    <div className="flex items-center gap-3">
-                      <div className="p-2 rounded-xl bg-primary/10">
-                        <Backpack className="w-5 h-5 text-primary" />
-                      </div>
-                      <span className="text-xl font-medium text-foreground">$ {card.amount} USD</span>
-                    </div>
-                    <div className="space-y-2 h-[40px] relative overflow-hidden">
-                      <div className="absolute inset-0">
-                        <div className="animate-cardInfo">
-                          {card.details.map((detail, i) => (
-                            <div key={i} className="h-[40px]">
-                              <div className="flex justify-between items-center">
-                                <span className="text-sm text-foreground/60">{card.label}</span>
-                                <span className="text-sm font-medium">{detail.secondary}</span>
+            <div className="relative h-[200px] w-full group">
+              {/* Cards Stack */}
+              <div className="relative h-full">
+                {cards.map((card, index) => {
+                  const isActive = index === selectedCardIndex;
+                  const isPrevious =
+                    (selectedCardIndex === 0 && index === cards.length - 1) || index === selectedCardIndex - 1;
+                  const isNext =
+                    (selectedCardIndex === cards.length - 1 && index === 0) || index === selectedCardIndex + 1;
+
+                  return (
+                    <button
+                      key={index}
+                      aria-label={`Select ${card.label} card`}
+                      className={`absolute inset-0 w-full text-left transition-all duration-300 ${
+                        isActive
+                          ? "z-20 opacity-100 translate-y-0"
+                          : isPrevious
+                            ? "z-10 opacity-40 -translate-y-2 scale-[0.97] hover:opacity-60"
+                            : isNext
+                              ? "z-10 opacity-40 translate-y-2 scale-[0.97] hover:opacity-60"
+                              : "opacity-0 translate-y-4 scale-95"
+                      }`}
+                      onClick={() => handleCardChange(index)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter" || e.key === " ") {
+                          e.preventDefault();
+                          handleCardChange(index);
+                        }
+                      }}
+                    >
+                      <div
+                        className={`h-full bg-default-100 dark:bg-content1 rounded-xl p-4 ${
+                          isActive ? "animate-fade-in" : ""
+                        }`}
+                      >
+                        {/* Card Content */}
+                        <div className="flex flex-col h-full">
+                          <div className="flex items-center space-x-3 mb-4">
+                            <div className="w-8 h-8 rounded-lg bg-primary/20 flex items-center justify-center">
+                              <Backpack className="w-4 h-4 text-primary" />
+                            </div>
+                            <div className="flex flex-col">
+                              <span className="text-sm text-default-600 dark:text-foreground/60">{card.label}</span>
+                              <span className="text-xl font-medium text-default-900 dark:text-foreground">
+                                $ {card.amount} USD
+                              </span>
+                            </div>
+                          </div>
+
+                          <div className="space-y-3 flex-grow">
+                            {card.details.map((detail, idx) => (
+                              <div key={idx} className="flex justify-between items-center">
+                                <span className="text-sm font-medium text-default-900 dark:text-foreground">
+                                  {detail.secondary}
+                                </span>
+                                <span className="text-xs text-default-600 dark:text-foreground/60">
+                                  {detail.detail}
+                                </span>
                               </div>
-                              <div className="text-xs text-foreground/40">{detail.detail}</div>
-                            </div>
-                          ))}
-                          {/* Repeat first item to make the loop seamless */}
-                          <div className="h-[40px]">
-                            <div className="flex justify-between items-center">
-                              <span className="text-sm text-foreground/60">{card.label}</span>
-                              <span className="text-sm font-medium">{card.details[0].secondary}</span>
-                            </div>
-                            <div className="text-xs text-foreground/40">{card.details[0].detail}</div>
+                            ))}
                           </div>
                         </div>
                       </div>
-                    </div>
-                  </div>
-                </div>
-              ))}
+                    </button>
+                  );
+                })}
+              </div>
+
+              {/* Navigation */}
+              <div className="absolute inset-x-0 top-1/2 -translate-y-1/2 flex justify-between pointer-events-none z-30">
+                <button
+                  aria-label="Previous card"
+                  className="pointer-events-auto -ml-4 p-2 rounded-full bg-default-100/80 dark:bg-content1/80 backdrop-blur-sm border border-default-200 dark:border-foreground/10 hover:bg-default-100 dark:hover:bg-content1 transition-all opacity-0 group-hover:opacity-100"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    const newIndex = selectedCardIndex === 0 ? cards.length - 1 : selectedCardIndex - 1;
+
+                    handleCardChange(newIndex);
+                  }}
+                >
+                  <ChevronLeft className="w-4 h-4 text-default-600 dark:text-foreground/60" />
+                </button>
+                <button
+                  aria-label="Next card"
+                  className="pointer-events-auto -mr-4 p-2 rounded-full bg-default-100/80 dark:bg-content1/80 backdrop-blur-sm border border-default-200 dark:border-foreground/10 hover:bg-default-100 dark:hover:bg-content1 transition-all opacity-0 group-hover:opacity-100"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    const newIndex = selectedCardIndex === cards.length - 1 ? 0 : selectedCardIndex + 1;
+
+                    handleCardChange(newIndex);
+                  }}
+                >
+                  <ChevronRight className="w-4 h-4 text-default-600 dark:text-foreground/60" />
+                </button>
+              </div>
+
+              {/* Navigation Dots */}
+              <div className="absolute -bottom-6 left-1/2 -translate-x-1/2 flex space-x-1">
+                {cards.map((_, idx) => (
+                  <button
+                    key={idx}
+                    aria-label={`Go to card ${idx + 1}`}
+                    className={`w-1 h-1 rounded-full transition-all ${
+                      idx === selectedCardIndex
+                        ? "w-3 bg-primary"
+                        : "bg-default-200 hover:bg-default-300 dark:bg-foreground/20 dark:hover:bg-foreground/30"
+                    }`}
+                    onClick={() => handleCardChange(idx)}
+                  />
+                ))}
+              </div>
             </div>
-
-            {/* Add keyframes for the card info animation */}
-            <style jsx global>{`
-              @keyframes cardInfo {
-                0% {
-                  transform: translateY(0);
-                }
-                25%,
-                33% {
-                  transform: translateY(-40px);
-                }
-                58%,
-                66% {
-                  transform: translateY(-80px);
-                }
-                91%,
-                100% {
-                  transform: translateY(-120px);
-                }
-              }
-
-              .animate-cardInfo {
-                animation: cardInfo 12s infinite;
-                animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
-              }
-            `}</style>
           </div>
         </div>
       </div>
@@ -373,4 +433,6 @@ export default function AuthPage() {
       </div>
     </div>
   );
-}
+};
+
+export default AuthPage;

@@ -250,7 +250,7 @@ const UnauthenticatedNav = () => {
       </NavbarItem>
       {!isAuthPage && (
         <NavbarItem>
-          <Button className="bg-primary/10 hover:bg-primary/20 text-primary" variant="flat" as={NextLink} href="/auth">
+          <Button as={NextLink} className="bg-primary/10 hover:bg-primary/20 text-primary" href="/auth" variant="flat">
             Sign In
           </Button>
         </NavbarItem>
