@@ -70,26 +70,22 @@ export default function CreateBillPayModal({
   settlementAddress,
 }: CreateBillPayModalProps) {
   const { user, credentials, isAuthenticated } = useAccounts();
-  if (!credentials) {
-    if (isAuthenticated) {
-      throw new Error("No credentials found");
-    }
-    return null;
-  }
-
   const [isNewSender, setIsNewSender] = useState(false);
   const [transferStatus, setTransferStatus] = useState<TransferStatus>(TransferStatus.IDLE);
   const [formIsValid, setFormIsValid] = useState(false);
+
   const { balance: settlementBalance, isLoading: isLoadingBalance } = useBalance({
     amount: billPay.amount,
     isModalOpen: isOpen,
   });
+
   const {
     disbursement: existingDisbursement,
     isLoading: isLoadingExistingDisbursement,
     error: existingDisbursementError,
     createExistingDisbursement,
   } = useExistingDisbursement();
+
   const {
     disbursement: newDisbursement,
     isLoading: isLoadingNewDisbursement,
@@ -97,23 +93,27 @@ export default function CreateBillPayModal({
     createNewDisbursement,
   } = useNewDisbursement();
 
-  useEffect(() => {
-    const formValid = validateBillPay(billPay, settlementBalance);
-
-    setFormIsValid(formValid);
-  }, [billPay, settlementBalance, setFormIsValid]);
-
   const fee = useMemo(() => {
     if (!billPay.vendorMethod) return 0;
-
     return methodFees[billPay.vendorMethod] || 0;
   }, [billPay.vendorMethod]);
 
   const total = useMemo(() => {
     const amount = parseFloat(billPay.amount) || 0;
-
     return amount + amount * fee;
   }, [billPay.amount, fee]);
+
+  useEffect(() => {
+    const formValid = validateBillPay(billPay, settlementBalance);
+    setFormIsValid(formValid);
+  }, [billPay, settlementBalance]);
+
+  if (!credentials) {
+    if (isAuthenticated) {
+      throw new Error("No credentials found");
+    }
+    return null;
+  }
 
   const handleSave = async () => {
     if (!settlementAddress || !user?.walletAddress) return;

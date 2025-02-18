@@ -10,7 +10,7 @@ import { Checkbox } from "@nextui-org/checkbox";
 
 import postcodeMap from "@/data/postcodes-map.json";
 import { FormData } from "@/validations/onboard/schemas";
-import { capitalizeFirstChar, formatPersonRole } from "@/utils/helpers";
+import { capitalizeFirstChar, formatStringToTitleCase } from "@/utils/helpers";
 
 const formatSSN = (value: string) => {
   if (!value) return "";
@@ -242,7 +242,7 @@ export const UserDetailsStep = () => {
                         .filter((role) => role !== PersonRole.DEVELOPER && role !== PersonRole.BOOKKEEPER)
                         .map((role) => (
                           <SelectItem key={role} value={role}>
-                            {formatPersonRole(role)}
+                            {formatStringToTitleCase(role)}
                           </SelectItem>
                         ))}
                     </Select>

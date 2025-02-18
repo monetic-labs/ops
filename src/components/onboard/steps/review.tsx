@@ -9,7 +9,7 @@ import {
   capitalizeFirstChar,
   formatCompanyType,
   formatEIN,
-  formatPersonRole,
+  formatStringToTitleCase,
   formatPhoneNumber,
   truncateAddress,
 } from "@/utils/helpers";
@@ -135,7 +135,7 @@ export const ReviewStep = ({ onStepChange }: { onStepChange: (step: number) => v
                     {user.dashboardRole && (
                       <span className="inline-flex items-center gap-1 rounded-full bg-default-100 px-2 py-1 text-xs">
                         <UserRound className="h-3 w-3 text-default-500" />
-                        {formatPersonRole(user.dashboardRole)}
+                        {formatStringToTitleCase(user.dashboardRole)}
                       </span>
                     )}
                   </div>

@@ -6,7 +6,7 @@ import { User } from "@nextui-org/user";
 import { MerchantDisbursementCreateOutput } from "@backpack-fux/pylon-sdk";
 
 import { DataTable, Column, EmptyContent } from "@/components/generics/data-table";
-import { getOpepenAvatar } from "@/utils/helpers";
+import { formatStringToTitleCase, getOpepenAvatar } from "@/utils/helpers";
 import { useGetContacts } from "@/hooks/bill-pay/useGetContacts";
 
 const contactColumns: Column<MerchantDisbursementCreateOutput>[] = [
@@ -37,7 +37,7 @@ const contactColumns: Column<MerchantDisbursementCreateOutput>[] = [
       <div className="flex flex-wrap gap-1">
         {contact.disbursements.map((disbursement) => (
           <Chip key={disbursement.id} className="capitalize truncate" size="sm" variant="flat">
-            {disbursement.method}
+            {formatStringToTitleCase(disbursement.method)}
           </Chip>
         ))}
       </div>

@@ -27,10 +27,6 @@ export function AccountNavigation({ selectedTab, onTabChange }: AccountNavigatio
       key: "operators",
       icon: <Users className="w-4 h-4" />,
       label: "Operators",
-      badge: {
-        text: "3",
-        className: "bg-warning/20 text-warning",
-      },
     },
     {
       key: "policies",

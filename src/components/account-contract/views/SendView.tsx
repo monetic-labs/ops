@@ -46,7 +46,9 @@ export function SendView({
   };
 
   useEffect(() => {
-    const eligibleAccounts = availableAccounts.filter((acc) => acc.id !== selectedAccount.id && !acc.disabled);
+    const eligibleAccounts = availableAccounts.filter(
+      (acc) => acc.address !== selectedAccount.address && !acc.isDisabled
+    );
 
     if (eligibleAccounts.length === 1 && !toAccount) {
       const selectedDestination = eligibleAccounts[0];
@@ -225,10 +227,10 @@ export function SendView({
           <ModalHeader>Select Destination Account</ModalHeader>
           <ModalBody className="gap-3 p-6">
             {availableAccounts
-              .filter((acc) => acc.id !== selectedAccount.id && !acc.disabled)
+              .filter((acc) => acc.address !== selectedAccount.address && !acc.isDisabled)
               .map((account) => (
                 <Button
-                  key={account.id}
+                  key={account.address}
                   className="w-full justify-start h-auto p-4 bg-content2 hover:bg-content3"
                   onPress={() => handleAccountSelection(account)}
                 >

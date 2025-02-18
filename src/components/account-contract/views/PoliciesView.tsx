@@ -34,8 +34,8 @@ export function PoliciesView() {
                 <span className="text-lg font-medium mt-1">$10,000</span>
               </div>
               <div className="flex flex-col">
-                <span className="text-sm text-foreground/60">Multi-sig Required</span>
-                <span className="text-lg font-medium mt-1">2 of 3</span>
+                <span className="text-sm text-foreground/60">Threshold Required</span>
+                <span className="text-lg font-medium mt-1">2 operators</span>
               </div>
             </div>
           </div>

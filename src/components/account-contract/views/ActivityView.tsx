@@ -4,7 +4,7 @@ import { formatDistanceToNow } from "date-fns";
 import Image from "next/image";
 import { Tooltip } from "@nextui-org/tooltip";
 
-import { TransferActivity } from "../types";
+import { TransferActivity } from "@/types/account";
 
 interface ActivityViewProps {
   activities: TransferActivity[];
@@ -44,7 +44,7 @@ export function ActivityView({ activities }: ActivityViewProps) {
                 <div className="flex -space-x-2">
                   {activity.operators.map((operator) => (
                     <Tooltip
-                      key={operator.id}
+                      key={operator.address}
                       content={`${operator.name} ${operator.hasSigned ? "has signed" : "needs to sign"}`}
                     >
                       <div className="relative">

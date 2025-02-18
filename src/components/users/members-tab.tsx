@@ -6,7 +6,7 @@ import { User } from "@nextui-org/user";
 import { MerchantUserGetOutput, PersonRole } from "@backpack-fux/pylon-sdk";
 
 import { DataTable, Column, EmptyContent } from "@/components/generics/data-table";
-import { formatPhoneNumber, getFullName, getOpepenAvatar } from "@/utils/helpers";
+import { formatPhoneNumber, formatStringToTitleCase, getFullName, getOpepenAvatar } from "@/utils/helpers";
 import { usersStatusColorMap } from "@/data";
 import pylon from "@/libs/pylon-sdk";
 import { useAccounts } from "@/hooks/useAccounts";
@@ -115,10 +115,7 @@ export default function MembersTab({ userId, isCreateModalOpen, setIsCreateModal
           size="sm"
           variant="flat"
         >
-          {user.role
-            .replace(/_/g, " ")
-            .toLowerCase()
-            .replace(/\b\w/g, (char) => char.toUpperCase())}
+          {formatStringToTitleCase(user.role)}
         </Chip>
       ),
     },

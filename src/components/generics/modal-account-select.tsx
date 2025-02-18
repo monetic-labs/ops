@@ -36,19 +36,21 @@ export function AccountSelectionModal({
           <div className="space-y-2">
             {accounts.map((account) => (
               <button
-                key={account.id}
+                key={account.address}
                 className={`w-full p-4 rounded-xl border cursor-pointer ${
-                  selectedAccountId === account.id
+                  selectedAccountId === account.address
                     ? "border-primary bg-primary/10 dark:bg-primary/20"
                     : "border-divider/60 dark:border-divider hover:border-divider bg-background/40 dark:bg-content2 hover:bg-content2 dark:hover:bg-content3"
                 } transition-all duration-200`}
                 onClick={() => {
                   onSelect(account);
-                  onClose();
                 }}
               >
                 <div className="flex items-center justify-between">
-                  <span className="text-foreground font-medium">{account.name}</span>
+                  <div className="flex items-center gap-3">
+                    <account.icon className="w-5 h-5 text-foreground/60" />
+                    <span className="text-foreground font-medium">{account.name}</span>
+                  </div>
                   {account.balance !== undefined && (
                     <span className="text-foreground/60">${account.balance.toLocaleString()}</span>
                   )}

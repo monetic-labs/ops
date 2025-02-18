@@ -10,7 +10,7 @@ import { DataTable, Column, EmptyContent } from "@/components/generics/data-tabl
 import BillPayDetailsModal from "@/components/bill-pay/bill-actions/details";
 import CreateBillPayModal from "@/components/bill-pay/bill-actions/create";
 import { statusColorMap } from "@/data";
-import { getOpepenAvatar, formatNumber, isTesting } from "@/utils/helpers";
+import { getOpepenAvatar, formatNumber, isTesting, formatStringToTitleCase } from "@/utils/helpers";
 import { useGetTransfers } from "@/hooks/bill-pay/useGetTransfers";
 import { DEFAULT_NEW_BILL_PAY } from "@/types/bill-pay";
 import { MOCK_SETTLEMENT_ADDRESS } from "@/utils/constants";
@@ -52,7 +52,7 @@ const transferColumns: Column<MerchantDisbursementEventGetOutput>[] = [
     align: "center",
     render: (transfer: MerchantDisbursementEventGetOutput) => (
       <Chip className="capitalize truncate" color={statusColorMap[transfer.state]} size="sm" variant="flat">
-        {transfer.state}
+        {formatStringToTitleCase(transfer.state)}
       </Chip>
     ),
   },

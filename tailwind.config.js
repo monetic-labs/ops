@@ -46,25 +46,29 @@ module.exports = {
           800: "#636365",
           900: "#323232",
         },
+        warning: {
+          DEFAULT: "#B45309",
+          foreground: "#FFFFFF",
+        },
       },
       keyframes: {
         slideLeft: {
-          '0%': { transform: 'translateX(100%)', opacity: '0' },
-          '100%': { transform: 'translateX(0)', opacity: '1' },
+          "0%": { transform: "translateX(100%)", opacity: "0" },
+          "100%": { transform: "translateX(0)", opacity: "1" },
         },
         slideRight: {
-          '0%': { transform: 'translateX(-100%)', opacity: '0' },
-          '100%': { transform: 'translateX(0)', opacity: '1' },
+          "0%": { transform: "translateX(-100%)", opacity: "0" },
+          "100%": { transform: "translateX(0)", opacity: "1" },
         },
         fadeIn: {
-          '0%': { opacity: '0' },
-          '100%': { opacity: '1' },
+          "0%": { opacity: "0" },
+          "100%": { opacity: "1" },
         },
       },
       animation: {
-        'slide-left': 'slideLeft 0.3s ease-in-out',
-        'slide-right': 'slideRight 0.3s ease-in-out',
-        'fade-in': 'fadeIn 0.2s ease-in-out',
+        "slide-left": "slideLeft 0.3s ease-in-out",
+        "slide-right": "slideRight 0.3s ease-in-out",
+        "fade-in": "fadeIn 0.2s ease-in-out",
       },
       boxShadow: {
         hover: "0 4px 12px rgba(0, 0, 0, 0.08)",
@@ -83,6 +87,10 @@ module.exports = {
             foreground: "#11181C",
             primary: {
               DEFAULT: "#134E4A",
+              foreground: "#FFFFFF",
+            },
+            warning: {
+              DEFAULT: "#B45309",
               foreground: "#FFFFFF",
             },
             content1: {
@@ -138,6 +146,10 @@ module.exports = {
             foreground: "#ECEDEE",
             primary: {
               DEFAULT: "#0D9488",
+              foreground: "#FFFFFF",
+            },
+            warning: {
+              DEFAULT: "#92400E",
               foreground: "#FFFFFF",
             },
             content1: {
