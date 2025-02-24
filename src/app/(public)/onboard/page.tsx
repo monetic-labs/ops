@@ -10,15 +10,18 @@ import { Modal, ModalContent } from "@nextui-org/modal";
 import { Button } from "@nextui-org/button";
 import { Sun, Moon } from "lucide-react";
 
-import { schema, FormData } from "@/validations/onboard/schemas";
+import { schema, FormData, UserRole } from "@/validations/onboard/schemas";
 import { LocalStorage, OnboardingState } from "@/utils/localstorage";
 import { StatusModal, StatusStep } from "@/components/onboard/status-modal";
 import { useTheme } from "@/hooks/useTheme";
+import { ISO3166Alpha2Country, ISO3166Alpha3Country, PersonRole } from "@backpack-fux/pylon-sdk";
+import { Address } from "viem";
 
 import { CircleWithNumber, CheckCircleIcon } from "./components/StepIndicator";
 import { getDefaultValues, getFieldsForStep } from "./types";
-import { handleSubmit } from "./handlers/submit-handler";
 import { getSteps } from "./config/steps";
+import pylon from "@/libs/pylon-sdk";
+import { setupSocialRecovery } from "@/utils/safe/onboard";
 
 export default function OnboardPage() {
   const router = useRouter();
@@ -121,22 +124,146 @@ export default function OnboardPage() {
     setCurrentStep(stepNumber);
   };
 
-  const onSubmit = handleFormSubmit(async (formData) => {
+  const handleSubmit = handleFormSubmit(async (formData) => {
     setIsSubmitting(true);
     try {
-      await handleSubmit({
-        formData,
-        onboardingState,
-        updateStatusStep,
-        setError,
-        onSuccess: async () => {
-          await new Promise((resolve) => setTimeout(resolve, 1500));
-          setIsSubmitting(false);
-          setIsRedirecting(true);
-          router.push("/");
+      // Create merchant account
+      const response = await pylon.createMerchant({
+        settlementAddress: onboardingState.settlementAddress,
+        isTermsOfServiceAccepted: formData.acceptedTerms,
+        company: {
+          name: formData.companyName,
+          email: formData.companyEmail,
+          website: `https://${formData.companyWebsite}`,
+          type: formData.companyType,
+          registrationNumber: formData.companyRegistrationNumber,
+          taxId: formData.companyTaxId,
+          description: formData.companyDescription || undefined,
+          registeredAddress: {
+            street1: formData.streetAddress1,
+            street2: formData.streetAddress2 || undefined,
+            city: formData.city,
+            postcode: formData.postcode,
+            state: formData.state,
+            country: ISO3166Alpha2Country.US,
+          },
+          controlOwner: {
+            firstName: formData.users[0].firstName,
+            lastName: formData.users[0].lastName,
+            email: formData.users[0].email,
+            phoneCountryCode: formData.users[0].phoneNumber.extension,
+            phoneNumber: formData.users[0].phoneNumber.number,
+            nationalId: formData.users[0].socialSecurityNumber,
+            countryOfIssue: formData.users[0].countryOfIssue,
+            birthDate: formData.users[0].birthDate,
+            walletAddress: onboardingState.walletAddress,
+            address: {
+              line1: formData.users[0].streetAddress1,
+              line2: formData.users[0].streetAddress2 || undefined,
+              city: formData.users[0].city,
+              region: formData.users[0].state,
+              postalCode: formData.users[0].postcode,
+              countryCode: ISO3166Alpha2Country.US,
+              country: ISO3166Alpha3Country.USA,
+            },
+          },
+          ultimateBeneficialOwners: formData.users
+            .filter((user) => user.roles.includes(UserRole.BENEFICIAL_OWNER))
+            .map((user) => ({
+              firstName: user.firstName,
+              lastName: user.lastName,
+              email: user.email,
+              phoneCountryCode: user.phoneNumber.extension,
+              phoneNumber: user.phoneNumber.number,
+              nationalId: user.socialSecurityNumber,
+              countryOfIssue: user.countryOfIssue,
+              birthDate: user.birthDate,
+              address: {
+                line1: user.streetAddress1,
+                line2: user.streetAddress2 || undefined,
+                city: user.city,
+                region: user.state,
+                postalCode: user.postcode,
+                countryCode: ISO3166Alpha2Country.US,
+                country: ISO3166Alpha3Country.USA,
+              },
+            })),
+          representatives: formData.users
+            .filter((user) => user.roles.includes(UserRole.REPRESENTATIVE))
+            .map((user) => ({
+              firstName: user.firstName,
+              lastName: user.lastName,
+              email: user.email,
+              phoneCountryCode: user.phoneNumber.extension,
+              phoneNumber: user.phoneNumber.number,
+              nationalId: user.socialSecurityNumber,
+              countryOfIssue: user.countryOfIssue,
+              birthDate: user.birthDate,
+              address: {
+                line1: user.streetAddress1,
+                line2: user.streetAddress2 || undefined,
+                city: user.city,
+                region: user.state,
+                postalCode: user.postcode,
+                countryCode: ISO3166Alpha2Country.US,
+                country: ISO3166Alpha3Country.USA,
+              },
+            })),
         },
+        users: formData.users
+          .filter((user) => user.hasDashboardAccess)
+          .map((user, index) => {
+            const role = user.dashboardRole as PersonRole;
+            return {
+              firstName: user.firstName,
+              lastName: user.lastName,
+              email: user.email,
+              phoneCountryCode: user.phoneNumber.extension,
+              phoneNumber: user.phoneNumber.number,
+              birthDate: user.birthDate,
+              nationalId: user.socialSecurityNumber,
+              countryOfIssue: user.countryOfIssue,
+              walletAddress: index === 0 ? onboardingState.walletAddress : undefined,
+              role,
+              passkeyId: index === 0 ? onboardingState.credentials.credentialId : undefined,
+              address: {
+                line1: user.streetAddress1,
+                line2: user.streetAddress2 || undefined,
+                city: user.city,
+                region: user.state,
+                postalCode: user.postcode,
+                countryCode: ISO3166Alpha2Country.US,
+                country: ISO3166Alpha3Country.USA,
+              },
+            };
+          }),
       });
+
+      updateStatusStep(0, true);
+
+      if (response) {
+        // Setup social recovery for the account
+        await setupSocialRecovery({
+          walletAddress: onboardingState.walletAddress as Address,
+          credentials: onboardingState.credentials,
+          recoveryMethods: {
+            email: formData.users[0].email,
+            phone: formData.users[0].phoneNumber.number,
+          },
+          callbacks: {
+            onRecoverySetup: () => updateStatusStep(1, true),
+            onError: () => setIsSubmitting(false),
+          },
+        });
+
+        updateStatusStep(2, true);
+        await new Promise((resolve) => setTimeout(resolve, 1500));
+        setIsSubmitting(false);
+        setIsRedirecting(true);
+        router.push("/");
+      }
     } catch (error) {
+      console.error("Error in onboarding process:", error);
       setIsSubmitting(false);
     }
   });
@@ -165,7 +292,7 @@ export default function OnboardPage() {
         <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-background/50 to-background/80 rounded-2xl" />
         <div className="relative bg-content1/40 backdrop-blur-xl border border-border rounded-2xl shadow-xl">
           <FormProvider {...methods}>
-            <form noValidate onSubmit={onSubmit}>
+            <form noValidate onSubmit={handleSubmit}>
               <Accordion className="p-1" selectedKeys={[currentStep.toString()]} variant="shadow">
                 {steps.map((step, index) => (
                   <AccordionItem

@@ -11,7 +11,7 @@ import { LogOut, User, Backpack, Shield, Moon, Sun, MessageCircle } from "lucide
 import { MerchantUserGetByIdOutput as MerchantUser } from "@backpack-fux/pylon-sdk";
 
 import pylon from "@/libs/pylon-sdk";
-import { useAccounts } from "@/contexts/AccountContext";
+import { useUser } from "@/contexts/UserContext";
 import { getDisplayName } from "@/utils/helpers";
 import { useTheme } from "@/hooks/useTheme";
 import { useMessagingState, useMessagingActions } from "@/libs/messaging/store";
@@ -40,7 +40,7 @@ const AuthenticatedNav = ({ user, handleSignOut }: { user: MerchantUser; handleS
   const {
     ui: { togglePane },
   } = useMessagingActions();
-  const { profile } = useAccounts();
+  const { profile } = useUser();
 
   const displayName = user.username || getDisplayName(user.firstName, user.lastName);
   const initials =
@@ -261,7 +261,7 @@ const UnauthenticatedNav = () => {
 
 export const Navbar = () => {
   const router = useRouter();
-  const { user, isAuthenticated, isLoading, logout } = useAccounts();
+  const { user, isAuthenticated, isLoading, logout } = useUser();
   const pathname = usePathname();
   const isPublicRoute = pathname?.startsWith("/auth") || pathname?.startsWith("/invite");
 

@@ -44,6 +44,9 @@ const getSponsorshipPolicyId = (chain: Chain): string => {
 export const publicClient = createPublicClient({
   chain,
   transport: http(),
+  batch: {
+    multicall: true,
+  },
 });
 
 // Candide API endpoints

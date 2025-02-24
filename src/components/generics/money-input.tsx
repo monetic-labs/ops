@@ -1,6 +1,6 @@
 import { Input } from "@nextui-org/input";
 
-import { formatNumericInput, displayAmount } from "@/utils/formatters/currency";
+import { formatNumericInput, displayAmount } from "@/utils/helpers";
 
 export interface MoneyInputProps {
   value: string;

@@ -2,25 +2,15 @@ import React, { useState } from "react";
 import { Select, SelectItem } from "@nextui-org/select";
 import { Network, StableCurrency } from "@backpack-fux/pylon-sdk";
 import { Autocomplete, AutocompleteItem } from "@nextui-org/autocomplete";
+import { Spinner } from "@nextui-org/spinner";
 
 import { capitalizeFirstChar } from "@/utils/helpers";
 
 import GenerateApiKeysModal from "./actions/widgets/api-keys";
+import { useAccountManagement } from "@/hooks/useAccountManagement";
 
 const networks = ["POLYGON", "SOLANA", "BASE", "OPTIMISM", "ARBITRUM"];
 const currencies = ["USDC", "USDT", "DAI"];
-
-// TODO: Fetch accounts from backend
-const accounts = [
-  {
-    name: "Settlement",
-    address: "0x595ec62736Bf19445d7F00D66072B3a3c7aeA0F5",
-  },
-  {
-    name: "Rain",
-    address: "0x695ec62736Bf19445d7F00D66072B3a3c7aeA0F5",
-  },
-];
 
 interface WidgetManagementProps {
   settlementAddress: string;
@@ -41,23 +31,41 @@ export default function WidgetManagement({
   onCurrencyChange,
   hasChanges,
 }: WidgetManagementProps) {
+  const { accounts, isLoadingAccounts } = useAccountManagement();
   const [isApiKeysModalOpen, setIsApiKeysModalOpen] = useState(false);
 
   return (
     <div className="space-y-4">
       <Autocomplete
         label="Settlement Account"
-        placeholder="Search for an account"
-        value={settlementAddress}
-        onSelectionChange={(value) => {
-          if (value !== null) onSettlementAddressChange(value.toString());
+        placeholder={isLoadingAccounts ? "Loading accounts..." : "Search for an account"}
+        defaultSelectedKey={settlementAddress}
+        selectedKey={settlementAddress}
+        isDisabled={isLoadingAccounts || !accounts.length || accounts.length === 1}
+        defaultItems={accounts}
+        isLoading={isLoadingAccounts}
+        onSelectionChange={(key) => {
+          if (key) onSettlementAddressChange(key.toString());
         }}
       >
-        {accounts.map((account) => (
-          <AutocompleteItem key={account.address} textValue={`${account.name} Account`} value={account.address}>
-            {account.name} Account
+        {(account) => (
+          <AutocompleteItem
+            key={account.address}
+            textValue={`${account.name} Account`}
+            value={account.address}
+            className="capitalize"
+          >
+            <div className="flex items-center gap-2">
+              <account.icon className="w-4 h-4" />
+              <div className="flex flex-col">
+                <span>{account.name} Account</span>
+                <span className="text-tiny text-default-400">
+                  Balance: ${account.balance?.toLocaleString() ?? "0.00"}
+                </span>
+              </div>
+            </div>
           </AutocompleteItem>
-        ))}
+        )}
       </Autocomplete>
       <Select
         isDisabled

@@ -5,10 +5,24 @@ import { Chip } from "@nextui-org/chip";
 import { ScrollShadow } from "@nextui-org/scroll-shadow";
 import { Avatar } from "@nextui-org/avatar";
 import { SharedSelection } from "@nextui-org/system";
+import { AlertTriangle } from "lucide-react";
+import { Address, encodeFunctionData } from "viem";
 
 import { formatStringToTitleCase } from "@/utils/helpers";
-import { useAccounts } from "@/hooks/useAccounts";
-import { Account, Operator } from "@/types/account";
+import { useAccountManagement } from "@/hooks/useAccountManagement";
+import { useUser } from "@/contexts/UserContext";
+import { Account, Signer } from "@/types/account";
+import { WebAuthnHelper } from "@/utils/webauthn";
+import {
+  createSafeAccount,
+  createAndSendSponsoredUserOp,
+  createSubAccountDeploymentTransactions,
+  sendAndTrackUserOperation,
+  createSignedUserOperation,
+  createSettlementOperationWithApproval,
+} from "@/utils/safe";
+import { DEFAULT_SECP256R1_PRECOMPILE_ADDRESS, SafeAccountV0_3_0 as SafeAccount } from "abstractionkit";
+import { safeAbi } from "@/utils/safe/abi";
 
 export function DeployAccountModal({
   isOpen,
@@ -16,8 +30,8 @@ export function DeployAccountModal({
   onDeploy,
   accounts,
   selectedAccount,
-  selectedOperators,
-  setSelectedOperators,
+  selectedSigners,
+  setSelectedSigners,
   threshold,
   setThreshold,
 }: {
@@ -26,27 +40,137 @@ export function DeployAccountModal({
   onDeploy: () => void;
   accounts: Account[];
   selectedAccount: Account;
-  selectedOperators: Operator[];
-  setSelectedOperators: (operators: Operator[]) => void;
+  selectedSigners: Signer[];
+  setSelectedSigners: (signers: Signer[]) => void;
   threshold: number;
   setThreshold: (threshold: number) => void;
 }) {
-  const { getAvailableOperators } = useAccounts();
-  const availableOperators = getAvailableOperators();
+  const { isLoadingAccounts, registerSubAccount, unregisterSubAccount, signers, isLoadingSigners } =
+    useAccountManagement();
+  const { user, credentials, isAuthenticated } = useUser();
 
-  const handleOperatorChange = (keys: SharedSelection) => {
+  if (!credentials) {
+    if (isAuthenticated) {
+      throw new Error("No credentials found");
+    }
+    return null;
+  }
+
+  const handleSignerChange = (keys: SharedSelection) => {
     if (keys === "all") {
-      setSelectedOperators(availableOperators.map((op) => ({ ...op, hasSigned: false })));
+      setSelectedSigners(signers);
       return;
     }
 
     const selected = Array.from(keys)
-      .map((key) => availableOperators.find((op) => op.address === key))
-      .filter((op): op is Operator => !!op)
-      .map((op) => ({ ...op, hasSigned: false }));
+      .map((key) => signers.find((signer) => signer.address === key))
+      .filter((signer): signer is Signer => Boolean(signer));
 
-    setSelectedOperators(selected);
+    setSelectedSigners(selected);
     setThreshold(1);
+  };
+
+  const handleDeploy = async () => {
+    try {
+      if (selectedSigners.length === 0) {
+        throw new Error("At least one signer must be selected");
+      }
+
+      // Get the deployer's address (current user)
+      const individualSafeAddress = user?.walletAddress as Address;
+      if (!individualSafeAddress) {
+        throw new Error("Deployer must have a wallet address");
+      }
+
+      // Initialize WebAuthn helper with credentials
+      const webauthnHelper = new WebAuthnHelper({
+        credentialId: credentials.credentialId,
+        publicKey: credentials.publicKey,
+      });
+
+      // Get all signers' addresses
+      const signerAddresses = selectedSigners.map((signer) => signer.address);
+
+      // Create the individual account instance (the user's account)
+      const individualAccount = new SafeAccount(individualSafeAddress);
+
+      // Create the new safe account to be deployed
+      const { address: safeSubAccountAddress, instance: safeAccount } = createSafeAccount({
+        signers: [individualSafeAddress],
+        isWebAuthn: false,
+      });
+
+      // Create deployment transactions
+      const deploymentTxs = await createSubAccountDeploymentTransactions(
+        safeAccount,
+        individualSafeAddress,
+        signerAddresses,
+        threshold
+      );
+
+      // First create and sponsor the deployment operation
+      const { userOp: deploymentUserOp, hash: deploymentHash } = await createAndSendSponsoredUserOp(
+        safeSubAccountAddress,
+        deploymentTxs,
+        {
+          signer: individualSafeAddress,
+          isWebAuthn: false,
+        }
+      );
+
+      // Create approval transaction from individual account
+      const approveHashTransaction = {
+        to: safeSubAccountAddress,
+        value: BigInt(0),
+        data: encodeFunctionData({
+          abi: safeAbi,
+          functionName: "approveHash",
+          args: [deploymentHash],
+        }),
+      };
+
+      // Get approval from individual account
+      const { userOp: individualApprovalOp, hash: approvalHash } = await createAndSendSponsoredUserOp(
+        individualSafeAddress,
+        [approveHashTransaction],
+        {
+          signer: credentials.publicKey,
+          isWebAuthn: true,
+        }
+      );
+
+      // Sign and send the approval
+      const { signature } = await webauthnHelper.signMessage(approvalHash);
+      const signedApprovalOp = createSignedUserOperation(
+        individualApprovalOp,
+        { signer: credentials.publicKey, signature },
+        { precompileAddress: DEFAULT_SECP256R1_PRECOMPILE_ADDRESS }
+      );
+
+      // Execute the deployment with approval
+      const finalDeploymentOp = createSettlementOperationWithApproval(
+        individualSafeAddress,
+        deploymentUserOp,
+        DEFAULT_SECP256R1_PRECOMPILE_ADDRESS
+      );
+
+      // Track both operations
+      await sendAndTrackUserOperation(individualAccount, signedApprovalOp, {
+        onSuccess: async () => {
+          await sendAndTrackUserOperation(safeAccount, finalDeploymentOp, {
+            onSent: () => onDeploy(),
+            onSuccess: () => registerSubAccount(safeSubAccountAddress, selectedAccount.name),
+            onError: (error) => {
+              console.error("Deployment failed:", error);
+              unregisterSubAccount(selectedAccount.id).catch(console.error);
+            },
+          });
+        },
+      });
+    } catch (error) {
+      console.error("Error in deployment process:", error);
+      // TODO: Show error message to user
+    }
   };
 
   return (
@@ -69,25 +193,26 @@ export function DeployAccountModal({
             <ModalBody>
               <div className="space-y-6">
                 <div className="space-y-3">
-                  <h3 className="text-sm font-medium text-foreground/90">About Operators</h3>
+                  <h3 className="text-sm font-medium text-foreground/90">About Signers and Threshold</h3>
                   <p className="text-sm text-foreground/60">
-                    Operators are users with access to initiate transactions. The threshold is the required number of
-                    operators to approve a transaction.
+                    Signers are users who can approve transactions for this account only. The threshold is the minimum
+                    number of signers required to approve transactions.
                   </p>
                 </div>
 
                 <div className="space-y-4">
                   <div className="flex flex-col gap-1">
-                    <label htmlFor="operator-select" className="text-sm font-medium text-foreground/90">
-                      Select Operators
+                    <label htmlFor="signer-select" className="text-sm font-medium text-foreground/90">
+                      Signers
                     </label>
                     <Select
-                      id="operator-select"
-                      items={availableOperators}
+                      id="signer-select"
+                      items={signers}
                       selectionMode="multiple"
-                      placeholder="Select account operators"
-                      selectedKeys={new Set(selectedOperators.map((op) => op.address))}
-                      onSelectionChange={(keys) => handleOperatorChange(keys)}
+                      placeholder="Select users to upgrade"
+                      selectedKeys={new Set(selectedSigners.map((op) => op.address))}
+                      onSelectionChange={(keys) => handleSignerChange(keys)}
+                      isLoading={isLoadingAccounts}
                       classNames={{
                         trigger: "bg-content2 data-[hover=true]:bg-content3",
                         value: "text-foreground/90",
@@ -110,24 +235,26 @@ export function DeployAccountModal({
                         </ScrollShadow>
                       )}
                     >
-                      {(operator) => (
-                        <SelectItem key={operator.address} textValue={operator.name}>
+                      {(signer) => (
+                        <SelectItem key={signer.address} textValue={signer.name} value={signer.address}>
                           <div className="flex gap-2 items-center">
                             <Avatar
-                              name={operator.name}
+                              name={signer.name}
                               size="sm"
                               classNames={{
                                 base: "bg-content3",
                                 name: "text-foreground/90",
                               }}
                             />
-                            <div className="flex flex-col">
-                              <span className="text-small">{operator.name}</span>
-                              {operator.role && (
-                                <span className="text-xs text-foreground/60">
-                                  {formatStringToTitleCase(operator.role)}
-                                </span>
-                              )}
+                            <div className="flex flex-col flex-grow">
+                              <span className="text-small">{signer.name}</span>
+                              <div className="flex items-center gap-2">
+                                {signer.role && (
+                                  <span className="text-xs text-foreground/60">
+                                    {formatStringToTitleCase(signer.role)}
+                                  </span>
+                                )}
+                              </div>
                             </div>
                           </div>
                         </SelectItem>
@@ -143,8 +270,8 @@ export function DeployAccountModal({
                     </label>
                     <Select
                       id="threshold-select"
-                      placeholder={selectedOperators.length === 0 ? "Select a threshold" : "Select required approvals"}
-                      selectedKeys={selectedOperators.length > 0 ? new Set([threshold.toString()]) : new Set()}
+                      placeholder={selectedSigners.length === 0 ? "Select a threshold" : "Select required approvals"}
+                      selectedKeys={selectedSigners.length > 0 ? new Set([threshold.toString()]) : new Set()}
                       selectionMode="single"
                       onSelectionChange={(keys) => {
                         const value = Array.from(keys)[0];
@@ -152,36 +279,36 @@ export function DeployAccountModal({
                           setThreshold(parseInt(value.toString()));
                         }
                       }}
-                      isDisabled={selectedOperators.length === 0}
+                      isDisabled={selectedSigners.length === 0}
                       classNames={{
                         trigger: "bg-content2 data-[hover=true]:bg-content3",
                         value: "text-foreground/90",
-                        description: `${selectedOperators.length === 1 ? "text-yellow-500" : "text-foreground/60"}`,
+                        description: `${selectedSigners.length === 1 ? "text-warning" : "text-foreground/60"}`,
                       }}
                       renderValue={(item) => {
-                        if (selectedOperators.length === 0) {
+                        if (selectedSigners.length === 0) {
                           return "Select a threshold";
                         }
                         const num = item[0]?.key;
                         return num
-                          ? `${num} of ${selectedOperators.length} ${selectedOperators.length === 1 ? "operator" : "operators"} required`
+                          ? `${num} of ${selectedSigners.length} ${selectedSigners.length === 1 ? "signer" : "signers"} required`
                           : "Select a threshold";
                       }}
                       description={
-                        selectedOperators.length === 1
-                          ? "Warning: Relying on one operator risks losing access if their account is compromised."
-                          : "A higher threshold means more security but requires more operators to approve transactions."
+                        selectedSigners.length === 1
+                          ? "Warning: Relying on one signer risks losing access if their account is compromised."
+                          : "A higher threshold means more security but requires more signers to approve transactions."
                       }
                     >
-                      {selectedOperators.length > 0 ? (
-                        Array.from({ length: selectedOperators.length }, (_, i) => i + 1).map((num) => (
+                      {selectedSigners.length > 0 ? (
+                        Array.from({ length: selectedSigners.length }, (_, i) => i + 1).map((num) => (
                           <SelectItem key={num.toString()}>
-                            {num} of {selectedOperators.length}{" "}
-                            {selectedOperators.length === 1 ? "operator" : "operators"} required
+                            {num} of {selectedSigners.length} {selectedSigners.length === 1 ? "signer" : "signers"}{" "}
+                            required
                           </SelectItem>
                         ))
                       ) : (
-                        <SelectItem key="1">1 operator required</SelectItem>
+                        <SelectItem key="1">1 signer required</SelectItem>
                       )}
                     </Select>
                   </div>
@@ -194,9 +321,9 @@ export function DeployAccountModal({
               </Button>
               <Button
                 color="primary"
-                onPress={onDeploy}
+                onPress={handleDeploy}
                 className="font-medium"
-                isDisabled={selectedOperators.length === 0}
+                isDisabled={selectedSigners.length === 0}
               >
                 Deploy Account
               </Button>

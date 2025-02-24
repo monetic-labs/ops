@@ -16,7 +16,7 @@ import {
   usePhoneRecoveryHandlers,
   useBackpackRecoveryHandlers,
 } from "@/hooks/security";
-import { useAccounts } from "@/contexts/AccountContext";
+import { useUser } from "@/contexts/UserContext";
 
 import { RECOVERY_OPTIONS, DEAD_SWITCH_OPTIONS, GRACE_PERIOD_OPTIONS } from "./security/constants";
 import { SecuritySettingsModalProps } from "./security/types";
@@ -35,7 +35,7 @@ export const SecuritySettingsModal = ({ isOpen, onClose }: SecuritySettingsModal
   const [isSaving, setIsSaving] = useState(false);
 
   // Get user context
-  const { user } = useAccounts();
+  const { user } = useUser();
 
   // Initialize hooks
   const {

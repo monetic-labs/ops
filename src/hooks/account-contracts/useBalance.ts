@@ -5,7 +5,7 @@ import { useDebounce } from "use-debounce";
 import { publicClient } from "@/config/web3";
 import { BASE_USDC, MOCK_BALANCE } from "@/utils/constants";
 import { formatDecimals, isTesting } from "@/utils/helpers";
-import { useAccounts } from "@/contexts/AccountContext";
+import { useUser } from "@/contexts/UserContext";
 
 type UseBalanceProps = {
   amount: string;
@@ -19,8 +19,8 @@ export const useBalance = ({ amount, isModalOpen }: UseBalanceProps) => {
   const [lastFetchTime, setLastFetchTime] = useState(0);
   const [debouncedAmount] = useDebounce(amount, 500); // 500ms delay
 
-  const { user } = useAccounts();
-  const account = user?.merchant.settlement.walletAddress as Address;
+  const { user } = useUser();
+  const account = user?.merchant.accounts.find((account) => account.isSettlement)?.ledgerAddress as Address;
 
   const getUserBalance = useCallback(async (): Promise<string> => {
     if (isTesting) return MOCK_BALANCE;

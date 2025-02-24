@@ -256,7 +256,7 @@ export async function processDocuments(docsDir: string): Promise<ProcessedDocume
     })
     .filter((doc): doc is ProcessedDocument => doc !== null);
 
-  // Fix for Set spread operator issue
+  // Fix for Set spread signer issue
   const categories = Array.from(new Set(documents.map((doc) => doc.category)));
 
   console.log("Categories found:", categories);

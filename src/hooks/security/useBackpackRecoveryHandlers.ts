@@ -1,7 +1,7 @@
 import { Address } from "viem";
 
 import { WebAuthnHelper } from "@/utils/webauthn";
-import { useAccounts } from "@/contexts/AccountContext";
+import { useUser } from "@/contexts/UserContext";
 import { BACKPACK_GUARDIAN_ADDRESS } from "@/utils/constants";
 import {
   createRevokeGuardianTransaction,
@@ -23,7 +23,7 @@ export const useBackpackRecoveryHandlers = ({
   threshold,
   userAddress,
 }: UseBackpackRecoveryHandlersProps) => {
-  const { credentials } = useAccounts();
+  const { credentials } = useUser();
 
   const handleToggle = async () => {
     if (!userAddress || !credentials) return;
@@ -50,15 +50,10 @@ export const useBackpackRecoveryHandlers = ({
         // Sign and send operation
         const signature = await webauthn.signMessage(hash);
 
-        await sendUserOperation(
-          walletAddress,
-          userOp,
-          {
-            signer,
-            signature: signature.signature,
-          },
-          false
-        );
+        await sendUserOperation(walletAddress, userOp, {
+          signer,
+          signature: signature.signature,
+        });
       } else {
         // Disable Backpack as guardian
         const revokeGuardianTx = await createRevokeGuardianTransaction(
@@ -76,15 +71,10 @@ export const useBackpackRecoveryHandlers = ({
         // Sign and send operation
         const signature = await webauthn.signMessage(hash);
 
-        await sendUserOperation(
-          walletAddress,
-          userOp,
-          {
-            signer,
-            signature: signature.signature,
-          },
-          false
-        );
+        await sendUserOperation(walletAddress, userOp, {
+          signer,
+          signature: signature.signature,
+        });
       }
 
       setIsEnabled((prev) => !prev);

@@ -21,7 +21,7 @@ import { useRouter } from "next/navigation";
 import { Address } from "viem";
 
 import { WebAuthnHelper } from "@/utils/webauthn";
-import { useAccounts } from "@/contexts/AccountContext";
+import { useUser } from "@/contexts/UserContext";
 import { OnboardingState } from "@/utils/localstorage";
 import { createSafeAccount } from "@/utils/safe";
 import { useTheme } from "@/hooks/useTheme";
@@ -32,7 +32,7 @@ const AuthPage = () => {
   const [isDisabled, setIsDisabled] = useState(false);
   const [notification, setNotification] = useState<string | null>(null);
   const router = useRouter();
-  const { isAuthenticated, setAuth, setOnboarding } = useAccounts();
+  const { isAuthenticated, setAuth, setOnboarding } = useUser();
 
   useEffect(() => {
     if (isAuthenticated) {
@@ -51,14 +51,14 @@ const AuthPage = () => {
         const { publicKey, credentialId } = await webauthnHelper.loginWithPasskey();
 
         // Create safe accounts with WebAuthn signer
-        const walletAddress = createSafeAccount({
-          signer: publicKey,
+        const { address: walletAddress } = createSafeAccount({
+          signers: [publicKey],
           isWebAuthn: true,
         });
 
         // Create settlement account with wallet as signer
-        const settlementAddress = createSafeAccount({
-          signer: walletAddress,
+        const { address: settlementAddress } = createSafeAccount({
+          signers: [walletAddress],
         });
 
         // Store login state using context
@@ -79,13 +79,13 @@ const AuthPage = () => {
         const { publicKeyCoordinates: publicKey, credentialId } = await webauthnHelper.createPasskey();
 
         // Create safe accounts
-        const walletAddress = createSafeAccount({
-          signer: publicKey,
+        const { address: walletAddress } = createSafeAccount({
+          signers: [publicKey],
           isWebAuthn: true,
         });
 
-        const settlementAddress = createSafeAccount({
-          signer: walletAddress,
+        const { address: settlementAddress } = createSafeAccount({
+          signers: [walletAddress],
         });
 
         // Store onboarding state

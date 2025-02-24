@@ -10,7 +10,7 @@ import {
   createAddGuardianTransaction,
   createEnableModuleTransaction,
 } from "@/utils/socialRecovery";
-import { useAccounts } from "@/contexts/AccountContext";
+import { useUser } from "@/contexts/UserContext";
 import { WebAuthnHelper } from "@/utils/webauthn";
 import { BACKPACK_GUARDIAN_ADDRESS } from "@/utils/constants";
 import { createAndSendSponsoredUserOp, sendUserOperation } from "@/utils/safe";
@@ -22,7 +22,7 @@ type BackpackRecoveryProps = {
 
 export const BackpackRecovery = ({ isEnabled, onToggle }: BackpackRecoveryProps) => {
   const [isLoading, setIsLoading] = useState(false);
-  const { user, credentials } = useAccounts();
+  const { user, credentials } = useUser();
 
   const handleToggle = async () => {
     if (isLoading || !user || !credentials) return;
@@ -50,15 +50,10 @@ export const BackpackRecovery = ({ isEnabled, onToggle }: BackpackRecoveryProps)
         // Sign and send operation
         const signature = await webauthn.signMessage(hash);
 
-        await sendUserOperation(
-          walletAddress,
-          userOp,
-          {
-            signer,
-            signature: signature.signature,
-          },
-          false
-        );
+        await sendUserOperation(walletAddress, userOp, {
+          signer,
+          signature: signature.signature,
+        });
 
         await onToggle();
       } else {
@@ -78,15 +73,10 @@ export const BackpackRecovery = ({ isEnabled, onToggle }: BackpackRecoveryProps)
         // Sign and send operation
         const signature = await webauthn.signMessage(hash);
 
-        await sendUserOperation(
-          walletAddress,
-          userOp,
-          {
-            signer,
-            signature: signature.signature,
-          },
-          false
-        );
+        await sendUserOperation(walletAddress, userOp, {
+          signer,
+          signature: signature.signature,
+        });
 
         await onToggle();
       }

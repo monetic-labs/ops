@@ -9,7 +9,7 @@ import { XIcon, Upload, Trash2 } from "lucide-react";
 import { MerchantUserGetByIdOutput as MerchantUser } from "@backpack-fux/pylon-sdk";
 
 import { formatPhoneNumber } from "@/utils/helpers";
-import { useAccounts } from "@/contexts/AccountContext";
+import { useUser } from "@/contexts/UserContext";
 
 interface ProfileSettingsModalProps {
   isOpen: boolean;
@@ -18,7 +18,7 @@ interface ProfileSettingsModalProps {
 }
 
 export const ProfileSettingsModal = ({ isOpen, onClose, user }: ProfileSettingsModalProps) => {
-  const { profile, updateProfileImage } = useAccounts();
+  const { profile, updateProfileImage } = useUser();
   const [imageFile, setImageFile] = useState<string | null>(null);
 
   // Reset state when modal opens/closes and when profile changes

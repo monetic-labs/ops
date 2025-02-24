@@ -13,7 +13,7 @@ import { Address } from "viem";
 
 import { WebAuthnHelper } from "@/utils/webauthn";
 import { LocalStorage } from "@/utils/localstorage";
-import { useAccounts } from "@/contexts/AccountContext";
+import { useUser } from "@/contexts/UserContext";
 import pylon from "@/libs/pylon-sdk";
 import { formatPhoneNumber } from "@/utils/helpers";
 import { useTheme } from "@/hooks/useTheme";
@@ -41,7 +41,7 @@ export default function InvitePage() {
 
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { setAuth } = useAccounts();
+  const { setAuth } = useUser();
   const token = searchParams?.get("token");
 
   useEffect(() => {

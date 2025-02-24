@@ -24,9 +24,9 @@ export function AccountNavigation({ selectedTab, onTabChange }: AccountNavigatio
       label: "Activity",
     },
     {
-      key: "operators",
+      key: "signers",
       icon: <Users className="w-4 h-4" />,
-      label: "Operators",
+      label: "Signers",
     },
     {
       key: "policies",

@@ -42,22 +42,22 @@ export function ActivityView({ activities }: ActivityViewProps) {
             {needsSignature && (
               <div className="flex items-center gap-2 mt-2">
                 <div className="flex -space-x-2">
-                  {activity.operators.map((operator) => (
+                  {activity.signers.map((signer) => (
                     <Tooltip
-                      key={operator.address}
-                      content={`${operator.name} ${operator.hasSigned ? "has signed" : "needs to sign"}`}
+                      key={signer.address}
+                      content={`${signer.name} ${signer.hasSigned ? "has signed" : "needs to sign"}`}
                     >
                       <div className="relative">
                         <Image
-                          alt={operator.name}
+                          alt={signer.name}
                           className="rounded-full border-2 border-background"
                           height={24}
-                          src={operator.image}
+                          src={signer.image}
                           width={24}
                         />
                         <div
                           className={`absolute -bottom-1 -right-1 w-3 h-3 rounded-full border-2 border-background ${
-                            operator.hasSigned ? "bg-success" : "bg-warning"
+                            signer.hasSigned ? "bg-success" : "bg-warning"
                           }`}
                         />
                       </div>

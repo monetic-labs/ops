@@ -1,26 +1,26 @@
 "use client";
 
-import type { Account, Operator } from "@/types/account";
+import type { Account, Signer } from "@/types/account";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardBody } from "@nextui-org/card";
 
-import { useAccounts } from "@/hooks/useAccounts";
+import { useAccountManagement } from "@/hooks/useAccountManagement";
 
 import { AccountHeader } from "./components/AccountHeader";
 import { AccountBalance } from "./components/AccountBalance";
 import { AccountNavigation } from "./components/AccountNavigation";
 import { DeployAccountModal } from "./components/DeployAccountModal";
 import { ActivityView } from "./views/ActivityView";
-import { OperatorsView } from "./views/OperatorsView";
+import { SignersView } from "./views/SignersView";
 import { PoliciesView } from "./views/PoliciesView";
 import { SendView } from "./views/SendView";
 import { ReceiveView } from "./views/ReceiveView";
 import { AccountSelectionModal } from "./components/AccountSelectionModal";
 
 export default function AccountMeta() {
-  const { accounts, getEnabledAccounts, deployAccount } = useAccounts();
-  const [selectedAccount, setSelectedAccount] = useState<Account>(accounts[0]);
+  const { accounts, getEnabledAccounts, registerSubAccount, isLoadingAccounts } = useAccountManagement();
+  const [selectedAccount, setSelectedAccount] = useState<Account | undefined>(undefined);
   const [activeTab, setActiveTab] = useState<string>("activity");
   const [isSendModalOpen, setIsSendModalOpen] = useState(false);
   const [isReceiveModalOpen, setIsReceiveModalOpen] = useState(false);
@@ -28,9 +28,29 @@ export default function AccountMeta() {
   const [toAccount, setToAccount] = useState<Account | null>(null);
   const [isExpanded, setIsExpanded] = useState(true);
   const [isDeployModalOpen, setIsDeployModalOpen] = useState(false);
-  const [selectedOperators, setSelectedOperators] = useState<Operator[]>([]);
+  const [selectedSigners, setSelectedSigners] = useState<Signer[]>([]);
   const [threshold, setThreshold] = useState(1);
   const [isAccountSelectionOpen, setIsAccountSelectionOpen] = useState(false);
+
+  useEffect(() => {
+    if (accounts.length > 0) {
+      setSelectedAccount(accounts[0]);
+    }
+  }, [accounts]);
+
+  if (isLoadingAccounts) {
+    return (
+      <Card className="w-full bg-content1/90 border border-border backdrop-blur-sm relative">
+        <div className="absolute inset-0 bg-content1/80 backdrop-blur-sm z-10 flex flex-col items-center justify-center p-6 text-center">
+          <h3 className="text-2xl font-semibold mb-2">Loading accounts...</h3>
+        </div>
+      </Card>
+    );
+  }
+
+  if (!selectedAccount) {
+    return null;
+  }
 
   const totalBalance = accounts.reduce((sum: number, account: Account) => sum + (account.balance || 0), 0);
   const enabledAccounts = getEnabledAccounts();
@@ -64,13 +84,16 @@ export default function AccountMeta() {
 
   const handleDeploy = () => {
     if (!selectedAccount) return;
-    deployAccount(selectedAccount.address, selectedOperators, threshold);
-    setSelectedAccount((prevSelectedAccount) => ({
-      ...prevSelectedAccount,
-      isEnabled: true,
-      operators: selectedOperators,
-      threshold,
-    }));
+    registerSubAccount(selectedAccount.address, selectedAccount.name);
+    setSelectedAccount((prevSelectedAccount) => {
+      if (!prevSelectedAccount) return prevSelectedAccount;
+      return {
+        ...prevSelectedAccount,
+        isEnabled: true,
+        signers: selectedSigners,
+        threshold,
+      };
+    });
     setIsDeployModalOpen(false);
   };
 
@@ -106,16 +129,13 @@ export default function AccountMeta() {
 
   return (
     <Card className="w-full bg-content1/90 border border-border backdrop-blur-sm relative">
-      {!selectedAccount.isEnabled && (
+      {selectedAccount && !selectedAccount.isDeployed && (
         <div className="absolute inset-0 bg-content1/80 backdrop-blur-sm z-10 flex flex-col items-center justify-center p-6 text-center">
           <h3 className="text-2xl font-semibold mb-2">Activate your account</h3>
           <p className="text-foreground/60 mb-4">This account needs to be activated before it can be used.</p>
           <button
             className="bg-primary text-primary-foreground px-4 py-2 rounded-md hover:bg-primary/80 transition-colors"
-            onClick={() => {
-              console.log("Deploy Account button clicked");
-              setIsDeployModalOpen(true);
-            }}
+            onClick={() => setIsDeployModalOpen(true)}
           >
             Deploy Account
           </button>
@@ -147,7 +167,7 @@ export default function AccountMeta() {
 
               <div>
                 {activeTab === "activity" && <ActivityView activities={selectedAccount.recentActivity} />}
-                {activeTab === "operators" && <OperatorsView operators={selectedAccount.operators} />}
+                {activeTab === "signers" && <SignersView signers={selectedAccount.signers} />}
                 {activeTab === "policies" && <PoliciesView />}
               </div>
             </div>
@@ -161,8 +181,8 @@ export default function AccountMeta() {
         onDeploy={handleDeploy}
         accounts={accounts}
         selectedAccount={selectedAccount}
-        selectedOperators={selectedOperators}
-        setSelectedOperators={setSelectedOperators}
+        selectedSigners={selectedSigners}
+        setSelectedSigners={setSelectedSigners}
         threshold={threshold}
         setThreshold={setThreshold}
       />
@@ -172,7 +192,7 @@ export default function AccountMeta() {
         onClose={() => setIsAccountSelectionOpen(false)}
         accounts={accounts.filter((acc) => !acc.isDisabled && !acc.isComingSoon)}
         onSelect={handleAccountSelect}
-        selectedAccountId={selectedAccount.address}
+        selectedAccountId={selectedAccount.id}
         title="Select Account"
       />
     </Card>

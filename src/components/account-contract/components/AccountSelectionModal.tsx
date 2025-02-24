@@ -27,9 +27,9 @@ export function AccountSelectionModal({
         <ModalBody className="gap-3 p-6">
           {accounts.map((account) => (
             <Button
-              key={account.address}
+              key={account.id}
               className={`w-full justify-start h-auto p-4 bg-content2 hover:bg-content3 ${
-                selectedAccountId === account.address ? "border-2 border-primary" : ""
+                selectedAccountId === account.id ? "border-2 border-primary" : ""
               }`}
               onPress={() => onSelect(account)}
             >

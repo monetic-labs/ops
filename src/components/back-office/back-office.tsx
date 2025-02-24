@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { Tab, Tabs } from "@nextui-org/tabs";
 import { PlusIcon, SaveIcon } from "lucide-react";
-import { Network, StableCurrency } from "@backpack-fux/pylon-sdk";
+import { Network, StableCurrency, MerchantAccountGetOutput } from "@backpack-fux/pylon-sdk";
 
 import { backOfficeConfig } from "@/config/tabs";
 import { ResponsiveButton } from "@/components/generics/responsive-button";
@@ -22,27 +22,16 @@ export default function BackOfficeTabs({ handleSubTabChange }: BackOfficeTabsPro
   const ordersTabRef = useRef<OrdersTabRef>(null);
 
   // Settlement account state
-  const [settlementAddress, setSettlementAddress] = useState("");
-  const [selectedNetwork, setSelectedNetwork] = useState<Network>(Network.BASE);
-  const [selectedCurrency, setSelectedCurrency] = useState<StableCurrency>(StableCurrency.USDC);
-  const [initialState, setInitialState] = useState({
-    settlementAddress: "",
-    selectedNetwork: Network.BASE,
-    selectedCurrency: StableCurrency.USDC,
-  });
+  const [settlementAccount, setSettlementAccount] = useState<MerchantAccountGetOutput | null>(null);
+  const [initialSettlementAccount, setInitialSettlementAccount] = useState<MerchantAccountGetOutput | null>(null);
 
   useEffect(() => {
     const fetchSettlementAccount = async () => {
       const accountDetails = await pylon.getSettlementAccount();
+      if (!accountDetails) return;
 
-      setSettlementAddress(accountDetails.walletAddress);
-      setSelectedNetwork(accountDetails.network);
-      setSelectedCurrency(accountDetails.currency);
-      setInitialState({
-        settlementAddress: accountDetails.walletAddress,
-        selectedNetwork: accountDetails.network,
-        selectedCurrency: accountDetails.currency,
-      });
+      setSettlementAccount(accountDetails);
+      setInitialSettlementAccount(accountDetails);
     };
 
     if (selectedService === "widget-management") {
@@ -51,28 +40,22 @@ export default function BackOfficeTabs({ handleSubTabChange }: BackOfficeTabsPro
   }, [selectedService]);
 
   const hasSettingsChanges = () => {
+    if (!settlementAccount || !initialSettlementAccount) return false;
+
     return (
-      settlementAddress !== initialState.settlementAddress ||
-      selectedNetwork !== initialState.selectedNetwork ||
-      selectedCurrency !== initialState.selectedCurrency
+      settlementAccount.ledgerAddress !== initialSettlementAccount.ledgerAddress ||
+      settlementAccount.network !== initialSettlementAccount.network ||
+      settlementAccount.currency !== initialSettlementAccount.currency
     );
   };
 
   const handleSaveSettings = async () => {
-    if (!hasSettingsChanges()) return;
+    if (!hasSettingsChanges() || !settlementAccount) return;
 
-    const isSaved = await pylon.updateSettlementAccount({
-      walletAddress: settlementAddress,
-      network: selectedNetwork,
-      currency: selectedCurrency,
-    });
+    const isSaved = await pylon.setSettlementAccount(settlementAccount.id);
 
     if (isSaved) {
-      setInitialState({
-        settlementAddress,
-        selectedNetwork,
-        selectedCurrency,
-      });
+      setInitialSettlementAccount(settlementAccount);
     }
   };
 
@@ -86,12 +69,14 @@ export default function BackOfficeTabs({ handleSubTabChange }: BackOfficeTabsPro
         return (
           <WidgetTab
             hasChanges={hasSettingsChanges()}
-            selectedCurrency={selectedCurrency}
-            selectedNetwork={selectedNetwork}
-            settlementAddress={settlementAddress}
-            onCurrencyChange={setSelectedCurrency}
-            onNetworkChange={setSelectedNetwork}
-            onSettlementAddressChange={setSettlementAddress}
+            selectedCurrency={settlementAccount?.currency ?? StableCurrency.USDC}
+            selectedNetwork={settlementAccount?.network ?? Network.BASE}
+            settlementAddress={settlementAccount?.ledgerAddress ?? ""}
+            onCurrencyChange={(currency) => setSettlementAccount((prev) => (prev ? { ...prev, currency } : null))}
+            onNetworkChange={(network) => setSettlementAccount((prev) => (prev ? { ...prev, network } : null))}
+            onSettlementAddressChange={(ledgerAddress) =>
+              setSettlementAccount((prev) => (prev ? { ...prev, ledgerAddress } : null))
+            }
           />
         );
       default:
@@ -128,7 +113,7 @@ export default function BackOfficeTabs({ handleSubTabChange }: BackOfficeTabsPro
           {selectedService === "widget-management" && (
             <ResponsiveButton
               icon={SaveIcon}
-              isDisabled={!hasSettingsChanges}
+              isDisabled={!hasSettingsChanges()}
               label="Save Settings"
               type="primary"
               onPress={handleSaveSettings}

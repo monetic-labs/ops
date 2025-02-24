@@ -35,7 +35,7 @@ export function PoliciesView() {
               </div>
               <div className="flex flex-col">
                 <span className="text-sm text-foreground/60">Threshold Required</span>
-                <span className="text-lg font-medium mt-1">2 operators</span>
+                <span className="text-lg font-medium mt-1">2 signers</span>
               </div>
             </div>
           </div>
@@ -58,7 +58,7 @@ export function PoliciesView() {
                     </div>
                     <div className="flex items-center gap-2 mt-1">
                       <p className="text-xs text-foreground/60">Requires 2 signatures above $10,000</p>
-                      <Tooltip content="This policy requires two operators to sign any transfer above $10,000">
+                      <Tooltip content="This policy requires two signers to sign any transfer above $10,000">
                         <Info className="w-3 h-3 text-foreground/40" />
                       </Tooltip>
                     </div>

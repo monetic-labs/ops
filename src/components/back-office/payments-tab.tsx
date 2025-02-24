@@ -5,7 +5,13 @@ import { TransactionListItem } from "@backpack-fux/pylon-sdk";
 import { DataTable, EmptyContent, Column } from "@/components/generics/data-table";
 import pylon from "@/libs/pylon-sdk";
 import { useOrderManagement } from "@/hooks/orders/useOrderManagement";
-import { capitalizeFirstChar, centsToDollars, formatStringToTitleCase, getTimeAgo, mapCurrencyToSymbol } from "@/utils/helpers";
+import {
+  capitalizeFirstChar,
+  centsToDollars,
+  formatStringToTitleCase,
+  getTimeAgo,
+  mapCurrencyToSymbol,
+} from "@/utils/helpers";
 import { paymentsStatusColorMap } from "@/data";
 
 import { PaymentDetails } from "./actions/order-details";
@@ -47,7 +53,8 @@ const paymentColumns: Column<TransactionListItem>[] = [
     uid: "total",
     render: (payment: TransactionListItem) => (
       <span className="truncate block">
-        {mapCurrencyToSymbol[payment.currency.toLowerCase()]}${centsToDollars(payment.total)}
+        {mapCurrencyToSymbol[payment.currency.toLowerCase()]}
+        {centsToDollars(payment.total)}
       </span>
     ),
   },
@@ -56,7 +63,8 @@ const paymentColumns: Column<TransactionListItem>[] = [
     uid: "subtotal",
     render: (payment: TransactionListItem) => (
       <span className="truncate block">
-        {mapCurrencyToSymbol[payment.currency.toLowerCase()]}${centsToDollars(payment.subtotal)}
+        {mapCurrencyToSymbol[payment.currency.toLowerCase()]}
+        {centsToDollars(payment.subtotal)}
       </span>
     ),
   },
@@ -65,7 +73,8 @@ const paymentColumns: Column<TransactionListItem>[] = [
     uid: "tipAmount",
     render: (payment: TransactionListItem) => (
       <span className="truncate block">
-        {mapCurrencyToSymbol[payment.currency.toLowerCase()]}${centsToDollars(payment.tipAmount)}
+        {mapCurrencyToSymbol[payment.currency.toLowerCase()]}
+        {centsToDollars(payment.tipAmount)}
       </span>
     ),
   },

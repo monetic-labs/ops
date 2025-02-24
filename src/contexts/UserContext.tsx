@@ -2,20 +2,31 @@
 
 import { createContext, useContext, ReactNode, useState, useEffect } from "react";
 import { useRouter, usePathname } from "next/navigation";
+import { jwtDecode } from "jwt-decode";
 import { MerchantUserGetByIdOutput as MerchantUser } from "@backpack-fux/pylon-sdk";
 
 import pylon from "@/libs/pylon-sdk";
 import { LocalStorage, AuthState, WebAuthnCredentials, UserProfile, OnboardingState } from "@/utils/localstorage";
 
-interface AccountState {
+interface JwtPayload {
+  userId: string;
+  merchantId: number;
+  sessionId: string;
+  iat: number;
+  exp: number;
+}
+
+interface UserState {
   user: MerchantUser | undefined;
   credentials: WebAuthnCredentials | undefined;
   profile: UserProfile | null;
   isLoading: boolean;
   isAuthenticated: boolean;
+  userId?: string;
+  merchantId?: number;
 }
 
-interface AccountContextType extends AccountState {
+interface UserContextType extends UserState {
   logout: () => void;
   getSigningCredentials: () => WebAuthnCredentials | undefined;
   updateProfileImage: (image: string | null) => void;
@@ -23,12 +34,14 @@ interface AccountContextType extends AccountState {
   setOnboarding: (state: OnboardingState) => void;
 }
 
-const AccountContext = createContext<AccountContextType>({
+const UserContext = createContext<UserContextType>({
   user: undefined,
   credentials: undefined,
   profile: null,
   isLoading: true,
   isAuthenticated: false,
+  userId: undefined,
+  merchantId: undefined,
   logout: () => {},
   getSigningCredentials: () => undefined,
   updateProfileImage: () => {},
@@ -38,7 +51,7 @@ const AccountContext = createContext<AccountContextType>({
 
 const PUBLIC_ROUTES = ["/auth", "/auth/recovery", "/invite", "/onboard"];
 
-export function AccountProvider({ children }: { children: ReactNode }) {
+export function UserProvider({ children, token }: { children: ReactNode; token?: string }) {
   const router = useRouter();
   const pathname = usePathname();
 
@@ -47,6 +60,21 @@ export function AccountProvider({ children }: { children: ReactNode }) {
   const [authState, setAuthState] = useState<AuthState | null>(LocalStorage.getAuth());
   const [profile, setProfile] = useState<UserProfile | null>(LocalStorage.getProfile());
   const [isLoading, setIsLoading] = useState(true);
+  const [userId, setUserId] = useState<string | undefined>();
+  const [merchantId, setMerchantId] = useState<number | undefined>();
+
+  // Process JWT token
+  useEffect(() => {
+    if (token) {
+      try {
+        const decoded = jwtDecode<JwtPayload>(token);
+        setUserId(decoded.userId);
+        setMerchantId(decoded.merchantId);
+      } catch (error) {
+        console.error("Failed to decode JWT:", error);
+      }
+    }
+  }, [token]);
 
   // Derived state
   const isAuthenticated = Boolean(authState?.isLoggedIn && user);
@@ -57,13 +85,11 @@ export function AccountProvider({ children }: { children: ReactNode }) {
     const fetchUser = async () => {
       if (!authState?.isLoggedIn) {
         setIsLoading(false);
-
         return;
       }
 
       try {
         const result = await pylon.getUserById();
-
         setUser(result);
       } catch (error) {
         console.error("Error fetching user data:", error);
@@ -114,13 +140,13 @@ export function AccountProvider({ children }: { children: ReactNode }) {
     try {
       await pylon.logout();
       LocalStorage.clearAuth();
-      // Batch state updates
-      setAuthState(prev => {
+      setAuthState((prev) => {
         setUser(undefined);
+        setUserId(undefined);
+        setMerchantId(undefined);
         return null;
       });
-      // Wait for state updates to complete
-      await new Promise(resolve => setTimeout(resolve, 0));
+      await new Promise((resolve) => setTimeout(resolve, 0));
       router.replace("/auth");
     } catch (error) {
       console.error("Logout failed:", error);
@@ -129,7 +155,6 @@ export function AccountProvider({ children }: { children: ReactNode }) {
 
   const getSigningCredentials = (): WebAuthnCredentials | undefined => {
     if (!authState?.credentials) return undefined;
-
     return authState.credentials;
   };
 
@@ -151,13 +176,15 @@ export function AccountProvider({ children }: { children: ReactNode }) {
   };
 
   return (
-    <AccountContext.Provider
+    <UserContext.Provider
       value={{
         user,
         credentials,
         profile,
         isLoading,
         isAuthenticated,
+        userId,
+        merchantId,
         logout: handleLogout,
         getSigningCredentials,
         updateProfileImage,
@@ -166,22 +193,19 @@ export function AccountProvider({ children }: { children: ReactNode }) {
       }}
     >
       {children}
-    </AccountContext.Provider>
+    </UserContext.Provider>
   );
 }
 
-export const useAccounts = () => {
-  const context = useContext(AccountContext);
-
+export const useUser = () => {
+  const context = useContext(UserContext);
   if (!context) {
-    throw new Error("useAccounts must be used within an AccountProvider");
+    throw new Error("useUser must be used within a UserProvider");
   }
-
   return context;
 };
 
 export const useSigningCredentials = () => {
-  const { getSigningCredentials } = useAccounts();
-
+  const { getSigningCredentials } = useUser();
   return getSigningCredentials();
 };

@@ -14,7 +14,7 @@ import { Address } from "viem";
 
 import { useExistingDisbursement } from "@/hooks/bill-pay/useExistingDisbursement";
 import TransferStatusView, { TransferStatus } from "@/components/generics/transfer-status";
-import { buildNestedTransfer } from "@/utils/bill-pay/transfers";
+import { executeNestedTransfer } from "@/utils/safe/transfer";
 import { useBalance } from "@/hooks/account-contracts/useBalance";
 import { validateBillPay } from "@/validations/bill-pay";
 import {
@@ -25,12 +25,13 @@ import {
   NewBillPay,
 } from "@/types/bill-pay";
 import { useNewDisbursement } from "@/hooks/bill-pay/useNewDisbursement";
-import { useAccounts } from "@/contexts/AccountContext";
+import { useUser } from "@/contexts/UserContext";
 
 import ModalFooterWithSupport from "../../generics/footer-modal-support";
 
 import ExistingTransferFields from "./fields/existing-transfer";
 import NewTransferFields from "./fields/new-transfer";
+import { BASE_USDC } from "@/utils/constants";
 
 type CreateBillPayModalProps = {
   isOpen: boolean;
@@ -69,7 +70,7 @@ export default function CreateBillPayModal({
   setBillPay,
   settlementAddress,
 }: CreateBillPayModalProps) {
-  const { user, credentials, isAuthenticated } = useAccounts();
+  const { user, credentials, isAuthenticated } = useUser();
   const [isNewSender, setIsNewSender] = useState(false);
   const [transferStatus, setTransferStatus] = useState<TransferStatus>(TransferStatus.IDLE);
   const [formIsValid, setFormIsValid] = useState(false);
@@ -117,7 +118,6 @@ export default function CreateBillPayModal({
 
   const handleSave = async () => {
     if (!settlementAddress || !user?.walletAddress) return;
-    setTransferStatus(TransferStatus.PREPARING);
     let timeout: number = 0;
 
     try {
@@ -157,18 +157,27 @@ export default function CreateBillPayModal({
 
       const liquidationAddress = getLiquidationAddress(response, isExistingBillPay(billPay));
 
-      const txHash = await buildNestedTransfer({
-        individualAddress: user.walletAddress as Address,
-        settlementAddress,
-        liquidationAddress,
+      await executeNestedTransfer({
+        fromSafeAddress: user.walletAddress as Address,
+        throughSafeAddress: settlementAddress,
+        toAddress: liquidationAddress,
+        tokenAddress: BASE_USDC.ADDRESS,
+        tokenDecimals: BASE_USDC.DECIMALS,
         amount: billPay.amount,
-        setTransferStatus,
         credentials,
+        callbacks: {
+          onPreparing: () => setTransferStatus(TransferStatus.PREPARING),
+          onSigning: () => setTransferStatus(TransferStatus.SIGNING),
+          onSent: () => {
+            setTransferStatus(TransferStatus.SENT);
+            timeout = 3000;
+          },
+          onError: (error) => {
+            setTransferStatus(TransferStatus.ERROR);
+            timeout = 3000;
+          },
+        },
       });
-
-      console.log("Transaction hash:", txHash);
-      setTransferStatus(TransferStatus.SENT);
-      timeout = 3000;
     } catch (error) {
       console.error("Error creating disbursement:", error);
       setTransferStatus(TransferStatus.ERROR);

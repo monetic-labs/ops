@@ -9,7 +9,7 @@ import { DataTable, Column, EmptyContent } from "@/components/generics/data-tabl
 import { formatPhoneNumber, formatStringToTitleCase, getFullName, getOpepenAvatar } from "@/utils/helpers";
 import { usersStatusColorMap } from "@/data";
 import pylon from "@/libs/pylon-sdk";
-import { useAccounts } from "@/hooks/useAccounts";
+import { useUser } from "@/contexts/UserContext";
 
 import CreateUserModal from "./user-create";
 import UserEditModal from "./user-edit";
@@ -21,8 +21,7 @@ interface MembersTabProps {
 }
 
 export default function MembersTab({ userId, isCreateModalOpen, setIsCreateModalOpen }: MembersTabProps) {
-  // All hooks must be at the top
-  const { user } = useAccounts();
+  const { user } = useUser();
   const [users, setUsers] = useState<MerchantUserGetOutput[]>([]);
   const [selectedUser, setSelectedUser] = useState<MerchantUserGetOutput | null>(null);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);

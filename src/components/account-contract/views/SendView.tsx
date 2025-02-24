@@ -211,7 +211,7 @@ export function SendView({
                     <div>
                       <p className="font-medium text-sm">Transfer Requirements</p>
                       <p className="text-sm text-foreground/60 mt-1">
-                        This transfer will require approval from 2 operators since it exceeds $10,000
+                        This transfer will require approval from 2 signers since it exceeds $10,000
                       </p>
                     </div>
                   </div>

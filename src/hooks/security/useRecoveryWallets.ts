@@ -3,7 +3,7 @@ import { RecoveryWalletMethod } from "@backpack-fux/pylon-sdk";
 import { Address } from "viem";
 
 import { RecoveryWallet, ConfiguredEmail, ConfiguredPhone } from "@/components/account-settings/security/types";
-import { useAccounts } from "@/contexts/AccountContext";
+import { useUser } from "@/contexts/UserContext";
 import { isBackpackGuardian } from "@/utils/socialRecovery";
 import pylon from "@/libs/pylon-sdk";
 
@@ -17,7 +17,7 @@ export const useRecoveryWallets = (isOpen: boolean) => {
   const [configuredEmails, setConfiguredEmails] = useState<ConfiguredEmail[]>([]);
   const [configuredPhone, setConfiguredPhone] = useState<ConfiguredPhone | null>(null);
   const [isBackpackRecoveryEnabled, setIsBackpackRecoveryEnabled] = useState(false);
-  const { user } = useAccounts();
+  const { user } = useUser();
 
   const fetchRecoveryWallets = async () => {
     try {

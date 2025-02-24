@@ -11,22 +11,107 @@ import {
 import { Address, Hex } from "viem";
 import { entryPoint07Address } from "viem/account-abstraction";
 
-import { BUNDLER_URL, chain, PAYMASTER_URL, PUBLIC_RPC, SPONSORSHIP_POLICY_ID } from "@/config/web3";
+import { BUNDLER_URL, chain, PAYMASTER_URL, PUBLIC_RPC, SPONSORSHIP_POLICY_ID, publicClient } from "@/config/web3";
 
 interface SafeAccountConfig {
-  signer: WebauthnPublicKey | Address;
+  signers: (WebauthnPublicKey | Address)[];
   isWebAuthn?: boolean;
+  threshold?: number;
 }
 
 // Core Safe Account Functions
-export const createSafeAccount = ({ signer, isWebAuthn }: SafeAccountConfig) => {
-  const account = SafeAccount.initializeNewAccount([signer], {
+export const createSafeAccount = ({ signers, isWebAuthn, threshold = 1 }: SafeAccountConfig) => {
+  const account = SafeAccount.initializeNewAccount(signers, {
+    threshold,
     ...(isWebAuthn && {
       eip7212WebAuthnPrecompileVerifierForSharedSigner: DEFAULT_SECP256R1_PRECOMPILE_ADDRESS,
     }),
   });
 
-  return account.accountAddress as Address;
+  return {
+    address: account.accountAddress as Address,
+    instance: account,
+  };
+};
+
+// Create transaction to swap owner
+export const createSwapOwnerTransaction = async (
+  safeAccount: SafeAccount,
+  prevOwner: Address,
+  oldOwner: WebauthnPublicKey | Address,
+  newOwner: WebauthnPublicKey | Address
+): Promise<MetaTransaction[]> => {
+  return safeAccount.createSwapOwnerMetaTransactions(PUBLIC_RPC, newOwner, oldOwner, {
+    prevOwner,
+    eip7212WebAuthnPrecompileVerifier: DEFAULT_SECP256R1_PRECOMPILE_ADDRESS,
+  });
+};
+
+// Create transaction to remove owner
+export const createRemoveOwnerTransaction = async (
+  safeAccount: SafeAccount,
+  prevOwner: Address,
+  owner: WebauthnPublicKey | Address,
+  newThreshold: number
+): Promise<MetaTransaction[]> => {
+  const tx = await safeAccount.createRemoveOwnerMetaTransaction(PUBLIC_RPC, owner, newThreshold, {
+    prevOwner,
+    eip7212WebAuthnPrecompileVerifier: DEFAULT_SECP256R1_PRECOMPILE_ADDRESS,
+  });
+  return [tx];
+};
+
+// Create transaction to add owner
+export const createAddOwnerTransaction = async (
+  safeAccount: SafeAccount,
+  owner: WebauthnPublicKey | Address,
+  newThreshold: number
+): Promise<MetaTransaction[]> => {
+  return await safeAccount.createAddOwnerWithThresholdMetaTransactions(owner, newThreshold, {
+    nodeRpcUrl: PUBLIC_RPC,
+    eip7212WebAuthnPrecompileVerifier: DEFAULT_SECP256R1_PRECOMPILE_ADDRESS,
+  });
+};
+
+// Create deployment transactions for a sub-account
+export const createSubAccountDeploymentTransactions = async (
+  safeAccount: SafeAccount,
+  deployerAddress: Address,
+  selectedSigners: Address[],
+  threshold: number
+): Promise<MetaTransaction[]> => {
+  // Start with deployment transaction
+  const deployTx = createDeployTransaction(safeAccount.accountAddress as Address);
+  const transactions: MetaTransaction[] = [deployTx];
+
+  // Determine if deployer should be a final signer
+  const isDeployerFinalSigner = selectedSigners.includes(deployerAddress);
+  const finalSigners = isDeployerFinalSigner ? selectedSigners : selectedSigners.filter((s) => s !== deployerAddress);
+
+  // Add all signers except deployer (who is already the initial signer)
+  if (finalSigners.length > 0) {
+    const addOwnerTxs = await Promise.all(
+      finalSigners
+        .filter((signer) => signer !== deployerAddress)
+        .map((signer) => createAddOwnerTransaction(safeAccount, signer, 1))
+    );
+    transactions.push(...addOwnerTxs.flat());
+  }
+
+  // Final configuration: either remove deployer or update threshold
+  if (!isDeployerFinalSigner && finalSigners.length > 0) {
+    // Remove deployer and set final threshold
+    const lastSigner = finalSigners[finalSigners.length - 1];
+    const removeOwnerTxs = await createRemoveOwnerTransaction(safeAccount, lastSigner, deployerAddress, threshold);
+    transactions.push(...removeOwnerTxs);
+  } else if (threshold > 1) {
+    // Update threshold using the last signer
+    const lastSigner = finalSigners[finalSigners.length - 1];
+    const updateThresholdTxs = await createAddOwnerTransaction(safeAccount, lastSigner, threshold);
+    transactions.push(...updateThresholdTxs);
+  }
+
+  return transactions;
 };
 
 // User Operation Functions
@@ -85,15 +170,13 @@ export const formatWebAuthnSignature = (
  * Creates a user operation with proper signature formatting
  */
 export const createSignedUserOperation = (
-  account: SafeAccount,
   userOp: UserOperationV7,
   signature: SignerSignaturePair,
   options: {
-    isInit?: boolean;
     precompileAddress?: Address;
   } = {}
 ): UserOperationV7 => {
-  userOp.signature = formatWebAuthnSignature(signature, options);
+  userOp.signature = formatWebAuthnSignature(signature, { ...options, isInit: userOp.nonce === BigInt(0) });
 
   return userOp;
 };
@@ -111,7 +194,6 @@ export const createSettlementOperationWithApproval = (
     "000000000000000000000000000000000000000000000000000000000000000001") as Hex;
 
   return createSignedUserOperation(
-    new SafeAccount(individualAccountAddress),
     settlementAccountUserOperation,
     { signer: individualAccountAddress, signature: approvedSignature },
     { precompileAddress }
@@ -119,14 +201,9 @@ export const createSettlementOperationWithApproval = (
 };
 
 // Clean up the sendUserOperation function to use the new utilities
-export const sendUserOperation = async (
-  walletAddress: Address,
-  userOp: UserOperationV7,
-  signature: SignerSignaturePair,
-  isInit = false
-) => {
+export const sendUserOperation = (walletAddress: Address, userOp: UserOperationV7, signature: SignerSignaturePair) => {
   const account = new SafeAccount(walletAddress);
-  const signedOp = await createSignedUserOperation(account, userOp, signature, { isInit });
+  const signedOp = createSignedUserOperation(userOp, signature);
 
   return account.sendUserOperation(signedOp, BUNDLER_URL);
 };
@@ -225,4 +302,19 @@ export type OperationTrackingCallbacks = {
   onSent?: () => void;
   onError?: (error: Error) => void;
   onSuccess?: () => void;
+};
+
+/**
+ * Checks if a contract is deployed at the given address
+ * @param address The address to check
+ * @returns A promise that resolves to true if a contract is deployed at the address
+ */
+export const isContractDeployed = async (address: Address): Promise<boolean> => {
+  try {
+    const code = await publicClient.getCode({ address });
+    return Boolean(code && code.length > 2);
+  } catch (error) {
+    console.error("Error checking contract deployment:", error);
+    return false;
+  }
 };

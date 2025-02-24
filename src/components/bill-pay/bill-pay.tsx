@@ -9,7 +9,7 @@ import { NewBillPay, ExistingBillPay } from "@/types/bill-pay";
 import { isTesting } from "@/utils/helpers";
 import { MOCK_SETTLEMENT_ADDRESS } from "@/utils/constants";
 import { ResponsiveButton } from "@/components/generics/responsive-button";
-import { useAccounts } from "@/contexts/AccountContext";
+import { useUser } from "@/contexts/UserContext";
 
 import CreateBillPayModal from "./bill-actions/create";
 import TransfersTab from "./transfers-tab";
@@ -24,8 +24,8 @@ export default function BillPayTabs({ handleSubTabChange }: BillPayTabsProps) {
   const [selectedService, setSelectedService] = useState<string>(billPayConfig[0].id);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
-  const { user } = useAccounts();
-  const settlementAccount = user?.merchant.settlement.walletAddress as Address;
+  const { user } = useUser();
+  const settlementAccount = user?.merchant.accounts.find((account) => account.isSettlement)?.ledgerAddress as Address;
   const settlementAddress = isTesting ? MOCK_SETTLEMENT_ADDRESS : settlementAccount;
 
   const renderTabContent = (tabId: string) => {

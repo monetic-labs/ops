@@ -16,7 +16,7 @@ export function MerchantSupportChat({ account, merchantId }: ChatProps) {
   const [newMessage, setNewMessage] = useState("");
   const [isLoading, setIsLoading] = useState(true);
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const walletAddress = createSafeAccount({ signer: account.publicKey, isWebAuthn: true }) as Address;
+  const { address: walletAddress } = createSafeAccount({ signers: [account.publicKey], isWebAuthn: true });
   const xmtpService = useRef<XMTPService>(new XMTPService(walletAddress, merchantId, account));
 
   // Scroll to bottom of messages

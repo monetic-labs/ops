@@ -3,7 +3,7 @@ import type { Account } from "@/types/account";
 import { Button } from "@nextui-org/button";
 import { Dropdown, DropdownTrigger, DropdownMenu, DropdownItem } from "@nextui-org/dropdown";
 
-import { formatUSD } from "@/utils/formatters/currency";
+import { formatUSD } from "@/utils/helpers";
 
 interface AccountHeaderProps {
   selectedAccount: Account;
@@ -35,11 +35,13 @@ export function AccountHeader({
   });
 
   // Calculate total balance only from enabled accounts
-  const enabledTotalBalance = accounts.filter((acc) => acc.isEnabled).reduce((sum, acc) => sum + (acc.balance || 0), 0);
+  const enabledTotalBalance = accounts
+    .filter((acc) => acc.isDeployed)
+    .reduce((sum, acc) => sum + (acc.balance || 0), 0);
 
   // Check if settlement account is enabled
   const settlementAccount = accounts.find((acc) => acc.name === "Settlement");
-  const isSettlementEnabled = settlementAccount?.isEnabled;
+  const isSettlementEnabled = settlementAccount?.isDeployed;
 
   // Determine if account can be selected
   const canSelectAccount = (account: Account) => {
@@ -69,16 +71,16 @@ export function AccountHeader({
                 className={`
                   w-full md:w-auto px-3 md:px-4 py-2 h-auto bg-content2 
                   hover:bg-content3 shadow-card hover:shadow-hover transition-all duration-200 
-                  border ${!selectedAccount.isEnabled ? "border-warning/50" : "border-border"}
+                  border ${!selectedAccount.isDeployed ? "border-warning/50" : "border-border"}
                 `}
                 variant="light"
               >
                 <div className="flex items-center gap-3">
                   <div
-                    className={`p-1.5 md:p-2 rounded-xl ${!selectedAccount.isEnabled ? "bg-warning/10" : "bg-primary/10"}`}
+                    className={`p-1.5 md:p-2 rounded-xl ${!selectedAccount.isDeployed ? "bg-warning/10" : "bg-primary/10"}`}
                   >
                     <selectedAccount.icon
-                      className={`w-4 h-4 md:w-5 md:h-5 ${!selectedAccount.isEnabled ? "text-warning" : "text-primary"}`}
+                      className={`w-4 h-4 md:w-5 md:h-5 ${!selectedAccount.isDeployed ? "text-warning" : "text-primary"}`}
                     />
                   </div>
                   <div className="flex flex-col items-start">
@@ -86,7 +88,7 @@ export function AccountHeader({
                       <span className="text-base md:text-lg font-semibold">{selectedAccount.name}</span>
                     </div>
                     <span className="text-xs md:text-sm text-primary/80">
-                      {!selectedAccount.isEnabled ? (
+                      {!selectedAccount.isDeployed ? (
                         <span className="text-warning">Activation Required</span>
                       ) : (
                         "Select Account"
@@ -99,7 +101,7 @@ export function AccountHeader({
             <DropdownMenu
               aria-label="Account selection"
               onAction={(key) => {
-                const account = accounts.find((acc) => acc.address === key);
+                const account = accounts.find((acc) => acc.id === key);
                 if (account && canSelectAccount(account)) {
                   onAccountSelect(account);
                 }
@@ -107,7 +109,7 @@ export function AccountHeader({
             >
               {sortedAccounts.map((account) => (
                 <DropdownItem
-                  key={account.address}
+                  key={account.id}
                   className={`transition-colors duration-200 ${
                     !canSelectAccount(account) ? "opacity-50 cursor-not-allowed" : "hover:bg-content3"
                   }`}
@@ -115,14 +117,14 @@ export function AccountHeader({
                   startContent={
                     <div
                       className={`p-1.5 rounded-lg ${
-                        account.isDisabled ? "bg-content3" : !account.isEnabled ? "bg-warning/10" : "bg-primary/10"
+                        account.isDisabled ? "bg-content3" : !account.isDeployed ? "bg-warning/10" : "bg-primary/10"
                       }`}
                     >
                       <account.icon
                         className={`w-4 h-4 ${
                           account.isDisabled
                             ? "text-foreground/40"
-                            : !account.isEnabled
+                            : !account.isDeployed
                               ? "text-warning"
                               : "text-primary"
                         }`}
@@ -133,19 +135,15 @@ export function AccountHeader({
                   <div className="flex items-center justify-between w-full">
                     <div className="flex flex-col">
                       <span className="font-medium">{account.name}</span>
-                      {account.isComingSoon ? (
-                        <span className="text-xs text-foreground/40">Coming Soon</span>
-                      ) : !account.isEnabled ? (
-                        <span className="text-xs text-warning">
-                          {account.name !== "Settlement" && !isSettlementEnabled
-                            ? "Settlement Account Required"
-                            : "Needs Activation"}
-                        </span>
-                      ) : (
-                        <span className="text-xs text-foreground/60">
-                          ${account.balance?.toLocaleString() ?? "0.00"}
-                        </span>
-                      )}
+                      <span
+                        className={`text-xs ${account.isComingSoon ? "text-foreground/40" : !account.isDeployed ? "text-warning" : "text-foreground/60"}`}
+                      >
+                        {account.isComingSoon
+                          ? "Coming Soon"
+                          : !account.isDeployed && !isSettlementEnabled
+                            ? "Activation Required"
+                            : formatUSD(account.balance)}
+                      </span>
                     </div>
                   </div>
                 </DropdownItem>

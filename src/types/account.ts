@@ -1,8 +1,14 @@
-import { PersonRole } from "@backpack-fux/pylon-sdk";
+import { PersonRole, StableCurrency } from "@backpack-fux/pylon-sdk";
 import type { LucideIcon } from "lucide-react";
 import type { Address, Hex } from "viem";
 
-export type Operator = {
+export type PasskeyInfo = {
+  credentialId: string;
+  displayName: string;
+  publicKey: Hex;
+};
+
+export type Signer = {
   address: Address;
   name: string;
   image: string;
@@ -24,19 +30,20 @@ export type TransferActivity = {
     address: Address;
     name: string;
   };
-  operators: Operator[];
+  signers: Signer[];
   requiredSignatures: number;
   currentSignatures: number;
 };
 
 export type Account = {
+  id: string;
   address: Address;
   name: string;
+  currency: StableCurrency;
   balance: number;
-  currency: string;
   icon: LucideIcon;
-  isEnabled: boolean;
-  operators: Operator[];
+  isDeployed: boolean;
+  signers: Signer[];
   threshold: number;
   recentActivity: TransferActivity[];
   pendingActivity: TransferActivity[];

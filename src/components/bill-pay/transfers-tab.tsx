@@ -14,7 +14,7 @@ import { getOpepenAvatar, formatNumber, isTesting, formatStringToTitleCase } fro
 import { useGetTransfers } from "@/hooks/bill-pay/useGetTransfers";
 import { DEFAULT_NEW_BILL_PAY } from "@/types/bill-pay";
 import { MOCK_SETTLEMENT_ADDRESS } from "@/utils/constants";
-import { useAccounts } from "@/contexts/AccountContext";
+import { useUser } from "@/contexts/UserContext";
 
 const transferColumns: Column<MerchantDisbursementEventGetOutput>[] = [
   {
@@ -92,8 +92,9 @@ export default function Transfers() {
   const [selectedTransfer, setSelectedTransfer] = useState<MerchantDisbursementEventGetOutput | null>(null);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
-  const { user } = useAccounts();
-  const settlementAddress = isTesting ? MOCK_SETTLEMENT_ADDRESS : (user?.merchant.settlement.walletAddress as Address);
+  const { user } = useUser();
+  const settlementAccount = user?.merchant.accounts.find((account) => account.isSettlement)?.ledgerAddress as Address;
+  const settlementAddress = isTesting ? MOCK_SETTLEMENT_ADDRESS : settlementAccount;
 
   return (
     <>
