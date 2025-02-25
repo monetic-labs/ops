@@ -5,24 +5,13 @@ import { Chip } from "@nextui-org/chip";
 import { ScrollShadow } from "@nextui-org/scroll-shadow";
 import { Avatar } from "@nextui-org/avatar";
 import { SharedSelection } from "@nextui-org/system";
-import { AlertTriangle } from "lucide-react";
-import { Address, encodeFunctionData } from "viem";
+import { Address } from "viem";
 
 import { formatStringToTitleCase } from "@/utils/helpers";
 import { useAccountManagement } from "@/hooks/useAccountManagement";
 import { useUser } from "@/contexts/UserContext";
 import { Account, Signer } from "@/types/account";
-import { WebAuthnHelper } from "@/utils/webauthn";
-import {
-  createSafeAccount,
-  createAndSendSponsoredUserOp,
-  createSubAccountDeploymentTransactions,
-  sendAndTrackUserOperation,
-  createSignedUserOperation,
-  createSettlementOperationWithApproval,
-} from "@/utils/safe";
-import { DEFAULT_SECP256R1_PRECOMPILE_ADDRESS, SafeAccountV0_3_0 as SafeAccount } from "abstractionkit";
-import { safeAbi } from "@/utils/safe/abi";
+import { deploySafeAccount } from "@/utils/safe/deploy";
 
 export function DeployAccountModal({
   isOpen,
@@ -82,89 +71,22 @@ export function DeployAccountModal({
         throw new Error("Deployer must have a wallet address");
       }
 
-      // Initialize WebAuthn helper with credentials
-      const webauthnHelper = new WebAuthnHelper({
-        credentialId: credentials.credentialId,
-        publicKey: credentials.publicKey,
-      });
-
       // Get all signers' addresses
       const signerAddresses = selectedSigners.map((signer) => signer.address);
 
-      // Create the individual account instance (the user's account)
-      const individualAccount = new SafeAccount(individualSafeAddress);
-
-      // Create the new safe account to be deployed
-      const { address: safeSubAccountAddress, instance: safeAccount } = createSafeAccount({
-        signers: [individualSafeAddress],
-        isWebAuthn: false,
-      });
-
-      // Create deployment transactions
-      const deploymentTxs = await createSubAccountDeploymentTransactions(
-        safeAccount,
+      await deploySafeAccount({
         individualSafeAddress,
+        credentials,
         signerAddresses,
-        threshold
-      );
-
-      // First create and sponsor the deployment operation
-      const { userOp: deploymentUserOp, hash: deploymentHash } = await createAndSendSponsoredUserOp(
-        safeSubAccountAddress,
-        deploymentTxs,
-        {
-          signer: individualSafeAddress,
-          isWebAuthn: false,
-        }
-      );
-
-      // Create approval transaction from individual account
-      const approveHashTransaction = {
-        to: safeSubAccountAddress,
-        value: BigInt(0),
-        data: encodeFunctionData({
-          abi: safeAbi,
-          functionName: "approveHash",
-          args: [deploymentHash],
-        }),
-      };
-
-      // Get approval from individual account
-      const { userOp: individualApprovalOp, hash: approvalHash } = await createAndSendSponsoredUserOp(
-        individualSafeAddress,
-        [approveHashTransaction],
-        {
-          signer: credentials.publicKey,
-          isWebAuthn: true,
-        }
-      );
-
-      // Sign and send the approval
-      const { signature } = await webauthnHelper.signMessage(approvalHash);
-      const signedApprovalOp = createSignedUserOperation(
-        individualApprovalOp,
-        { signer: credentials.publicKey, signature },
-        { precompileAddress: DEFAULT_SECP256R1_PRECOMPILE_ADDRESS }
-      );
-
-      // Execute the deployment with approval
-      const finalDeploymentOp = createSettlementOperationWithApproval(
-        individualSafeAddress,
-        deploymentUserOp,
-        DEFAULT_SECP256R1_PRECOMPILE_ADDRESS
-      );
-
-      // Track both operations
-      await sendAndTrackUserOperation(individualAccount, signedApprovalOp, {
-        onSuccess: async () => {
-          await sendAndTrackUserOperation(safeAccount, finalDeploymentOp, {
-            onSent: () => onDeploy(),
-            onSuccess: () => registerSubAccount(safeSubAccountAddress, selectedAccount.name),
-            onError: (error) => {
-              console.error("Deployment failed:", error);
-              unregisterSubAccount(selectedAccount.id).catch(console.error);
-            },
-          });
+        threshold,
+        callbacks: {
+          onSent: onDeploy,
+          onSuccess: async (safeAddress) => {
+            await registerSubAccount(safeAddress, selectedAccount.name);
+          },
+          onError: (error) => {
+            console.error("Deployment failed:", error);
+          },
         },
       });
     } catch (error) {

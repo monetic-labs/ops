@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Building2, CreditCard, PiggyBank, type LucideIcon } from "lucide-react";
+import { Building2, CreditCard, PiggyBank, PlusCircle, type LucideIcon } from "lucide-react";
 import {
   Network,
   StableCurrency,
@@ -22,6 +22,46 @@ interface AccountManagementState {
 
 const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes in milliseconds
 
+// Predefined accounts that are always shown
+const PREDEFINED_ACCOUNTS: Account[] = [
+  {
+    id: "predefined-savings",
+    name: "Savings",
+    address: "0x0000000000000000000000000000000000000000",
+    currency: StableCurrency.USDC,
+    balance: 0,
+    icon: PiggyBank,
+    isDeployed: false,
+    threshold: 0,
+    signers: [],
+    recentActivity: [],
+    pendingActivity: [],
+    isDisabled: true,
+    isComingSoon: true,
+    isCreateAccount: false,
+    isSettlement: false,
+    isCard: false,
+  },
+  {
+    id: "predefined-new-account",
+    name: "New Account",
+    address: "0x0000000000000000000000000000000000000000",
+    currency: StableCurrency.USDC,
+    balance: 0,
+    icon: PlusCircle,
+    isDeployed: false,
+    threshold: 0,
+    signers: [],
+    recentActivity: [],
+    pendingActivity: [],
+    isDisabled: true,
+    isComingSoon: true,
+    isCreateAccount: true,
+    isSettlement: false,
+    isCard: false,
+  },
+];
+
 export function useAccountManagement() {
   const [state, setState] = useState<AccountManagementState>({
     accounts: [],
@@ -43,6 +83,8 @@ export function useAccountManagement() {
       isDeployed: account.isDeployed,
       threshold: account.threshold ?? 0,
       signers: mapSignersToUsers(account.signers as Address[]),
+      isSettlement: account.isSettlement || account.name.toLowerCase() === "operating",
+      isCard: account.name.toLowerCase() === "rain card",
       recentActivity: [],
       pendingActivity: [],
       isDisabled: false,
@@ -62,10 +104,12 @@ export function useAccountManagement() {
       const accounts = await pylon.getAccounts();
       const transformedAccounts = accounts.map(transformAccount);
 
+      // Add predefined accounts with unique IDs
+      const accountsWithPredefined = [...transformedAccounts, ...PREDEFINED_ACCOUNTS];
       setState((prev) => ({
         ...prev,
-        accounts: transformedAccounts,
-        selectedAccount: transformedAccounts[0] || null,
+        accounts: accountsWithPredefined,
+        selectedAccount: accountsWithPredefined[0] || null,
         isLoadingAccounts: false,
         lastFetched: Date.now(),
       }));
@@ -99,7 +143,7 @@ export function useAccountManagement() {
 
       setState((prev) => ({
         ...prev,
-        accounts: [...prev.accounts, transformedAccount],
+        accounts: [...prev.accounts.filter((acc) => !acc.isComingSoon && !acc.isCreateAccount), transformedAccount],
         lastFetched: Date.now(), // Update cache timestamp
       }));
 
@@ -123,15 +167,18 @@ export function useAccountManagement() {
 
   const getAccountIcon = (name: string): LucideIcon => {
     const iconMap: Record<string, LucideIcon> = {
-      Treasury: Building2,
-      Card: CreditCard,
-      Savings: PiggyBank,
+      operating: Building2,
+      "rain card": CreditCard,
+      savings: PiggyBank,
+      "new account": PlusCircle,
     };
-    return iconMap[name] || Building2;
+    return iconMap[name.toLowerCase()] || Building2;
   };
 
   // Computed values
-  const totalBalance = state.accounts.reduce((sum, account) => sum + account.balance, 0);
+  const totalBalance = state.accounts
+    .filter((account) => !account.isComingSoon && !account.isCreateAccount)
+    .reduce((sum, account) => sum + account.balance, 0);
   const enabledAccounts = state.accounts.filter((account) => !account.isDisabled);
   const getEnabledAccounts = () => state.accounts.filter((account) => account.isDeployed && !account.isDisabled);
 

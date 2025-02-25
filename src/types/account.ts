@@ -47,6 +47,8 @@ export type Account = {
   threshold: number;
   recentActivity: TransferActivity[];
   pendingActivity: TransferActivity[];
+  isSettlement: boolean;
+  isCard: boolean;
   isDisabled: boolean;
   isComingSoon: boolean;
   isCreateAccount: boolean;

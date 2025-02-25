@@ -32,7 +32,6 @@ export function SignersView({ signers }: { signers: Signer[] }) {
               <div>
                 <p className="font-medium">{signer.name}</p>
                 {signer.role && <p className="text-sm text-foreground/60">{formatStringToTitleCase(signer.role)}</p>}
-                <p className="text-sm text-foreground/60">Added 2 months ago</p>
               </div>
             </div>
             <Button className="bg-content3/50 hover:bg-content3" size="sm" variant="flat">

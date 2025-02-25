@@ -40,12 +40,12 @@ export function AccountHeader({
     .reduce((sum, acc) => sum + (acc.balance || 0), 0);
 
   // Check if settlement account is enabled
-  const settlementAccount = accounts.find((acc) => acc.name === "Settlement");
+  const settlementAccount = accounts.find((acc) => acc.isSettlement);
   const isSettlementEnabled = settlementAccount?.isDeployed;
 
   // Determine if account can be selected
   const canSelectAccount = (account: Account) => {
-    if (account.name === "Settlement") return true;
+    if (account.isDeployed) return true;
     if (account.isComingSoon || account.isDisabled) return false;
     return isSettlementEnabled;
   };
@@ -100,6 +100,7 @@ export function AccountHeader({
             </DropdownTrigger>
             <DropdownMenu
               aria-label="Account selection"
+              disabledKeys={sortedAccounts.filter((account) => !canSelectAccount(account)).map((account) => account.id)}
               onAction={(key) => {
                 const account = accounts.find((acc) => acc.id === key);
                 if (account && canSelectAccount(account)) {
@@ -113,7 +114,6 @@ export function AccountHeader({
                   className={`transition-colors duration-200 ${
                     !canSelectAccount(account) ? "opacity-50 cursor-not-allowed" : "hover:bg-content3"
                   }`}
-                  isDisabled={!canSelectAccount(account)}
                   startContent={
                     <div
                       className={`p-1.5 rounded-lg ${
@@ -153,7 +153,7 @@ export function AccountHeader({
         </button>
 
         <div className="flex flex-row md:flex-col items-center md:items-end justify-between md:justify-center gap-1">
-          <span className="text-xs md:text-sm text-foreground/60">Total Balance</span>
+          <span className="text-md md:text-md text-foreground/60">Total Balance</span>
           <p className="text-lg md:text-2xl font-semibold">{formatUSD(enabledTotalBalance)}</p>
         </div>
       </div>
