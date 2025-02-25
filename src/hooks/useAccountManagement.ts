@@ -182,6 +182,70 @@ export function useAccountManagement() {
   const enabledAccounts = state.accounts.filter((account) => !account.isDisabled);
   const getEnabledAccounts = () => state.accounts.filter((account) => account.isDeployed && !account.isDisabled);
 
+  /**
+   * Updates account balances after a transfer
+   * First updates balances optimistically, then refreshes from blockchain
+   * @param fromAddress The address of the account sending funds
+   * @param toAddress The address of the account receiving funds
+   * @param amount The amount being transferred as a string
+   * @returns The updated accounts array
+   */
+  const updateAccountBalancesAfterTransfer = async (
+    fromAddress: Address,
+    toAddress: Address,
+    amount: string
+  ): Promise<Account[]> => {
+    const amountValue = parseFloat(amount);
+
+    // Update balances optimistically
+    setState((prev) => {
+      const updatedAccounts = prev.accounts.map((account) => {
+        // Update sender account balance
+        if (account.address === fromAddress) {
+          return {
+            ...account,
+            balance: Math.max(0, account.balance - amountValue), // Ensure balance doesn't go below 0
+          };
+        }
+
+        // Update receiver account balance
+        if (account.address === toAddress) {
+          return {
+            ...account,
+            balance: account.balance + amountValue,
+          };
+        }
+
+        return account;
+      });
+
+      return {
+        ...prev,
+        accounts: updatedAccounts,
+      };
+    });
+
+    // Refresh accounts in the background to get actual balances
+    // Use a longer delay and retry mechanism to ensure we get the updated balances
+    const fetchWithRetry = (retries = 3, delay = 3000) => {
+      setTimeout(async () => {
+        try {
+          await fetchAccounts(true);
+        } catch (error) {
+          console.error("Error fetching accounts after transfer:", error);
+          if (retries > 0) {
+            console.log(`Retrying... (${retries} attempts left)`);
+            fetchWithRetry(retries - 1, delay * 1.5);
+          }
+        }
+      }, delay);
+    };
+
+    fetchWithRetry();
+
+    return state.accounts;
+  };
+
   return {
     ...state,
     signers,
@@ -194,5 +258,6 @@ export function useAccountManagement() {
     registerSubAccount,
     unregisterSubAccount,
     refreshAccounts: (force = true) => fetchAccounts(force),
+    updateAccountBalancesAfterTransfer,
   };
 }

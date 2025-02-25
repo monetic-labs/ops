@@ -1,0 +1,107 @@
+import { Building2 } from "lucide-react";
+import { Button } from "@nextui-org/button";
+
+export function SkeletonAccountHeader() {
+  return (
+    <div className="sticky top-0 z-20 flex flex-col md:flex-row md:items-center gap-4 md:gap-0 justify-between p-4 md:px-8 md:py-5 bg-content1/80 backdrop-blur-md">
+      <div className="flex items-center gap-4">
+        <Button
+          className="w-full md:w-auto px-3 md:px-4 py-2 h-auto bg-content2 hover:bg-content3 shadow-card hover:shadow-hover transition-all duration-200 border border-border"
+          variant="light"
+        >
+          <div className="flex items-center gap-3">
+            <div className="p-1.5 md:p-2 rounded-xl bg-primary/10 animate-pulse">
+              <Building2 className="w-4 h-4 md:w-5 md:h-5 text-primary" />
+            </div>
+            <div className="flex flex-col items-start">
+              <div className="h-6 w-24 bg-content3 rounded-md animate-pulse"></div>
+              <div className="h-4 w-20 bg-content3 rounded-md mt-1 animate-pulse"></div>
+            </div>
+          </div>
+        </Button>
+      </div>
+
+      <div className="flex flex-row md:flex-col items-center md:items-end justify-between md:justify-center gap-1">
+        <span className="text-md md:text-md text-foreground/60">Total Balance</span>
+        <div className="h-8 w-28 bg-content3 rounded-md animate-pulse"></div>
+      </div>
+    </div>
+  );
+}
+
+export function SkeletonAccountBalance() {
+  return (
+    <div className="bg-content2 p-4 md:p-6 rounded-xl mb-6">
+      <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4">
+        <div>
+          <div className="h-4 w-32 bg-content3 rounded-md animate-pulse mb-2"></div>
+          <div className="h-10 w-40 bg-content3 rounded-md animate-pulse mt-1"></div>
+          <div className="h-4 w-16 bg-content3 rounded-md animate-pulse mt-2"></div>
+        </div>
+        <div className="flex gap-2 w-full md:w-auto">
+          <Button className="flex-1 md:flex-none h-11 bg-content3 animate-pulse" disabled>
+            <div className="h-4 w-16 bg-content4 rounded-md"></div>
+          </Button>
+          <Button className="flex-1 md:flex-none h-11 bg-content3 animate-pulse" disabled>
+            <div className="h-4 w-16 bg-content4 rounded-md"></div>
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export function SkeletonActivityView() {
+  return (
+    <div className="space-y-4">
+      <div className="flex justify-between items-center">
+        <div className="h-6 w-32 bg-content3 rounded-md animate-pulse"></div>
+        <div className="flex gap-2">
+          <div className="h-8 w-20 bg-content3 rounded-md animate-pulse"></div>
+          <div className="h-8 w-20 bg-content3 rounded-md animate-pulse"></div>
+        </div>
+      </div>
+
+      {/* Skeleton activity items */}
+      {[1, 2, 3].map((i) => (
+        <div key={i} className="bg-content2 p-4 rounded-xl animate-pulse">
+          <div className="flex justify-between items-center">
+            <div className="flex items-center gap-3">
+              <div className="h-10 w-10 bg-content3 rounded-full"></div>
+              <div className="space-y-2">
+                <div className="h-4 w-32 bg-content3 rounded-md"></div>
+                <div className="h-3 w-24 bg-content3 rounded-md"></div>
+              </div>
+            </div>
+            <div className="space-y-2">
+              <div className="h-4 w-20 bg-content3 rounded-md"></div>
+              <div className="h-3 w-16 bg-content3 rounded-md ml-auto"></div>
+            </div>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+export function SkeletonAccountCard() {
+  return (
+    <div className="w-full bg-content1/90 border border-border backdrop-blur-sm relative">
+      <SkeletonAccountHeader />
+      <div className="p-6 space-y-6 border-t border-border">
+        <SkeletonAccountBalance />
+
+        {/* Skeleton Navigation */}
+        <div className="flex border-b border-border">
+          {["Activity", "Signers", "Policies"].map((tab, i) => (
+            <div key={i} className={`px-4 py-2 ${i === 0 ? "border-b-2 border-primary" : ""}`}>
+              {tab}
+            </div>
+          ))}
+        </div>
+
+        <SkeletonActivityView />
+      </div>
+    </div>
+  );
+}

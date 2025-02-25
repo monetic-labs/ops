@@ -7,7 +7,7 @@ import {
 
 import { WebAuthnHelper } from "@/utils/webauthn";
 import { WebAuthnCredentials } from "@/utils/localstorage";
-import { safeAbi } from "@/utils/safe/abi";
+import { safeAbi } from "@/utils/abi/safe";
 import {
   createAndSendSponsoredUserOp,
   sendAndTrackUserOperation,
@@ -18,7 +18,9 @@ import {
 interface TransferCallbacks {
   onPreparing?: () => void;
   onSigning?: () => void;
+  onSigningComplete?: () => void;
   onSent?: () => void;
+  onSuccess?: () => void;
   onError?: (error: Error) => void;
 }
 
@@ -113,28 +115,55 @@ export const executeNestedTransfer = async ({
       { precompileAddress: DEFAULT_SECP256R1_PRECOMPILE_ADDRESS }
     );
 
-    // Send and track both operations
-    await sendAndTrackUserOperation(fromSafe, signedFromSafeOp, {
-      onSent: callbacks?.onSigning,
-      onError: callbacks?.onError,
-      onSuccess: async () => {
-        // Create and send through-safe operation with approval
-        const finalThroughSafeOp = createSettlementOperationWithApproval(
-          fromSafeAddress,
-          throughSafeUserOp,
-          DEFAULT_SECP256R1_PRECOMPILE_ADDRESS
-        );
+    // Call onSigningComplete callback after signing is complete
+    callbacks?.onSigningComplete?.();
 
-        await sendAndTrackUserOperation(throughSafe, finalThroughSafeOp, {
-          onSent: callbacks?.onSent,
-          onError: callbacks?.onError,
-        });
-      },
+    // Create a promise that will resolve when the entire transfer process is complete
+    return new Promise((resolve, reject) => {
+      // Send and track both operations
+      sendAndTrackUserOperation(fromSafe, signedFromSafeOp, {
+        onSent: callbacks?.onSigning,
+        onError: (error) => {
+          callbacks?.onError?.(error);
+          reject(error);
+        },
+        onSuccess: async () => {
+          try {
+            // Create and send through-safe operation with approval
+            const finalThroughSafeOp = createSettlementOperationWithApproval(
+              fromSafeAddress,
+              throughSafeUserOp,
+              DEFAULT_SECP256R1_PRECOMPILE_ADDRESS
+            );
+
+            // Only call onSent callback here, as this is when the final transaction is sent
+            callbacks?.onSent?.();
+
+            await sendAndTrackUserOperation(throughSafe, finalThroughSafeOp, {
+              onError: (error) => {
+                callbacks?.onError?.(error);
+                reject(error);
+              },
+              onSuccess: () => {
+                // Only call onSuccess when the entire process is complete
+                callbacks?.onSuccess?.();
+                resolve({ success: true });
+              },
+            });
+          } catch (error) {
+            console.error("Error in nested transfer (second phase):", error);
+            callbacks?.onError?.(error as Error);
+            reject(error);
+          }
+        },
+      }).catch((error) => {
+        console.error("Error in nested transfer (first phase):", error);
+        callbacks?.onError?.(error as Error);
+        reject(error);
+      });
     });
-
-    return { success: true };
   } catch (error) {
-    console.error("Error in nested transfer:", error);
+    console.error("Error in nested transfer setup:", error);
     callbacks?.onError?.(error as Error);
     throw error;
   }

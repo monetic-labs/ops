@@ -4,22 +4,31 @@ import type { Account, Signer } from "@/types/account";
 
 import { useState, useEffect } from "react";
 import { Card, CardBody } from "@nextui-org/card";
+import { Modal, ModalContent } from "@nextui-org/modal";
+import { SkeletonAccountCard } from "./components/SkeletonLoaders";
 
 import { useAccountManagement } from "@/hooks/useAccountManagement";
 
 import { AccountHeader } from "./components/AccountHeader";
 import { AccountBalance } from "./components/AccountBalance";
 import { AccountNavigation } from "./components/AccountNavigation";
-import { DeployAccountModal } from "./components/DeployAccountModal";
+import { DeployAccountModal } from "./modals/DeployAccountModal";
 import { ActivityView } from "./views/ActivityView";
 import { SignersView } from "./views/SignersView";
 import { PoliciesView } from "./views/PoliciesView";
-import { SendView } from "./views/SendView";
-import { ReceiveView } from "./views/ReceiveView";
-import { AccountSelectionModal } from "./components/AccountSelectionModal";
+import { SendModal } from "./modals/SendModal";
+import { ReceiveModal } from "./modals/ReceiveModal";
+import { AccountSelectionModal } from "./modals/AccountSelectionModal";
 
 export default function AccountMeta() {
-  const { accounts, getEnabledAccounts, registerSubAccount, isLoadingAccounts } = useAccountManagement();
+  const {
+    accounts,
+    getEnabledAccounts,
+    registerSubAccount,
+    isLoadingAccounts,
+    refreshAccounts,
+    updateAccountBalancesAfterTransfer,
+  } = useAccountManagement();
   const [selectedAccount, setSelectedAccount] = useState<Account | undefined>(undefined);
   const [activeTab, setActiveTab] = useState<string>("activity");
   const [isSendModalOpen, setIsSendModalOpen] = useState(false);
@@ -38,16 +47,18 @@ export default function AccountMeta() {
     }
   }, [accounts]);
 
-  if (isLoadingAccounts) {
+  // If we're loading accounts but don't have any yet, show the full skeleton
+  if (isLoadingAccounts && accounts.length === 0) {
     return (
       <Card className="w-full bg-content1/90 border border-border backdrop-blur-sm relative">
-        <div className="absolute inset-0 bg-content1/80 backdrop-blur-sm z-10 flex flex-col items-center justify-center p-6 text-center">
-          <h3 className="text-2xl font-semibold mb-2">Loading accounts...</h3>
-        </div>
+        <CardBody className="p-0">
+          <SkeletonAccountCard />
+        </CardBody>
       </Card>
     );
   }
 
+  // If we don't have a selected account yet, show nothing
   if (!selectedAccount) {
     return null;
   }
@@ -71,15 +82,32 @@ export default function AccountMeta() {
 
   const isAmountValid = () => {
     if (!amount || !selectedAccount) return false;
-    const numericAmount = parseFloat(amount);
+    const amountValue = parseFloat(amount);
+    return amountValue > 0 && amountValue <= (selectedAccount.balance || 0);
+  };
 
-    return numericAmount > 0 && numericAmount <= (selectedAccount.balance || 0);
+  const handleSelectToAccount = () => {
+    // Find the first eligible account that's not the selected account
+    const eligibleAccount = accounts.find(
+      (account) => account.address !== selectedAccount?.address && !account.isDisabled
+    );
+    if (eligibleAccount) {
+      setToAccount(eligibleAccount);
+    }
   };
 
   const handleTransfer = () => {
     if (!selectedAccount || !toAccount || !isAmountValid()) return;
-    // Implement transfer logic here
+
+    // Update balances optimistically and then refresh from blockchain
+    if (selectedAccount && toAccount) {
+      updateAccountBalancesAfterTransfer(selectedAccount.address, toAccount.address, amount);
+    }
+
+    // Close the send modal and reset the transfer state
     setIsSendModalOpen(false);
+    setAmount("");
+    setToAccount(null);
   };
 
   const handleDeploy = () => {
@@ -97,83 +125,107 @@ export default function AccountMeta() {
     setIsDeployModalOpen(false);
   };
 
-  if (isSendModalOpen) {
-    return (
-      <SendView
-        amount={amount}
-        availableAccounts={enabledAccounts}
-        isAmountValid={isAmountValid}
+  return (
+    <>
+      {/* Send Modal */}
+      <SendModal
+        isOpen={isSendModalOpen}
+        onClose={() => {
+          setIsSendModalOpen(false);
+          setAmount("");
+          setToAccount(null);
+        }}
         selectedAccount={selectedAccount}
-        setAmount={setAmount}
         setSelectedAccount={setSelectedAccount}
-        setToAccount={setToAccount}
         toAccount={toAccount}
-        onClose={() => setIsSendModalOpen(false)}
-        onSelectToAccount={() => setToAccount(accounts[1])}
+        setToAccount={setToAccount}
+        amount={amount}
+        setAmount={setAmount}
+        onSelectToAccount={handleSelectToAccount}
+        isAmountValid={isAmountValid}
         onTransfer={handleTransfer}
+        onCancel={() => {
+          setIsSendModalOpen(false);
+          setAmount("");
+          setToAccount(null);
+        }}
+        availableAccounts={accounts.filter((account) => account.address !== selectedAccount?.address)}
       />
-    );
-  }
 
-  if (isReceiveModalOpen) {
-    return (
-      <ReceiveView
+      {/* Receive Modal */}
+      <ReceiveModal
+        isOpen={isReceiveModalOpen}
+        onClose={() => setIsReceiveModalOpen(false)}
         availableAccounts={enabledAccounts}
         selectedAccount={selectedAccount}
         selectedSettlementAccount={accounts[0]}
         onChangeSettlementAccount={setSelectedAccount}
-        onClose={() => setIsReceiveModalOpen(false)}
       />
-    );
-  }
 
-  return (
-    <Card className="w-full bg-content1/90 border border-border backdrop-blur-sm relative">
-      {selectedAccount && !selectedAccount.isDeployed && (
-        <div className="absolute inset-0 bg-content1/80 backdrop-blur-sm z-10 flex flex-col items-center justify-center p-6 text-center">
-          <h3 className="text-2xl font-semibold mb-2">Activate your account</h3>
-          <p className="text-foreground/60 mb-4">This account needs to be activated before it can be used.</p>
-          <button
-            className="bg-primary text-primary-foreground px-4 py-2 rounded-md hover:bg-primary/80 transition-colors"
-            onClick={() => setIsDeployModalOpen(true)}
-          >
-            Deploy Account
-          </button>
-        </div>
-      )}
+      <Card className="w-full bg-content1/90 border border-border backdrop-blur-sm relative">
+        {selectedAccount && !selectedAccount.isDeployed && (
+          <div className="absolute inset-0 bg-content1/80 backdrop-blur-sm z-10 flex flex-col items-center justify-center p-6 text-center">
+            <h3 className="text-2xl font-semibold mb-2">Activate your account</h3>
+            <p className="text-foreground/60 mb-4">This account needs to be activated before it can be used.</p>
+            <button
+              className="bg-primary text-primary-foreground px-4 py-2 rounded-md hover:bg-primary/80 transition-colors"
+              onClick={() => setIsDeployModalOpen(true)}
+            >
+              Deploy Account
+            </button>
+          </div>
+        )}
 
-      <CardBody className="p-0">
-        <div className="flex flex-col">
-          <AccountHeader
-            accounts={accounts}
-            isExpanded={isExpanded}
-            selectedAccount={selectedAccount}
-            totalBalance={totalBalance.toString()}
-            onAccountSelect={handleAccountSelect}
-            onToggleExpand={() => setIsExpanded(!isExpanded)}
-          />
+        <CardBody className="p-0">
+          <div className="flex flex-col">
+            <AccountHeader
+              accounts={accounts}
+              isExpanded={isExpanded}
+              selectedAccount={selectedAccount}
+              totalBalance={totalBalance.toString()}
+              onAccountSelect={handleAccountSelect}
+              onToggleExpand={() => {
+                console.log("Toggle expand called");
+                setIsExpanded(!isExpanded);
+              }}
+              isLoading={isLoadingAccounts}
+            />
 
-          <div
-            className={`
-              transform transition-all duration-300 ease-in-out
-              ${isExpanded ? "opacity-100 max-h-[2000px]" : "opacity-0 max-h-0"}
-              overflow-hidden
-            `}
-          >
-            <div className="p-6 space-y-6 border-t border-border">
-              <AccountBalance account={selectedAccount} onReceive={handleReceive} onSend={handleSend} />
+            <div
+              className={`
+                transform transition-all duration-300 ease-in-out
+                ${isExpanded ? "opacity-100 max-h-[2000px]" : "opacity-0 max-h-0"}
+                overflow-hidden
+              `}
+            >
+              <div className="p-6 space-y-6 border-t border-border">
+                <div onClick={(e) => e.stopPropagation()}>
+                  <AccountBalance
+                    account={selectedAccount}
+                    onReceive={handleReceive}
+                    onSend={handleSend}
+                    isLoading={isLoadingAccounts}
+                  />
+                </div>
 
-              <AccountNavigation selectedTab={activeTab} onTabChange={setActiveTab} />
+                <AccountNavigation selectedTab={activeTab} onTabChange={setActiveTab} />
 
-              <div>
-                {activeTab === "activity" && <ActivityView activities={selectedAccount.recentActivity} />}
-                {activeTab === "signers" && <SignersView signers={selectedAccount.signers} />}
-                {activeTab === "policies" && <PoliciesView />}
+                <div>
+                  {activeTab === "activity" && (
+                    <ActivityView activities={selectedAccount.recentActivity} isLoading={isLoadingAccounts} />
+                  )}
+                  {activeTab === "signers" && (
+                    <SignersView signers={selectedAccount.signers} isLoading={isLoadingAccounts} />
+                  )}
+                  {activeTab === "policies" && (
+                    <PoliciesView signers={selectedAccount.signers} isLoading={isLoadingAccounts} />
+                  )}
+                </div>
               </div>
             </div>
           </div>
-        </div>
-      </CardBody>
+        </CardBody>
+      </Card>
 
       <DeployAccountModal
         isOpen={isDeployModalOpen}
@@ -195,6 +247,6 @@ export default function AccountMeta() {
         selectedAccountId={selectedAccount.id}
         title="Select Account"
       />
-    </Card>
+    </>
   );
 }

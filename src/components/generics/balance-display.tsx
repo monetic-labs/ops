@@ -1,6 +1,6 @@
 import { Button } from "@nextui-org/button";
 
-import { formatUSD } from "@/utils/helpers";
+import { formatAmountUSD } from "@/utils/helpers";
 
 interface BalanceDisplayProps {
   balance: number;
@@ -9,7 +9,7 @@ interface BalanceDisplayProps {
 
 export function BalanceDisplay({ balance, onClick }: BalanceDisplayProps) {
   if (!onClick) {
-    return <span className="text-sm text-foreground/60">{formatUSD(balance)}</span>;
+    return <span className="text-sm text-foreground/60">{formatAmountUSD(balance)}</span>;
   }
 
   return (
@@ -18,7 +18,7 @@ export function BalanceDisplay({ balance, onClick }: BalanceDisplayProps) {
       variant="light"
       onPress={onClick}
     >
-      {formatUSD(balance)} (max)
+      {formatAmountUSD(balance)} (max)
     </Button>
   );
 }

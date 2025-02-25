@@ -3,7 +3,7 @@ import type { Account } from "@/types/account";
 import { Button } from "@nextui-org/button";
 import { Dropdown, DropdownTrigger, DropdownMenu, DropdownItem } from "@nextui-org/dropdown";
 
-import { formatUSD } from "@/utils/helpers";
+import { formatAmountUSD } from "@/utils/helpers";
 
 interface AccountHeaderProps {
   selectedAccount: Account;
@@ -12,6 +12,7 @@ interface AccountHeaderProps {
   totalBalance: string;
   isExpanded: boolean;
   onToggleExpand: () => void;
+  isLoading?: boolean;
 }
 
 export function AccountHeader({
@@ -21,6 +22,7 @@ export function AccountHeader({
   totalBalance,
   isExpanded,
   onToggleExpand,
+  isLoading = false,
 }: AccountHeaderProps) {
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "Enter" || e.key === " ") {
@@ -64,36 +66,49 @@ export function AccountHeader({
         role="button"
         tabIndex={0}
       >
-        <button className="flex items-center gap-4" onClick={(e) => e.stopPropagation()}>
-          <Dropdown>
+        <div className="flex items-center gap-4" onClick={(e) => e.stopPropagation()}>
+          <Dropdown isDisabled={isLoading}>
             <DropdownTrigger>
               <Button
                 className={`
                   w-full md:w-auto px-3 md:px-4 py-2 h-auto bg-content2 
                   hover:bg-content3 shadow-card hover:shadow-hover transition-all duration-200 
                   border ${!selectedAccount.isDeployed ? "border-warning/50" : "border-border"}
+                  ${isLoading ? "opacity-80" : ""}
                 `}
                 variant="light"
               >
                 <div className="flex items-center gap-3">
                   <div
-                    className={`p-1.5 md:p-2 rounded-xl ${!selectedAccount.isDeployed ? "bg-warning/10" : "bg-primary/10"}`}
+                    className={`p-1.5 md:p-2 rounded-xl ${
+                      !selectedAccount.isDeployed ? "bg-warning/10" : "bg-primary/10"
+                    } ${isLoading ? "animate-pulse" : ""}`}
                   >
                     <selectedAccount.icon
-                      className={`w-4 h-4 md:w-5 md:h-5 ${!selectedAccount.isDeployed ? "text-warning" : "text-primary"}`}
+                      className={`w-4 h-4 md:w-5 md:h-5 ${
+                        !selectedAccount.isDeployed ? "text-warning" : "text-primary"
+                      }`}
                     />
                   </div>
                   <div className="flex flex-col items-start">
                     <div className="flex items-center gap-2">
-                      <span className="text-base md:text-lg font-semibold">{selectedAccount.name}</span>
-                    </div>
-                    <span className="text-xs md:text-sm text-primary/80">
-                      {!selectedAccount.isDeployed ? (
-                        <span className="text-warning">Activation Required</span>
+                      {isLoading ? (
+                        <div className="h-6 w-24 bg-content3 rounded-md animate-pulse"></div>
                       ) : (
-                        "Select Account"
+                        <span className="text-base md:text-lg font-semibold">{selectedAccount.name}</span>
                       )}
-                    </span>
+                    </div>
+                    {isLoading ? (
+                      <div className="h-4 w-20 bg-content3 rounded-md mt-1 animate-pulse"></div>
+                    ) : (
+                      <span className="text-xs md:text-sm text-primary/80">
+                        {!selectedAccount.isDeployed ? (
+                          <span className="text-warning">Activation Required</span>
+                        ) : (
+                          "Select Account"
+                        )}
+                      </span>
+                    )}
                   </div>
                 </div>
               </Button>
@@ -136,13 +151,19 @@ export function AccountHeader({
                     <div className="flex flex-col">
                       <span className="font-medium">{account.name}</span>
                       <span
-                        className={`text-xs ${account.isComingSoon ? "text-foreground/40" : !account.isDeployed ? "text-warning" : "text-foreground/60"}`}
+                        className={`text-xs ${
+                          account.isComingSoon
+                            ? "text-foreground/40"
+                            : !account.isDeployed
+                              ? "text-warning"
+                              : "text-foreground/60"
+                        }`}
                       >
                         {account.isComingSoon
                           ? "Coming Soon"
                           : !account.isDeployed && !isSettlementEnabled
                             ? "Activation Required"
-                            : formatUSD(account.balance)}
+                            : formatAmountUSD(account.balance)}
                       </span>
                     </div>
                   </div>
@@ -150,11 +171,15 @@ export function AccountHeader({
               ))}
             </DropdownMenu>
           </Dropdown>
-        </button>
+        </div>
 
         <div className="flex flex-row md:flex-col items-center md:items-end justify-between md:justify-center gap-1">
           <span className="text-md md:text-md text-foreground/60">Total Balance</span>
-          <p className="text-lg md:text-2xl font-semibold">{formatUSD(enabledTotalBalance)}</p>
+          {isLoading ? (
+            <div className="h-8 w-28 bg-content3 rounded-md animate-pulse"></div>
+          ) : (
+            <p className="text-lg md:text-2xl font-semibold">{formatAmountUSD(enabledTotalBalance)}</p>
+          )}
         </div>
       </div>
 

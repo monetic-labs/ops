@@ -8,9 +8,43 @@ import { TransferActivity } from "@/types/account";
 
 interface ActivityViewProps {
   activities: TransferActivity[];
+  isLoading?: boolean;
 }
 
-export function ActivityView({ activities }: ActivityViewProps) {
+export function ActivityView({ activities, isLoading = false }: ActivityViewProps) {
+  if (isLoading) {
+    return (
+      <div className="space-y-4">
+        <div className="flex justify-between items-center">
+          <div className="h-6 w-32 bg-content3 rounded-md animate-pulse"></div>
+          <div className="flex gap-2">
+            <div className="h-8 w-20 bg-content3 rounded-md animate-pulse"></div>
+            <div className="h-8 w-20 bg-content3 rounded-md animate-pulse"></div>
+          </div>
+        </div>
+
+        {/* Skeleton activity items */}
+        {[1, 2, 3].map((i) => (
+          <div key={i} className="bg-content2 p-4 rounded-xl animate-pulse">
+            <div className="flex justify-between items-center">
+              <div className="flex items-center gap-3">
+                <div className="h-10 w-10 bg-content3 rounded-full"></div>
+                <div className="space-y-2">
+                  <div className="h-4 w-32 bg-content3 rounded-md"></div>
+                  <div className="h-3 w-24 bg-content3 rounded-md"></div>
+                </div>
+              </div>
+              <div className="space-y-2">
+                <div className="h-4 w-20 bg-content3 rounded-md"></div>
+                <div className="h-3 w-16 bg-content3 rounded-md ml-auto"></div>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+    );
+  }
+
   const renderActivityItem = (activity: TransferActivity) => {
     const isPending = activity.status === "pending";
     const needsSignature = isPending && activity.currentSignatures < activity.requiredSignatures;

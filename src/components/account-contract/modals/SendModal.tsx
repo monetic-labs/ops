@@ -1,0 +1,422 @@
+import type { Account } from "@/types/account";
+
+import { Button } from "@nextui-org/button";
+import { ArrowRight, Info, X } from "lucide-react";
+import { Tooltip } from "@nextui-org/tooltip";
+import { Modal, ModalContent, ModalHeader, ModalBody, ModalFooter } from "@nextui-org/modal";
+import React, { useEffect, useState } from "react";
+import { toast } from "sonner";
+import { Address } from "viem";
+
+import { MoneyInput } from "@/components/generics/money-input";
+import { BalanceDisplay } from "@/components/generics/balance-display";
+import { executeNestedTransfer } from "@/utils/safe/transfer";
+import { getEstimatedTransferFee } from "@/utils/safe/simulation";
+import { useUser } from "@/contexts/UserContext";
+import { TransferStatus, TransferStatusOverlay } from "@/components/generics/transfer-status";
+import { formatAmountUSD } from "@/utils/helpers";
+import { BASE_USDC } from "@/utils/constants";
+
+interface SendModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  selectedAccount: Account;
+  setSelectedAccount: (account: Account) => void;
+  toAccount: Account | null;
+  setToAccount: (account: Account | null) => void;
+  amount: string;
+  setAmount: (amount: string) => void;
+  onSelectToAccount: () => void;
+  isAmountValid: () => boolean;
+  onTransfer: () => void;
+  availableAccounts: Account[];
+  onCancel: () => void;
+}
+
+export function SendModal({
+  isOpen,
+  onClose,
+  selectedAccount,
+  setSelectedAccount,
+  toAccount,
+  setToAccount,
+  amount,
+  setAmount,
+  onSelectToAccount,
+  isAmountValid,
+  onTransfer,
+  availableAccounts,
+  onCancel,
+}: SendModalProps) {
+  const [isAccountSelectionOpen, setIsAccountSelectionOpen] = useState(false);
+  const [transferStatus, setTransferStatus] = useState<TransferStatus>(TransferStatus.IDLE);
+  const [estimatedFee, setEstimatedFee] = useState("0.00");
+  const { credentials, user } = useUser();
+  const [isLoading, setIsLoading] = useState(false);
+
+  // Reset internal state when modal is closed
+  useEffect(() => {
+    if (!isOpen) {
+      setTransferStatus(TransferStatus.IDLE);
+      setIsLoading(false);
+      setIsAccountSelectionOpen(false);
+      setEstimatedFee("0.00");
+    }
+  }, [isOpen]);
+
+  const handleSetMaxAmount = () => {
+    if (selectedAccount?.balance) {
+      setAmount(selectedAccount.balance.toString());
+    }
+  };
+
+  // Update estimated fee when amount changes
+  useEffect(() => {
+    if (amount && parseFloat(amount) > 0) {
+      const updateFee = async () => {
+        try {
+          const { feeInUsd } = await getEstimatedTransferFee();
+          setEstimatedFee(feeInUsd);
+        } catch (error) {
+          console.error("Error getting estimated fee:", error);
+          setEstimatedFee("0.00"); // Fallback value
+        }
+      };
+
+      updateFee();
+    } else {
+      setEstimatedFee("0.00");
+    }
+  }, [amount]);
+
+  useEffect(() => {
+    const eligibleAccounts = availableAccounts.filter(
+      (acc) => acc.address !== selectedAccount.address && !acc.isDisabled
+    );
+
+    if (eligibleAccounts.length === 1 && !toAccount) {
+      onSelectToAccount();
+    }
+  }, [availableAccounts, selectedAccount, toAccount, onSelectToAccount]);
+
+  const handleAccountSelection = (account: Account) => {
+    onSelectToAccount();
+    setIsAccountSelectionOpen(false);
+  };
+
+  const handleSend = async () => {
+    if (!selectedAccount || !toAccount || !amount || !credentials || !user?.walletAddress) return;
+
+    try {
+      setIsLoading(true);
+
+      // Edge case: Rain Card to Sub-account (withdrawal)
+      if (selectedAccount.isCard && !toAccount.isCard) {
+        setTransferStatus(TransferStatus.PREPARING);
+        // TODO: Implement Rain Card withdrawal flow
+        // This would be implemented here when the API is ready
+        toast.error("Rain Card withdrawal is not yet implemented. Please try again later.");
+        setTransferStatus(TransferStatus.ERROR);
+        setIsLoading(false);
+        return;
+      }
+
+      // Standard transfer for all other cases
+      await executeNestedTransfer({
+        fromSafeAddress: user.walletAddress as Address,
+        throughSafeAddress: selectedAccount.address as Address,
+        toAddress: toAccount.address as Address,
+        tokenAddress: BASE_USDC.ADDRESS,
+        tokenDecimals: BASE_USDC.DECIMALS,
+        amount,
+        credentials,
+        callbacks: {
+          onPreparing: () => {
+            setTransferStatus(TransferStatus.PREPARING);
+          },
+          onSigning: () => {
+            setTransferStatus(TransferStatus.SIGNING);
+          },
+          onSigningComplete: () => {
+            setTransferStatus(TransferStatus.SENDING);
+          },
+          onSent: () => {
+            // Update to CONFIRMING state to indicate we're waiting for blockchain confirmation
+            setTransferStatus(TransferStatus.CONFIRMING);
+          },
+          onSuccess: () => {
+            // Update to SENT state and update account balances after transaction is confirmed
+            setTransferStatus(TransferStatus.SENT);
+            toast.success("Transfer completed successfully");
+            onTransfer(); // Update account balances
+          },
+          onError: (error) => {
+            console.error("Transfer error:", error);
+            setTransferStatus(TransferStatus.ERROR);
+            toast.error("Transfer failed. Please try again.");
+          },
+        },
+      });
+    } catch (error) {
+      console.error("Transfer failed:", error);
+      setTransferStatus(TransferStatus.ERROR);
+      toast.error("Transfer failed. Please try again.");
+    }
+  };
+
+  // Get required signatures from the account
+  const requiredSignatures = selectedAccount.threshold || 1;
+  const totalSigners = selectedAccount.signers.length || 1;
+  const signatureDisplay = `${requiredSignatures} of ${totalSigners}`;
+
+  // Determine if we're in an active transfer state
+  const isActiveTransfer = transferStatus !== TransferStatus.IDLE;
+
+  // Create transfer details component for the overlay
+  const transferDetailsComponent = toAccount && (
+    <>
+      <div className="bg-content2/50 border border-border rounded-xl p-6">
+        <div className="flex items-center justify-between gap-4 mb-4">
+          <div className="flex items-center gap-3">
+            {selectedAccount.icon && <selectedAccount.icon className="w-5 h-5 text-foreground/60" />}
+            <span className="font-medium">{selectedAccount.name}</span>
+          </div>
+          <ArrowRight className="w-5 h-5 text-foreground/40" />
+          <div className="flex items-center gap-3">
+            {toAccount.icon && React.createElement(toAccount.icon, { className: "w-5 h-5 text-foreground/60" })}
+            <span className="font-medium">{toAccount.name}</span>
+          </div>
+        </div>
+        <div className="flex justify-between items-center">
+          <span className="text-sm text-foreground/60">Amount</span>
+          <span className="font-medium">{formatAmountUSD(parseFloat(amount))}</span>
+        </div>
+      </div>
+    </>
+  );
+
+  const handleResetTransferStatus = () => {
+    setTransferStatus(TransferStatus.IDLE);
+    setIsLoading(false);
+  };
+
+  return (
+    <>
+      <Modal
+        isOpen={isOpen}
+        onClose={isActiveTransfer && transferStatus !== TransferStatus.ERROR ? () => {} : onClose}
+        classNames={{
+          backdrop: "bg-background/70 backdrop-blur-sm",
+          base: "border-border",
+        }}
+        size="lg"
+      >
+        <ModalContent>
+          {() => (
+            <>
+              <ModalHeader className="flex justify-between items-center px-6 py-4 border-b border-border bg-content1/80 backdrop-blur-md">
+                <h3 className="text-xl font-semibold">
+                  {isActiveTransfer ? "Processing Transfer" : "Internal Transfer"}
+                </h3>
+                <Button
+                  isIconOnly
+                  variant="light"
+                  onPress={onClose}
+                  aria-label="Close"
+                  isDisabled={isActiveTransfer && transferStatus !== TransferStatus.ERROR}
+                >
+                  <X size={20} />
+                </Button>
+              </ModalHeader>
+
+              {isActiveTransfer ? (
+                <div className="p-6">
+                  <TransferStatusOverlay
+                    status={transferStatus}
+                    transferDetails={transferDetailsComponent}
+                    onReset={handleResetTransferStatus}
+                    onComplete={() => {
+                      onClose();
+                    }}
+                  />
+                </div>
+              ) : (
+                <>
+                  <ModalBody className="p-4 md:p-6 overflow-y-auto">
+                    <div className="flex flex-col gap-6 w-full mx-auto">
+                      {/* Transfer Route Display */}
+                      <div className="flex items-center justify-between gap-4 bg-content2 p-4 rounded-xl">
+                        <div className="flex flex-col gap-2">
+                          <div className="flex items-center gap-3">
+                            {selectedAccount.icon && <selectedAccount.icon className="w-5 h-5 text-foreground/60" />}
+                            <span className="font-medium">{selectedAccount.name}</span>
+                          </div>
+                          {amount && (
+                            <span
+                              className={`text-sm ${parseFloat(amount) > (selectedAccount?.balance || 0) ? "text-danger" : "text-foreground/60"}`}
+                            >
+                              New balance: $
+                              {((selectedAccount?.balance || 0) - parseFloat(amount || "0")).toLocaleString()}
+                            </span>
+                          )}
+                        </div>
+                        <Button
+                          isIconOnly
+                          className="min-w-0 p-2 hover:bg-content3"
+                          variant="light"
+                          onPress={() => {
+                            if (toAccount) {
+                              const temp = selectedAccount;
+
+                              setSelectedAccount(toAccount);
+                              setToAccount(temp);
+                            }
+                          }}
+                        >
+                          <ArrowRight className="w-5 h-5 text-foreground/40" />
+                        </Button>
+                        <div className="flex flex-col gap-2">
+                          <div className="flex items-center gap-3 justify-end">
+                            <Button
+                              className="font-medium bg-content3 hover:bg-content4 h-9"
+                              onClick={() => setIsAccountSelectionOpen(true)}
+                            >
+                              {toAccount ? (
+                                <div className="flex items-center gap-2">
+                                  {toAccount.icon &&
+                                    React.createElement(toAccount.icon, { className: "w-5 h-5 text-foreground/60" })}
+                                  {toAccount.name}
+                                </div>
+                              ) : (
+                                "Select Account"
+                              )}
+                            </Button>
+                          </div>
+                          {amount && toAccount && (
+                            <span className="text-sm text-foreground/60 text-right">
+                              New balance: ${((toAccount.balance || 0) + parseFloat(amount || "0")).toLocaleString()}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Amount Input */}
+                      <div className="bg-content2 p-4 rounded-xl">
+                        <div className="flex justify-between items-center mb-2">
+                          <span className="text-sm text-foreground/60">Amount</span>
+                          {selectedAccount && (
+                            <BalanceDisplay balance={selectedAccount.balance || 0} onClick={handleSetMaxAmount} />
+                          )}
+                        </div>
+                        <MoneyInput
+                          isError={Boolean(
+                            amount && selectedAccount && parseFloat(amount) > (selectedAccount.balance || 0)
+                          )}
+                          value={amount}
+                          onChange={setAmount}
+                        />
+                      </div>
+
+                      {/* Transfer Information */}
+                      <div className="bg-content2 rounded-xl p-4">
+                        <div className="flex flex-col md:flex-row md:justify-between gap-4">
+                          <div className="flex-1">
+                            <div className="flex items-center gap-2 text-sm text-foreground/60 mb-1">
+                              <span>Estimated Time</span>
+                              <Tooltip content="Internal transfers usually complete within 1 minute">
+                                <Info className="text-foreground/40 cursor-help" size={14} />
+                              </Tooltip>
+                            </div>
+                            <span className="font-medium">Instant</span>
+                          </div>
+
+                          <div className="flex-1">
+                            <div className="flex items-center gap-2 text-sm text-foreground/60 mb-1">
+                              <span>Transfer Fee</span>
+                              <Tooltip content="We cover all swap fees for you.">
+                                <Info className="text-foreground/40 cursor-help" size={14} />
+                              </Tooltip>
+                            </div>
+                            <div className="flex items-center gap-1 ">
+                              <span className="font-medium text-primary">Free</span>
+                              <span className="font-medium line-through text-foreground/60">
+                                {parseFloat(estimatedFee) > 0.01 ? formatAmountUSD(parseFloat(estimatedFee)) : "$0.01"}
+                              </span>
+                            </div>
+                          </div>
+
+                          <div className="flex-1 items-end">
+                            <span className="text-sm text-foreground/60 block mb-1">Required Signatures</span>
+                            <span className="font-medium">{signatureDisplay}</span>
+                          </div>
+                        </div>
+                      </div>
+
+                      {amount && parseFloat(amount) > 10000 && (
+                        <div className="bg-warning/10 rounded-xl p-4">
+                          <div className="flex items-start gap-2">
+                            <Info className="w-4 h-4 text-warning mt-0.5" />
+                            <div>
+                              <p className="font-medium text-sm">Transfer Requirements</p>
+                              <p className="text-sm text-foreground/60 mt-1">
+                                This transfer will require approval from {requiredSignatures} signer
+                                {requiredSignatures > 1 ? "s" : ""} since it exceeds $10,000
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </ModalBody>
+
+                  <ModalFooter className="flex justify-between mt-4">
+                    <Button className="bg-transparent border border-border hover:bg-content2" onClick={onCancel}>
+                      Cancel
+                    </Button>
+                    <Button
+                      className="bg-primary text-primary-foreground hover:bg-primary/90"
+                      onClick={handleSend}
+                      isDisabled={!isAmountValid() || isLoading}
+                      isLoading={isLoading}
+                    >
+                      {isLoading ? "Processing..." : "Send"}
+                    </Button>
+                  </ModalFooter>
+                </>
+              )}
+            </>
+          )}
+        </ModalContent>
+      </Modal>
+
+      <Modal isOpen={isAccountSelectionOpen} onOpenChange={(open) => setIsAccountSelectionOpen(open)}>
+        <ModalContent>
+          {(onClose) => (
+            <>
+              <ModalHeader>Select Destination Account</ModalHeader>
+              <ModalBody className="gap-3 p-6">
+                {availableAccounts
+                  .filter((acc) => acc.address !== selectedAccount.address && !acc.isDisabled)
+                  .map((account) => (
+                    <Button
+                      key={account.address}
+                      className="w-full justify-start h-auto p-4 bg-content2 hover:bg-content3"
+                      onPress={() => handleAccountSelection(account)}
+                    >
+                      <div className="flex items-center gap-3">
+                        {account.icon && React.createElement(account.icon, { className: "w-5 h-5 text-foreground/60" })}
+                        <div className="flex flex-col items-start">
+                          <span className="font-medium">{account.name}</span>
+                          <span className="text-sm text-foreground/60">${account.balance?.toLocaleString()}</span>
+                        </div>
+                      </div>
+                    </Button>
+                  ))}
+              </ModalBody>
+            </>
+          )}
+        </ModalContent>
+      </Modal>
+    </>
+  );
+}

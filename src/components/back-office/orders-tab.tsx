@@ -5,7 +5,7 @@ import { GetOrderLinksOutput } from "@backpack-fux/pylon-sdk";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { DataTable, Column, EmptyContent } from "@/components/generics/data-table";
-import { formatPhoneNumber, formatNumber } from "@/utils/helpers";
+import { formatPhoneNumber, formatAmountUSD } from "@/utils/helpers";
 import Countdown from "@/components/generics/countdown";
 import CreateOrderModal from "@/components/back-office/actions/order-create";
 import pylon from "@/libs/pylon-sdk";
@@ -92,7 +92,7 @@ const OrdersTab = forwardRef<OrdersTabRef>((_, ref) => {
       align: "start",
       render: (order) => (
         <span className="truncate block">
-          ${formatNumber(order.order.subtotal / 100)} {order.order.currency}
+          ${formatAmountUSD(order.order.subtotal / 100)} {order.order.currency}
         </span>
       ),
     },

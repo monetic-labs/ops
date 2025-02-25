@@ -11,9 +11,10 @@ import {
   MerchantDisbursementCreateOutput,
 } from "@backpack-fux/pylon-sdk";
 import { Address } from "viem";
+import { toast } from "sonner";
 
 import { useExistingDisbursement } from "@/hooks/bill-pay/useExistingDisbursement";
-import TransferStatusView, { TransferStatus } from "@/components/generics/transfer-status";
+import { TransferStatus, TransferStatusOverlay } from "@/components/generics/transfer-status";
 import { executeNestedTransfer } from "@/utils/safe/transfer";
 import { useBalance } from "@/hooks/account-contracts/useBalance";
 import { validateBillPay } from "@/validations/bill-pay";
@@ -40,6 +41,7 @@ type CreateBillPayModalProps = {
   billPay: NewBillPay | ExistingBillPay;
   setBillPay: (billPay: NewBillPay | ExistingBillPay) => void;
   settlementAddress: Address;
+  onSuccess?: () => void;
 };
 
 const methodFees: Record<DisbursementMethod, number> = {
@@ -69,11 +71,21 @@ export default function CreateBillPayModal({
   billPay,
   setBillPay,
   settlementAddress,
+  onSuccess,
 }: CreateBillPayModalProps) {
   const { user, credentials, isAuthenticated } = useUser();
   const [isNewSender, setIsNewSender] = useState(false);
   const [transferStatus, setTransferStatus] = useState<TransferStatus>(TransferStatus.IDLE);
   const [formIsValid, setFormIsValid] = useState(false);
+
+  // Reset internal state when modal is closed
+  useEffect(() => {
+    if (!isOpen) {
+      setTransferStatus(TransferStatus.IDLE);
+      setIsNewSender(false);
+      setFormIsValid(false);
+    }
+  }, [isOpen]);
 
   const { balance: settlementBalance, isLoading: isLoadingBalance } = useBalance({
     amount: billPay.amount,
@@ -118,7 +130,6 @@ export default function CreateBillPayModal({
 
   const handleSave = async () => {
     if (!settlementAddress || !user?.walletAddress) return;
-    let timeout: number = 0;
 
     try {
       if (!billPay.vendorMethod) {
@@ -168,25 +179,22 @@ export default function CreateBillPayModal({
         callbacks: {
           onPreparing: () => setTransferStatus(TransferStatus.PREPARING),
           onSigning: () => setTransferStatus(TransferStatus.SIGNING),
-          onSent: () => {
+          onSent: () => setTransferStatus(TransferStatus.CONFIRMING),
+          onSuccess: () => {
             setTransferStatus(TransferStatus.SENT);
-            timeout = 3000;
+            toast.success("Bill payment completed successfully");
+            onSuccess?.();
           },
           onError: (error) => {
+            console.error("Bill payment error:", error);
             setTransferStatus(TransferStatus.ERROR);
-            timeout = 3000;
+            toast.error("Bill payment failed. Please try again.");
           },
         },
       });
     } catch (error) {
       console.error("Error creating disbursement:", error);
       setTransferStatus(TransferStatus.ERROR);
-      timeout = 3000;
-    } finally {
-      setTimeout(() => {
-        onClose();
-        setTransferStatus(TransferStatus.IDLE);
-      }, timeout);
     }
   };
 
@@ -230,6 +238,32 @@ export default function CreateBillPayModal({
     },
   ];
 
+  const isActiveTransfer = transferStatus !== TransferStatus.IDLE;
+
+  const handleResetTransferStatus = () => {
+    setTransferStatus(TransferStatus.IDLE);
+  };
+
+  // Create transfer details component for the overlay
+  const transferDetailsComponent = (
+    <div className="bg-content2/50 border border-border rounded-xl p-6">
+      <div className="flex justify-between items-center mb-2">
+        <span className="text-sm text-foreground/60">Recipient</span>
+        <span className="font-medium">{isExistingBillPay(billPay) ? billPay.vendorName : billPay.vendorName}</span>
+      </div>
+      <div className="flex justify-between items-center">
+        <span className="text-sm text-foreground/60">Amount</span>
+        <span className="font-medium">${parseFloat(billPay.amount).toFixed(2)}</span>
+      </div>
+      {billPay.memo && (
+        <div className="flex justify-between items-center mt-2">
+          <span className="text-sm text-foreground/60">Memo</span>
+          <span className="font-medium">{billPay.memo}</span>
+        </div>
+      )}
+    </div>
+  );
+
   return (
     <Modal
       classNames={{
@@ -241,64 +275,72 @@ export default function CreateBillPayModal({
       data-testid="create-transfer-modal"
       isOpen={isOpen}
       size="2xl"
-      onClose={onClose}
+      onClose={isActiveTransfer && transferStatus !== TransferStatus.ERROR ? () => {} : onClose}
     >
       <ModalContent className="relative">
-        {transferStatus !== TransferStatus.IDLE && (
-          <div className="absolute inset-0 flex items-center justify-center bg-background/90 backdrop-blur-sm z-50 rounded-lg">
-            <TransferStatusView status={transferStatus} />
+        {isActiveTransfer ? (
+          <div className="p-6">
+            <TransferStatusOverlay
+              status={transferStatus}
+              transferDetails={transferDetailsComponent}
+              onReset={handleResetTransferStatus}
+              onComplete={onClose}
+            />
           </div>
-        )}
-        <ModalHeader className="flex flex-col gap-1">
-          <h3 className="text-xl font-semibold text-foreground">Create New Transfer</h3>
-          <p className="text-sm text-default-500">Fill in the details below to create a new transfer</p>
-        </ModalHeader>
-        <Divider className="bg-default-100" />
-        <ModalBody className="overflow-y-auto max-h-[50vh] relative px-6">{renderTransferFields()}</ModalBody>
-        <Divider className="bg-default-100" />
-        <ModalBody className="px-6">
-          <div className="space-y-3 font-mono text-sm">
-            <div className="flex justify-between items-center">
-              <span className="text-default-600">Fee:</span>
-              <div className="flex items-center gap-2">
-                <Tooltip
-                  classNames={{
-                    base: "bg-content2/80 backdrop-blur-sm",
-                    content: "text-foreground",
-                  }}
-                  content={
-                    <div className="px-2 py-1 text-sm">
-                      {billPay.vendorMethod === DisbursementMethod.WIRE
-                        ? "We pass on the fees from the receiving bank. We do not add any additional fees."
-                        : "We cover these fees for you."}
-                    </div>
-                  }
-                >
-                  <Info className="text-default-500 dark:text-default-400 cursor-help" size={14} />
-                </Tooltip>
-                <span className="text-default-600" data-testid="fee">
-                  {fee.toFixed(2) === "0.00" ? "Free" : `${fee * 100}%`}
-                </span>
+        ) : (
+          <>
+            <ModalHeader className="flex flex-col gap-1">
+              <h3 className="text-xl font-semibold text-foreground">Create New Transfer</h3>
+              <p className="text-sm text-default-500">Fill in the details below to create a new transfer</p>
+            </ModalHeader>
+            <Divider className="bg-default-100" />
+            <ModalBody className="overflow-y-auto max-h-[50vh] relative px-6">{renderTransferFields()}</ModalBody>
+            <Divider className="bg-default-100" />
+            <ModalBody className="px-6">
+              <div className="space-y-3 font-mono text-sm">
+                <div className="flex justify-between items-center">
+                  <span className="text-default-600">Fee:</span>
+                  <div className="flex items-center gap-2">
+                    <Tooltip
+                      classNames={{
+                        base: "bg-content2/80 backdrop-blur-sm",
+                        content: "text-foreground",
+                      }}
+                      content={
+                        <div className="px-2 py-1 text-sm">
+                          {billPay.vendorMethod === DisbursementMethod.WIRE
+                            ? "We pass on the fees from the receiving bank. We do not add any additional fees."
+                            : "We cover these fees for you."}
+                        </div>
+                      }
+                    >
+                      <Info className="text-default-500 dark:text-default-400 cursor-help" size={14} />
+                    </Tooltip>
+                    <span className="text-default-600" data-testid="fee">
+                      {fee.toFixed(2) === "0.00" ? "Free" : `${fee * 100}%`}
+                    </span>
+                  </div>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-lg font-semibold text-foreground">Total:</span>
+                  <span className="text-lg font-semibold text-foreground" data-testid="total">
+                    ${total.toFixed(2)}
+                  </span>
+                </div>
               </div>
-            </div>
-            <div className="flex justify-between items-center">
-              <span className="text-lg font-semibold text-foreground">Total:</span>
-              <span className="text-lg font-semibold text-foreground" data-testid="total">
-                ${total.toFixed(2)}
-              </span>
-            </div>
-          </div>
-        </ModalBody>
-        <Divider className="bg-default-100" />
-        <ModalFooterWithSupport
-          actions={footerActions}
-          isNewSender={isNewSender}
-          onNewSenderChange={(value) => {
-            setIsNewSender(value);
-            setBillPay(value ? DEFAULT_NEW_BILL_PAY : DEFAULT_EXISTING_BILL_PAY);
-          }}
-          onSupportClick={handleSupportClick}
-        />
+            </ModalBody>
+            <Divider className="bg-default-100" />
+            <ModalFooterWithSupport
+              actions={footerActions}
+              isNewSender={isNewSender}
+              onNewSenderChange={(value) => {
+                setIsNewSender(value);
+                setBillPay(value ? DEFAULT_NEW_BILL_PAY : DEFAULT_EXISTING_BILL_PAY);
+              }}
+              onSupportClick={handleSupportClick}
+            />
+          </>
+        )}
       </ModalContent>
     </Modal>
   );

@@ -76,17 +76,20 @@ export const getTimeAgo = (timestamp: string): string => {
 };
 
 export const getFullName = (firstName: string, lastName: string) => {
+  if (!firstName && !lastName) return "User";
+  if (!firstName) return lastName;
+  if (!lastName) return firstName;
+
   return `${firstName} ${lastName}`;
 };
 
-export const formatNumber = (value: number) => {
+export const formatAmountUSD = (value: number) => {
   return new Intl.NumberFormat("en-US", {
     currency: "USD",
+    style: "currency",
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
   }).format(value);
-};
-
-export const formatAmountUSD = (value: number) => {
-  return new Intl.NumberFormat("en-US", { currency: "USD" }).format(value);
 };
 
 export const formatDecimals = (value: string): string => {
@@ -212,13 +215,6 @@ export const parseCurrencyInput = (value: string): number => {
   const number = parseFloat(cleanValue);
 
   return isNaN(number) ? 0 : Number(number.toFixed(2));
-};
-
-export const formatUSD = (value: number) => {
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: "USD",
-  }).format(value);
 };
 
 export const formatNumericInput = (value: string) => {

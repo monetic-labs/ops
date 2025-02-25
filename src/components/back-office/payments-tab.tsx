@@ -8,6 +8,7 @@ import { useOrderManagement } from "@/hooks/orders/useOrderManagement";
 import {
   capitalizeFirstChar,
   centsToDollars,
+  formatAmountUSD,
   formatStringToTitleCase,
   getTimeAgo,
   mapCurrencyToSymbol,
@@ -52,30 +53,21 @@ const paymentColumns: Column<TransactionListItem>[] = [
     name: "TOTAL",
     uid: "total",
     render: (payment: TransactionListItem) => (
-      <span className="truncate block">
-        {mapCurrencyToSymbol[payment.currency.toLowerCase()]}
-        {centsToDollars(payment.total)}
-      </span>
+      <span className="truncate block">{formatAmountUSD(payment.total / 100)}</span>
     ),
   },
   {
     name: "SUBTOTAL",
     uid: "subtotal",
     render: (payment: TransactionListItem) => (
-      <span className="truncate block">
-        {mapCurrencyToSymbol[payment.currency.toLowerCase()]}
-        {centsToDollars(payment.subtotal)}
-      </span>
+      <span className="truncate block">{formatAmountUSD(payment.subtotal / 100)}</span>
     ),
   },
   {
     name: "TIP",
     uid: "tipAmount",
     render: (payment: TransactionListItem) => (
-      <span className="truncate block">
-        {mapCurrencyToSymbol[payment.currency.toLowerCase()]}
-        {centsToDollars(payment.tipAmount)}
-      </span>
+      <span className="truncate block">{formatAmountUSD(payment.tipAmount / 100)}</span>
     ),
   },
   {

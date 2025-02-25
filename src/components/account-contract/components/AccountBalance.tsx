@@ -1,5 +1,5 @@
 import type { Account } from "@/types/account";
-import { formatUSD } from "@/utils/helpers";
+import { formatAmountUSD } from "@/utils/helpers";
 
 import { Button } from "@nextui-org/button";
 import { ArrowUpRight, ArrowDownLeft } from "lucide-react";
@@ -8,9 +8,32 @@ interface AccountBalanceProps {
   account: Account;
   onSend: () => void;
   onReceive: () => void;
+  isLoading?: boolean;
 }
 
-export function AccountBalance({ account, onSend, onReceive }: AccountBalanceProps) {
+export function AccountBalance({ account, onSend, onReceive, isLoading = false }: AccountBalanceProps) {
+  if (isLoading) {
+    return (
+      <div className="bg-content2 p-4 md:p-6 rounded-xl mb-6">
+        <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4">
+          <div>
+            <div className="h-4 w-32 bg-content3 rounded-md animate-pulse mb-2"></div>
+            <div className="h-10 w-40 bg-content3 rounded-md animate-pulse mt-1"></div>
+            <div className="h-4 w-16 bg-content3 rounded-md animate-pulse mt-2"></div>
+          </div>
+          <div className="flex gap-2 w-full md:w-auto">
+            <Button className="flex-1 md:flex-none h-11 bg-content3 animate-pulse" disabled>
+              <div className="h-4 w-16 bg-content4 rounded-md"></div>
+            </Button>
+            <Button className="flex-1 md:flex-none h-11 bg-content3 animate-pulse" disabled>
+              <div className="h-4 w-16 bg-content4 rounded-md"></div>
+            </Button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   if (!account.isDeployed) {
     return (
       <div className="bg-content2 p-4 md:p-6 rounded-xl mb-6">
@@ -46,10 +69,10 @@ export function AccountBalance({ account, onSend, onReceive }: AccountBalancePro
       <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4">
         <div>
           <p className="text-sm text-foreground/60">Available Balance</p>
-          <p className="text-3xl md:text-4xl font-semibold mt-1">{formatUSD(account.balance)}</p>
+          <p className="text-3xl md:text-4xl font-semibold mt-1">{formatAmountUSD(account.balance)}</p>
           <p className="text-sm text-foreground/40 mt-1">{account.currency}</p>
         </div>
-        <div className="flex gap-2 w-full md:w-auto">
+        <div className="flex gap-2 w-full md:w-auto" onClick={(e) => e.stopPropagation()}>
           <Button
             className="flex-1 md:flex-none h-11 bg-primary/10 text-primary hover:bg-primary/20 px-6"
             startContent={<ArrowUpRight className="w-4 h-4" />}

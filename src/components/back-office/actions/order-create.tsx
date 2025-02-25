@@ -5,7 +5,7 @@ import { Input } from "@nextui-org/input";
 import { Mail, Phone, DollarSign } from "lucide-react";
 import { GetOrderLinksOutput, ISO4217Currency } from "@backpack-fux/pylon-sdk";
 
-import { formatPhoneNumber, formatNumber } from "@/utils/helpers";
+import { formatPhoneNumber, formatAmountUSD } from "@/utils/helpers";
 import pylon from "@/libs/pylon-sdk";
 
 interface CreateOrderModalProps {
@@ -77,7 +77,7 @@ export default function CreateOrderModal({ isOpen, onClose, onCreate }: CreateOr
           const numericValue = parseFloat(formattedValue);
 
           if (!isNaN(numericValue)) {
-            formattedValue = formatNumber(numericValue);
+            formattedValue = formatAmountUSD(numericValue);
           }
         }
         error = validateAmount(formattedValue);

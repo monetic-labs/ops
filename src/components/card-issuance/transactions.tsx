@@ -5,7 +5,7 @@ import { useInfiniteQuery } from "@tanstack/react-query";
 import { MerchantCardTransactionGetOutput } from "@backpack-fux/pylon-sdk";
 
 import { DataTable, EmptyContent } from "@/components/generics/data-table";
-import { formatNumber, formattedDate } from "@/utils/helpers";
+import { formatAmountUSD, formattedDate } from "@/utils/helpers";
 import pylon from "@/libs/pylon-sdk";
 
 import TransactionDetailsModal from "./card-txns";
@@ -32,7 +32,7 @@ const transactionColumns = [
     uid: "amount" as const,
     render: (txn: Transaction) => (
       <span className="text-sm truncate">
-        ${formatNumber(txn.amount / 100)} {txn.currency}
+        {formatAmountUSD(txn.amount / 100)} {txn.currency}
       </span>
     ),
   },

@@ -4,7 +4,7 @@ import { formatStringToTitleCase } from "@/utils/helpers";
 import { Button } from "@nextui-org/button";
 import { Avatar } from "@nextui-org/avatar";
 
-export function SignersView({ signers }: { signers: Signer[] }) {
+export function SignersView({ signers, isLoading }: { signers: Signer[]; isLoading: boolean }) {
   return (
     <div className="space-y-4">
       <div className="flex justify-between items-center">

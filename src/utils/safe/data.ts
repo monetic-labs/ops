@@ -1,6 +1,6 @@
 import { Address, formatUnits } from "viem";
 import { publicClient } from "@/config/web3";
-import { safeAbi } from "@/utils/safe/abi";
+import { safeAbi } from "@/utils/abi/safe";
 import { BASE_USDC } from "@/utils/constants";
 import { formatDecimals } from "@/utils/helpers";
 import { isContractDeployed } from "@/utils/safe";
