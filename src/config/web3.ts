@@ -1,7 +1,7 @@
-import { http, createPublicClient, Chain } from "viem";
+import { http, createPublicClient, Chain, fallback } from "viem";
 import { baseSepolia, base } from "viem/chains";
 
-import { isLocal } from "@/utils/helpers";
+import { isProduction } from "@/utils/helpers";
 import "viem/window";
 
 // Environment variables validation
@@ -14,7 +14,7 @@ const policyId = process.env.NEXT_PUBLIC_CANDIDE_BASE_SPONSORSHIP_POLICY_ID;
 if (!policyId) throw new Error("CANDIDE_BASE_SEPOLIA_SPONSORSHIP_POLICY_ID is not set");
 
 // Chain configuration
-export const chain = isLocal ? baseSepolia : base;
+export const chain = isProduction ? base : baseSepolia;
 export const PUBLIC_RPC = chain.rpcUrls.default.http[0];
 
 // Chain name mapping
@@ -43,7 +43,12 @@ const getSponsorshipPolicyId = (chain: Chain): string => {
 // Public client configuration
 export const publicClient = createPublicClient({
   chain,
-  transport: http(),
+  transport: fallback([
+    http("https://84532.rpc.thirdweb.com"),
+    http("https://base-sepolia.public.blastapi.io"),
+    http("https://rpc.ankr.com/base_sepolia"),
+  ]),
+  cacheTime: 5_000,
   batch: {
     multicall: true,
   },

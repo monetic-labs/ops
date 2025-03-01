@@ -10,7 +10,7 @@ import { Address } from "viem";
 
 import { MoneyInput } from "@/components/generics/money-input";
 import { BalanceDisplay } from "@/components/generics/balance-display";
-import { executeNestedTransfer } from "@/utils/safe/transfer";
+import { executeNestedTransfer, executeNestedTransferFromRainCardAcccount } from "@/utils/safe/transfer";
 import { getEstimatedTransferFee } from "@/utils/safe/simulation";
 import { useUser } from "@/contexts/UserContext";
 import { TransferStatus, TransferStatusOverlay } from "@/components/generics/transfer-status";
@@ -113,10 +113,44 @@ export function SendModal({
       // Edge case: Rain Card to Sub-account (withdrawal)
       if (selectedAccount.isCard && !toAccount.isCard) {
         setTransferStatus(TransferStatus.PREPARING);
-        // TODO: Implement Rain Card withdrawal flow
-        // This would be implemented here when the API is ready
-        toast.error("Rain Card withdrawal is not yet implemented. Please try again later.");
-        setTransferStatus(TransferStatus.ERROR);
+
+        // Use the Rain Card withdrawal flow
+        await executeNestedTransferFromRainCardAcccount({
+          fromSafeAddress: user.walletAddress as Address,
+          throughSafeAddress: toAccount.address as Address,
+          toAddress: toAccount.address as Address,
+          tokenAddress: BASE_USDC.ADDRESS,
+          tokenDecimals: BASE_USDC.DECIMALS,
+          amount,
+          credentials,
+          rainControllerAddress: selectedAccount.rainControllerAddress as Address,
+          rainCollateralProxyAddress: selectedAccount.address as Address,
+          callbacks: {
+            onPreparing: () => {
+              setTransferStatus(TransferStatus.PREPARING);
+            },
+            onSigning: () => {
+              setTransferStatus(TransferStatus.SIGNING);
+            },
+            onSigningComplete: () => {
+              setTransferStatus(TransferStatus.SENDING);
+            },
+            onSent: () => {
+              setTransferStatus(TransferStatus.CONFIRMING);
+            },
+            onSuccess: () => {
+              setTransferStatus(TransferStatus.SENT);
+              toast.success("Rain Card withdrawal completed successfully");
+              onTransfer(); // Update account balances
+            },
+            onError: (error) => {
+              console.error("Rain Card withdrawal error:", error);
+              setTransferStatus(TransferStatus.ERROR);
+              toast.error("Rain Card withdrawal failed. Please try again.");
+            },
+          },
+        });
+
         setIsLoading(false);
         return;
       }
@@ -141,11 +175,9 @@ export function SendModal({
             setTransferStatus(TransferStatus.SENDING);
           },
           onSent: () => {
-            // Update to CONFIRMING state to indicate we're waiting for blockchain confirmation
             setTransferStatus(TransferStatus.CONFIRMING);
           },
           onSuccess: () => {
-            // Update to SENT state and update account balances after transaction is confirmed
             setTransferStatus(TransferStatus.SENT);
             toast.success("Transfer completed successfully");
             onTransfer(); // Update account balances
@@ -161,6 +193,7 @@ export function SendModal({
       console.error("Transfer failed:", error);
       setTransferStatus(TransferStatus.ERROR);
       toast.error("Transfer failed. Please try again.");
+      setIsLoading(false);
     }
   };
 

@@ -25,6 +25,7 @@ export default function CreateUserModal({ isOpen, availableRoles, onClose, onSav
     email: "",
     role: PersonRole.MEMBER,
     pendingInvite: null,
+    registeredPasskeys: [],
   });
 
   const [errors, setErrors] = useState({
@@ -63,6 +64,7 @@ export default function CreateUserModal({ isOpen, availableRoles, onClose, onSav
       email: "",
       role: PersonRole.MEMBER,
       pendingInvite: null,
+      registeredPasskeys: [],
     });
     setErrors({
       firstName: "",
@@ -106,6 +108,7 @@ export default function CreateUserModal({ isOpen, availableRoles, onClose, onSav
             isUsed: false,
             expiresAt: user.invitedUsers[0].expiresAt,
           },
+          registeredPasskeys: [], // No passkeys registered
         });
         resetForm();
       } else {

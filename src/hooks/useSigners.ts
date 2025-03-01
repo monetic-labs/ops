@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { Address } from "viem";
-import { MerchantUserGetOutput, PersonRole } from "@backpack-fux/pylon-sdk";
+import { MerchantUserGetOutput, PersonRole, MerchantAccountGetOutput } from "@backpack-fux/pylon-sdk";
 
 import { Signer } from "@/types/account";
 import pylon from "@/libs/pylon-sdk";
@@ -8,6 +8,7 @@ import { getFullName } from "@/utils/helpers";
 
 interface SignerState {
   signers: Signer[];
+  accountSigners: Signer[];
   isLoading: boolean;
   error: Error | null;
   lastFetched: number | null;
@@ -18,6 +19,7 @@ const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes in milliseconds
 export function useSigners() {
   const [state, setState] = useState<SignerState>({
     signers: [],
+    accountSigners: [],
     isLoading: true,
     error: null,
     lastFetched: null,
@@ -32,19 +34,24 @@ export function useSigners() {
 
       try {
         setState((prev) => ({ ...prev, isLoading: true }));
+
+        // Only fetch users, accounts will come from useAccountManagement
         const users = await pylon.getUsers();
 
-        const signers = users
+        // Transform users to signers
+        const userSigners = users
           .filter((user): user is MerchantUserGetOutput & { walletAddress: Address } => Boolean(user.walletAddress))
           .map((user) => ({
             address: user.walletAddress,
             name: getFullName(user.firstName, user.lastName),
             image: "",
             role: user.role as PersonRole,
+            isAccount: false,
           }));
 
         setState({
-          signers,
+          signers: userSigners,
+          accountSigners: [], // This will be populated by useAccountManagement
           isLoading: false,
           error: null,
           lastFetched: Date.now(),
@@ -67,28 +74,31 @@ export function useSigners() {
 
   const getAvailableSigners = useCallback(
     (currentSigners: Address[] = []): Signer[] => {
-      return state.signers.filter(
+      const allSigners = [...state.signers, ...state.accountSigners];
+      return allSigners.filter(
         (signer) => !currentSigners.some((current) => current.toLowerCase() === signer.address.toLowerCase())
       );
     },
-    [state.signers]
+    [state.signers, state.accountSigners]
   );
 
   const mapSignersToUsers = useCallback(
     (addresses: Address[]): Signer[] => {
+      const allSigners = [...state.signers, ...state.accountSigners];
       return addresses.map((address) => {
-        const matchedSigner = state.signers.find((signer) => signer.address.toLowerCase() === address.toLowerCase());
+        const matchedSigner = allSigners.find((signer) => signer.address.toLowerCase() === address.toLowerCase());
         return (
           matchedSigner || {
             address,
-            name: "Unknown User",
+            name: "Unknown Signer",
             image: "",
             role: undefined,
+            isAccount: false,
           }
         );
       });
     },
-    [state.signers]
+    [state.signers, state.accountSigners]
   );
 
   const addSigner = useCallback(async (accountAddress: Address, signer: Address): Promise<boolean> => {
@@ -129,6 +139,8 @@ export function useSigners() {
 
   return {
     signers: state.signers,
+    accountSigners: state.accountSigners,
+    allSigners: [...state.signers, ...state.accountSigners],
     isLoading: state.isLoading,
     error: state.error,
     getAvailableSigners,

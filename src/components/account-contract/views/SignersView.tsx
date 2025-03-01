@@ -32,6 +32,7 @@ export function SignersView({ signers, isLoading }: { signers: Signer[]; isLoadi
               <div>
                 <p className="font-medium">{signer.name}</p>
                 {signer.role && <p className="text-sm text-foreground/60">{formatStringToTitleCase(signer.role)}</p>}
+                {signer.isAccount && <p className="text-sm text-foreground/60">Sub-account</p>}
               </div>
             </div>
             <Button className="bg-content3/50 hover:bg-content3" size="sm" variant="flat">

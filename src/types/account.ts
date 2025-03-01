@@ -13,6 +13,7 @@ export type Signer = {
   name: string;
   image: string;
   role?: PersonRole;
+  isAccount?: boolean;
   hasSigned?: boolean;
 };
 
@@ -38,6 +39,7 @@ export type TransferActivity = {
 export type Account = {
   id: string;
   address: Address;
+  rainControllerAddress?: Address;
   name: string;
   currency: StableCurrency;
   balance: number;
