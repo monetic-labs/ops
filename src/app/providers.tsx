@@ -11,6 +11,9 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
 import { MessagingProvider } from "@/components/messaging/messaging-provider";
 import { ShortcutsProvider } from "@/components/generics/shortcuts-provider";
+import { UsersProvider } from "@/contexts/UsersContext";
+import { AccountProvider } from "@/contexts/AccountContext";
+import { SignersProvider } from "@/contexts/SignersContext";
 
 export interface ProvidersProps {
   children: React.ReactNode;
@@ -45,7 +48,11 @@ export function Providers({ children, themeProps, userId }: ProvidersProps) {
                   },
                 }}
               >
-                {children}
+                <UsersProvider>
+                  <SignersProvider>
+                    <AccountProvider>{children}</AccountProvider>
+                  </SignersProvider>
+                </UsersProvider>
               </PrivyProvider>
             </ShortcutsProvider>
           </MessagingProvider>

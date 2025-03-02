@@ -34,11 +34,13 @@ export default function UserEditModal({
 
   const handleSave = () => {
     onSave(editedUser);
+    onClose();
   };
 
   const handleRemove = () => {
     onRemove(user.id);
     setIsRemoveConfirmOpen(false);
+    onClose();
   };
 
   return (

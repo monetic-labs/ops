@@ -2,12 +2,12 @@
 
 import type { Account, Signer } from "@/types/account";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Card, CardBody } from "@nextui-org/card";
 import { Modal, ModalContent } from "@nextui-org/modal";
 import { SkeletonAccountCard } from "./components/SkeletonLoaders";
 
-import { useAccountManagement } from "@/hooks/useAccountManagement";
+import { useAccounts } from "@/contexts/AccountContext";
 
 import { AccountHeader } from "./components/AccountHeader";
 import { AccountBalance } from "./components/AccountBalance";
@@ -23,13 +23,16 @@ import { AccountSelectionModal } from "./modals/AccountSelectionModal";
 export default function AccountMeta() {
   const {
     accounts,
-    getEnabledAccounts,
-    registerSubAccount,
+    selectedAccount,
     isLoadingAccounts,
+    totalBalance,
+    getEnabledAccounts,
+    setSelectedAccount,
+    registerSubAccount,
     refreshAccounts,
     updateAccountBalancesAfterTransfer,
-  } = useAccountManagement();
-  const [selectedAccount, setSelectedAccount] = useState<Account | undefined>(undefined);
+  } = useAccounts();
+
   const [activeTab, setActiveTab] = useState<string>("activity");
   const [isSendModalOpen, setIsSendModalOpen] = useState(false);
   const [isReceiveModalOpen, setIsReceiveModalOpen] = useState(false);
@@ -40,12 +43,6 @@ export default function AccountMeta() {
   const [selectedSigners, setSelectedSigners] = useState<Signer[]>([]);
   const [threshold, setThreshold] = useState(1);
   const [isAccountSelectionOpen, setIsAccountSelectionOpen] = useState(false);
-
-  useEffect(() => {
-    if (accounts.length > 0) {
-      setSelectedAccount(accounts[0]);
-    }
-  }, [accounts]);
 
   // If we're loading accounts but don't have any yet, show the full skeleton
   if (isLoadingAccounts && accounts.length === 0) {
@@ -63,7 +60,6 @@ export default function AccountMeta() {
     return null;
   }
 
-  const totalBalance = accounts.reduce((sum: number, account: Account) => sum + (account.balance || 0), 0);
   const enabledAccounts = getEnabledAccounts();
 
   const handleSend = () => {
@@ -113,14 +109,11 @@ export default function AccountMeta() {
   const handleDeploy = () => {
     if (!selectedAccount) return;
     registerSubAccount(selectedAccount.address, selectedAccount.name);
-    setSelectedAccount((prevSelectedAccount) => {
-      if (!prevSelectedAccount) return prevSelectedAccount;
-      return {
-        ...prevSelectedAccount,
-        isEnabled: true,
-        signers: selectedSigners,
-        threshold,
-      };
+    setSelectedAccount({
+      ...selectedAccount,
+      isDeployed: true,
+      signers: selectedSigners,
+      threshold,
     });
     setIsDeployModalOpen(false);
   };
@@ -182,7 +175,7 @@ export default function AccountMeta() {
               accounts={accounts}
               isExpanded={isExpanded}
               selectedAccount={selectedAccount}
-              totalBalance={totalBalance.toString()}
+              totalBalance={totalBalance}
               onAccountSelect={handleAccountSelect}
               onToggleExpand={() => {
                 console.log("Toggle expand called");

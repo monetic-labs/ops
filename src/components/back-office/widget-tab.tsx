@@ -2,12 +2,11 @@ import React, { useState } from "react";
 import { Select, SelectItem } from "@nextui-org/select";
 import { Network, StableCurrency } from "@backpack-fux/pylon-sdk";
 import { Autocomplete, AutocompleteItem } from "@nextui-org/autocomplete";
-import { Spinner } from "@nextui-org/spinner";
 
 import { capitalizeFirstChar } from "@/utils/helpers";
+import { useAccounts } from "@/contexts/AccountContext";
 
 import GenerateApiKeysModal from "./actions/widgets/api-keys";
-import { useAccountManagement } from "@/hooks/useAccountManagement";
 
 const networks = ["POLYGON", "SOLANA", "BASE", "OPTIMISM", "ARBITRUM"];
 const currencies = ["USDC", "USDT", "DAI"];
@@ -31,8 +30,10 @@ export default function WidgetManagement({
   onCurrencyChange,
   hasChanges,
 }: WidgetManagementProps) {
-  const { accounts, isLoadingAccounts } = useAccountManagement();
+  const { getEnabledAccounts, isLoadingAccounts } = useAccounts();
   const [isApiKeysModalOpen, setIsApiKeysModalOpen] = useState(false);
+
+  const enabledAccounts = getEnabledAccounts();
 
   return (
     <div className="space-y-4">
@@ -41,8 +42,8 @@ export default function WidgetManagement({
         placeholder={isLoadingAccounts ? "Loading accounts..." : "Search for an account"}
         defaultSelectedKey={settlementAddress}
         selectedKey={settlementAddress}
-        isDisabled={isLoadingAccounts || !accounts.length || accounts.length === 1}
-        defaultItems={accounts}
+        isDisabled={isLoadingAccounts || !enabledAccounts.length || enabledAccounts.length === 1}
+        defaultItems={enabledAccounts}
         isLoading={isLoadingAccounts}
         onSelectionChange={(key) => {
           if (key) onSettlementAddressChange(key.toString());

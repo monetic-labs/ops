@@ -204,7 +204,7 @@ export const UserDetailsStep = () => {
                   onValueChange={(checked) => {
                     field.onChange(checked);
                     if (!checked) {
-                      setValue(`users.${index}.dashboardRole`, PersonRole.SUPER_ADMIN);
+                      setValue(`users.${index}.dashboardRole`, PersonRole.OWNER);
                     }
                   }}
                 >
@@ -231,20 +231,18 @@ export const UserDetailsStep = () => {
                       isInvalid={!!error}
                       label="Dashboard Role"
                       placeholder="Select role"
-                      selectedKeys={index === 0 ? [PersonRole.SUPER_ADMIN] : field.value ? [field.value] : []}
+                      selectedKeys={index === 0 ? [PersonRole.OWNER] : field.value ? [field.value] : []}
                       onSelectionChange={(keys: SharedSelection) => {
                         const selected = Array.from(keys)[0];
 
                         field.onChange(selected as PersonRole);
                       }}
                     >
-                      {Object.values(PersonRole)
-                        .filter((role) => role !== PersonRole.DEVELOPER && role !== PersonRole.BOOKKEEPER)
-                        .map((role) => (
-                          <SelectItem key={role} value={role}>
-                            {formatStringToTitleCase(role)}
-                          </SelectItem>
-                        ))}
+                      {Object.values(PersonRole).map((role) => (
+                        <SelectItem key={role} value={role}>
+                          {formatStringToTitleCase(role)}
+                        </SelectItem>
+                      ))}
                     </Select>
                   </>
                 )}

@@ -1,6 +1,6 @@
 import { Mail, Phone, Key, Backpack, Users } from "lucide-react";
 
-import { RecoveryMethod } from "./types";
+import { OrgMember, RecoveryMethod } from "./types";
 
 export const GRACE_PERIOD_OPTIONS = [
   { label: "3 Days", value: "3", description: "Shortest timelock, suitable for frequent users" },
@@ -19,14 +19,6 @@ export const DEAD_SWITCH_OPTIONS = [
   { label: "2 Years", value: "24", description: "Extended inactivity period" },
 ];
 
-// Mock data structure to simulate Pylon SDK response
-export type OrgMember = {
-  id: string;
-  displayName: string;
-  email: string;
-  role: "OWNER" | "ADMIN" | "MEMBER";
-};
-
 export const MOCK_ORG_MEMBERS: OrgMember[] = [
   {
     id: "usr_01",
@@ -38,7 +30,7 @@ export const MOCK_ORG_MEMBERS: OrgMember[] = [
     id: "usr_02",
     displayName: "Alex Rodriguez",
     email: "alex@example.com",
-    role: "ADMIN",
+    role: "MEMBER",
   },
   {
     id: "usr_03",

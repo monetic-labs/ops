@@ -5,8 +5,9 @@ import { Select, SelectItem, SelectedItems } from "@nextui-org/select";
 import { Chip } from "@nextui-org/chip";
 import { Avatar } from "@nextui-org/avatar";
 import { XIcon } from "lucide-react";
-
-import { MOCK_ORG_MEMBERS, OrgMember } from "../../constants";
+import { OrgMember } from "../../types";
+import { useUsers } from "@/contexts/UsersContext";
+import { getFullName } from "@/utils/helpers";
 
 export interface TeamRecoveryProps {
   configuredTeamMember: OrgMember | null;
@@ -15,6 +16,8 @@ export interface TeamRecoveryProps {
 }
 
 export const TeamRecovery = ({ configuredTeamMember, onSelectTeamMember, onRemoveTeamMember }: TeamRecoveryProps) => {
+  const { users } = useUsers();
+
   return (
     <div className="space-y-4">
       {configuredTeamMember ? (
@@ -53,22 +56,25 @@ export const TeamRecovery = ({ configuredTeamMember, onSelectTeamMember, onRemov
           }}
           onChange={(e) => onSelectTeamMember(e.target.value)}
         >
-          {MOCK_ORG_MEMBERS.map((member) => (
-            <SelectItem
-              key={member.id}
-              className="data-[selected=true]:bg-default-100"
-              textValue={member.displayName}
-              value={member.id}
-            >
-              <div className="flex items-center gap-2">
-                <Avatar className="bg-default-300" name={member.displayName} size="sm" />
-                <div className="flex flex-col">
-                  <span className="text-sm">{member.displayName}</span>
-                  <span className="text-xs text-default-500">{member.email}</span>
+          {users.map((member) => {
+            const fullName = getFullName(member.firstName, member.lastName);
+            return (
+              <SelectItem
+                key={member.id}
+                className="data-[selected=true]:bg-default-100"
+                textValue={member.username || fullName}
+                value={member.id}
+              >
+                <div className="flex items-center gap-2">
+                  <Avatar className="bg-default-300" name={member.username || fullName} size="sm" />
+                  <div className="flex flex-col">
+                    <span className="text-sm">{member.username || fullName}</span>
+                    <span className="text-xs text-default-500">{member.email}</span>
+                  </div>
                 </div>
-              </div>
-            </SelectItem>
-          ))}
+              </SelectItem>
+            );
+          })}
         </Select>
       )}
     </div>

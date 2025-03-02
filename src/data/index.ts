@@ -401,10 +401,7 @@ export const paymentsStatusColorMap: Record<string, StatusColor> = {
 
 export const usersStatusColorMap: Record<PersonRole, StatusColor> = {
   MEMBER: "primary",
-  DEVELOPER: "secondary",
-  BOOKKEEPER: "warning",
-  ADMIN: "success",
-  SUPER_ADMIN: "danger",
+  OWNER: "danger",
 };
 
 export const ordersColumns = [

@@ -3,6 +3,9 @@ import { formatAmountUSD } from "@/utils/helpers";
 
 import { Button } from "@nextui-org/button";
 import { ArrowUpRight, ArrowDownLeft } from "lucide-react";
+import { useUser } from "@/contexts/UserContext";
+import { PersonRole } from "@backpack-fux/pylon-sdk";
+import { useSigners } from "@/contexts/SignersContext";
 
 interface AccountBalanceProps {
   account: Account;
@@ -12,6 +15,13 @@ interface AccountBalanceProps {
 }
 
 export function AccountBalance({ account, onSend, onReceive, isLoading = false }: AccountBalanceProps) {
+  const { user } = useUser();
+  const { signers } = useSigners();
+
+  const isMember = user?.role === PersonRole.MEMBER;
+  const isSigner =
+    user?.walletAddress && signers.some((s) => s.address.toLowerCase() === user.walletAddress?.toLowerCase());
+
   if (isLoading) {
     return (
       <div className="bg-content2 p-4 md:p-6 rounded-xl mb-6">

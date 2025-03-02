@@ -1,24 +1,11 @@
 "use client";
 
-import { useEffect, useState } from "react";
-
 import AccountMeta from "@/components/account-contract/account-meta";
-import pylon from "@/libs/pylon-sdk";
-
 import MerchantServicesTabs from "./tabs";
+import { useUser } from "@/contexts/UserContext";
 
 export default function DashboardPage() {
-  const [userId, setUserId] = useState("");
-
-  useEffect(() => {
-    const fetchUser = async () => {
-      const result = await pylon.getUserById();
-
-      setUserId(result.id);
-    };
-
-    fetchUser();
-  }, []);
+  const { user } = useUser();
 
   return (
     <>
@@ -26,7 +13,7 @@ export default function DashboardPage() {
       <AccountMeta />
 
       {/* Services Tabs Card */}
-      <MerchantServicesTabs userId={userId} />
+      <MerchantServicesTabs userId={user?.id || ""} />
     </>
   );
 }

@@ -4,7 +4,7 @@ import { Button } from "@nextui-org/button";
 import { Copy, Info, Share2, X, Check } from "lucide-react";
 import { Modal, ModalContent, ModalHeader, ModalBody } from "@nextui-org/modal";
 import { useState } from "react";
-import { useAccountManagement } from "@/hooks/useAccountManagement";
+import { useAccounts } from "@/contexts/AccountContext";
 import { AccountSelectionModal } from "./AccountSelectionModal";
 import { Spinner } from "@nextui-org/spinner";
 
@@ -28,7 +28,7 @@ export function ReceiveModal({
   const [isShared, setIsShared] = useState(false);
   const [copiedField, setCopiedField] = useState<string | null>(null);
   const [isAccountSelectionOpen, setIsAccountSelectionOpen] = useState(false);
-  const { virtualAccount, updateVirtualAccountDestination, getSettlementAccount } = useAccountManagement();
+  const { virtualAccount, updateVirtualAccountDestination, getSettlementAccount } = useAccounts();
 
   // Get the actual settlement account based on virtual account destination
   const actualSettlementAccount = getSettlementAccount();

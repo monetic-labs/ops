@@ -2,7 +2,7 @@ import type { Account } from "@/types/account";
 
 import { Button } from "@nextui-org/button";
 import { Modal, ModalContent, ModalHeader, ModalBody } from "@nextui-org/modal";
-import { useAccountManagement } from "@/hooks/useAccountManagement";
+import { useAccounts } from "@/contexts/AccountContext";
 import { formatAmountUSD } from "@/utils/helpers";
 
 interface AccountSelectionModalProps {
@@ -24,7 +24,7 @@ export function AccountSelectionModal({
   title,
   isSettlementSelection = false,
 }: AccountSelectionModalProps) {
-  const { updateVirtualAccountDestination } = useAccountManagement();
+  const { updateVirtualAccountDestination } = useAccounts();
 
   const handleSelect = async (account: Account) => {
     if (isSettlementSelection) {
@@ -56,7 +56,7 @@ export function AccountSelectionModal({
                 <account.icon className="w-5 h-5 text-foreground/60" />
                 <div className="flex flex-col items-start">
                   <span className="font-medium">{account.name}</span>
-                  <span className="text-sm text-foreground/60">{formatAmountUSD(account.balance)}</span>
+                  <span className="text-sm text-foreground/60">{formatAmountUSD(account.balance ?? 0)}</span>
                 </div>
               </div>
             </Button>

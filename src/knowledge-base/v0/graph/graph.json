@@ -92,7 +92,7 @@
         "admin-access": {
             "type": "permission",
             "description": "Administrative access control",
-            "roles": ["ADMIN", "SUPER_ADMIN"]
+            "roles": ["OWNER"]
         },
         "energy-type-manifestor": {
             "type": "experience",

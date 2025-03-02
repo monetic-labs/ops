@@ -33,7 +33,7 @@ export type OrgMember = {
   id: string;
   displayName: string;
   email: string;
-  role: "OWNER" | "ADMIN" | "MEMBER";
+  role: "OWNER" | "MEMBER";
 };
 
 export interface EmailVerificationProps {

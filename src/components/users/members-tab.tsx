@@ -1,18 +1,19 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Chip } from "@nextui-org/chip";
 import { User } from "@nextui-org/user";
-import { MerchantUserGetOutput, PersonRole } from "@backpack-fux/pylon-sdk";
+import { MerchantUserGetOutput, MerchantUserCreateInput } from "@backpack-fux/pylon-sdk";
 
 import { DataTable, Column, EmptyContent } from "@/components/generics/data-table";
 import { formatPhoneNumber, formatStringToTitleCase, getFullName, getOpepenAvatar } from "@/utils/helpers";
 import { usersStatusColorMap } from "@/data";
-import pylon from "@/libs/pylon-sdk";
-import { useUser } from "@/contexts/UserContext";
+import { useUsers } from "@/contexts/UsersContext";
+import { useSigners } from "@/contexts/SignersContext";
 
 import CreateUserModal from "./user-create";
 import UserEditModal from "./user-edit";
+import { ShieldCheck } from "lucide-react";
 
 interface MembersTabProps {
   userId: string;
@@ -21,44 +22,22 @@ interface MembersTabProps {
 }
 
 export default function MembersTab({ userId, isCreateModalOpen, setIsCreateModalOpen }: MembersTabProps) {
-  const { user } = useUser();
-  const [users, setUsers] = useState<MerchantUserGetOutput[]>([]);
+  const {
+    users,
+    isLoading: isLoadingUsers,
+    error,
+    isOwner,
+    getAvailableRoles,
+    createUser,
+    updateUser,
+    removeUser,
+  } = useUsers();
+  const { signers, isLoading: isLoadingSigners } = useSigners();
   const [selectedUser, setSelectedUser] = useState<MerchantUserGetOutput | null>(null);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<Error | null>(null);
 
-  async function fetchUsers() {
-    setIsLoading(true);
-    try {
-      const fetchedUsers = await pylon.getUsers();
-
-      setUsers(fetchedUsers);
-      setError(null);
-    } catch (err) {
-      console.error("Error fetching users:", err);
-      setError(err as Error);
-    } finally {
-      setIsLoading(false);
-    }
-  }
-
-  useEffect(() => {
-    if (userId && user) {
-      fetchUsers();
-    }
-  }, [userId, user]);
-
-  if (!user) return null;
-
-  const canManageUsers = user.role === PersonRole.SUPER_ADMIN;
-  const isEditable = user.role === PersonRole.SUPER_ADMIN;
-
-  const availableRoles = Object.values(PersonRole).filter((role) => {
-    if (user.role === PersonRole.SUPER_ADMIN) return true;
-
-    return false;
-  });
+  const availableRoles = getAvailableRoles();
+  const isLoading = isLoadingUsers || isLoadingSigners;
 
   const memberColumns: Column<MerchantUserGetOutput>[] = [
     {
@@ -66,7 +45,6 @@ export default function MembersTab({ userId, isCreateModalOpen, setIsCreateModal
       uid: "name",
       render: (user) => {
         const fullName = getFullName(user.firstName, user.lastName);
-
         return (
           <User
             avatarProps={{
@@ -107,16 +85,23 @@ export default function MembersTab({ userId, isCreateModalOpen, setIsCreateModal
     {
       name: "ROLE",
       uid: "role",
-      render: (user) => (
-        <Chip
-          className="capitalize truncate"
-          color={usersStatusColorMap[user.role] || "default"}
-          size="sm"
-          variant="flat"
-        >
-          {formatStringToTitleCase(user.role)}
-        </Chip>
-      ),
+      render: (user) => {
+        const isSigner =
+          user.walletAddress && signers.some((s) => s.address.toLowerCase() === user.walletAddress?.toLowerCase());
+        return (
+          <Chip
+            className="capitalize truncate"
+            color={usersStatusColorMap[user.role] || "default"}
+            size="sm"
+            variant="flat"
+          >
+            <div className="flex items-center gap-1">
+              {formatStringToTitleCase(user.role)}
+              {isSigner && <ShieldCheck className="w-3 h-3" />}
+            </div>
+          </Chip>
+        );
+      },
     },
     {
       name: "PHONE",
@@ -138,76 +123,18 @@ export default function MembersTab({ userId, isCreateModalOpen, setIsCreateModal
   ];
 
   const handleUserClick = (user: MerchantUserGetOutput) => {
-    console.log("User clicked:", user);
-    console.log("Can manage users:", canManageUsers);
-    if (!canManageUsers) {
-      console.log("Cannot manage users, returning");
-
-      return;
-    }
+    if (!isOwner) return;
     setSelectedUser(user);
     setIsEditModalOpen(true);
-    console.log("Edit modal should be open now");
   };
 
-  const handleCreateUser = async (newUser: MerchantUserGetOutput) => {
+  const handleCreateUser = async (data: MerchantUserCreateInput) => {
     try {
-      await fetchUsers();
+      await createUser(data);
       setIsCreateModalOpen(false);
     } catch (err) {
-      console.error("Error after creating user:", err);
-      setError(err as Error);
-    }
-  };
-
-  const handleUpdateUser = async (updatedUser: MerchantUserGetOutput) => {
-    try {
-      await pylon.updateUser(updatedUser.id, {
-        firstName: updatedUser.firstName,
-        lastName: updatedUser.lastName,
-        username: updatedUser.username,
-        email: updatedUser.email,
-        role: updatedUser.role,
-        phone: updatedUser.phone,
-      });
-
-      // Update the local state instead of refetching
-      setUsers(users.map((user) => (user.id === updatedUser.id ? updatedUser : user)));
-      handleCloseEditModal();
-    } catch (err) {
-      console.error("Error updating user:", err);
-      setError(err as Error);
-    }
-  };
-
-  const handleRemoveUser = async (userId: string) => {
-    const userToRemove = users.find((u) => u.id === userId);
-
-    if (!userToRemove) return;
-
-    try {
-      if (userToRemove.pendingInvite && !userToRemove.pendingInvite.isUsed) {
-        // For pending invites, use cancelInvite with the invite ID
-        const success = await pylon.cancelInvite(userToRemove.pendingInvite.id);
-
-        if (!success) {
-          throw new Error("Failed to cancel invite");
-        }
-      } else {
-        // For active users, use deleteUser with the user ID
-        const success = await pylon.deleteUser(userId);
-
-        if (!success) {
-          throw new Error("Failed to remove user");
-        }
-      }
-
-      // Update the local state
-      setUsers(users.filter((user) => user.id !== userId));
-      handleCloseEditModal();
-    } catch (err) {
-      console.error("Error removing user:", err);
-      setError(err as Error);
+      console.error("Failed to create user:", err);
+      // TODO: Show error toast
     }
   };
 
@@ -226,7 +153,7 @@ export default function MembersTab({ userId, isCreateModalOpen, setIsCreateModal
         aria-label="Members table"
         columns={memberColumns}
         emptyContent={
-          canManageUsers ? (
+          isOwner ? (
             <EmptyContent message="Add your first member" onAction={() => setIsCreateModalOpen(true)} />
           ) : (
             <EmptyContent message="No members found" />
@@ -243,13 +170,13 @@ export default function MembersTab({ userId, isCreateModalOpen, setIsCreateModal
       {selectedUser && (
         <UserEditModal
           availableRoles={availableRoles}
-          isEditable={isEditable && !selectedUser.pendingInvite}
+          isEditable={isOwner && !selectedUser.pendingInvite}
           isOpen={isEditModalOpen}
           isSelf={selectedUser.id === userId}
           user={selectedUser}
           onClose={handleCloseEditModal}
-          onRemove={handleRemoveUser}
-          onSave={handleUpdateUser}
+          onRemove={removeUser}
+          onSave={updateUser}
         />
       )}
 

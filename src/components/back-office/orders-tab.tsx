@@ -92,7 +92,7 @@ const OrdersTab = forwardRef<OrdersTabRef>((_, ref) => {
       align: "start",
       render: (order) => (
         <span className="truncate block">
-          ${formatAmountUSD(order.order.subtotal / 100)} {order.order.currency}
+          {formatAmountUSD(order.order.subtotal / 100)} {order.order.currency}
         </span>
       ),
     },

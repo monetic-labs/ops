@@ -27,7 +27,7 @@ export const getDefaultValues = ({ settlementAddress }: { settlementAddress: Add
       streetAddress1: "",
       streetAddress2: "",
       hasDashboardAccess: true,
-      dashboardRole: PersonRole.SUPER_ADMIN,
+      dashboardRole: PersonRole.OWNER,
     },
   ],
 });
