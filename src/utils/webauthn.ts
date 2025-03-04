@@ -51,7 +51,6 @@ export class WebAuthnHelper {
     const credential = await createCredential({
       challenge,
       authenticatorSelection: {
-        authenticatorAttachment: "platform",
         residentKey: "preferred",
         userVerification: "required",
       },
@@ -65,6 +64,9 @@ export class WebAuthnHelper {
         name: WebAuthnHelper.appName,
       },
       timeout: 8000, // 8 seconds
+      extensions: {
+        credProps: true,
+      },
     });
 
     const { x, y } = PublicKey.from(credential.publicKey);

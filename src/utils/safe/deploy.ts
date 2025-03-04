@@ -2,7 +2,7 @@ import { Address, encodeFunctionData } from "viem";
 import { SafeAccountV0_3_0 as SafeAccount, DEFAULT_SECP256R1_PRECOMPILE_ADDRESS } from "abstractionkit";
 
 import { WebAuthnHelper } from "@/utils/webauthn";
-import { WebAuthnCredentials } from "@/utils/localstorage";
+import { WebAuthnCredentials } from "@/types/webauthn";
 import { safeAbi } from "@/utils/abi/safe";
 import {
   createSafeAccount,

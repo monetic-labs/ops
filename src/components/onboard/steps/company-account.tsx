@@ -86,7 +86,6 @@ export const CompanyAccountStep = () => {
         />
         <FormField
           isOptional
-          description="Optional - Describe your company's main business activities"
           errorMessage={errors?.companyDescription?.message?.toString()}
           isInvalid={!!errors?.companyDescription}
           label="Company Description"

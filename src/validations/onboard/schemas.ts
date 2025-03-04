@@ -51,7 +51,8 @@ export const companyAccountSchema = z.object({
     .min(42, "Settlement address must be 42 characters")
     .max(42, "Settlement address must be 42 characters")
     .refine((val) => isAddress(val), "Please enter a valid hex address")
-    .transform((val) => val as Address),
+    .transform((val) => val as Address)
+    .optional(),
   companyRegistrationNumber: z
     .string()
     .min(1, "Registration number is required")

@@ -162,7 +162,8 @@ export const capitalizeFirstChar = (value: string) => {
 };
 
 // Address and Identification Formatting
-export const truncateAddress = (address: Address): string => {
+export const truncateAddress = (address?: Address): string => {
+  if (!address) return "";
   if (address.length <= 10) return address;
   return `${address.slice(0, 5)}....${address.slice(-4)}`;
 };

@@ -1,56 +1,78 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useState, useEffect } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Spinner } from "@nextui-org/spinner";
 import { useForm, FormProvider } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Accordion, AccordionItem } from "@nextui-org/accordion";
 import { Modal, ModalContent } from "@nextui-org/modal";
 import { Button } from "@nextui-org/button";
-import { Sun, Moon } from "lucide-react";
-
-import { schema, FormData, UserRole } from "@/validations/onboard/schemas";
-import { LocalStorage, OnboardingState } from "@/utils/localstorage";
-import { StatusModal, StatusStep } from "@/components/onboard/status-modal";
-import { useTheme } from "@/hooks/useTheme";
-import { ISO3166Alpha2Country, ISO3166Alpha3Country, PersonRole } from "@backpack-fux/pylon-sdk";
+import { Sun, Moon, CheckCircle2, Fingerprint, Laptop, Shield } from "lucide-react";
+import { jwtDecode } from "jwt-decode";
 import { Address } from "viem";
-
+import { WebAuthnHelper } from "@/utils/webauthn";
+import { createSafeAccount } from "@/utils/safe";
+import { setupSocialRecovery } from "@/utils/safe/onboard";
+import { OnboardingState } from "@/types/webauthn";
 import { CircleWithNumber, CheckCircleIcon } from "./components/StepIndicator";
 import { getDefaultValues, getFieldsForStep } from "./types";
 import { getSteps } from "./config/steps";
 import pylon from "@/libs/pylon-sdk";
-import { setupSocialRecovery } from "@/utils/safe/onboard";
+
+import { schema, FormData, UserRole } from "@/validations/onboard/schemas";
+import { StatusModal, StatusStep } from "@/components/onboard/status-modal";
+import { useTheme } from "@/hooks/useTheme";
+import { ISO3166Alpha2Country, ISO3166Alpha3Country, PersonRole } from "@backpack-fux/pylon-sdk";
+
+interface OnboardingToken {
+  email: string;
+  type: string;
+  exp: number;
+  iat: number;
+}
 
 export default function OnboardPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { toggleTheme, isDark } = useTheme();
+
+  // Simple token check - redirect if no token
+  useEffect(() => {
+    const token = searchParams?.get("token");
+    if (!token) {
+      router.replace("/auth");
+    }
+  }, [searchParams, router]);
+
   const [currentStep, setCurrentStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isRedirecting, setIsRedirecting] = useState(false);
+  const [showPasskeyModal, setShowPasskeyModal] = useState(false);
   const [statusSteps, setStatusSteps] = useState<StatusStep[]>([
+    { message: "Creating passkey...", isComplete: false },
     { message: "Creating merchant account...", isComplete: false },
     { message: "Setting up account recovery...", isComplete: false },
     { message: "Redirecting to compliance portal...", isComplete: false },
   ]);
 
-  const [onboardingState] = useState<OnboardingState>(() => {
-    const state = LocalStorage.getOnboarding();
-
-    if (!state) {
-      router.push("/auth");
-      throw new Error("Missing onboarding state");
-    }
-
-    return state;
-  });
-
+  // Initialize form
   const methods = useForm<FormData>({
     resolver: zodResolver(schema),
     mode: "onChange",
     reValidateMode: "onChange",
-    defaultValues: getDefaultValues({ settlementAddress: onboardingState.settlementAddress }),
+    defaultValues: (() => {
+      const token = searchParams?.get("token");
+      if (!token) return getDefaultValues();
+
+      try {
+        const decoded = jwtDecode<OnboardingToken>(token);
+        return getDefaultValues(decoded.email);
+      } catch (error) {
+        console.error("Error decoding token:", error);
+        return getDefaultValues();
+      }
+    })(),
   });
 
   const {
@@ -125,11 +147,32 @@ export default function OnboardPage() {
   };
 
   const handleSubmit = handleFormSubmit(async (formData) => {
+    setShowPasskeyModal(true);
+  });
+
+  const handlePasskeyConfirm = async (formData: FormData) => {
+    setShowPasskeyModal(false);
     setIsSubmitting(true);
     try {
+      // Create passkey first
+      const webauthnHelper = new WebAuthnHelper();
+      const { publicKeyCoordinates: publicKey, credentialId } = await webauthnHelper.createPasskey();
+      updateStatusStep(0, true);
+
+      // Create individual safe account
+      const { address: walletAddr } = createSafeAccount({
+        signers: [publicKey],
+        isWebAuthn: true,
+      });
+
+      // Create settlement safe account
+      const { address: settlementAddr } = createSafeAccount({
+        signers: [walletAddr],
+      });
+
       // Create merchant account
       const response = await pylon.createMerchant({
-        settlementAddress: onboardingState.settlementAddress,
+        settlementAddress: settlementAddr as Address,
         isTermsOfServiceAccepted: formData.acceptedTerms,
         company: {
           name: formData.companyName,
@@ -156,7 +199,7 @@ export default function OnboardPage() {
             nationalId: formData.users[0].socialSecurityNumber,
             countryOfIssue: formData.users[0].countryOfIssue,
             birthDate: formData.users[0].birthDate,
-            walletAddress: onboardingState.walletAddress,
+            walletAddress: walletAddr || undefined,
             address: {
               line1: formData.users[0].streetAddress1,
               line2: formData.users[0].streetAddress2 || undefined,
@@ -223,9 +266,9 @@ export default function OnboardPage() {
               birthDate: user.birthDate,
               nationalId: user.socialSecurityNumber,
               countryOfIssue: user.countryOfIssue,
-              walletAddress: index === 0 ? onboardingState.walletAddress : undefined,
+              walletAddress: index === 0 ? walletAddr || undefined : undefined,
               role,
-              passkeyId: index === 0 ? onboardingState.credentials.credentialId : undefined,
+              passkeyId: index === 0 ? credentialId : undefined,
               address: {
                 line1: user.streetAddress1,
                 line2: user.streetAddress2 || undefined,
@@ -239,24 +282,24 @@ export default function OnboardPage() {
           }),
       });
 
-      updateStatusStep(0, true);
+      updateStatusStep(1, true);
 
       if (response) {
         // Setup social recovery for the account
         await setupSocialRecovery({
-          walletAddress: onboardingState.walletAddress as Address,
-          credentials: onboardingState.credentials,
+          walletAddress: walletAddr as Address,
+          credentials: { publicKey, credentialId },
           recoveryMethods: {
             email: formData.users[0].email,
             phone: formData.users[0].phoneNumber.number,
           },
           callbacks: {
-            onRecoverySetup: () => updateStatusStep(1, true),
+            onRecoverySetup: () => updateStatusStep(2, true),
             onError: () => setIsSubmitting(false),
           },
         });
 
-        updateStatusStep(2, true);
+        updateStatusStep(3, true);
         await new Promise((resolve) => setTimeout(resolve, 1500));
         setIsSubmitting(false);
         setIsRedirecting(true);
@@ -266,13 +309,10 @@ export default function OnboardPage() {
       console.error("Error in onboarding process:", error);
       setIsSubmitting(false);
     }
-  });
-
-  const steps = getSteps();
+  };
 
   return (
     <section className="w-full relative z-10 max-w-3xl mx-auto px-4 py-12">
-      {/* Theme Toggle */}
       <Button
         isIconOnly
         className="fixed top-4 right-4 z-50 bg-content1/10 backdrop-blur-lg border border-border"
@@ -294,7 +334,7 @@ export default function OnboardPage() {
           <FormProvider {...methods}>
             <form noValidate onSubmit={handleSubmit}>
               <Accordion className="p-1" selectedKeys={[currentStep.toString()]} variant="shadow">
-                {steps.map((step, index) => (
+                {getSteps().map((step, index) => (
                   <AccordionItem
                     key={step.number}
                     aria-label={step.title}
@@ -339,6 +379,74 @@ export default function OnboardPage() {
           </FormProvider>
         </div>
       </div>
+
+      {/* Passkey Modal */}
+      <Modal
+        isOpen={showPasskeyModal}
+        onClose={() => setShowPasskeyModal(false)}
+        classNames={{
+          base: "bg-content1/95 backdrop-blur-xl border border-border shadow-2xl",
+          body: "p-0",
+        }}
+        size="lg"
+      >
+        <ModalContent>
+          <div className="p-8">
+            <div className="flex flex-col gap-6">
+              <div className="text-center">
+                <h2 className="text-2xl font-semibold text-foreground mb-2">Create Your Passkey</h2>
+                <p className="text-foreground/60">
+                  A passkey is a more secure alternative to passwords, using your device's biometric authentication
+                  (like Face ID or fingerprint) to protect your account.
+                </p>
+              </div>
+              <div className="space-y-4">
+                <div className="flex items-start gap-4 p-4 bg-content2 rounded-lg">
+                  <div className="p-2 bg-primary/10 rounded-full">
+                    <Fingerprint className="w-6 h-6 text-primary" />
+                  </div>
+                  <div>
+                    <h3 className="font-medium text-foreground">More Secure</h3>
+                    <p className="text-sm text-foreground/60">
+                      Passkeys are unique to your device and can't be phished or stolen like passwords.
+                    </p>
+                  </div>
+                </div>
+                <div className="flex items-start gap-4 p-4 bg-content2 rounded-lg">
+                  <div className="p-2 bg-primary/10 rounded-full">
+                    <Laptop className="w-6 h-6 text-primary" />
+                  </div>
+                  <div>
+                    <h3 className="font-medium text-foreground">Easier to Use</h3>
+                    <p className="text-sm text-foreground/60">
+                      No more remembering complex passwords. Just use your device's biometric authentication.
+                    </p>
+                  </div>
+                </div>
+                <div className="flex items-start gap-4 p-4 bg-content2 rounded-lg">
+                  <div className="p-2 bg-primary/10 rounded-full">
+                    <Shield className="w-6 h-6 text-primary" />
+                  </div>
+                  <div>
+                    <h3 className="font-medium text-foreground">Safer Money Movement</h3>
+                    <p className="text-sm text-foreground/60">
+                      Passkeys secure money transfers. No one but you can send money with your passkey.
+                    </p>
+                  </div>
+                </div>
+              </div>
+              <div className="flex justify-end gap-3">
+                <Button variant="flat" onPress={() => setShowPasskeyModal(false)}>
+                  Cancel
+                </Button>
+                <Button color="primary" onPress={() => handlePasskeyConfirm(methods.getValues())}>
+                  Create Passkey
+                </Button>
+              </div>
+            </div>
+          </div>
+        </ModalContent>
+      </Modal>
 
       {/* Status Modal */}
       <StatusModal isOpen={isSubmitting} steps={statusSteps} />

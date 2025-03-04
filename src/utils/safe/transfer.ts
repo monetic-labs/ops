@@ -6,7 +6,7 @@ import {
 } from "abstractionkit";
 
 import { WebAuthnHelper } from "@/utils/webauthn";
-import { WebAuthnCredentials } from "@/utils/localstorage";
+import { WebAuthnCredentials } from "@/types/webauthn";
 import { safeAbi } from "@/utils/abi/safe";
 import {
   createAndSendSponsoredUserOp,

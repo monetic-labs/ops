@@ -69,10 +69,6 @@ export const ReviewStep = ({ onStepChange }: { onStepChange: (step: number) => v
         </div>
         <div className="grid grid-cols-2 gap-4 rounded-lg border border-default-200 p-4">
           <div>
-            <p className="text-sm text-default-500">Settlement Address</p>
-            <p>{truncateAddress(formData.settlementAddress)}</p>
-          </div>
-          <div>
             <p className="text-sm text-default-500">Registration Number</p>
             <p>{formData.companyRegistrationNumber}</p>
           </div>

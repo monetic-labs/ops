@@ -6,7 +6,7 @@ import {
 } from "@backpack-fux/pylon-sdk";
 
 import { WebAuthnHelper } from "@/utils/webauthn";
-import { WebAuthnCredentials } from "@/utils/localstorage";
+import { WebAuthnCredentials } from "@/types/webauthn";
 import { BACKPACK_GUARDIAN_ADDRESS } from "@/utils/constants";
 import { createAndSendSponsoredUserOp, sendUserOperation } from "@/utils/safe";
 import { createEnableModuleTransaction, createAddGuardianTransaction } from "@/utils/socialRecovery";

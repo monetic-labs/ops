@@ -224,7 +224,7 @@ export const UserDetailsStep = () => {
                       description={
                         index > 0 && watch(`users.${index}.hasDashboardAccess`)
                           ? `An email notification will be sent to ${watch(`users.${index}.email`)} for onboarding`
-                          : "You must be a Super Admin"
+                          : "You must be an Owner"
                       }
                       errorMessage={error?.message}
                       isDisabled={index === 0}

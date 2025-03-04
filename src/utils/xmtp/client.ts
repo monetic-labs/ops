@@ -3,8 +3,7 @@ import { Hex } from "viem";
 import { Signature } from "ox";
 
 import { WebAuthnHelper } from "@/utils/webauthn";
-
-import { WebAuthnCredentials } from "../localstorage";
+import { WebAuthnCredentials } from "@/types/webauthn";
 
 export interface GroupMessage {
   id: string;

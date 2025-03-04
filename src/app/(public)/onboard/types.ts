@@ -1,36 +1,46 @@
 import { ISO3166Alpha2Country, PersonRole } from "@backpack-fux/pylon-sdk";
 import { Address } from "viem";
+import { jwtDecode } from "jwt-decode";
 
 import { UserRole } from "@/validations/onboard/schemas";
 import { FormData } from "@/validations/onboard/schemas";
 
-export const getDefaultValues = ({ settlementAddress }: { settlementAddress: Address }): Partial<FormData> => ({
-  companyEmail: "",
-  acceptedTerms: false,
-  settlementAddress,
-  users: [
-    {
-      firstName: "",
-      lastName: "",
-      email: "",
-      phoneNumber: {
-        extension: "",
-        number: "",
+interface OnboardingToken {
+  email: string;
+  type: string;
+  exp: number;
+  iat: number;
+}
+
+export const getDefaultValues = (email?: string): Partial<FormData> => {
+  return {
+    companyEmail: "",
+    acceptedTerms: false,
+    settlementAddress: undefined,
+    users: [
+      {
+        firstName: "",
+        lastName: "",
+        email: email || "",
+        phoneNumber: {
+          extension: "",
+          number: "",
+        },
+        roles: [UserRole.BENEFICIAL_OWNER, UserRole.REPRESENTATIVE],
+        countryOfIssue: ISO3166Alpha2Country.US,
+        birthDate: "",
+        socialSecurityNumber: "",
+        postcode: "",
+        city: "",
+        state: "",
+        streetAddress1: "",
+        streetAddress2: "",
+        hasDashboardAccess: true,
+        dashboardRole: PersonRole.OWNER,
       },
-      roles: [UserRole.BENEFICIAL_OWNER, UserRole.REPRESENTATIVE],
-      countryOfIssue: ISO3166Alpha2Country.US,
-      birthDate: "",
-      socialSecurityNumber: "",
-      postcode: "",
-      city: "",
-      state: "",
-      streetAddress1: "",
-      streetAddress2: "",
-      hasDashboardAccess: true,
-      dashboardRole: PersonRole.OWNER,
-    },
-  ],
-});
+    ],
+  };
+};
 
 export const getFieldsForStep = (step: number): (keyof FormData)[] => {
   switch (step) {
@@ -46,7 +56,7 @@ export const getFieldsForStep = (step: number): (keyof FormData)[] => {
         "streetAddress2",
       ];
     case 2:
-      return ["settlementAddress", "companyRegistrationNumber", "companyTaxId", "companyType", "companyDescription"];
+      return ["companyRegistrationNumber", "companyTaxId", "companyType", "companyDescription"];
     case 3:
       return ["users"];
     case 4:

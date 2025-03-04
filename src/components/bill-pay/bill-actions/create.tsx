@@ -123,7 +123,8 @@ export default function CreateBillPayModal({
 
   if (!credentials) {
     if (isAuthenticated) {
-      throw new Error("No credentials found");
+      toast.error("Please set up a passkey to make transfers");
+      onClose();
     }
     return null;
   }

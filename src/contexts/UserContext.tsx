@@ -1,200 +1,162 @@
 "use client";
 
-import { createContext, useContext, ReactNode, useState, useEffect } from "react";
-import { useRouter, usePathname } from "next/navigation";
-import { jwtDecode } from "jwt-decode";
+import { createContext, useContext, ReactNode, useState, useEffect, useMemo } from "react";
+import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { MerchantUserGetByIdOutput as MerchantUser } from "@backpack-fux/pylon-sdk";
+import { Hex } from "viem";
+import { PublicKey } from "ox";
 
 import pylon from "@/libs/pylon-sdk";
-import { LocalStorage, AuthState, WebAuthnCredentials, UserProfile, OnboardingState } from "@/utils/localstorage";
-
-interface JwtPayload {
-  userId: string;
-  merchantId: number;
-  sessionId: string;
-  iat: number;
-  exp: number;
-}
+import { WebAuthnCredentials } from "@/types/webauthn";
 
 interface UserState {
   user: MerchantUser | undefined;
   credentials: WebAuthnCredentials | undefined;
-  profile: UserProfile | null;
   isLoading: boolean;
   isAuthenticated: boolean;
-  userId?: string;
-  merchantId?: number;
 }
 
 interface UserContextType extends UserState {
   logout: () => void;
   getSigningCredentials: () => WebAuthnCredentials | undefined;
-  updateProfileImage: (image: string | null) => void;
-  setAuth: (auth: AuthState) => void;
-  setOnboarding: (state: OnboardingState) => void;
+  setCredentials: (credentials: WebAuthnCredentials) => void;
 }
 
 const UserContext = createContext<UserContextType>({
   user: undefined,
   credentials: undefined,
-  profile: null,
   isLoading: true,
   isAuthenticated: false,
-  userId: undefined,
-  merchantId: undefined,
   logout: () => {},
   getSigningCredentials: () => undefined,
-  updateProfileImage: () => {},
-  setAuth: () => {},
-  setOnboarding: () => {},
+  setCredentials: () => {},
 });
 
 const PUBLIC_ROUTES = ["/auth", "/auth/recovery", "/invite", "/onboard"];
 
-export function UserProvider({ children, token }: { children: ReactNode; token?: string }) {
+export function UserProvider({ children }: { children: ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
+  const searchParams = useSearchParams();
 
   // Core state
   const [user, setUser] = useState<MerchantUser | undefined>();
-  const [authState, setAuthState] = useState<AuthState | null>(LocalStorage.getAuth());
-  const [profile, setProfile] = useState<UserProfile | null>(LocalStorage.getProfile());
+  const [credentials, setCredentials] = useState<WebAuthnCredentials | undefined>();
   const [isLoading, setIsLoading] = useState(true);
-  const [userId, setUserId] = useState<string | undefined>();
-  const [merchantId, setMerchantId] = useState<number | undefined>();
+  const [shouldCheckAuth, setShouldCheckAuth] = useState(true);
 
-  // Process JWT token
+  // Check auth status and fetch user data
   useEffect(() => {
-    if (token) {
-      try {
-        const decoded = jwtDecode<JwtPayload>(token);
-        setUserId(decoded.userId);
-        setMerchantId(decoded.merchantId);
-      } catch (error) {
-        console.error("Failed to decode JWT:", error);
+    let isSubscribed = true;
+
+    const checkAuthStatus = async () => {
+      // Don't check if we shouldn't
+      if (!shouldCheckAuth) {
+        setIsLoading(false);
+        return;
       }
-    }
-  }, [token]);
 
-  // Derived state
-  const isAuthenticated = Boolean(authState?.isLoggedIn && user);
-  const credentials = authState?.credentials;
-
-  // Fetch user data when authenticated
-  useEffect(() => {
-    const fetchUser = async () => {
-      if (!authState?.isLoggedIn) {
+      // Skip auth check if we're on the verify route (token exchange in progress)
+      if (pathname?.startsWith("/auth/verify")) {
         setIsLoading(false);
         return;
       }
 
       try {
-        const result = await pylon.getUserById();
-        setUser(result);
+        const userData = await pylon.getUserById();
+        if (!isSubscribed) return;
+
+        if (!userData) {
+          setUser(undefined);
+          setCredentials(undefined);
+          setIsLoading(false);
+          setShouldCheckAuth(false);
+          return;
+        }
+
+        setUser(userData);
+
+        // If we have registered passkeys but no credentials set, use the first one
+        if (!credentials && userData?.registeredPasskeys?.length > 0) {
+          const passkey = userData.registeredPasskeys[0];
+          const { x, y } = PublicKey.fromHex(passkey.publicKey as Hex);
+          setCredentials({
+            publicKey: { x, y },
+            credentialId: passkey.credentialId,
+          });
+        }
+
+        setIsLoading(false);
+        setShouldCheckAuth(false);
       } catch (error) {
         console.error("Error fetching user data:", error);
-        if ((error as any)?.response?.status === 401) {
-          handleLogout();
-        }
-      } finally {
+        if (!isSubscribed) return;
+
+        setUser(undefined);
+        setCredentials(undefined);
         setIsLoading(false);
+        setShouldCheckAuth(false);
       }
     };
 
-    fetchUser();
-  }, [authState?.isLoggedIn]);
-
-  // Auth state change listener
-  useEffect(() => {
-    const handleStorageChange = () => {
-      const newAuthState = LocalStorage.getAuth();
-      const newProfile = LocalStorage.getProfile();
-
-      setAuthState(newAuthState);
-      setProfile(newProfile);
-    };
-
-    window.addEventListener("storage", handleStorageChange);
-    window.addEventListener("authStateChange", handleStorageChange);
+    checkAuthStatus();
 
     return () => {
-      window.removeEventListener("storage", handleStorageChange);
-      window.removeEventListener("authStateChange", handleStorageChange);
+      isSubscribed = false;
     };
-  }, []);
-
-  // Route protection
-  useEffect(() => {
-    const isPublicRoute = PUBLIC_ROUTES.some((route) => pathname?.startsWith(route));
-
-    if (isLoading) return;
-
-    if (!isPublicRoute && !isAuthenticated) {
-      router.replace("/auth");
-    } else if (isAuthenticated && isPublicRoute) {
-      router.replace("/");
-    }
-  }, [isAuthenticated, isLoading, pathname, router]);
+  }, [pathname, shouldCheckAuth]);
 
   const handleLogout = async () => {
     try {
       await pylon.logout();
-      LocalStorage.clearAuth();
-      setAuthState((prev) => {
-        setUser(undefined);
-        setUserId(undefined);
-        setMerchantId(undefined);
-        return null;
-      });
-      await new Promise((resolve) => setTimeout(resolve, 0));
+      setUser(undefined);
+      setCredentials(undefined);
+      setShouldCheckAuth(false);
       router.replace("/auth");
     } catch (error) {
       console.error("Logout failed:", error);
     }
   };
 
-  const getSigningCredentials = (): WebAuthnCredentials | undefined => {
-    if (!authState?.credentials) return undefined;
-    return authState.credentials;
+  const handleSetCredentials = (newCredentials: WebAuthnCredentials) => {
+    setShouldCheckAuth(true);
+    setCredentials(newCredentials);
   };
 
-  const updateProfileImage = (image: string | null) => {
-    if (image) {
-      LocalStorage.setProfileImage(image);
-    } else {
-      LocalStorage.removeProfileImage();
+  // Simplified route protection using early returns
+  useEffect(() => {
+    if (isLoading) return;
+
+    const isPublicRoute = PUBLIC_ROUTES.some((route) => pathname?.startsWith(route));
+    const hasOnboardToken = pathname?.startsWith("/onboard") && searchParams?.get("token");
+    const isVerifyRoute = pathname?.startsWith("/auth/verify");
+
+    // Skip protection for special cases
+    if (isVerifyRoute || hasOnboardToken) return;
+
+    // Handle routing
+    if (!isPublicRoute && !user) {
+      router.replace("/auth");
+    } else if (user && isPublicRoute) {
+      router.replace("/");
     }
-  };
+  }, [user, isLoading, pathname, router, searchParams]);
 
-  const setAuth = (auth: AuthState) => {
-    LocalStorage.setAuth(auth.credentials, auth.isLoggedIn);
-    setAuthState(auth);
-  };
-
-  const setOnboarding = (state: OnboardingState) => {
-    LocalStorage.setOnboarding(state);
-  };
-
-  return (
-    <UserContext.Provider
-      value={{
-        user,
-        credentials,
-        profile,
-        isLoading,
-        isAuthenticated,
-        userId,
-        merchantId,
-        logout: handleLogout,
-        getSigningCredentials,
-        updateProfileImage,
-        setAuth,
-        setOnboarding,
-      }}
-    >
-      {children}
-    </UserContext.Provider>
+  // Memoize the context value to prevent unnecessary rerenders
+  const contextValue = useMemo(
+    () => ({
+      user,
+      credentials,
+      isLoading,
+      isAuthenticated: Boolean(user),
+      logout: handleLogout,
+      getSigningCredentials: () => credentials,
+      setCredentials: handleSetCredentials,
+    }),
+    [user, credentials, isLoading]
   );
+
+  return <UserContext.Provider value={contextValue}>{children}</UserContext.Provider>;
 }
 
 export const useUser = () => {
