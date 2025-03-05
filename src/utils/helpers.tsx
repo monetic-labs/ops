@@ -216,3 +216,22 @@ export const formatCompanyType = (value: string) => {
       throw new Error("Invalid company type");
   }
 };
+
+// Time Formatting
+export const formatDuration = (seconds: number): string => {
+  if (seconds <= 0) return "0s";
+
+  const days = Math.floor(seconds / (24 * 60 * 60));
+  const hours = Math.floor((seconds % (24 * 60 * 60)) / (60 * 60));
+  const minutes = Math.floor((seconds % (60 * 60)) / 60);
+  const remainingSeconds = seconds % 60;
+
+  const parts = [];
+
+  if (days > 0) parts.push(`${days}d`);
+  if (hours > 0) parts.push(`${hours}h`);
+  if (minutes > 0) parts.push(`${minutes}m`);
+  if (remainingSeconds > 0 && days === 0) parts.push(`${remainingSeconds}s`);
+
+  return parts.join(" ");
+};

@@ -24,6 +24,7 @@ import { schema, FormData, UserRole } from "@/validations/onboard/schemas";
 import { StatusModal, StatusStep } from "@/components/onboard/status-modal";
 import { useTheme } from "@/hooks/useTheme";
 import { ISO3166Alpha2Country, ISO3166Alpha3Country, PersonRole } from "@backpack-fux/pylon-sdk";
+import { ExpiryTimer } from "@/components/onboard/expiry-time";
 
 interface OnboardingToken {
   email: string;
@@ -36,14 +37,28 @@ export default function OnboardPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { toggleTheme, isDark } = useTheme();
+  const [tokenExpiry, setTokenExpiry] = useState<number | null>(null);
 
-  // Simple token check - redirect if no token
+  // Token check and expiry setup
   useEffect(() => {
     const token = searchParams?.get("token");
     if (!token) {
       router.replace("/auth");
+      return;
+    }
+
+    try {
+      const decoded = jwtDecode<OnboardingToken>(token);
+      setTokenExpiry(decoded.exp);
+    } catch (error) {
+      console.error("Error decoding token:", error);
+      router.replace("/auth");
     }
   }, [searchParams, router]);
+
+  const handleExpiry = () => {
+    router.replace("/auth");
+  };
 
   const [currentStep, setCurrentStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -156,7 +171,9 @@ export default function OnboardPage() {
     try {
       // Create passkey first
       const webauthnHelper = new WebAuthnHelper();
-      const { publicKeyCoordinates: publicKey, credentialId } = await webauthnHelper.createPasskey();
+      const { publicKeyCoordinates: publicKey, credentialId } = await webauthnHelper.createPasskey(
+        formData.users[0].email
+      );
       updateStatusStep(0, true);
 
       // Create individual safe account
@@ -326,6 +343,14 @@ export default function OnboardPage() {
       <div className="mb-8 text-center">
         <h1 className="text-3xl font-semibold text-foreground mb-2">Complete Your Setup</h1>
         <p className="text-foreground/60">Let&apos;s get your business account ready for use</p>
+        {tokenExpiry && (
+          <>
+            <div className="mt-4 flex justify-center md:hidden">
+              <ExpiryTimer expiryTime={tokenExpiry} onExpire={handleExpiry} variant="inline" />
+            </div>
+            <ExpiryTimer expiryTime={tokenExpiry} onExpire={handleExpiry} variant="fixed" />
+          </>
+        )}
       </div>
 
       <div className="relative">

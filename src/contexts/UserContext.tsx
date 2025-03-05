@@ -8,18 +8,23 @@ import { PublicKey } from "ox";
 
 import pylon from "@/libs/pylon-sdk";
 import { WebAuthnCredentials } from "@/types/webauthn";
+import { LocalStorage } from "@/utils/localstorage";
 
 interface UserState {
   user: MerchantUser | undefined;
   credentials: WebAuthnCredentials | undefined;
   isLoading: boolean;
   isAuthenticated: boolean;
+  profile?: {
+    profileImage: string | null;
+  };
 }
 
 interface UserContextType extends UserState {
   logout: () => void;
   getSigningCredentials: () => WebAuthnCredentials | undefined;
   setCredentials: (credentials: WebAuthnCredentials) => void;
+  updateProfileImage: (image: string | null) => Promise<void>;
 }
 
 const UserContext = createContext<UserContextType>({
@@ -30,6 +35,7 @@ const UserContext = createContext<UserContextType>({
   logout: () => {},
   getSigningCredentials: () => undefined,
   setCredentials: () => {},
+  updateProfileImage: async () => {},
 });
 
 const PUBLIC_ROUTES = ["/auth", "/auth/recovery", "/invite", "/onboard"];
@@ -44,6 +50,26 @@ export function UserProvider({ children }: { children: ReactNode }) {
   const [credentials, setCredentials] = useState<WebAuthnCredentials | undefined>();
   const [isLoading, setIsLoading] = useState(true);
   const [shouldCheckAuth, setShouldCheckAuth] = useState(true);
+  const [profile, setProfile] = useState<UserState["profile"]>();
+
+  // Load profile from localStorage on mount and listen for changes
+  useEffect(() => {
+    const savedProfile = LocalStorage.getProfile();
+    if (savedProfile) {
+      setProfile({ profileImage: savedProfile.profileImage || null });
+    }
+
+    // Listen for storage changes
+    const handleStorageChange = () => {
+      const updatedProfile = LocalStorage.getProfile();
+      if (updatedProfile) {
+        setProfile({ profileImage: updatedProfile.profileImage || null });
+      }
+    };
+
+    window.addEventListener("storage", handleStorageChange);
+    return () => window.removeEventListener("storage", handleStorageChange);
+  }, []);
 
   // Check auth status and fetch user data
   useEffect(() => {
@@ -63,6 +89,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
       }
 
       try {
+        setIsLoading(true);
         const userData = await pylon.getUserById();
         if (!isSubscribed) return;
 
@@ -86,6 +113,9 @@ export function UserProvider({ children }: { children: ReactNode }) {
           });
         }
 
+        // Add a small delay to ensure state updates are processed
+        await new Promise((resolve) => setTimeout(resolve, 500));
+
         setIsLoading(false);
         setShouldCheckAuth(false);
       } catch (error) {
@@ -104,10 +134,11 @@ export function UserProvider({ children }: { children: ReactNode }) {
     return () => {
       isSubscribed = false;
     };
-  }, [pathname, shouldCheckAuth]);
+  }, [pathname, shouldCheckAuth, credentials]);
 
   const handleLogout = async () => {
     try {
+      setIsLoading(true);
       await pylon.logout();
       setUser(undefined);
       setCredentials(undefined);
@@ -115,10 +146,13 @@ export function UserProvider({ children }: { children: ReactNode }) {
       router.replace("/auth");
     } catch (error) {
       console.error("Logout failed:", error);
+    } finally {
+      setIsLoading(false);
     }
   };
 
   const handleSetCredentials = (newCredentials: WebAuthnCredentials) => {
+    setIsLoading(true);
     setShouldCheckAuth(true);
     setCredentials(newCredentials);
   };
@@ -149,11 +183,30 @@ export function UserProvider({ children }: { children: ReactNode }) {
       credentials,
       isLoading,
       isAuthenticated: Boolean(user),
+      profile,
       logout: handleLogout,
       getSigningCredentials: () => credentials,
       setCredentials: handleSetCredentials,
+      updateProfileImage: async (image: string | null) => {
+        try {
+          // Update localStorage first
+          if (image) {
+            LocalStorage.setProfileImage(image);
+          } else {
+            LocalStorage.removeProfileImage();
+          }
+
+          // Then update the state
+          setProfile((prev) => ({ ...prev, profileImage: image }));
+
+          return Promise.resolve();
+        } catch (error) {
+          console.error("Error updating profile image:", error);
+          return Promise.reject(error);
+        }
+      },
     }),
-    [user, credentials, isLoading]
+    [user, credentials, isLoading, profile]
   );
 
   return <UserContext.Provider value={contextValue}>{children}</UserContext.Provider>;

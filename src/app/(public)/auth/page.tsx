@@ -11,6 +11,8 @@ import { useRouter } from "next/navigation";
 import { WebAuthnHelper } from "@/utils/webauthn";
 import { useUser } from "@/contexts/UserContext";
 import { useTheme } from "@/hooks/useTheme";
+import pylon from "@/libs/pylon-sdk";
+import type { Passkey as PasskeyCredential } from "@backpack-fux/pylon-sdk";
 
 interface PasskeyOptions {
   challenge: string;
@@ -24,11 +26,6 @@ interface PasskeyOptions {
   rpId: string;
 }
 
-interface PasskeyCredential {
-  credentialId: string;
-  displayName: string | null;
-}
-
 const AuthPage = () => {
   const { toggleTheme, isDark } = useTheme();
   const [isLoading, setIsLoading] = useState(false);
@@ -38,6 +35,7 @@ const AuthPage = () => {
   const router = useRouter();
   const { isAuthenticated, setCredentials } = useUser();
   const [emailSent, setEmailSent] = useState(false);
+  const [resendCooldown, setResendCooldown] = useState(0);
 
   useEffect(() => {
     if (isAuthenticated) {
@@ -45,15 +43,30 @@ const AuthPage = () => {
     }
   }, [isAuthenticated, router]);
 
+  // Handle resend cooldown timer
+  useEffect(() => {
+    if (resendCooldown > 0) {
+      const timer = setInterval(() => {
+        setResendCooldown((prev) => prev - 1);
+      }, 1000);
+      return () => clearInterval(timer);
+    }
+  }, [resendCooldown]);
+
   const handlePasskeyAuth = async (credentials: PasskeyCredential[]) => {
     setIsLoading(true);
     try {
       const webauthnHelper = new WebAuthnHelper();
-      const { publicKey, credentialId } = await webauthnHelper.loginWithPasskey();
+      const { publicKey, credentialId } = await webauthnHelper.loginWithPasskey(
+        credentials.map((cred) => cred.credentialId)
+      );
 
       // Set credentials in context
       setCredentials({ publicKey, credentialId });
+      setNotification("Successfully authenticated. Redirecting...");
 
+      // Add a small delay to show the success message
+      await new Promise((resolve) => setTimeout(resolve, 1000));
       router.push("/");
     } catch (error) {
       console.error("Passkey error:", error);
@@ -65,21 +78,19 @@ const AuthPage = () => {
       setTimeout(async () => {
         await handleEmailAuth();
       }, 1500);
-    } finally {
-      setIsLoading(false);
     }
   };
 
   const checkAuthOptions = async (email: string) => {
     try {
       setIsLoading(true);
-      const response = await fetch(`http://localhost:8001/v1/auth/passkey?email=${encodeURIComponent(email)}`);
-      const { data } = await response.json();
+      const passkeys = await pylon.getPasskeys(email);
 
-      if (data && data.length > 0) {
+      if (passkeys && passkeys.length > 0) {
         // User has passkeys, immediately try passkey login
-        setPasskeyCredentials(data);
-        await handlePasskeyAuth(data);
+        setPasskeyCredentials(passkeys);
+        setNotification("Authenticating with passkey...");
+        await handlePasskeyAuth(passkeys);
       } else {
         // No passkeys, send email
         await handleEmailAuth();
@@ -87,7 +98,6 @@ const AuthPage = () => {
     } catch (error) {
       console.error("Error checking auth options:", error);
       setNotification("Failed to check authentication options");
-    } finally {
       setIsLoading(false);
     }
   };
@@ -95,18 +105,11 @@ const AuthPage = () => {
   const handleEmailAuth = async () => {
     try {
       setIsLoading(true);
-
-      // Send magic link email
-      const response = await fetch("http://localhost:8001/v1/auth/magic_link", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email }),
-      });
-
-      const { data } = await response.json();
-
+      await pylon.issueMagicLink(email);
       setEmailSent(true);
-      setNotification(data.message);
+      setResendCooldown(60); // Start 60 second cooldown
+      // Don't set notification for successful email send since we show it in the UI
+      setNotification(null);
     } catch (error) {
       console.error("Email auth error:", error);
       setNotification("Failed to send login email");
@@ -115,96 +118,88 @@ const AuthPage = () => {
     }
   };
 
+  const handleBack = () => {
+    setEmailSent(false);
+    setNotification(null);
+    setEmail("");
+    setResendCooldown(0);
+  };
+
   return (
-    <div className="min-h-screen w-full flex flex-col items-center justify-center relative p-4">
-      {/* Theme Toggle */}
-      <Button
-        isIconOnly
-        className="fixed top-4 right-4 z-50 bg-content1/10 backdrop-blur-lg border border-primary/10"
-        radius="lg"
-        variant="flat"
-        onPress={toggleTheme}
-      >
-        {isDark ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
-      </Button>
-
-      {/* Background Gradient */}
-      <div className="absolute inset-0 bg-gradient-to-br from-background/5 via-background/50 to-background/80" />
-
-      {/* Auth Card */}
-      <div className="relative w-full max-w-md">
-        <Card className="bg-content1/40 backdrop-blur-xl border border-primary/10 shadow-xl">
-          <CardBody className="gap-8 p-8">
-            {/* Header */}
-            <div className="text-center space-y-3">
-              <div className="inline-flex p-3 rounded-2xl bg-primary/5">
-                <Backpack className="w-8 h-8 text-primary" />
-              </div>
-              <div>
-                <h1 className="text-2xl font-semibold text-foreground">
-                  {emailSent ? "Check Your Email" : "Welcome to Backpack"}
+    <div className="min-h-screen w-full flex flex-col">
+      <div className="absolute top-4 right-4">
+        <Button
+          isIconOnly
+          className="bg-content2/50 backdrop-blur-lg"
+          radius="full"
+          variant="flat"
+          onPress={toggleTheme}
+        >
+          {isDark ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+        </Button>
+      </div>
+      <div className="flex-1 flex flex-col items-center justify-center p-4">
+        <Card className="w-full max-w-md bg-content1/95 backdrop-blur-xl border border-border shadow-2xl">
+          <CardBody className="py-8 px-6">
+            <div className="flex flex-col items-center gap-6 mb-6">
+              <Backpack className="w-10 h-10 text-primary" />
+              <div className="text-center">
+                <h1 className="text-2xl font-semibold text-foreground mb-2">
+                  {emailSent ? "Check Your Email" : "Sign in or Register"}
                 </h1>
-                <p className="text-foreground/60 text-base mt-1">
-                  {emailSent ? "We've sent you a login link" : "Enter your email to register or login"}
+                <p className="text-foreground/60">
+                  {emailSent ? "We'll send you a magic link if an account exists" : "Enter your email to continue"}
                 </p>
+                {emailSent && <p className="text-sm text-foreground/60 mt-1">{email}</p>}
               </div>
             </div>
 
-            {/* Email Input */}
-            <div className="space-y-4">
-              <Input
-                type="email"
-                label="Email Address"
-                placeholder="Enter your email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                startContent={<Mail className="w-4 h-4 text-default-400" />}
-                isDisabled={isLoading || emailSent}
-              />
+            {!emailSent ? (
+              <div className="space-y-4">
+                <Input
+                  type="email"
+                  label="Email Address"
+                  placeholder="Enter your email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  startContent={<Mail className="w-4 h-4 text-default-400" />}
+                  isDisabled={isLoading}
+                />
 
-              {!emailSent && (
-                <>
-                  <p className="text-sm text-foreground/60 text-center">
-                    By continuing, you agree to our{" "}
-                    <Link href="https://backpack.network/terms-of-service" className="text-sm text-primary">
-                      Terms of Service
-                    </Link>
-                  </p>
+                <p className="text-sm text-foreground/60 text-center">
+                  By continuing, you agree to our{" "}
+                  <Link href="https://backpack.network/terms-of-service" className="text-sm text-primary">
+                    Terms of Service
+                  </Link>
+                </p>
+                <Button
+                  className="w-full bg-primary text-primary-foreground hover:opacity-90 h-12 text-base"
+                  isLoading={isLoading}
+                  onClick={() => checkAuthOptions(email)}
+                  isDisabled={!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || isLoading}
+                >
+                  {isLoading ? "Please wait..." : "Continue"}
+                </Button>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                <div className="flex flex-col gap-4">
                   <Button
                     className="w-full bg-primary text-primary-foreground hover:opacity-90 h-12 text-base"
+                    isDisabled={resendCooldown > 0}
                     isLoading={isLoading}
-                    onClick={() => checkAuthOptions(email)}
-                    isDisabled={!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || isLoading}
+                    onClick={() => handleEmailAuth()}
                   >
-                    Continue
+                    {resendCooldown > 0 ? `Resend in ${resendCooldown}s` : isLoading ? "Sending..." : "Resend Email"}
                   </Button>
-                </>
-              )}
-            </div>
-
-            {notification && (
-              <div className="text-center">
-                <p
-                  className={`text-sm ${notification.includes("registered") || notification.includes("Sending") ? "text-success" : "text-danger"}`}
-                >
-                  {notification}
-                </p>
-              </div>
-            )}
-
-            {emailSent && (
-              <>
-                <Button
-                  className="w-full border-default-200 bg-default-100 dark:bg-default-50 hover:!bg-default-200 h-12 text-base"
-                  variant="bordered"
-                  onClick={() => {
-                    setEmailSent(false);
-                    setNotification(null);
-                    setEmail("");
-                  }}
-                >
-                  Try Different Email
-                </Button>
+                  <Button
+                    className="w-full border-default-200 bg-default-100 dark:bg-default-50 hover:!bg-default-200 h-12 text-base"
+                    variant="bordered"
+                    onClick={handleBack}
+                  >
+                    Back
+                  </Button>
+                </div>
 
                 {passkeyCredentials.length > 0 && (
                   <div className="text-center mt-4">
@@ -216,7 +211,25 @@ const AuthPage = () => {
                     </Link>
                   </div>
                 )}
-              </>
+              </div>
+            )}
+
+            {!emailSent && notification && (
+              <div className="text-center mt-4">
+                <p
+                  className={`text-sm ${
+                    notification.includes("registered") ||
+                    notification.includes("Sending") ||
+                    notification.includes("Successfully") ||
+                    notification.includes("Authenticating") ||
+                    notification.includes("Redirecting")
+                      ? "text-success"
+                      : "text-danger"
+                  }`}
+                >
+                  {notification}
+                </p>
+              </div>
             )}
           </CardBody>
         </Card>

@@ -1,4 +1,4 @@
-import type { SignMetadata } from "ox/WebAuthnP256";
+import type { getCredentialCreationOptions, SignMetadata } from "ox/WebAuthnP256";
 
 import { Bytes, Hex as OxHex, PublicKey, type Signature } from "ox";
 import { createCredential, sign } from "ox/WebAuthnP256";
@@ -36,63 +36,61 @@ export class WebAuthnHelper {
   }
 
   /**
-   * Creates a new WebAuthn credential
+   * Creates a new WebAuthn credential using server-provided options
+   * @param email User's email for registration
    * @returns WebauthnPublicKey for use with Safe
    */
-  async createPasskey(): Promise<{
+  async createPasskey(email: string): Promise<{
     credentialId: string;
     publicKey: Hex;
     publicKeyCoordinates: WebauthnPublicKey;
     passkeyId: string;
   }> {
-    const challengeStr = await this.requestChallenge();
-    const challenge = Bytes.fromString(challengeStr);
+    try {
+      const rawOptions = await pylon.getPasskeyRegistrationOptions(email);
+      if (!rawOptions) {
+        throw new Error("Failed to get registration options");
+      }
 
-    const credential = await createCredential({
-      challenge,
-      authenticatorSelection: {
-        residentKey: "preferred",
-        userVerification: "required",
-      },
-      user: {
-        id: Bytes.fromString(crypto.randomUUID()),
-        name: `${WebAuthnHelper.appName} Key (${todayStr})`,
-        displayName: `${WebAuthnHelper.appName} Key (${todayStr})`,
-      },
-      rp: {
-        id: WebAuthnHelper.hostName,
-        name: WebAuthnHelper.appName,
-      },
-      timeout: 8000, // 8 seconds
-      extensions: {
-        credProps: true,
-      },
-    });
+      // Create credential with server-provided options
+      const credential = await createCredential({
+        ...rawOptions,
+        challenge: Bytes.fromString(rawOptions.challenge),
+        user: {
+          ...rawOptions.user,
+          id: Bytes.fromString(rawOptions.user.id),
+        },
+      });
 
-    const { x, y } = PublicKey.from(credential.publicKey);
+      const { x, y } = PublicKey.from(credential.publicKey);
+      this.publicKey = { x, y };
+      this.credentialId = credential.id;
 
-    this.publicKey = { x, y };
-    this.credentialId = credential.id;
+      // Register passkey with server
+      const { passkeyId } = await pylon.registerPasskey({
+        credentialId: credential.id,
+        publicKey: PublicKey.toHex(credential.publicKey),
+      });
 
-    // Register passkey to server
-    const { passkeyId } = await pylon.registerPasskey({
-      credentialId: credential.id,
-      publicKey: PublicKey.toHex(credential.publicKey),
-    });
-
-    return {
-      credentialId: credential.id,
-      publicKey: PublicKey.toHex(credential.publicKey),
-      publicKeyCoordinates: this.publicKey,
-      passkeyId,
-    };
+      return {
+        credentialId: credential.id,
+        publicKey: PublicKey.toHex(credential.publicKey),
+        publicKeyCoordinates: this.publicKey,
+        passkeyId,
+      };
+    } catch (error) {
+      console.error("Passkey creation failed:", error);
+      throw new Error("Failed to create passkey. Please try again.");
+    }
   }
 
   /**
    * Logs in with an existing passkey
    * @returns The credential and public key if successful
+   * @param credentialIds - The credential IDs to use for login
+   * @todo pass in multiple credentials into `credentialId` parameter
    */
-  async loginWithPasskey(): Promise<{ publicKey: WebauthnPublicKey; credentialId: string }> {
+  async loginWithPasskey(credentialIds?: string[]): Promise<{ publicKey: WebauthnPublicKey; credentialId: string }> {
     try {
       const challengeStr = await this.requestChallenge();
       const challenge = Bytes.fromString(challengeStr);
@@ -104,6 +102,7 @@ export class WebAuthnHelper {
       } = await sign({
         challenge: OxHex.fromBytes(challenge),
         userVerification: "required",
+        ...(credentialIds && { credentialId: credentialIds[0] }),
       });
 
       const serializedSignature = {

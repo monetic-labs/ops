@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Spinner } from "@nextui-org/spinner";
+import pylon from "@/libs/pylon-sdk";
 
 export default function VerifyPage() {
   const router = useRouter();
@@ -19,18 +20,9 @@ export default function VerifyPage() {
       }
 
       try {
-        const response = await fetch(`http://localhost:8001/v1/auth/magic_link/exchange`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ token }),
-          credentials: "include",
-        });
-
-        if (!response.ok) {
-          const data = await response.json();
-          throw new Error(data.message || "Authentication failed");
+        const isTokenExchanged = await pylon.exchangeMagicLinkToken(token);
+        if (!isTokenExchanged) {
+          throw new Error("Token exchange failed");
         }
 
         // Wait a short moment to ensure the cookie is set

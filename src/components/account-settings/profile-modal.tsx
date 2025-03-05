@@ -7,6 +7,7 @@ import { Input } from "@nextui-org/input";
 import { Avatar } from "@nextui-org/avatar";
 import { XIcon, Upload, Trash2 } from "lucide-react";
 import { MerchantUserGetByIdOutput as MerchantUser } from "@backpack-fux/pylon-sdk";
+import { useToast } from "@/hooks/useToast";
 
 import { formatPhoneNumber } from "@/utils/helpers";
 import { useUser } from "@/contexts/UserContext";
@@ -19,7 +20,9 @@ interface ProfileSettingsModalProps {
 
 export const ProfileSettingsModal = ({ isOpen, onClose, user }: ProfileSettingsModalProps) => {
   const { profile, updateProfileImage } = useUser();
+  const { toast } = useToast();
   const [imageFile, setImageFile] = useState<string | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
 
   // Reset state when modal opens/closes and when profile changes
   useEffect(() => {
@@ -28,36 +31,67 @@ export const ProfileSettingsModal = ({ isOpen, onClose, user }: ProfileSettingsM
 
   const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
-
     if (!file) return;
 
     // Check file size (limit to 5MB)
     if (file.size > 5 * 1024 * 1024) {
-      alert("Image size should be less than 5MB");
-
+      toast({
+        title: "File too large",
+        description: "Image size should be less than 5MB",
+        variant: "destructive",
+      });
       return;
     }
 
+    setIsUploading(true);
     try {
       const base64 = await new Promise<string>((resolve, reject) => {
         const reader = new FileReader();
-
         reader.onload = () => resolve(reader.result as string);
-        reader.onerror = reject;
+        reader.onerror = (error) => reject(new Error("Failed to read file"));
         reader.readAsDataURL(file);
       });
 
+      // Set the image file state first for immediate visual feedback
       setImageFile(base64);
-      updateProfileImage(base64);
+
+      // Then update the profile
+      await updateProfileImage(base64);
+
+      toast({
+        title: "Success",
+        description: "Profile picture updated successfully",
+      });
     } catch (error) {
       console.error("Error uploading image:", error);
-      alert("Failed to upload image. Please try again.");
+      // Reset the image file state if the update failed
+      setImageFile(profile?.profileImage || null);
+      toast({
+        title: "Upload failed",
+        description: "Failed to upload image. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsUploading(false);
     }
   };
 
-  const handleRemoveImage = () => {
-    setImageFile(null);
-    updateProfileImage(null);
+  const handleRemoveImage = async () => {
+    try {
+      await updateProfileImage(null);
+      setImageFile(null);
+      toast({
+        title: "Success",
+        description: "Profile picture removed successfully",
+      });
+    } catch (error) {
+      console.error("Error removing image:", error);
+      toast({
+        title: "Error",
+        description: "Failed to remove profile picture. Please try again.",
+        variant: "destructive",
+      });
+    }
   };
 
   const handleClose = () => {
@@ -67,7 +101,6 @@ export const ProfileSettingsModal = ({ isOpen, onClose, user }: ProfileSettingsM
 
   const getInitials = (firstName?: string, lastName?: string) => {
     if (!firstName || !lastName) return "";
-
     return `${firstName[0]}${lastName[0]}`.toUpperCase();
   };
 
@@ -119,11 +152,13 @@ export const ProfileSettingsModal = ({ isOpen, onClose, user }: ProfileSettingsM
                 <Button
                   as="label"
                   color="primary"
+                  isDisabled={isUploading}
+                  isLoading={isUploading}
                   size="sm"
                   startContent={<Upload className="w-4 h-4" />}
                   variant="flat"
                 >
-                  Change Picture
+                  {isUploading ? "Uploading..." : "Change Picture"}
                   <input accept="image/*" className="hidden" type="file" onChange={handleImageUpload} />
                 </Button>
                 {imageFile && (
