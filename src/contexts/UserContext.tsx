@@ -40,7 +40,12 @@ const UserContext = createContext<UserContextType>({
 
 const PUBLIC_ROUTES = ["/auth", "/auth/recovery", "/invite", "/onboard"];
 
-export function UserProvider({ children }: { children: ReactNode }) {
+interface UserProviderProps {
+  children: ReactNode;
+  token?: string;
+}
+
+export function UserProvider({ children, token }: UserProviderProps) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -49,7 +54,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<MerchantUser | undefined>();
   const [credentials, setCredentials] = useState<WebAuthnCredentials | undefined>();
   const [isLoading, setIsLoading] = useState(true);
-  const [shouldCheckAuth, setShouldCheckAuth] = useState(true);
+  const [shouldCheckAuth, setShouldCheckAuth] = useState(Boolean(token));
   const [profile, setProfile] = useState<UserState["profile"]>();
 
   // Load profile from localStorage on mount and listen for changes

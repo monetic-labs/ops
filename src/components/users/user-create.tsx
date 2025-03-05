@@ -60,7 +60,6 @@ export default function CreateUserModal({ isOpen, onClose, onSave, availableRole
             <ModalBody className="gap-4">
               <div className="grid grid-cols-2 gap-4">
                 <Input
-                  autoFocus
                   isRequired
                   label="First Name"
                   placeholder="Enter first name"

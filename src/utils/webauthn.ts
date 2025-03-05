@@ -95,6 +95,7 @@ export class WebAuthnHelper {
       const challengeStr = await this.requestChallenge();
       const challenge = Bytes.fromString(challengeStr);
 
+      // TODO: get options from pylon
       const {
         raw: credential,
         signature,

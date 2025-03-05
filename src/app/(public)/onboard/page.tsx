@@ -421,7 +421,7 @@ export default function OnboardPage() {
               <div className="text-center">
                 <h2 className="text-2xl font-semibold text-foreground mb-2">Create Your Passkey</h2>
                 <p className="text-foreground/60">
-                  A passkey is a more secure alternative to passwords, using your device's biometric authentication
+                  A passkey is a more secure alternative to passwords, using your device&apos;s biometric authentication
                   (like Face ID or fingerprint) to protect your account.
                 </p>
               </div>
@@ -433,7 +433,7 @@ export default function OnboardPage() {
                   <div>
                     <h3 className="font-medium text-foreground">More Secure</h3>
                     <p className="text-sm text-foreground/60">
-                      Passkeys are unique to your device and can't be phished or stolen like passwords.
+                      Passkeys are unique to your device and can&apos;t be phished or stolen like passwords.
                     </p>
                   </div>
                 </div>
@@ -444,7 +444,7 @@ export default function OnboardPage() {
                   <div>
                     <h3 className="font-medium text-foreground">Easier to Use</h3>
                     <p className="text-sm text-foreground/60">
-                      No more remembering complex passwords. Just use your device's biometric authentication.
+                      No more remembering complex passwords. Just use your device&apos;s biometric authentication.
                     </p>
                   </div>
                 </div>
