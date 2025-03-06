@@ -192,14 +192,12 @@ export default function AccountMeta() {
               `}
             >
               <div className="p-6 space-y-6 border-t border-border">
-                <button onClick={(e) => e.stopPropagation()}>
-                  <AccountBalance
-                    account={selectedAccount}
-                    onReceive={handleReceive}
-                    onSend={handleSend}
-                    isLoading={isLoadingAccounts}
-                  />
-                </button>
+                <AccountBalance
+                  account={selectedAccount}
+                  onReceive={handleReceive}
+                  onSend={handleSend}
+                  isLoading={isLoadingAccounts}
+                />
 
                 <AccountNavigation selectedTab={activeTab} onTabChange={setActiveTab} />
 

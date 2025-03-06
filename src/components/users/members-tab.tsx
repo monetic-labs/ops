@@ -3,7 +3,9 @@
 import { useState } from "react";
 import { Chip } from "@nextui-org/chip";
 import { User } from "@nextui-org/user";
-import { MerchantUserGetOutput, MerchantUserCreateInput } from "@backpack-fux/pylon-sdk";
+import { MerchantUserGetOutput, MerchantUserCreateInput, PersonRole } from "@backpack-fux/pylon-sdk";
+import { Button } from "@nextui-org/button";
+import { Tooltip } from "@nextui-org/tooltip";
 
 import { DataTable, Column, EmptyContent } from "@/components/generics/data-table";
 import { formatPhoneNumber, formatStringToTitleCase, getFullName, getOpepenAvatar } from "@/utils/helpers";
@@ -13,7 +15,28 @@ import { useSigners } from "@/contexts/SignersContext";
 
 import CreateUserModal from "./user-create";
 import UserEditModal from "./user-edit";
-import { ShieldCheck } from "lucide-react";
+import { ShieldCheck, Fingerprint, Info, Eye } from "lucide-react";
+
+// Helper function to mask email
+const maskEmail = (email: string) => {
+  if (!email) return "N/A";
+  const [username, domain] = email.split("@");
+  if (!domain) return email;
+  return `${username.slice(0, 3)}***@${domain}`;
+};
+
+// Helper function to mask phone
+const maskPhone = (phone: string) => {
+  if (!phone) return "N/A";
+  // Remove any non-numeric characters first
+  const numbers = phone.replace(/\D/g, "");
+  if (numbers.length !== 10) return formatPhoneNumber(phone); // If not a 10-digit number, just format it
+
+  // Format the masked number
+  const areaCode = numbers.slice(0, 3);
+  const lastFour = numbers.slice(-4);
+  return `(${areaCode}) •••-${lastFour}`;
+};
 
 interface MembersTabProps {
   userId: string;
@@ -64,60 +87,106 @@ export default function MembersTab({ userId, isCreateModalOpen, setIsCreateModal
       },
     },
     {
-      name: "STATUS",
-      uid: "status",
-      render: (user) => {
-        const isPending = user.pendingInvite?.isUsed === false;
-        const isExpired = isPending && user.pendingInvite && new Date(user.pendingInvite.expiresAt) < new Date();
-
-        return (
-          <Chip
-            className="capitalize"
-            color={isPending ? (isExpired ? "danger" : "warning") : "success"}
-            size="sm"
-            variant="flat"
-          >
-            {isPending ? (isExpired ? "Invite Expired" : "Invite Pending") : "Active"}
-          </Chip>
-        );
-      },
-    },
-    {
       name: "ROLE",
       uid: "role",
+      render: (user) => (
+        <Chip
+          className="capitalize truncate"
+          color={usersStatusColorMap[user.role] || "default"}
+          size="sm"
+          variant="flat"
+        >
+          {formatStringToTitleCase(user.role)}
+        </Chip>
+      ),
+    },
+    {
+      name: "SECURITY",
+      uid: "security",
       render: (user) => {
-        const isSigner =
-          user.walletAddress && signers.some((s) => s.address.toLowerCase() === user.walletAddress?.toLowerCase());
+        const hasPasskeys = user.registeredPasskeys && user.registeredPasskeys.length > 0;
+        const isAccountSigner = user.walletAddress && signers.some((signer) => signer.address === user.walletAddress);
+
         return (
-          <Chip
-            className="capitalize truncate"
-            color={usersStatusColorMap[user.role] || "default"}
-            size="sm"
-            variant="flat"
-          >
-            <div className="flex items-center gap-1">
-              {formatStringToTitleCase(user.role)}
-              {isSigner && <ShieldCheck className="w-3 h-3" />}
-            </div>
-          </Chip>
+          <div className="flex items-center gap-2">
+            {hasPasskeys ? (
+              <Tooltip
+                content={
+                  <div className="p-2">
+                    <p className="font-medium mb-2">
+                      {user.registeredPasskeys.length} Passkey{user.registeredPasskeys.length > 1 ? "s" : ""}
+                    </p>
+                    <ul className="space-y-1">
+                      {user.registeredPasskeys.map((key) => (
+                        <li key={key.credentialId} className="text-sm text-foreground/70">
+                          {key.displayName || "Unnamed Device"}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                }
+              >
+                <div className="flex items-center gap-1.5 text-sm text-foreground/70">
+                  <Fingerprint className="w-4 h-4" />
+                  {user.registeredPasskeys.length}
+                </div>
+              </Tooltip>
+            ) : (
+              <div className="flex items-center gap-1.5 text-sm text-foreground/50">
+                <span>No security keys</span>
+              </div>
+            )}
+            {isAccountSigner && (
+              <Tooltip content="Account Signer">
+                <Chip size="sm" variant="flat" color="primary">
+                  Signer
+                </Chip>
+              </Tooltip>
+            )}
+          </div>
         );
       },
     },
     {
       name: "PHONE",
       uid: "phone",
-      render: (user) =>
-        user.phone ? (
-          <span className="truncate block max-w-[150px] sm:max-w-[200px]">{formatPhoneNumber(user.phone)}</span>
-        ) : (
-          <span className="truncate block text-default-400">N/A</span>
-        ),
+      render: (user) => (
+        <Tooltip
+          content={
+            <div className="py-2 px-3">
+              <div className="flex items-center gap-2">
+                <Eye className="w-4 h-4" />
+                <span>{user.phone ? formatPhoneNumber(user.phone) : "No phone number"}</span>
+              </div>
+            </div>
+          }
+          delay={500}
+        >
+          <span className="truncate block max-w-[150px] sm:max-w-[200px] text-foreground/70">
+            {user.phone ? maskPhone(user.phone) : <span className="text-foreground/40">N/A</span>}
+          </span>
+        </Tooltip>
+      ),
     },
     {
       name: "EMAIL",
       uid: "email",
       render: (user) => (
-        <span className="truncate block max-w-[150px] sm:max-w-[200px] md:max-w-[300px]">{user.email || "N/A"}</span>
+        <Tooltip
+          content={
+            <div className="py-2 px-3">
+              <div className="flex items-center gap-2">
+                <Eye className="w-4 h-4" />
+                <span>{user.email || "No email"}</span>
+              </div>
+            </div>
+          }
+          delay={500}
+        >
+          <span className="truncate block max-w-[150px] sm:max-w-[200px] md:max-w-[300px] text-foreground/70">
+            {user.email ? maskEmail(user.email) : <span className="text-foreground/40">N/A</span>}
+          </span>
+        </Tooltip>
       ),
     },
   ];
@@ -170,7 +239,7 @@ export default function MembersTab({ userId, isCreateModalOpen, setIsCreateModal
       {selectedUser && (
         <UserEditModal
           availableRoles={availableRoles}
-          isEditable={isOwner && !selectedUser.pendingInvite}
+          isEditable={isOwner}
           isOpen={isEditModalOpen}
           isSelf={selectedUser.id === userId}
           user={selectedUser}

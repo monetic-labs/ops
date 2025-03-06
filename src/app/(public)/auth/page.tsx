@@ -53,6 +53,27 @@ const AuthPage = () => {
     }
   }, [resendCooldown]);
 
+  const checkAuthOptions = async (email: string) => {
+    try {
+      setIsLoading(true);
+      const passkeys = await pylon.getPasskeys(email);
+
+      if (passkeys && passkeys.length > 0) {
+        // User has passkeys, immediately try passkey login
+        setPasskeyCredentials(passkeys);
+        setNotification("Authenticating with passkey...");
+        await handlePasskeyAuth(passkeys);
+      } else {
+        // No passkeys, send email
+        await handleEmailAuth();
+      }
+    } catch (error) {
+      console.error("Error checking auth options:", error);
+      setNotification("Failed to check authentication options");
+      setIsLoading(false);
+    }
+  };
+
   const handlePasskeyAuth = async (credentials: PasskeyCredential[]) => {
     setIsLoading(true);
     try {
@@ -78,27 +99,6 @@ const AuthPage = () => {
       setTimeout(async () => {
         await handleEmailAuth();
       }, 1500);
-    }
-  };
-
-  const checkAuthOptions = async (email: string) => {
-    try {
-      setIsLoading(true);
-      const passkeys = await pylon.getPasskeys(email);
-
-      if (passkeys && passkeys.length > 0) {
-        // User has passkeys, immediately try passkey login
-        setPasskeyCredentials(passkeys);
-        setNotification("Authenticating with passkey...");
-        await handlePasskeyAuth(passkeys);
-      } else {
-        // No passkeys, send email
-        await handleEmailAuth();
-      }
-    } catch (error) {
-      console.error("Error checking auth options:", error);
-      setNotification("Failed to check authentication options");
-      setIsLoading(false);
     }
   };
 

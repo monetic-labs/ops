@@ -82,7 +82,7 @@ export function AccountBalance({ account, onSend, onReceive, isLoading = false }
           <p className="text-3xl md:text-4xl font-semibold mt-1">{formatAmountUSD(account.balance)}</p>
           <p className="text-sm text-foreground/40 mt-1">{account.currency}</p>
         </div>
-        <button className="flex gap-2 w-full md:w-auto" onClick={(e) => e.stopPropagation()}>
+        <div className="flex gap-2 w-full md:w-auto">
           <Button
             className="flex-1 md:flex-none h-11 bg-primary/10 text-primary hover:bg-primary/20 px-6"
             startContent={<ArrowUpRight className="w-4 h-4" />}
@@ -97,7 +97,7 @@ export function AccountBalance({ account, onSend, onReceive, isLoading = false }
           >
             Receive
           </Button>
-        </button>
+        </div>
       </div>
     </div>
   );

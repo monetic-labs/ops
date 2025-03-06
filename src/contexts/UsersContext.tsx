@@ -110,15 +110,8 @@ export function UsersProvider({ children }: { children: ReactNode }) {
       if (!userToRemove) return false;
 
       try {
-        if (userToRemove.pendingInvite && !userToRemove.pendingInvite.isUsed) {
-          // For pending invites, use cancelInvite with the invite ID
-          const success = await pylon.cancelInvite(userToRemove.pendingInvite.id);
-          if (!success) throw new Error("Failed to cancel invite");
-        } else {
-          // For active users, use deleteUser with the user ID
-          const success = await pylon.deleteUser(userId);
-          if (!success) throw new Error("Failed to remove user");
-        }
+        const success = await pylon.deleteUser(userId);
+        if (!success) throw new Error("Failed to remove user");
 
         // Update the local state
         setState((prev) => ({
