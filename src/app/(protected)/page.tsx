@@ -1,8 +1,9 @@
 "use client";
 
 import AccountMeta from "@/components/account-contract/account-meta";
-import MerchantServicesTabs from "./tabs";
 import { useUser } from "@/contexts/UserContext";
+
+import MerchantServicesTabs from "./tabs";
 
 export default function DashboardPage() {
   const { user } = useUser();

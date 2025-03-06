@@ -1,6 +1,7 @@
 import { Button } from "@nextui-org/button";
 import { Shield, Info, Clock, Settings } from "lucide-react";
 import { Tooltip } from "@nextui-org/tooltip";
+
 import { Signer } from "@/types/account";
 
 export function PoliciesView({ signers, isLoading }: { signers: Signer[]; isLoading: boolean }) {

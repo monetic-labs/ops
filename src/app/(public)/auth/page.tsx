@@ -1,5 +1,7 @@
 "use client";
 
+import type { Passkey as PasskeyCredential } from "@backpack-fux/pylon-sdk";
+
 import { useEffect, useState } from "react";
 import { Card, CardBody } from "@nextui-org/card";
 import { Button } from "@nextui-org/button";
@@ -12,7 +14,6 @@ import { WebAuthnHelper } from "@/utils/webauthn";
 import { useUser } from "@/contexts/UserContext";
 import { useTheme } from "@/hooks/useTheme";
 import pylon from "@/libs/pylon-sdk";
-import type { Passkey as PasskeyCredential } from "@backpack-fux/pylon-sdk";
 
 interface PasskeyOptions {
   challenge: string;
@@ -49,6 +50,7 @@ const AuthPage = () => {
       const timer = setInterval(() => {
         setResendCooldown((prev) => prev - 1);
       }, 1000);
+
       return () => clearInterval(timer);
     }
   }, [resendCooldown]);
@@ -157,26 +159,26 @@ const AuthPage = () => {
             {!emailSent ? (
               <div className="space-y-4">
                 <Input
-                  type="email"
+                  isDisabled={isLoading}
                   label="Email Address"
                   placeholder="Enter your email"
+                  startContent={<Mail className="w-4 h-4 text-default-400" />}
+                  type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  startContent={<Mail className="w-4 h-4 text-default-400" />}
-                  isDisabled={isLoading}
                 />
 
                 <p className="text-sm text-foreground/60 text-center">
                   By continuing, you agree to our{" "}
-                  <Link href="https://backpack.network/terms-of-service" className="text-sm text-primary">
+                  <Link className="text-sm text-primary" href="https://backpack.network/terms-of-service">
                     Terms of Service
                   </Link>
                 </p>
                 <Button
                   className="w-full bg-primary text-primary-foreground hover:opacity-90 h-12 text-base"
+                  isDisabled={!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || isLoading}
                   isLoading={isLoading}
                   onClick={() => checkAuthOptions(email)}
-                  isDisabled={!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || isLoading}
                 >
                   {isLoading ? "Please wait..." : "Continue"}
                 </Button>

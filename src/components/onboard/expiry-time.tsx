@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Progress } from "@nextui-org/progress";
 import { Clock } from "lucide-react";
+
 import { cn } from "@/utils/cn";
 import { formatDuration } from "@/utils/helpers";
 
@@ -19,15 +20,18 @@ export function ExpiryTimer({ expiryTime, onExpire, variant = "inline" }: Expiry
     const calculateTimeLeft = () => {
       const now = Math.floor(Date.now() / 1000);
       const remaining = Math.max(0, expiryTime - now);
+
       return remaining;
     };
 
     const totalDuration = expiryTime - Math.floor(Date.now() / 1000);
     const initialTimeLeft = calculateTimeLeft();
+
     setTimeLeft(initialTimeLeft);
 
     const timer = setInterval(() => {
       const remaining = calculateTimeLeft();
+
       setTimeLeft(remaining);
       setProgress((remaining / totalDuration) * 100);
 
@@ -48,6 +52,7 @@ export function ExpiryTimer({ expiryTime, onExpire, variant = "inline" }: Expiry
       };
 
       window.addEventListener("scroll", handleScroll);
+
       return () => window.removeEventListener("scroll", handleScroll);
     }
   }, [variant]);
@@ -58,7 +63,7 @@ export function ExpiryTimer({ expiryTime, onExpire, variant = "inline" }: Expiry
   if (variant === "inline") {
     return (
       <div className="flex items-center gap-2 text-sm text-foreground/80">
-        <TimerContent timeLeft={timeLeft} isWarning={isWarning} progress={progress} color={color} showProgress />
+        <TimerContent showProgress color={color} isWarning={isWarning} progress={progress} timeLeft={timeLeft} />
       </div>
     );
   }
@@ -68,7 +73,7 @@ export function ExpiryTimer({ expiryTime, onExpire, variant = "inline" }: Expiry
       {/* Desktop navbar */}
       <div className="hidden md:block fixed top-0 left-0 right-0 h-8 bg-background/50 backdrop-blur-xl border-b border-border/20 z-40">
         <div className="h-full max-w-3xl mx-auto px-16 flex items-center justify-center">
-          <TimerContent timeLeft={timeLeft} isWarning={isWarning} progress={progress} color={color} showProgress />
+          <TimerContent showProgress color={color} isWarning={isWarning} progress={progress} timeLeft={timeLeft} />
         </div>
       </div>
 
@@ -81,11 +86,11 @@ export function ExpiryTimer({ expiryTime, onExpire, variant = "inline" }: Expiry
         )}
       >
         <TimerContent
-          timeLeft={timeLeft}
+          color={color}
           isWarning={isWarning}
           progress={progress}
-          color={color}
           showProgress={false}
+          timeLeft={timeLeft}
         />
       </div>
     </>

@@ -2,6 +2,7 @@ import type { Account } from "@/types/account";
 
 import { Button } from "@nextui-org/button";
 import { Modal, ModalContent, ModalHeader, ModalBody } from "@nextui-org/modal";
+
 import { useAccounts } from "@/contexts/AccountContext";
 import { formatAmountUSD } from "@/utils/helpers";
 
@@ -32,6 +33,7 @@ export function AccountSelectionModal({
         await updateVirtualAccountDestination(account.address);
       } catch (error) {
         console.error("Failed to update settlement account:", error);
+
         // TODO: Show error toast
         return;
       }

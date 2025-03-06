@@ -1,11 +1,11 @@
-import { Signer } from "@/types/account";
-import { formatStringToTitleCase } from "@/utils/helpers";
 import { PersonRole } from "@backpack-fux/pylon-sdk";
-
 import { Button } from "@nextui-org/button";
 import { Avatar } from "@nextui-org/avatar";
-import { useUser } from "@/contexts/UserContext";
 import { ShieldCheck } from "lucide-react";
+
+import { useUser } from "@/contexts/UserContext";
+import { formatStringToTitleCase } from "@/utils/helpers";
+import { Signer } from "@/types/account";
 
 export function SignersView({ signers, isLoading }: { signers: Signer[]; isLoading: boolean }) {
   const { user } = useUser();
@@ -46,13 +46,13 @@ export function SignersView({ signers, isLoading }: { signers: Signer[]; isLoadi
           >
             <div className="flex items-center gap-3">
               <Avatar
-                name={signer.name}
-                size="sm"
-                src={signer.image}
                 classNames={{
                   base: "bg-content3",
                   name: "text-foreground/90",
                 }}
+                name={signer.name}
+                size="sm"
+                src={signer.image}
               />
               <div>
                 <div className="flex items-center gap-2">

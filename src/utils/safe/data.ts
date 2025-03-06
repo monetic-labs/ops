@@ -1,4 +1,5 @@
 import { Address, formatUnits } from "viem";
+
 import { publicClient } from "@/config/web3";
 import { safeAbi } from "@/utils/abi/safe";
 import { BASE_USDC } from "@/utils/constants";
@@ -72,6 +73,7 @@ export async function getSafeData(safeAddress: Address): Promise<SafeData> {
     };
   } catch (error) {
     console.error("Error fetching Safe data:", error);
+
     return {
       isDeployed: false,
       balance: 0,

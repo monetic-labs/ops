@@ -60,6 +60,7 @@ export function UserProvider({ children, token }: UserProviderProps) {
   // Load profile from localStorage on mount and listen for changes
   useEffect(() => {
     const savedProfile = LocalStorage.getProfile();
+
     if (savedProfile) {
       setProfile({ profileImage: savedProfile.profileImage || null });
     }
@@ -67,12 +68,14 @@ export function UserProvider({ children, token }: UserProviderProps) {
     // Listen for storage changes
     const handleStorageChange = () => {
       const updatedProfile = LocalStorage.getProfile();
+
       if (updatedProfile) {
         setProfile({ profileImage: updatedProfile.profileImage || null });
       }
     };
 
     window.addEventListener("storage", handleStorageChange);
+
     return () => window.removeEventListener("storage", handleStorageChange);
   }, []);
 
@@ -84,18 +87,21 @@ export function UserProvider({ children, token }: UserProviderProps) {
       // Don't check if we shouldn't
       if (!shouldCheckAuth) {
         setIsLoading(false);
+
         return;
       }
 
       // Skip auth check if we're on the verify route (token exchange in progress)
       if (pathname?.startsWith("/auth/verify")) {
         setIsLoading(false);
+
         return;
       }
 
       try {
         setIsLoading(true);
         const userData = await pylon.getUserById();
+
         if (!isSubscribed) return;
 
         if (!userData) {
@@ -103,6 +109,7 @@ export function UserProvider({ children, token }: UserProviderProps) {
           setCredentials(undefined);
           setIsLoading(false);
           setShouldCheckAuth(false);
+
           return;
         }
 
@@ -112,6 +119,7 @@ export function UserProvider({ children, token }: UserProviderProps) {
         if (!credentials && userData?.registeredPasskeys?.length > 0) {
           const passkey = userData.registeredPasskeys[0];
           const { x, y } = PublicKey.fromHex(passkey.publicKey as Hex);
+
           setCredentials({
             publicKey: { x, y },
             credentialId: passkey.credentialId,
@@ -207,6 +215,7 @@ export function UserProvider({ children, token }: UserProviderProps) {
           return Promise.resolve();
         } catch (error) {
           console.error("Error updating profile image:", error);
+
           return Promise.reject(error);
         }
       },
@@ -219,13 +228,16 @@ export function UserProvider({ children, token }: UserProviderProps) {
 
 export const useUser = () => {
   const context = useContext(UserContext);
+
   if (!context) {
     throw new Error("useUser must be used within a UserProvider");
   }
+
   return context;
 };
 
 export const useSigningCredentials = () => {
   const { getSigningCredentials } = useUser();
+
   return getSigningCredentials();
 };

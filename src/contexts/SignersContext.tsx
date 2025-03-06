@@ -50,8 +50,10 @@ export function SignersProvider({ children }: { children: ReactNode }) {
 
     if (user.registeredPasskeys && user.registeredPasskeys.length > 0) {
       const publicKey = user.registeredPasskeys[0].publicKey;
+
       try {
         const derivedAddress = getAddress(publicKey);
+
         return {
           address: derivedAddress,
           name: getFullName(user.firstName, user.lastName),
@@ -61,6 +63,7 @@ export function SignersProvider({ children }: { children: ReactNode }) {
         };
       } catch (error) {
         console.error("Error deriving address from public key:", error);
+
         return null;
       }
     }
@@ -107,6 +110,7 @@ export function SignersProvider({ children }: { children: ReactNode }) {
   const getAvailableSigners = useCallback(
     (currentSigners: Address[] = []): Signer[] => {
       const allSigners = [...state.signers, ...state.accountSigners];
+
       return allSigners.filter(
         (signer) => !currentSigners.some((current) => current.toLowerCase() === signer.address.toLowerCase())
       );
@@ -160,9 +164,11 @@ export function SignersProvider({ children }: { children: ReactNode }) {
   const addSigner = useCallback(async (accountAddress: Address, signer: Address): Promise<boolean> => {
     try {
       console.log(`Adding signer ${signer} to account ${accountAddress}`);
+
       return true;
     } catch (error) {
       console.error("Error adding signer:", error);
+
       return false;
     }
   }, []);
@@ -170,9 +176,11 @@ export function SignersProvider({ children }: { children: ReactNode }) {
   const removeSigner = useCallback(async (accountAddress: Address, signer: Address): Promise<boolean> => {
     try {
       console.log(`Removing signer ${signer} from account ${accountAddress}`);
+
       return true;
     } catch (error) {
       console.error("Error removing signer:", error);
+
       return false;
     }
   }, []);
@@ -180,9 +188,11 @@ export function SignersProvider({ children }: { children: ReactNode }) {
   const updateThreshold = useCallback(async (accountAddress: Address, newThreshold: number): Promise<boolean> => {
     try {
       console.log(`Updating threshold to ${newThreshold} for account ${accountAddress}`);
+
       return true;
     } catch (error) {
       console.error("Error updating threshold:", error);
+
       return false;
     }
   }, []);
@@ -210,8 +220,10 @@ export function SignersProvider({ children }: { children: ReactNode }) {
 
 export function useSigners() {
   const context = useContext(SignersContext);
+
   if (!context) {
     throw new Error("useSigners must be used within a SignersProvider");
   }
+
   return context;
 }

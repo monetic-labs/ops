@@ -6,7 +6,6 @@ import { DataTable, EmptyContent, Column } from "@/components/generics/data-tabl
 import pylon from "@/libs/pylon-sdk";
 import { useOrderManagement } from "@/hooks/orders/useOrderManagement";
 import {
-  capitalizeFirstChar,
   centsToDollars,
   formatAmountUSD,
   formatStringToTitleCase,

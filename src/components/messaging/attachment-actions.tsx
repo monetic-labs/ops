@@ -17,7 +17,7 @@ export const AttachmentActions: React.FC<AttachmentActionsProps> = ({
   return (
     <Popover placement="top">
       <PopoverTrigger>
-        <Button isIconOnly size="sm" variant="light" className="text-foreground/80" isDisabled={isDisabled}>
+        <Button isIconOnly className="text-foreground/80" isDisabled={isDisabled} size="sm" variant="light">
           <Paperclip className="w-4 h-4" />
         </Button>
       </PopoverTrigger>
@@ -25,20 +25,20 @@ export const AttachmentActions: React.FC<AttachmentActionsProps> = ({
         <div className="px-1 py-2 w-full min-w-[160px]">
           <div className="flex flex-col gap-2">
             <Button
+              className="justify-start"
+              isDisabled={isDisabled}
               startContent={<ImageIcon className="w-4 h-4" />}
               variant="light"
-              className="justify-start"
               onPress={onUploadClick}
-              isDisabled={isDisabled}
             >
               Upload Image
             </Button>
             <Button
+              className="justify-start"
+              isDisabled={isDisabled}
               startContent={<Camera className="w-4 h-4" />}
               variant="light"
-              className="justify-start"
               onPress={onScreenshotClick}
-              isDisabled={isDisabled}
             >
               Take Screenshot
             </Button>

@@ -25,7 +25,7 @@ export const AttachmentPreview: React.FC<AttachmentPreviewProps> = ({ attachment
           </div>
         ) : attachment.previewUrl ? (
           <div className="h-8 w-8 rounded overflow-hidden flex-shrink-0">
-            <Image src={attachment.previewUrl} alt="Preview" className="h-full w-full object-cover" />
+            <Image alt="Preview" className="h-full w-full object-cover" src={attachment.previewUrl} />
           </div>
         ) : null}
         <div className="flex-1 flex items-center gap-1 min-w-0">
@@ -33,7 +33,7 @@ export const AttachmentPreview: React.FC<AttachmentPreviewProps> = ({ attachment
             {attachment.isLoading ? "Loading..." : attachment.name || "Attachment"}
           </span>
         </div>
-        <Button isIconOnly size="sm" variant="light" className="text-foreground/80 ml-auto" onPress={onClear}>
+        <Button isIconOnly className="text-foreground/80 ml-auto" size="sm" variant="light" onPress={onClear}>
           <X className="h-4 w-4" />
         </Button>
       </div>

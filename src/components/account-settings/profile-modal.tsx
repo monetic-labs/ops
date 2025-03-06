@@ -7,8 +7,8 @@ import { Input } from "@nextui-org/input";
 import { Avatar } from "@nextui-org/avatar";
 import { XIcon, Upload, Trash2 } from "lucide-react";
 import { MerchantUserGetByIdOutput as MerchantUser } from "@backpack-fux/pylon-sdk";
-import { useToast } from "@/hooks/useToast";
 
+import { useToast } from "@/hooks/useToast";
 import { formatPhoneNumber } from "@/utils/helpers";
 import { useUser } from "@/contexts/UserContext";
 
@@ -31,6 +31,7 @@ export const ProfileSettingsModal = ({ isOpen, onClose, user }: ProfileSettingsM
 
   const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
+
     if (!file) return;
 
     // Check file size (limit to 5MB)
@@ -40,6 +41,7 @@ export const ProfileSettingsModal = ({ isOpen, onClose, user }: ProfileSettingsM
         description: "Image size should be less than 5MB",
         variant: "destructive",
       });
+
       return;
     }
 
@@ -47,6 +49,7 @@ export const ProfileSettingsModal = ({ isOpen, onClose, user }: ProfileSettingsM
     try {
       const base64 = await new Promise<string>((resolve, reject) => {
         const reader = new FileReader();
+
         reader.onload = () => resolve(reader.result as string);
         reader.onerror = (error) => reject(new Error("Failed to read file"));
         reader.readAsDataURL(file);
@@ -101,6 +104,7 @@ export const ProfileSettingsModal = ({ isOpen, onClose, user }: ProfileSettingsM
 
   const getInitials = (firstName?: string, lastName?: string) => {
     if (!firstName || !lastName) return "";
+
     return `${firstName[0]}${lastName[0]}`.toUpperCase();
   };
 

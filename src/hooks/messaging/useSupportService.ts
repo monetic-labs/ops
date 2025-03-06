@@ -36,6 +36,7 @@ export const useSupportScreenshot = () => {
         canvas.toBlob(async (blob) => {
           if (!blob) {
             resolve(false);
+
             return;
           }
           try {
@@ -74,6 +75,7 @@ export const useSupportScreenshot = () => {
       });
     } catch (error) {
       console.error("Error capturing screenshot:", error);
+
       return false;
     }
   }, []);

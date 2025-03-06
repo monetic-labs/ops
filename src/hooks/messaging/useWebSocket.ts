@@ -1,5 +1,6 @@
 import { useEffect, useRef } from "react";
 import io, { Socket } from "socket.io-client";
+
 import { Message, SupportMessage } from "@/types/messaging";
 import { useUser } from "@/contexts/UserContext";
 
@@ -27,6 +28,7 @@ export const useWebSocket = ({ handleMessage }: WebSocketOptions) => {
         wsRef.current.close();
         wsRef.current = null as any;
       }
+
       return;
     }
 

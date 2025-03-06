@@ -3,9 +3,9 @@
 import { useState } from "react";
 import { Chip } from "@nextui-org/chip";
 import { User } from "@nextui-org/user";
-import { MerchantUserGetOutput, MerchantUserCreateInput, PersonRole } from "@backpack-fux/pylon-sdk";
-import { Button } from "@nextui-org/button";
+import { MerchantUserGetOutput, MerchantUserCreateInput } from "@backpack-fux/pylon-sdk";
 import { Tooltip } from "@nextui-org/tooltip";
+import { Fingerprint, Eye } from "lucide-react";
 
 import { DataTable, Column, EmptyContent } from "@/components/generics/data-table";
 import { formatPhoneNumber, formatStringToTitleCase, getFullName, getOpepenAvatar } from "@/utils/helpers";
@@ -15,13 +15,14 @@ import { useSigners } from "@/contexts/SignersContext";
 
 import CreateUserModal from "./user-create";
 import UserEditModal from "./user-edit";
-import { ShieldCheck, Fingerprint, Info, Eye } from "lucide-react";
 
 // Helper function to mask email
 const maskEmail = (email: string) => {
   if (!email) return "N/A";
   const [username, domain] = email.split("@");
+
   if (!domain) return email;
+
   return `${username.slice(0, 3)}***@${domain}`;
 };
 
@@ -30,11 +31,13 @@ const maskPhone = (phone: string) => {
   if (!phone) return "N/A";
   // Remove any non-numeric characters first
   const numbers = phone.replace(/\D/g, "");
+
   if (numbers.length !== 10) return formatPhoneNumber(phone); // If not a 10-digit number, just format it
 
   // Format the masked number
   const areaCode = numbers.slice(0, 3);
   const lastFour = numbers.slice(-4);
+
   return `(${areaCode}) •••-${lastFour}`;
 };
 
@@ -68,6 +71,7 @@ export default function MembersTab({ userId, isCreateModalOpen, setIsCreateModal
       uid: "name",
       render: (user) => {
         const fullName = getFullName(user.firstName, user.lastName);
+
         return (
           <User
             avatarProps={{
@@ -138,7 +142,7 @@ export default function MembersTab({ userId, isCreateModalOpen, setIsCreateModal
             )}
             {isAccountSigner && (
               <Tooltip content="Account Signer">
-                <Chip size="sm" variant="flat" color="primary">
+                <Chip color="primary" size="sm" variant="flat">
                   Signer
                 </Chip>
               </Tooltip>

@@ -1,4 +1,5 @@
 import { useState } from "react";
+
 import { truncateAddress } from "@/utils/helpers";
 
 interface FileUploadState {
@@ -44,9 +45,11 @@ export const useFileUpload = () => {
 
       // Create preview while uploading
       const reader = new FileReader();
+
       reader.onload = (e) => {
         setAttachment((prev) => {
           if (!prev) return null;
+
           return {
             ...prev,
             previewUrl: e.target?.result?.toString(),
@@ -66,6 +69,7 @@ export const useFileUpload = () => {
 
       setAttachment((prev) => {
         if (!prev) return null;
+
         return {
           ...prev,
           isLoading: false,
@@ -77,6 +81,7 @@ export const useFileUpload = () => {
     } catch (error) {
       console.error("Failed to upload file:", error);
       setAttachment(null);
+
       return null;
     } finally {
       setIsUploading(false);

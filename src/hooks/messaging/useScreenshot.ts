@@ -1,4 +1,5 @@
 import { useCallback } from "react";
+
 import { useSupportScreenshot } from "./useSupportService";
 
 interface UseScreenshotOptions {
@@ -10,6 +11,7 @@ export const useScreenshot = ({ drawerRef }: UseScreenshotOptions) => {
 
   const createFlashEffect = () => {
     const flash = document.createElement("div");
+
     flash.style.position = "fixed";
     flash.style.top = "0";
     flash.style.left = "0";
@@ -47,7 +49,9 @@ export const useScreenshot = ({ drawerRef }: UseScreenshotOptions) => {
     const hiddenModals = Array.from(modals).map((modal) => {
       const element = modal as HTMLElement;
       const prevDisplay = element.style.display;
+
       element.style.display = "none";
+
       return { element, prevDisplay };
     });
 
@@ -59,6 +63,7 @@ export const useScreenshot = ({ drawerRef }: UseScreenshotOptions) => {
       await new Promise((resolve) => setTimeout(resolve, 100));
 
       const accessUrl = await captureScreenshot();
+
       return accessUrl;
     } finally {
       // Show the drawer again

@@ -2,17 +2,18 @@
 
 import React, { useRef, useState, FormEvent } from "react";
 import { Button } from "@nextui-org/button";
-
 import { Input } from "@nextui-org/input";
 import { Popover, PopoverTrigger, PopoverContent } from "@nextui-org/popover";
 import { Send, Smile, MoreHorizontal } from "lucide-react";
-import { useSupportService } from "@/hooks/messaging/useSupportService";
 import data from "@emoji-mart/data";
 import Picker from "@emoji-mart/react";
+
+import { useSupportService } from "@/hooks/messaging/useSupportService";
 import { useTheme } from "@/hooks/useTheme";
-import { useDrawer } from "./pane";
 import { useScreenshot } from "@/hooks/messaging/useScreenshot";
 import { useFileUpload } from "@/hooks/messaging/useFileUpload";
+
+import { useDrawer } from "./pane";
 import { AttachmentPreview } from "./attachment-preview";
 import { FormattingToolbar } from "./formatting-toolbar";
 import { AttachmentActions } from "./attachment-actions";
@@ -42,6 +43,7 @@ export const ChatFooter: React.FC<ChatFooterProps> = ({ inputRef }) => {
   const handleMessageSubmit = () => {
     if ((inputValue.trim() || attachment) && !isUploading && !attachment?.isLoading) {
       const event = new Event("submit") as unknown as FormEvent<Element>;
+
       handleSubmit(
         event,
         attachment && attachment.previewUrl
@@ -65,6 +67,7 @@ export const ChatFooter: React.FC<ChatFooterProps> = ({ inputRef }) => {
 
   const handleFormat = (format: "bold" | "italic" | "code") => {
     const input = inputRef.current;
+
     if (!input) return;
 
     const start = input.selectionStart ?? 0;
@@ -98,6 +101,7 @@ export const ChatFooter: React.FC<ChatFooterProps> = ({ inputRef }) => {
 
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
+
     if (file) {
       await uploadFile(file);
     }
@@ -105,6 +109,7 @@ export const ChatFooter: React.FC<ChatFooterProps> = ({ inputRef }) => {
 
   const handleScreenshot = async () => {
     const accessUrl = await takeScreenshot();
+
     if (accessUrl) {
       setAttachment({
         type: "screenshot",
@@ -117,6 +122,7 @@ export const ChatFooter: React.FC<ChatFooterProps> = ({ inputRef }) => {
 
   const handleEmojiSelect = (emoji: any) => {
     const input = inputRef.current;
+
     if (!input) return;
 
     const start = input.selectionStart ?? inputValue.length;
@@ -128,6 +134,7 @@ export const ChatFooter: React.FC<ChatFooterProps> = ({ inputRef }) => {
     setTimeout(() => {
       input.focus();
       const newCursorPos = start + emoji.native.length;
+
       input.setSelectionRange(newCursorPos, newCursorPos);
     }, 0);
   };
@@ -151,13 +158,13 @@ export const ChatFooter: React.FC<ChatFooterProps> = ({ inputRef }) => {
       <div className="flex items-center gap-2 px-2">
         <AttachmentActions
           isDisabled={!!attachment || isUploading}
-          onUploadClick={() => fileInputRef.current?.click()}
           onScreenshotClick={handleScreenshot}
+          onUploadClick={() => fileInputRef.current?.click()}
         />
 
         <Popover placement="top">
           <PopoverTrigger>
-            <Button isIconOnly size="sm" variant="light" className="text-foreground/80">
+            <Button isIconOnly className="text-foreground/80" size="sm" variant="light">
               <Smile className="w-4 h-4" />
             </Button>
           </PopoverTrigger>
@@ -165,16 +172,16 @@ export const ChatFooter: React.FC<ChatFooterProps> = ({ inputRef }) => {
             <div className="p-0">
               <Picker
                 data={data}
-                onEmojiSelect={handleEmojiSelect}
-                theme={theme}
                 previewPosition="none"
                 skinTonePosition="none"
+                theme={theme}
+                onEmojiSelect={handleEmojiSelect}
               />
             </div>
           </PopoverContent>
         </Popover>
 
-        <input type="file" ref={fileInputRef} className="hidden" accept="image/*" onChange={handleFileUpload} />
+        <input ref={fileInputRef} accept="image/*" className="hidden" type="file" onChange={handleFileUpload} />
 
         <div className="flex-1">
           <Input
@@ -195,9 +202,9 @@ export const ChatFooter: React.FC<ChatFooterProps> = ({ inputRef }) => {
               <div className="flex items-center gap-1 h-full">
                 <Button
                   isIconOnly
+                  className="text-foreground/80"
                   size="sm"
                   variant="light"
-                  className="text-foreground/80"
                   onPress={() => setIsFormatting(!isFormatting)}
                 >
                   <MoreHorizontal className="w-4 h-4" />
@@ -217,9 +224,9 @@ export const ChatFooter: React.FC<ChatFooterProps> = ({ inputRef }) => {
         <Button
           isIconOnly
           color="primary"
+          isDisabled={isUploading || attachment?.isLoading}
           variant={inputValue.trim() || (attachment && !attachment.isLoading) ? "solid" : "flat"}
           onPress={handleMessageSubmit}
-          isDisabled={isUploading || attachment?.isLoading}
         >
           <Send className="w-4 h-4" />
         </Button>

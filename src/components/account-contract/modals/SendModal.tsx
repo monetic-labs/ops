@@ -76,6 +76,7 @@ export function SendModal({
       const updateFee = async () => {
         try {
           const { feeInUsd } = await getEstimatedTransferFee();
+
           setEstimatedFee(feeInUsd);
         } catch (error) {
           console.error("Error getting estimated fee:", error);
@@ -152,6 +153,7 @@ export function SendModal({
         });
 
         setIsLoading(false);
+
         return;
       }
 
@@ -236,13 +238,13 @@ export function SendModal({
   return (
     <>
       <Modal
-        isOpen={isOpen}
-        onClose={isActiveTransfer && transferStatus !== TransferStatus.ERROR ? () => {} : onClose}
         classNames={{
           backdrop: "bg-background/70 backdrop-blur-sm",
           base: "border-border",
         }}
+        isOpen={isOpen}
         size="lg"
+        onClose={isActiveTransfer && transferStatus !== TransferStatus.ERROR ? () => {} : onClose}
       >
         <ModalContent>
           {() => (
@@ -253,10 +255,10 @@ export function SendModal({
                 </h3>
                 <Button
                   isIconOnly
-                  variant="light"
-                  onPress={onClose}
                   aria-label="Close"
                   isDisabled={isActiveTransfer && transferStatus !== TransferStatus.ERROR}
+                  variant="light"
+                  onPress={onClose}
                 >
                   <X size={20} />
                 </Button>
@@ -267,10 +269,10 @@ export function SendModal({
                   <TransferStatusOverlay
                     status={transferStatus}
                     transferDetails={transferDetailsComponent}
-                    onReset={handleResetTransferStatus}
                     onComplete={() => {
                       onClose();
                     }}
+                    onReset={handleResetTransferStatus}
                   />
                 </div>
               ) : (
@@ -408,9 +410,9 @@ export function SendModal({
                     </Button>
                     <Button
                       className="bg-primary text-primary-foreground hover:bg-primary/90"
-                      onClick={handleSend}
                       isDisabled={!isAmountValid() || isLoading}
                       isLoading={isLoading}
+                      onClick={handleSend}
                     >
                       {isLoading ? "Processing..." : "Send"}
                     </Button>

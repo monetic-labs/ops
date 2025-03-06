@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Spinner } from "@nextui-org/spinner";
+
 import pylon from "@/libs/pylon-sdk";
 
 export default function VerifyPage() {
@@ -16,11 +17,13 @@ export default function VerifyPage() {
 
       if (!token) {
         router.replace("/auth");
+
         return;
       }
 
       try {
         const isTokenExchanged = await pylon.exchangeMagicLinkToken(token);
+
         if (!isTokenExchanged) {
           throw new Error("Token exchange failed");
         }
@@ -51,7 +54,7 @@ export default function VerifyPage() {
         </div>
       ) : (
         <div className="flex flex-col items-center gap-4">
-          <Spinner size="lg" color="primary" />
+          <Spinner color="primary" size="lg" />
           <p className="text-foreground/60">Verifying your login...</p>
         </div>
       )}

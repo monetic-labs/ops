@@ -5,9 +5,11 @@ import { Select, SelectItem, SelectedItems } from "@nextui-org/select";
 import { Chip } from "@nextui-org/chip";
 import { Avatar } from "@nextui-org/avatar";
 import { XIcon } from "lucide-react";
-import { OrgMember } from "../../types";
+
 import { useUsers } from "@/contexts/UsersContext";
 import { getFullName } from "@/utils/helpers";
+
+import { OrgMember } from "../../types";
 
 export interface TeamRecoveryProps {
   configuredTeamMember: OrgMember | null;
@@ -58,6 +60,7 @@ export const TeamRecovery = ({ configuredTeamMember, onSelectTeamMember, onRemov
         >
           {users.map((member) => {
             const fullName = getFullName(member.firstName, member.lastName);
+
             return (
               <SelectItem
                 key={member.id}

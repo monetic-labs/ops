@@ -1,10 +1,11 @@
 import type { Account } from "@/types/account";
-import { formatAmountUSD } from "@/utils/helpers";
 
 import { Button } from "@nextui-org/button";
 import { ArrowUpRight, ArrowDownLeft } from "lucide-react";
-import { useUser } from "@/contexts/UserContext";
 import { PersonRole } from "@backpack-fux/pylon-sdk";
+
+import { useUser } from "@/contexts/UserContext";
+import { formatAmountUSD } from "@/utils/helpers";
 import { useSigners } from "@/contexts/SignersContext";
 
 interface AccountBalanceProps {
@@ -27,16 +28,16 @@ export function AccountBalance({ account, onSend, onReceive, isLoading = false }
       <div className="bg-content2 p-4 md:p-6 rounded-xl mb-6">
         <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4">
           <div>
-            <div className="h-4 w-32 bg-content3 rounded-md animate-pulse mb-2"></div>
-            <div className="h-10 w-40 bg-content3 rounded-md animate-pulse mt-1"></div>
-            <div className="h-4 w-16 bg-content3 rounded-md animate-pulse mt-2"></div>
+            <div className="h-4 w-32 bg-content3 rounded-md animate-pulse mb-2" />
+            <div className="h-10 w-40 bg-content3 rounded-md animate-pulse mt-1" />
+            <div className="h-4 w-16 bg-content3 rounded-md animate-pulse mt-2" />
           </div>
           <div className="flex gap-2 w-full md:w-auto">
-            <Button className="flex-1 md:flex-none h-11 bg-content3 animate-pulse" disabled>
-              <div className="h-4 w-16 bg-content4 rounded-md"></div>
+            <Button disabled className="flex-1 md:flex-none h-11 bg-content3 animate-pulse">
+              <div className="h-4 w-16 bg-content4 rounded-md" />
             </Button>
-            <Button className="flex-1 md:flex-none h-11 bg-content3 animate-pulse" disabled>
-              <div className="h-4 w-16 bg-content4 rounded-md"></div>
+            <Button disabled className="flex-1 md:flex-none h-11 bg-content3 animate-pulse">
+              <div className="h-4 w-16 bg-content4 rounded-md" />
             </Button>
           </div>
         </div>
@@ -55,16 +56,16 @@ export function AccountBalance({ account, onSend, onReceive, isLoading = false }
           </div>
           <div className="flex gap-2 w-full md:w-auto opacity-50">
             <Button
+              isDisabled
               className="flex-1 md:flex-none h-11 bg-content3 text-foreground px-6"
               startContent={<ArrowUpRight className="w-4 h-4" />}
-              isDisabled
             >
               Send
             </Button>
             <Button
+              isDisabled
               className="flex-1 md:flex-none h-11 bg-content3 text-foreground px-6"
               startContent={<ArrowDownLeft className="w-4 h-4" />}
-              isDisabled
             >
               Receive
             </Button>

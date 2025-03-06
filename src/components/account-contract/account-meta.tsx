@@ -4,11 +4,10 @@ import type { Account, Signer } from "@/types/account";
 
 import { useState } from "react";
 import { Card, CardBody } from "@nextui-org/card";
-import { Modal, ModalContent } from "@nextui-org/modal";
-import { SkeletonAccountCard } from "./components/SkeletonLoaders";
 
 import { useAccounts } from "@/contexts/AccountContext";
 
+import { SkeletonAccountCard } from "./components/SkeletonLoaders";
 import { AccountHeader } from "./components/AccountHeader";
 import { AccountBalance } from "./components/AccountBalance";
 import { AccountNavigation } from "./components/AccountNavigation";
@@ -79,6 +78,7 @@ export default function AccountMeta() {
   const isAmountValid = () => {
     if (!amount || !selectedAccount) return false;
     const amountValue = parseFloat(amount);
+
     return amountValue > 0 && amountValue <= (selectedAccount.balance || 0);
   };
 
@@ -87,6 +87,7 @@ export default function AccountMeta() {
     const eligibleAccount = accounts.find(
       (account) => account.address !== selectedAccount?.address && !account.isDisabled
     );
+
     if (eligibleAccount) {
       setToAccount(eligibleAccount);
     }
@@ -122,37 +123,37 @@ export default function AccountMeta() {
     <>
       {/* Send Modal */}
       <SendModal
-        isOpen={isSendModalOpen}
-        onClose={() => {
-          setIsSendModalOpen(false);
-          setAmount("");
-          setToAccount(null);
-        }}
-        selectedAccount={selectedAccount}
-        setSelectedAccount={setSelectedAccount}
-        toAccount={toAccount}
-        setToAccount={setToAccount}
         amount={amount}
-        setAmount={setAmount}
-        onSelectToAccount={handleSelectToAccount}
+        availableAccounts={accounts.filter((account) => account.address !== selectedAccount?.address)}
         isAmountValid={isAmountValid}
-        onTransfer={handleTransfer}
+        isOpen={isSendModalOpen}
+        selectedAccount={selectedAccount}
+        setAmount={setAmount}
+        setSelectedAccount={setSelectedAccount}
+        setToAccount={setToAccount}
+        toAccount={toAccount}
         onCancel={() => {
           setIsSendModalOpen(false);
           setAmount("");
           setToAccount(null);
         }}
-        availableAccounts={accounts.filter((account) => account.address !== selectedAccount?.address)}
+        onClose={() => {
+          setIsSendModalOpen(false);
+          setAmount("");
+          setToAccount(null);
+        }}
+        onSelectToAccount={handleSelectToAccount}
+        onTransfer={handleTransfer}
       />
 
       {/* Receive Modal */}
       <ReceiveModal
-        isOpen={isReceiveModalOpen}
-        onClose={() => setIsReceiveModalOpen(false)}
         availableAccounts={enabledAccounts}
+        isOpen={isReceiveModalOpen}
         selectedAccount={selectedAccount}
         selectedSettlementAccount={accounts[0]}
         onChangeSettlementAccount={setSelectedAccount}
+        onClose={() => setIsReceiveModalOpen(false)}
       />
 
       <Card className="w-full bg-content1/90 border border-border backdrop-blur-sm relative">
@@ -174,6 +175,7 @@ export default function AccountMeta() {
             <AccountHeader
               accounts={accounts}
               isExpanded={isExpanded}
+              isLoading={isLoadingAccounts}
               selectedAccount={selectedAccount}
               totalBalance={totalBalance}
               onAccountSelect={handleAccountSelect}
@@ -181,7 +183,6 @@ export default function AccountMeta() {
                 console.log("Toggle expand called");
                 setIsExpanded(!isExpanded);
               }}
-              isLoading={isLoadingAccounts}
             />
 
             <div
@@ -194,9 +195,9 @@ export default function AccountMeta() {
               <div className="p-6 space-y-6 border-t border-border">
                 <AccountBalance
                   account={selectedAccount}
+                  isLoading={isLoadingAccounts}
                   onReceive={handleReceive}
                   onSend={handleSend}
-                  isLoading={isLoadingAccounts}
                 />
 
                 <AccountNavigation selectedTab={activeTab} onTabChange={setActiveTab} />
@@ -206,10 +207,10 @@ export default function AccountMeta() {
                     <ActivityView activities={selectedAccount.recentActivity} isLoading={isLoadingAccounts} />
                   )}
                   {activeTab === "signers" && (
-                    <SignersView signers={selectedAccount.signers} isLoading={isLoadingAccounts} />
+                    <SignersView isLoading={isLoadingAccounts} signers={selectedAccount.signers} />
                   )}
                   {activeTab === "policies" && (
-                    <PoliciesView signers={selectedAccount.signers} isLoading={isLoadingAccounts} />
+                    <PoliciesView isLoading={isLoadingAccounts} signers={selectedAccount.signers} />
                   )}
                 </div>
               </div>
@@ -219,24 +220,24 @@ export default function AccountMeta() {
       </Card>
 
       <DeployAccountModal
-        isOpen={isDeployModalOpen}
-        onClose={() => setIsDeployModalOpen(false)}
-        onDeploy={handleDeploy}
         accounts={accounts}
+        isOpen={isDeployModalOpen}
         selectedAccount={selectedAccount}
         selectedSigners={selectedSigners}
         setSelectedSigners={setSelectedSigners}
-        threshold={threshold}
         setThreshold={setThreshold}
+        threshold={threshold}
+        onClose={() => setIsDeployModalOpen(false)}
+        onDeploy={handleDeploy}
       />
 
       <AccountSelectionModal
-        isOpen={isAccountSelectionOpen}
-        onClose={() => setIsAccountSelectionOpen(false)}
         accounts={accounts.filter((acc) => !acc.isDisabled && !acc.isComingSoon)}
-        onSelect={handleAccountSelect}
+        isOpen={isAccountSelectionOpen}
         selectedAccountId={selectedAccount.id}
         title="Select Account"
+        onClose={() => setIsAccountSelectionOpen(false)}
+        onSelect={handleAccountSelect}
       />
     </>
   );

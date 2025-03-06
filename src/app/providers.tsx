@@ -37,7 +37,7 @@ export function Providers({ children, themeProps, userId }: ProvidersProps) {
     <QueryClientProvider client={queryClient}>
       <NextUIProvider navigate={router.push}>
         <NextThemesProvider {...themeProps}>
-          <MessagingProvider userId={userId || "default-user"}>
+          <MessagingProvider>
             <ShortcutsProvider initialValue={shortcutsInitialValue}>
               <PrivyProvider
                 appId="cm6kflcul00yk102qos0gjism"

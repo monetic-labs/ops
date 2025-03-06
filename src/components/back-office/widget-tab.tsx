@@ -38,13 +38,13 @@ export default function WidgetManagement({
   return (
     <div className="space-y-4">
       <Autocomplete
+        defaultItems={enabledAccounts}
+        defaultSelectedKey={settlementAddress}
+        isDisabled={isLoadingAccounts || !enabledAccounts.length || enabledAccounts.length === 1}
+        isLoading={isLoadingAccounts}
         label="Settlement Account"
         placeholder={isLoadingAccounts ? "Loading accounts..." : "Search for an account"}
-        defaultSelectedKey={settlementAddress}
         selectedKey={settlementAddress}
-        isDisabled={isLoadingAccounts || !enabledAccounts.length || enabledAccounts.length === 1}
-        defaultItems={enabledAccounts}
-        isLoading={isLoadingAccounts}
         onSelectionChange={(key) => {
           if (key) onSettlementAddressChange(key.toString());
         }}
@@ -52,9 +52,9 @@ export default function WidgetManagement({
         {(account) => (
           <AutocompleteItem
             key={account.address}
+            className="capitalize"
             textValue={`${account.name} Account`}
             value={account.address}
-            className="capitalize"
           >
             <div className="flex items-center gap-2">
               <account.icon className="w-4 h-4" />

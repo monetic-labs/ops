@@ -27,12 +27,12 @@ import {
 } from "@/types/bill-pay";
 import { useNewDisbursement } from "@/hooks/bill-pay/useNewDisbursement";
 import { useUser } from "@/contexts/UserContext";
+import { BASE_USDC } from "@/utils/constants";
 
 import ModalFooterWithSupport from "../../generics/footer-modal-support";
 
 import ExistingTransferFields from "./fields/existing-transfer";
 import NewTransferFields from "./fields/new-transfer";
-import { BASE_USDC } from "@/utils/constants";
 
 type CreateBillPayModalProps = {
   isOpen: boolean;
@@ -108,16 +108,19 @@ export default function CreateBillPayModal({
 
   const fee = useMemo(() => {
     if (!billPay.vendorMethod) return 0;
+
     return methodFees[billPay.vendorMethod] || 0;
   }, [billPay.vendorMethod]);
 
   const total = useMemo(() => {
     const amount = parseFloat(billPay.amount) || 0;
+
     return amount + amount * fee;
   }, [billPay.amount, fee]);
 
   useEffect(() => {
     const formValid = validateBillPay(billPay, settlementBalance);
+
     setFormIsValid(formValid);
   }, [billPay, settlementBalance]);
 
@@ -126,6 +129,7 @@ export default function CreateBillPayModal({
       toast.error("Please set up a passkey to make transfers");
       onClose();
     }
+
     return null;
   }
 
@@ -284,8 +288,8 @@ export default function CreateBillPayModal({
             <TransferStatusOverlay
               status={transferStatus}
               transferDetails={transferDetailsComponent}
-              onReset={handleResetTransferStatus}
               onComplete={onClose}
+              onReset={handleResetTransferStatus}
             />
           </div>
         ) : (

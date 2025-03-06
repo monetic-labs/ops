@@ -52,7 +52,7 @@ export default function CreateUserModal({ isOpen, onClose, onSave, availableRole
   };
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} size="lg">
+    <Modal isOpen={isOpen} size="lg" onClose={onClose}>
       <ModalContent>
         {() => (
           <form onSubmit={handleSubmit}>

@@ -33,6 +33,7 @@ export function AccountHeader({
   // Sort accounts to put enabled accounts first
   const sortedAccounts = [...accounts].sort((a, b) => {
     if (a.isDisabled === b.isDisabled) return 0;
+
     return a.isDisabled ? 1 : -1;
   });
 
@@ -49,6 +50,7 @@ export function AccountHeader({
   const canSelectAccount = (account: Account) => {
     if (account.isDeployed) return true;
     if (account.isComingSoon || account.isDisabled) return false;
+
     return isSettlementEnabled;
   };
 

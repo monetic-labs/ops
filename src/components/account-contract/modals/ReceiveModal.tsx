@@ -4,9 +4,11 @@ import { Button } from "@nextui-org/button";
 import { Copy, Info, Share2, X, Check } from "lucide-react";
 import { Modal, ModalContent, ModalHeader, ModalBody } from "@nextui-org/modal";
 import { useState } from "react";
-import { useAccounts } from "@/contexts/AccountContext";
-import { AccountSelectionModal } from "./AccountSelectionModal";
 import { Spinner } from "@nextui-org/spinner";
+
+import { useAccounts } from "@/contexts/AccountContext";
+
+import { AccountSelectionModal } from "./AccountSelectionModal";
 
 interface ReceiveModalProps {
   isOpen: boolean;
@@ -87,20 +89,20 @@ export function ReceiveModal({
   if (!virtualAccount) {
     return (
       <Modal
-        isOpen={isOpen}
-        onClose={onClose}
         classNames={{
           backdrop: "bg-background/70 backdrop-blur-sm",
           base: "border-border",
         }}
+        isOpen={isOpen}
         size="2xl"
+        onClose={onClose}
       >
         <ModalContent>
           {() => (
             <>
               <ModalHeader className="flex justify-between items-center px-8 py-5 border-b border-border bg-content1/80 backdrop-blur-md">
                 <h3 className="text-xl font-semibold">Virtual Account Details</h3>
-                <Button isIconOnly variant="light" onPress={onClose} aria-label="Close">
+                <Button isIconOnly aria-label="Close" variant="light" onPress={onClose}>
                   <X size={20} />
                 </Button>
               </ModalHeader>
@@ -119,20 +121,20 @@ export function ReceiveModal({
   if (!virtualAccount.source_deposit_instructions) {
     return (
       <Modal
-        isOpen={isOpen}
-        onClose={onClose}
         classNames={{
           backdrop: "bg-background/70 backdrop-blur-sm",
           base: "border-border",
         }}
+        isOpen={isOpen}
         size="2xl"
+        onClose={onClose}
       >
         <ModalContent>
           {() => (
             <>
               <ModalHeader className="flex justify-between items-center px-8 py-5 border-b border-border bg-content1/80 backdrop-blur-md">
                 <h3 className="text-xl font-semibold">Virtual Account Details</h3>
-                <Button isIconOnly variant="light" onPress={onClose} aria-label="Close">
+                <Button isIconOnly aria-label="Close" variant="light" onPress={onClose}>
                   <X size={20} />
                 </Button>
               </ModalHeader>
@@ -163,20 +165,20 @@ export function ReceiveModal({
   return (
     <>
       <Modal
-        isOpen={isOpen}
-        onClose={onClose}
         classNames={{
           backdrop: "bg-background/70 backdrop-blur-sm",
           base: "border-border",
         }}
+        isOpen={isOpen}
         size="2xl"
+        onClose={onClose}
       >
         <ModalContent>
           {() => (
             <>
               <ModalHeader className="flex justify-between items-center px-8 py-5 border-b border-border bg-content1/80 backdrop-blur-md">
                 <h3 className="text-xl font-semibold">Virtual Account Details</h3>
-                <Button isIconOnly variant="light" onPress={onClose} aria-label="Close">
+                <Button isIconOnly aria-label="Close" variant="light" onPress={onClose}>
                   <X size={20} />
                 </Button>
               </ModalHeader>
@@ -232,7 +234,7 @@ export function ReceiveModal({
                         <div className="flex items-center gap-2">
                           <h4 className="text-sm font-medium">Bank Information</h4>
                           <div className="group relative">
-                            <Info size={14} className="text-foreground/60 cursor-help" />
+                            <Info className="text-foreground/60 cursor-help" size={14} />
                             <div className="absolute bottom-full mb-2 hidden group-hover:block bg-content2 text-xs p-2 rounded-lg shadow-lg whitespace-nowrap">
                               Accepts ACH and Wire transfers
                             </div>
@@ -240,11 +242,11 @@ export function ReceiveModal({
                         </div>
                         <Button
                           className="min-w-0 h-7 px-3 text-xs bg-primary/10 text-primary hover:bg-primary/20"
+                          isDisabled={!depositInstructions}
                           size="sm"
                           startContent={isShared ? <Check size={14} /> : <Share2 size={14} />}
                           variant="flat"
                           onPress={handleShare}
-                          isDisabled={!depositInstructions}
                         >
                           Share Details
                         </Button>
@@ -304,13 +306,13 @@ export function ReceiveModal({
       </Modal>
 
       <AccountSelectionModal
-        isOpen={isAccountSelectionOpen}
-        onClose={() => setIsAccountSelectionOpen(false)}
         accounts={availableAccounts}
-        onSelect={handleChangeSettlementAccount}
+        isOpen={isAccountSelectionOpen}
+        isSettlementSelection={true}
         selectedAccountId={actualSettlementAccount?.id}
         title="Select Settlement Account"
-        isSettlementSelection={true}
+        onClose={() => setIsAccountSelectionOpen(false)}
+        onSelect={handleChangeSettlementAccount}
       />
     </>
   );

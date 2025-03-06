@@ -4,6 +4,7 @@ import {
   DEFAULT_SECP256R1_PRECOMPILE_ADDRESS,
   MetaTransaction,
 } from "abstractionkit";
+import { RainWithdrawalSignatureReady } from "@backpack-fux/pylon-sdk";
 
 import { WebAuthnHelper } from "@/utils/webauthn";
 import { WebAuthnCredentials } from "@/types/webauthn";
@@ -15,8 +16,8 @@ import {
   createSettlementOperationWithApproval,
 } from "@/utils/safe";
 import pylon from "@/libs/pylon-sdk";
+
 import { rainControllerAbi } from "../abi/rain";
-import { RainWithdrawalSignatureReady } from "@backpack-fux/pylon-sdk";
 
 interface TransferCallbacks {
   onPreparing?: () => void;

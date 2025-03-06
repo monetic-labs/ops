@@ -39,6 +39,7 @@ export function DeployAccountModal({
 
   const handleAddSigner = (signerId: string) => {
     const signer = availableSigners.find((s) => s.address === signerId);
+
     if (signer) {
       setSelectedSigners([...selectedSigners, signer]);
     }
@@ -49,7 +50,7 @@ export function DeployAccountModal({
   };
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} size="2xl">
+    <Modal isOpen={isOpen} size="2xl" onClose={onClose}>
       <ModalContent>
         {() => (
           <>

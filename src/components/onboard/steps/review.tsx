@@ -11,7 +11,6 @@ import {
   formatEIN,
   formatStringToTitleCase,
   formatPhoneNumber,
-  truncateAddress,
 } from "@/utils/helpers";
 
 export const ReviewStep = ({ onStepChange }: { onStepChange: (step: number) => void }) => {

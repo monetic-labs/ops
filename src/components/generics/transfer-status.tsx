@@ -73,6 +73,7 @@ export default function TransferStatusView({
   if (status === TransferStatus.IDLE) return null;
 
   const config = statusConfig[status];
+
   if (!config) return null;
 
   return (
@@ -128,11 +129,11 @@ export function TransferStatusOverlay({
     <div className="flex items-center justify-center min-h-[300px]">
       <div className="w-full max-w-lg mx-auto">
         <TransferStatusView
+          autoResetDelay={autoResetDelay}
           status={status}
           transferDetails={transferDetails}
-          autoResetDelay={autoResetDelay}
-          onReset={onReset}
           onComplete={onComplete}
+          onReset={onReset}
         />
       </div>
     </div>

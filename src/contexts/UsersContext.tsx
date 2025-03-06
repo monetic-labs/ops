@@ -2,6 +2,7 @@ import { createContext, useContext, useState, useEffect, useCallback, ReactNode 
 import { MerchantUserGetOutput, PersonRole, MerchantUserCreateInput } from "@backpack-fux/pylon-sdk";
 
 import pylon from "@/libs/pylon-sdk";
+
 import { useUser } from "./UserContext";
 
 interface UsersContextState {
@@ -40,12 +41,14 @@ export function UsersProvider({ children }: { children: ReactNode }) {
       setState((prev) => ({ ...prev, isLoading: true }));
       try {
         const fetchedUsers = await pylon.getUsers();
+
         setState({
           users: fetchedUsers,
           isLoading: false,
           error: null,
           lastFetched: Date.now(),
         });
+
         return fetchedUsers;
       } catch (err) {
         console.error("Error fetching users:", err);
@@ -54,6 +57,7 @@ export function UsersProvider({ children }: { children: ReactNode }) {
           isLoading: false,
           error: err as Error,
         }));
+
         return [];
       }
     },
@@ -96,10 +100,12 @@ export function UsersProvider({ children }: { children: ReactNode }) {
         ...prev,
         users: prev.users.map((user) => (user.id === updatedUser.id ? updatedUser : user)),
       }));
+
       return true;
     } catch (err) {
       console.error("Error updating user:", err);
       setState((prev) => ({ ...prev, error: err as Error }));
+
       return false;
     }
   }, []);
@@ -107,10 +113,12 @@ export function UsersProvider({ children }: { children: ReactNode }) {
   const removeUser = useCallback(
     async (userId: string) => {
       const userToRemove = state.users.find((u) => u.id === userId);
+
       if (!userToRemove) return false;
 
       try {
         const success = await pylon.deleteUser(userId);
+
         if (!success) throw new Error("Failed to remove user");
 
         // Update the local state
@@ -118,10 +126,12 @@ export function UsersProvider({ children }: { children: ReactNode }) {
           ...prev,
           users: prev.users.filter((user) => user.id !== userId),
         }));
+
         return true;
       } catch (err) {
         console.error("Error removing user:", err);
         setState((prev) => ({ ...prev, error: err as Error }));
+
         return false;
       }
     },
@@ -140,6 +150,7 @@ export function UsersProvider({ children }: { children: ReactNode }) {
   const getAvailableRoles = useCallback(() => {
     return Object.values(PersonRole).filter(() => {
       if (isOwner) return true;
+
       return false;
     });
   }, [isOwner]);
@@ -159,8 +170,10 @@ export function UsersProvider({ children }: { children: ReactNode }) {
 
 export function useUsers() {
   const context = useContext(UsersContext);
+
   if (!context) {
     throw new Error("useUsers must be used within a UsersProvider");
   }
+
   return context;
 }

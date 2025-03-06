@@ -58,6 +58,7 @@ export const createRemoveOwnerTransaction = async (
     prevOwner,
     eip7212WebAuthnPrecompileVerifier: DEFAULT_SECP256R1_PRECOMPILE_ADDRESS,
   });
+
   return [tx];
 };
 
@@ -95,6 +96,7 @@ export const createSubAccountDeploymentTransactions = async (
         .filter((signer) => signer !== deployerAddress)
         .map((signer) => createAddOwnerTransaction(safeAccount, signer, 1))
     );
+
     transactions.push(...addOwnerTxs.flat());
   }
 
@@ -103,11 +105,13 @@ export const createSubAccountDeploymentTransactions = async (
     // Remove deployer and set final threshold
     const lastSigner = finalSigners[finalSigners.length - 1];
     const removeOwnerTxs = await createRemoveOwnerTransaction(safeAccount, lastSigner, deployerAddress, threshold);
+
     transactions.push(...removeOwnerTxs);
   } else if (threshold > 1) {
     // Update threshold using the last signer
     const lastSigner = finalSigners[finalSigners.length - 1];
     const updateThresholdTxs = await createAddOwnerTransaction(safeAccount, lastSigner, threshold);
+
     transactions.push(...updateThresholdTxs);
   }
 
@@ -312,9 +316,11 @@ export type OperationTrackingCallbacks = {
 export const isContractDeployed = async (address: Address): Promise<boolean> => {
   try {
     const code = await publicClient.getCode({ address });
+
     return Boolean(code && code.length > 2);
   } catch (error) {
     console.error("Error checking contract deployment:", error);
+
     return false;
   }
 };

@@ -3,6 +3,7 @@ import { GasOption, fetchGasPrice } from "abstractionkit";
 
 import { chainlinkAbi } from "@/utils/abi/chainlink";
 import { publicClient, chain, PUBLIC_RPC } from "@/config/web3";
+
 import { formatAmountUSD } from "../helpers";
 
 // Chainlink ETH/USD Price Feed addresses
@@ -21,6 +22,7 @@ export async function getEthPriceInUsd(): Promise<number> {
 
     if (!priceFeedAddress) {
       console.warn(`No price feed address for chain ID ${chain.id}, using fallback price`);
+
       return 3000; // Fallback price if no price feed is available
     }
 
@@ -36,6 +38,7 @@ export async function getEthPriceInUsd(): Promise<number> {
     return ethPrice;
   } catch (error) {
     console.error("Error getting ETH price from Chainlink:", error);
+
     return 3000; // Fallback price if there's an error
   }
 }

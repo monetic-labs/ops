@@ -8,7 +8,7 @@ import remarkGfm from "remark-gfm"; // For tables, strikethrough, etc.
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import { vscDarkPlus } from "react-syntax-highlighter/dist/esm/styles/prism";
 import { Avatar } from "@nextui-org/avatar";
-import { User, Image as ImageIcon, Camera } from "lucide-react";
+import { User, Image as ImageIcon } from "lucide-react";
 
 // Define CodeProps interface if needed
 interface CodeProps {

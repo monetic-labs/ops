@@ -1,4 +1,4 @@
-import type { getCredentialCreationOptions, SignMetadata } from "ox/WebAuthnP256";
+import type { SignMetadata } from "ox/WebAuthnP256";
 
 import { Bytes, Hex as OxHex, PublicKey, type Signature } from "ox";
 import { createCredential, sign } from "ox/WebAuthnP256";
@@ -12,7 +12,7 @@ import { Hex } from "viem";
 
 import pylon from "@/libs/pylon-sdk";
 
-import { isLocal, isProduction, isStaging, todayStr } from "./helpers";
+import { isLocal, isProduction, isStaging } from "./helpers";
 
 export class WebAuthnHelper {
   private static readonly appName = `Backpack${!isLocal ? "" : " Staging"}`;
@@ -48,6 +48,7 @@ export class WebAuthnHelper {
   }> {
     try {
       const rawOptions = await pylon.getPasskeyRegistrationOptions(email);
+
       if (!rawOptions) {
         throw new Error("Failed to get registration options");
       }
@@ -63,6 +64,7 @@ export class WebAuthnHelper {
       });
 
       const { x, y } = PublicKey.from(credential.publicKey);
+
       this.publicKey = { x, y };
       this.credentialId = credential.id;
 

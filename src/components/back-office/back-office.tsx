@@ -28,6 +28,7 @@ export default function BackOfficeTabs({ handleSubTabChange }: BackOfficeTabsPro
   useEffect(() => {
     const fetchSettlementAccount = async () => {
       const accountDetails = await pylon.getSettlementAccount();
+
       if (!accountDetails) return;
 
       setSettlementAccount(accountDetails);

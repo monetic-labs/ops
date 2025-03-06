@@ -1,4 +1,5 @@
 import type { NextRequest } from "next/server";
+
 import { NextResponse } from "next/server";
 import { BridgeComplianceKycStatus, RainComplianceKybStatus } from "@backpack-fux/pylon-sdk";
 
@@ -28,10 +29,12 @@ const checkComplianceStatus = async (
 
     if (!response.ok) {
       console.error("Failed to fetch compliance status");
+
       return null;
     }
 
     const status = await response.json();
+
     return {
       isFullyApproved:
         status?.kycStatus.toUpperCase() === BridgeComplianceKycStatus.APPROVED.toUpperCase() &&
@@ -39,6 +42,7 @@ const checkComplianceStatus = async (
     };
   } catch (error) {
     console.error("Compliance check error:", error);
+
     return null;
   }
 };
@@ -69,12 +73,14 @@ export async function middleware(request: NextRequest) {
 
   // Check compliance for authenticated routes
   const complianceStatus = await checkComplianceStatus(request.nextUrl.origin, authToken.value);
+
   if (!complianceStatus) {
     return redirectTo(ROUTE_CONFIG.auth, request);
   }
 
   // Handle KYB routing
   const isKybRoute = pathname.startsWith(ROUTE_CONFIG.kyb);
+
   if (!complianceStatus.isFullyApproved && !isKybRoute) {
     return redirectTo(ROUTE_CONFIG.kyb, request);
   }

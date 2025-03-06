@@ -6,11 +6,12 @@ import { Select, SelectItem } from "@nextui-org/select";
 import { Divider } from "@nextui-org/divider";
 import { User } from "@nextui-org/user";
 import { useState } from "react";
-import { formatPhoneNumber, getOpepenAvatar } from "@/utils/helpers";
-import { Eye, EyeOff, Fingerprint, Plus, Trash2, Edit2 } from "lucide-react";
-import { WebAuthnHelper } from "@/utils/webauthn";
+import { Eye, EyeOff, Fingerprint, Plus, Trash2 } from "lucide-react";
 import { ScrollShadow } from "@nextui-org/scroll-shadow";
 import { Tooltip } from "@nextui-org/tooltip";
+
+import { WebAuthnHelper } from "@/utils/webauthn";
+import { formatPhoneNumber, getOpepenAvatar } from "@/utils/helpers";
 
 interface UserEditModalProps {
   isOpen: boolean;
@@ -55,6 +56,7 @@ export default function UserEditModal({
   const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     // Only keep numbers
     const numbers = e.target.value.replace(/\D/g, "");
+
     setEditedUser({ ...editedUser, phone: numbers });
   };
 
@@ -62,7 +64,9 @@ export default function UserEditModal({
   const maskEmail = (email: string) => {
     if (!email) return "";
     const [username, domain] = email.split("@");
+
     if (!domain) return email;
+
     return `${username.slice(0, 3)}***@${domain}`;
   };
 
@@ -71,11 +75,13 @@ export default function UserEditModal({
     if (!phone) return "";
     // Remove any non-numeric characters first
     const numbers = phone.replace(/\D/g, "");
+
     if (numbers.length !== 10) return formatPhoneNumber(phone); // If not a 10-digit number, just format it
 
     // Format the masked number
     const areaCode = numbers.slice(0, 3);
     const lastFour = numbers.slice(-4);
+
     return `(${areaCode}) •••-${lastFour}`;
   };
 
@@ -83,6 +89,7 @@ export default function UserEditModal({
     try {
       setIsAddingPasskey(true);
       const webauthn = new WebAuthnHelper();
+
       await webauthn.createPasskey(user.email);
       // Refresh user data after adding passkey
       // TODO: Implement refresh logic
@@ -95,14 +102,14 @@ export default function UserEditModal({
 
   return (
     <Modal
-      isOpen={isOpen}
-      onClose={onClose}
       classNames={{
         base: "max-w-xl",
         body: "py-6",
         header: "border-b border-default-100",
         closeButton: "hover:bg-default-100",
       }}
+      isOpen={isOpen}
+      onClose={onClose}
     >
       <ModalContent>
         <ModalHeader className="flex flex-col gap-1">
@@ -244,9 +251,9 @@ export default function UserEditModal({
                   <Button
                     className="bg-primary/10 text-primary"
                     endContent={<Plus className="w-4 h-4" />}
+                    isLoading={isAddingPasskey}
                     size="sm"
                     variant="flat"
-                    isLoading={isAddingPasskey}
                     onPress={handleAddPasskey}
                   >
                     Add Passkey
@@ -273,15 +280,16 @@ export default function UserEditModal({
                                 inputWrapper:
                                   "border-transparent bg-transparent hover:bg-content3 data-[hover=true]:bg-content3 group-data-[focus=true]:bg-content3 min-h-unit-8",
                               }}
-                              size="sm"
-                              variant="bordered"
-                              placeholder="Unnamed Device"
-                              value={passkey.displayName || ""}
                               isDisabled={!isSelf}
+                              placeholder="Unnamed Device"
+                              size="sm"
+                              value={passkey.displayName || ""}
+                              variant="bordered"
                               onChange={(e) => {
                                 const updatedPasskeys = editedUser.registeredPasskeys?.map((p) =>
                                   p.credentialId === passkey.credentialId ? { ...p, displayName: e.target.value } : p
                                 );
+
                                 setEditedUser({
                                   ...editedUser,
                                   registeredPasskeys: updatedPasskeys,
@@ -292,7 +300,7 @@ export default function UserEditModal({
                         </div>
                         <div className="flex items-center">
                           <Tooltip content="Remove passkey (Coming soon)">
-                            <Button isIconOnly className="bg-transparent" size="sm" variant="light" isDisabled>
+                            <Button isDisabled isIconOnly className="bg-transparent" size="sm" variant="light">
                               <Trash2 className="w-4 h-4 text-danger/70" />
                             </Button>
                           </Tooltip>

@@ -8,23 +8,23 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Accordion, AccordionItem } from "@nextui-org/accordion";
 import { Modal, ModalContent } from "@nextui-org/modal";
 import { Button } from "@nextui-org/button";
-import { Sun, Moon, CheckCircle2, Fingerprint, Laptop, Shield } from "lucide-react";
+import { Sun, Moon, Fingerprint, Laptop, Shield } from "lucide-react";
 import { jwtDecode } from "jwt-decode";
 import { Address } from "viem";
+import { ISO3166Alpha2Country, ISO3166Alpha3Country, PersonRole } from "@backpack-fux/pylon-sdk";
+
 import { WebAuthnHelper } from "@/utils/webauthn";
 import { createSafeAccount } from "@/utils/safe";
 import { setupSocialRecovery } from "@/utils/safe/onboard";
-import { OnboardingState } from "@/types/webauthn";
-import { CircleWithNumber, CheckCircleIcon } from "./components/StepIndicator";
-import { getDefaultValues, getFieldsForStep } from "./types";
-import { getSteps } from "./config/steps";
 import pylon from "@/libs/pylon-sdk";
-
 import { schema, FormData, UserRole } from "@/validations/onboard/schemas";
 import { StatusModal, StatusStep } from "@/components/onboard/status-modal";
 import { useTheme } from "@/hooks/useTheme";
-import { ISO3166Alpha2Country, ISO3166Alpha3Country, PersonRole } from "@backpack-fux/pylon-sdk";
 import { ExpiryTimer } from "@/components/onboard/expiry-time";
+
+import { getSteps } from "./config/steps";
+import { CircleWithNumber, CheckCircleIcon } from "./components/StepIndicator";
+import { getDefaultValues, getFieldsForStep } from "./types";
 
 interface OnboardingToken {
   email: string;
@@ -42,13 +42,16 @@ export default function OnboardPage() {
   // Token check and expiry setup
   useEffect(() => {
     const token = searchParams?.get("token");
+
     if (!token) {
       router.replace("/auth");
+
       return;
     }
 
     try {
       const decoded = jwtDecode<OnboardingToken>(token);
+
       setTokenExpiry(decoded.exp);
     } catch (error) {
       console.error("Error decoding token:", error);
@@ -78,13 +81,16 @@ export default function OnboardPage() {
     reValidateMode: "onChange",
     defaultValues: (() => {
       const token = searchParams?.get("token");
+
       if (!token) return getDefaultValues();
 
       try {
         const decoded = jwtDecode<OnboardingToken>(token);
+
         return getDefaultValues(decoded.email);
       } catch (error) {
         console.error("Error decoding token:", error);
+
         return getDefaultValues();
       }
     })(),
@@ -174,6 +180,7 @@ export default function OnboardPage() {
       const { publicKeyCoordinates: publicKey, credentialId } = await webauthnHelper.createPasskey(
         formData.users[0].email
       );
+
       updateStatusStep(0, true);
 
       // Create individual safe account
@@ -274,6 +281,7 @@ export default function OnboardPage() {
           .filter((user) => user.hasDashboardAccess)
           .map((user, index) => {
             const role = user.dashboardRole as PersonRole;
+
             return {
               firstName: user.firstName,
               lastName: user.lastName,
@@ -346,9 +354,9 @@ export default function OnboardPage() {
         {tokenExpiry && (
           <>
             <div className="mt-4 flex justify-center md:hidden">
-              <ExpiryTimer expiryTime={tokenExpiry} onExpire={handleExpiry} variant="inline" />
+              <ExpiryTimer expiryTime={tokenExpiry} variant="inline" onExpire={handleExpiry} />
             </div>
-            <ExpiryTimer expiryTime={tokenExpiry} onExpire={handleExpiry} variant="fixed" />
+            <ExpiryTimer expiryTime={tokenExpiry} variant="fixed" onExpire={handleExpiry} />
           </>
         )}
       </div>
@@ -407,13 +415,13 @@ export default function OnboardPage() {
 
       {/* Passkey Modal */}
       <Modal
-        isOpen={showPasskeyModal}
-        onClose={() => setShowPasskeyModal(false)}
         classNames={{
           base: "bg-content1/95 backdrop-blur-xl border border-border shadow-2xl",
           body: "p-0",
         }}
+        isOpen={showPasskeyModal}
         size="lg"
+        onClose={() => setShowPasskeyModal(false)}
       >
         <ModalContent>
           <div className="p-8">

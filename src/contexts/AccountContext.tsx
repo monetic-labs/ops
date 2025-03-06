@@ -182,6 +182,7 @@ export function AccountProvider({ children }: { children: ReactNode }) {
         ...prev,
         isLoadingAccounts: false,
       }));
+
       return [];
     }
   };
@@ -199,6 +200,7 @@ export function AccountProvider({ children }: { children: ReactNode }) {
       savings: PiggyBank,
       "new account": PlusCircle,
     };
+
     return iconMap[name.toLowerCase()] || Building2;
   };
 
@@ -206,6 +208,7 @@ export function AccountProvider({ children }: { children: ReactNode }) {
 
   const getSettlementAccount = () => {
     if (!state.virtualAccount?.destination?.address) return null;
+
     return (
       state.accounts.find(
         (acc) => acc.address.toLowerCase() === state.virtualAccount?.destination?.address.toLowerCase()
@@ -252,9 +255,11 @@ export function AccountProvider({ children }: { children: ReactNode }) {
       try {
         // TODO: Implement account deletion with Pylon SDK
         await fetchAccounts(true);
+
         return true;
       } catch (error) {
         console.error("Error unregistering sub-account:", error);
+
         return false;
       }
     },
@@ -276,6 +281,7 @@ export function AccountProvider({ children }: { children: ReactNode }) {
               balance: account.balance + amountValue,
             };
           }
+
           return account;
         });
 
@@ -325,8 +331,10 @@ export function AccountProvider({ children }: { children: ReactNode }) {
 
 export function useAccounts() {
   const context = useContext(AccountContext);
+
   if (!context) {
     throw new Error("useAccounts must be used within an AccountProvider");
   }
+
   return context;
 }

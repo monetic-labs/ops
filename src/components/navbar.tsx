@@ -10,7 +10,6 @@ import NextLink from "next/link";
 import { LogOut, User, Backpack, Shield, Moon, Sun, MessageCircle } from "lucide-react";
 import { MerchantUserGetByIdOutput as MerchantUser } from "@backpack-fux/pylon-sdk";
 
-import pylon from "@/libs/pylon-sdk";
 import { useUser } from "@/contexts/UserContext";
 import { getDisplayName } from "@/utils/helpers";
 import { useTheme } from "@/hooks/useTheme";

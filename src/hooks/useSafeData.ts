@@ -29,6 +29,7 @@ export function useSafeData(safeAddress?: Address): SafeData & { refetch: () => 
   const fetchSafeData = useCallback(async () => {
     if (!safeAddress) {
       setData((prev) => ({ ...prev, isLoading: false }));
+
       return;
     }
 
@@ -44,6 +45,7 @@ export function useSafeData(safeAddress?: Address): SafeData & { refetch: () => 
           isDeployed: false,
           isLoading: false,
         }));
+
         return;
       }
 
