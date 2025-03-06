@@ -16,6 +16,10 @@ export interface BaseMessage {
     chatId?: string;
     timestamp?: number;
     userId?: string;
+    attachment?: {
+      url: string;
+      name: string;
+    };
   };
   attachment?: {
     type: "image" | "screenshot";
@@ -49,6 +53,13 @@ export interface SupportMessage extends BaseMessage {
   type: "support";
   agentId?: string;
   status?: MessageStatus;
+  metadata?: {
+    telegramMessageId?: number;
+    chatId?: string;
+    timestamp?: number;
+    userId?: string;
+    attachment?: { url: string; name: string };
+  };
 }
 
 /** System notification message format */
@@ -79,8 +90,8 @@ export interface MessageService {
   isLoading: boolean;
   inputValue: string;
   setInputValue: (value: string) => Promise<void>;
-  sendMessage: (text: string) => Promise<void>;
-  handleSubmit: (e: React.FormEvent) => Promise<void>;
+  sendMessage: (text: string, file?: { url: string; name: string }) => Promise<void>;
+  handleSubmit: (e: React.FormEvent, attachment?: { url: string; name: string }) => Promise<void>;
   getUserId: () => string;
 }
 

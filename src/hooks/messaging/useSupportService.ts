@@ -32,44 +32,48 @@ export const useSupportScreenshot = () => {
       const mimeType = "image/png";
       const key = "screenshot" + Date.now() + crypto.randomUUID() + ".png";
 
-      canvas.toBlob(async (blob) => {
-        if (!blob) return;
-        const {
-          data: {
-            data: { uploadUrl, accessUrl },
-          },
-        } = await (
-          await fetch(`${baseUrl}/v1/merchant/chat/file/upload`, {
-            method: "POST",
-            body: JSON.stringify({
-              mimeType,
-              fileName: key,
-            }),
-            headers: {
-              "content-type": "application/json",
-            },
-            credentials: "include",
-          })
-        ).json();
+      return new Promise<string | false>((resolve) => {
+        canvas.toBlob(async (blob) => {
+          if (!blob) {
+            resolve(false);
+            return;
+          }
+          try {
+            const {
+              data: {
+                data: { uploadUrl, accessUrl },
+              },
+            } = await (
+              await fetch(`${baseUrl}/v1/merchant/chat/file/upload`, {
+                method: "POST",
+                body: JSON.stringify({
+                  mimeType,
+                  fileName: key,
+                }),
+                headers: {
+                  "content-type": "application/json",
+                },
+                credentials: "include",
+              })
+            ).json();
 
-        await fetch(uploadUrl, {
-          method: "PUT",
-          body: blob,
-          headers: {
-            "Content-Type": blob.type,
-          },
-        });
+            await fetch(uploadUrl, {
+              method: "PUT",
+              body: blob,
+              headers: {
+                "Content-Type": blob.type,
+              },
+            });
 
-        await pylon.createTelegramMessage({
-          text: "Support Screenshot",
-          file: accessUrl,
-        });
-      }, mimeType);
-
-      return true;
+            resolve(accessUrl);
+          } catch (error) {
+            console.error("Error uploading screenshot:", error);
+            resolve(false);
+          }
+        }, mimeType);
+      });
     } catch (error) {
       console.error("Error capturing screenshot:", error);
-
       return false;
     }
   }, []);
@@ -91,9 +95,7 @@ export const useSupportService = (): SupportMessageService => {
   );
 
   const sendMessage = useCallback(
-    async (text: string) => {
-      if (!text.trim()) return;
-
+    async (text: string, file?: { url: string; name: string }) => {
       try {
         const messageId = crypto.randomUUID();
 
@@ -103,10 +105,21 @@ export const useSupportService = (): SupportMessageService => {
           type: "user",
           timestamp: Date.now(),
           status: "sending",
+          metadata: file
+            ? {
+                attachment: {
+                  url: file.url,
+                  name: file.name,
+                },
+              }
+            : undefined,
         });
 
         // Send via Pylon SDK
-        const success = await pylon.createTelegramMessage({ text });
+        const success = await pylon.createTelegramMessage({
+          text,
+          file: file?.url,
+        });
 
         if (success) {
           messageActions.updateMessage(messageId, { status: "sent" });
@@ -122,12 +135,12 @@ export const useSupportService = (): SupportMessageService => {
   );
 
   const handleSubmit = useCallback(
-    async (e: React.FormEvent) => {
+    async (e: React.FormEvent, attachment?: { url: string; name: string }) => {
       e.preventDefault();
       const text = state.inputValue;
 
-      if (!text.trim()) return;
-      await sendMessage(text.trim());
+      if (!text.trim() && !attachment) return;
+      await sendMessage(text.trim(), attachment);
     },
     [state.inputValue, sendMessage]
   );

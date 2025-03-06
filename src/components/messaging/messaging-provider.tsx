@@ -1,16 +1,15 @@
 "use client";
 
 import { useEffect, useCallback } from "react";
-
 import { useMessagingStore, useMessagingActions } from "@/libs/messaging/store";
 import { useWebSocket } from "@/hooks/messaging/useWebSocket";
+import { Message } from "@/types/messaging";
 
 interface MessagingProviderProps {
   children: React.ReactNode;
-  userId: string;
 }
 
-export const MessagingProvider = ({ children, userId }: MessagingProviderProps) => {
+export const MessagingProvider = ({ children }: MessagingProviderProps) => {
   const {
     message: { setUserId, appendMessage, clearUnreadCount },
     ui: { setWidth },
@@ -19,27 +18,19 @@ export const MessagingProvider = ({ children, userId }: MessagingProviderProps) 
 
   // Handle incoming messages
   const handleWebSocketMessage = useCallback(
-    (message: any) => {
-      console.log("Received WebSocket message:", message);
-      appendMessage({
-        id: crypto.randomUUID(),
-        text: message.text || message,
-        type: "support",
-        timestamp: Date.now(),
-        status: "received",
-      });
+    (message: Message) => {
+      appendMessage(message);
     },
     [appendMessage]
   );
 
-  // Initialize WebSocket connection - always keep it open for background messages
+  // Initialize WebSocket connection
   useWebSocket({ handleMessage: handleWebSocketMessage });
 
   // Handle initial setup
   useEffect(() => {
-    setUserId(userId);
     setWidth(400);
-  }, [setWidth, setUserId, userId]);
+  }, [setWidth]);
 
   // Clear unread count when chat is opened
   useEffect(() => {

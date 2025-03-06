@@ -81,34 +81,26 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({ message, contentTe
 
   const getMessageContent = () => {
     const content = "role" in message ? message.content : message.text;
-    const hasAttachment = !("role" in message) && message.attachment;
+    const hasAttachment = !("role" in message) && message.metadata?.attachment;
 
     // If there's an attachment, show it with the message
-    if (hasAttachment && message.attachment) {
+    if (hasAttachment && message.metadata?.attachment) {
       return (
         <div className="space-y-2">
           <div className="flex items-center gap-2">
-            {message.attachment.type === "screenshot" ? (
-              <Camera className="w-4 h-4 text-foreground/80" />
-            ) : (
-              <ImageIcon className="w-4 h-4 text-foreground/80" />
-            )}
-            <span className="text-foreground/80 text-sm">
-              {message.attachment.type === "screenshot" ? "Screenshot" : "Image"}
-            </span>
+            <ImageIcon className="w-4 h-4 text-foreground/80" />
+            <span className="text-foreground/80 text-sm">{message.metadata.attachment.name}</span>
           </div>
-          {message.attachment.url && (
+          {message.metadata.attachment.url && (
             <div className="mt-2 rounded-md overflow-hidden">
               <img
-                alt={`${message.attachment.type} attachment`}
+                alt={message.metadata.attachment.name}
                 className="w-full max-w-[300px] h-auto object-cover rounded-md"
-                src={message.attachment.url}
+                src={message.metadata.attachment.url}
               />
             </div>
           )}
-          {content && content !== "Image Attachment" && content !== "Screenshot" && (
-            <div className="mt-2 text-sm">{content}</div>
-          )}
+          {content && <div className="mt-2 text-sm">{content}</div>}
         </div>
       );
     }

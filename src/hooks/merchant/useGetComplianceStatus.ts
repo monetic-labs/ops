@@ -16,7 +16,7 @@ export function useGetComplianceStatus() {
       ]);
       const complianceStatus = { ...bridgeComplianceStatus, ...rainComplianceStatus };
 
-      console.log("complianceStatus", complianceStatus);
+      // console.log("complianceStatus", complianceStatus);
       setComplianceStatus(complianceStatus);
     }
     checkCompliance();
