@@ -102,29 +102,33 @@ export function StatusCard({ provider, status, onVerify, type }: StatusCardProps
 
     switch (color) {
       case "success":
-        return "text-green-500";
+        return "text-success";
       case "warning":
-        return "text-yellow-500";
+        return "text-warning";
       case "danger":
-        return "text-red-500";
+        return "text-danger";
       default:
-        return "text-gray-500";
+        return "text-default-500";
     }
   };
 
   return (
-    <Card className="bg-[#1E1E1E] border border-white/10">
+    <Card className="bg-content1 border-small border-default-200">
       <CardBody className="p-4">
         <div className="flex flex-col gap-4">
           <div className="flex justify-between items-center">
             <div>
-              <h3 className="text-xl font-semibold text-white">{provider}</h3>
-              <p className="text-sm text-gray-400">{type} Verification</p>
+              <h3 className="text-xl font-semibold text-foreground">{provider}</h3>
+              <p className="text-sm text-default-500">{type} Verification</p>
             </div>
-            <div className={`${getStatusStyles()}`}>{getStatusText()}</div>
+            <div className={`font-medium ${getStatusStyles()}`}>{getStatusText()}</div>
           </div>
           <Button
-            className="w-full bg-[#4B4B4B] hover:bg-[#5B5B5B] text-white"
+            className={
+              status === BridgeKybStatus.APPROVED || status === RainKybStatus.APPROVED
+                ? "bg-success/10 text-success hover:bg-success/20"
+                : "bg-default-100 text-default-foreground hover:bg-default-200"
+            }
             endContent={
               status === BridgeKybStatus.APPROVED || status === RainKybStatus.APPROVED ? (
                 <CheckCircle className="w-4 h-4" />
@@ -134,6 +138,7 @@ export function StatusCard({ provider, status, onVerify, type }: StatusCardProps
             }
             isDisabled={status === BridgeKybStatus.APPROVED || status === RainKybStatus.APPROVED}
             size="lg"
+            variant="flat"
             onPress={onVerify}
           >
             {getButtonText()}

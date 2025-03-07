@@ -126,9 +126,27 @@ export const createUserOperation = async (
     signer: WebauthnPublicKey | Address;
     isWebAuthn?: boolean;
     dummySignature?: SignerSignaturePair;
+    safeAccount?: SafeAccount;
   }
 ) => {
-  const account = new SafeAccount(walletAddress);
+  const isDeployed = await isContractDeployed(walletAddress);
+
+  // If not deployed, use provided safeAccount or create a new one
+  const account =
+    config.safeAccount ||
+    (isDeployed
+      ? new SafeAccount(walletAddress)
+      : SafeAccount.initializeNewAccount([config.signer], {
+          threshold: 1,
+          ...(config.isWebAuthn && {
+            eip7212WebAuthnPrecompileVerifierForSharedSigner: DEFAULT_SECP256R1_PRECOMPILE_ADDRESS,
+          }),
+        }));
+
+  // Verify the calculated address matches
+  if (!isDeployed && account.accountAddress !== walletAddress) {
+    throw new Error("Calculated account address does not match expected address");
+  }
 
   const userOp = await account.createUserOperation(transactions, PUBLIC_RPC, BUNDLER_URL, {
     gasLevel: GasOption.Fast,
@@ -280,10 +298,15 @@ export const createAndSendSponsoredUserOp = async (
   config: {
     signer: WebauthnPublicKey | Address;
     isWebAuthn?: boolean;
+    safeAccount?: SafeAccount;
   }
 ) => {
   // Create user operation
-  const userOp = await createUserOperation(walletAddress, transactions, config);
+  const userOp = await createUserOperation(walletAddress, transactions, {
+    signer: config.signer,
+    isWebAuthn: config.isWebAuthn,
+    safeAccount: config.safeAccount,
+  });
 
   // Add sponsorship
   const sponsoredOp = await sponsorUserOperation(userOp);

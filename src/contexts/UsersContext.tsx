@@ -26,13 +26,16 @@ export function UsersProvider({ children }: { children: ReactNode }) {
   const { user } = useUser();
   const [state, setState] = useState({
     users: [] as MerchantUserGetOutput[],
-    isLoading: true,
+    isLoading: false,
     error: null as Error | null,
     lastFetched: null as number | null,
   });
 
   const fetchUsers = useCallback(
     async (force = false) => {
+      // Don't fetch if no user is available
+      if (!user) return state.users;
+
       // Return cached data if within cache duration
       if (!force && state.lastFetched && Date.now() - state.lastFetched < CACHE_DURATION) {
         return state.users;
@@ -61,7 +64,7 @@ export function UsersProvider({ children }: { children: ReactNode }) {
         return [];
       }
     },
-    [state.lastFetched, state.users]
+    [user, state.lastFetched, state.users]
   );
 
   const createUser = useCallback(async (data: MerchantUserCreateInput) => {
@@ -138,12 +141,24 @@ export function UsersProvider({ children }: { children: ReactNode }) {
     [state.users]
   );
 
-  // Only fetch users when user context is available
+  // Only fetch users when user context is available and we haven't fetched before
   useEffect(() => {
-    if (user) {
+    if (user && !state.lastFetched) {
       fetchUsers();
     }
-  }, [user, fetchUsers]);
+  }, [user, state.lastFetched, fetchUsers]);
+
+  // Reset state when user changes
+  useEffect(() => {
+    if (!user) {
+      setState({
+        users: [],
+        isLoading: false,
+        error: null,
+        lastFetched: null,
+      });
+    }
+  }, [user]);
 
   const isOwner = user?.role === PersonRole.OWNER;
 

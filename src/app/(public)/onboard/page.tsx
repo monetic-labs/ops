@@ -12,10 +12,11 @@ import { Sun, Moon, Fingerprint, Laptop, Shield } from "lucide-react";
 import { jwtDecode } from "jwt-decode";
 import { Address } from "viem";
 import { ISO3166Alpha2Country, ISO3166Alpha3Country, PersonRole } from "@backpack-fux/pylon-sdk";
+import { SafeAccountV0_3_0 as SafeAccount, DEFAULT_SECP256R1_PRECOMPILE_ADDRESS } from "abstractionkit";
 
 import { WebAuthnHelper } from "@/utils/webauthn";
 import { createSafeAccount } from "@/utils/safe";
-import { setupSocialRecovery } from "@/utils/safe/onboard";
+import { deployAndSetupSafe, setupSocialRecovery } from "@/utils/safe/onboard";
 import pylon from "@/libs/pylon-sdk";
 import { schema, FormData, UserRole } from "@/validations/onboard/schemas";
 import { StatusModal, StatusStep } from "@/components/onboard/status-modal";
@@ -156,19 +157,21 @@ export default function OnboardPage() {
 
       updateStatusStep(0, true);
 
-      // Create individual safe account
-      const { address: walletAddr } = createSafeAccount({
-        signers: [publicKey],
-        isWebAuthn: true,
+      // Initialize the safe account configuration
+      const safeAccount = SafeAccount.initializeNewAccount([publicKey], {
+        threshold: 1,
+        eip7212WebAuthnPrecompileVerifierForSharedSigner: DEFAULT_SECP256R1_PRECOMPILE_ADDRESS,
       });
 
-      // Create settlement safe account
+      const walletAddr = safeAccount.accountAddress as Address;
+
+      // Create settlement safe account address (without deploying)
       const { address: settlementAddr } = createSafeAccount({
         signers: [walletAddr],
       });
 
-      // Create merchant account
-      const response = await pylon.createMerchant(token, {
+      // Create the merchant account first
+      const merchantResponse = await pylon.createMerchant(token, {
         settlementAddress: settlementAddr as Address,
         isTermsOfServiceAccepted: formData.acceptedTerms,
         company: {
@@ -280,21 +283,20 @@ export default function OnboardPage() {
           }),
       });
 
-      updateStatusStep(1, true);
-
-      if (response) {
-        // Setup social recovery for the account
-        await setupSocialRecovery({
-          walletAddress: walletAddr as Address,
+      if (merchantResponse) {
+        // Now deploy and setup the safe account
+        await deployAndSetupSafe({
           credentials: { publicKey, credentialId },
           recoveryMethods: {
             email: formData.users[0].email,
             phone: formData.users[0].phoneNumber.number,
           },
           callbacks: {
+            onDeployment: () => updateStatusStep(1, true),
             onRecoverySetup: () => updateStatusStep(2, true),
             onError: () => setIsSubmitting(false),
           },
+          safeAccount,
         });
 
         updateStatusStep(3, true);

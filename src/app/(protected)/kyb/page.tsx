@@ -26,44 +26,50 @@ export default function KYB() {
   };
 
   return (
-    <section className="flex flex-col items-center justify-center">
-      <div className="w-full max-w-4xl backdrop-blur-md bg-background/40 rounded-3xl p-8 space-y-8">
-        {/* Header */}
-        <div className="text-center">
-          <h1 className="text-4xl font-bold text-white mb-4">Verification Status</h1>
-          <p className="text-white/90 max-w-2xl mx-auto text-lg font-medium">
-            Complete your business and personal verification to access all features.
-          </p>
-        </div>
-
-        {/* Business Verification Section */}
-        <div>
-          <h2 className="text-2xl font-semibold text-white mb-4">Business Verification (KYB)</h2>
-          <div className="grid md:grid-cols-2 gap-6">
-            <StatusCard provider="BRIDGE" status={complianceStatus?.kycStatus} type="KYB" onVerify={handleBridgeKYB} />
-            <StatusCard provider="RAIN" status={complianceStatus?.rainKybStatus} type="KYB" onVerify={handleRainKYB} />
+    <section className="w-full flex justify-center px-4">
+      <div className="w-full max-w-full flex flex-col items-center justify-center">
+        <div className="w-full bg-content1/90 backdrop-blur-sm border border-border rounded-xl shadow-xl p-8 space-y-8">
+          {/* Header */}
+          <div className="text-center">
+            <h1 className="text-4xl font-bold mb-4">Verification Status</h1>
+            <p className="max-w-2xl mx-auto text-lg font-medium text-default-600">
+              Complete your business and personal verification to access all features.
+            </p>
           </div>
-        </div>
 
-        {/* Personal Verification Section */}
-        {complianceStatus?.rainKycStatus && (
+          {/* Business Verification Section */}
           <div>
-            <h2 className="text-2xl font-semibold text-white mb-4">Personal Verification (KYC)</h2>
+            <h2 className="text-2xl font-semibold mb-4">Business Verification (KYB)</h2>
             <div className="grid md:grid-cols-2 gap-6">
               <StatusCard
+                provider="BRIDGE"
+                status={complianceStatus?.kycStatus}
+                type="KYB"
+                onVerify={handleBridgeKYB}
+              />
+              <StatusCard
                 provider="RAIN"
-                status={complianceStatus?.rainKycStatus}
-                type="KYC"
-                onVerify={handleRainKYC}
+                status={complianceStatus?.rainKybStatus}
+                type="KYB"
+                onVerify={handleRainKYB}
               />
             </div>
           </div>
-        )}
 
-        {/* Support Section */}
-        <div className="text-center text-white/80">
-          Need help? <button className="underline hover:text-white transition-colors">Contact our support team</button>{" "}
-          for assistance with your verification process.
+          {/* Personal Verification Section */}
+          {complianceStatus?.rainKycStatus && (
+            <div>
+              <h2 className="text-2xl font-semibold mb-4">Personal Verification (KYC)</h2>
+              <div className="grid md:grid-cols-2 gap-6">
+                <StatusCard
+                  provider="RAIN"
+                  status={complianceStatus?.rainKycStatus}
+                  type="KYC"
+                  onVerify={handleRainKYC}
+                />
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </section>

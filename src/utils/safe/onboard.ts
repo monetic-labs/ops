@@ -4,17 +4,24 @@ import {
   RecoveryWalletGenerateInput,
   RecoveryWalletGenerateOutput,
 } from "@backpack-fux/pylon-sdk";
+import { SafeAccountV0_3_0 as SafeAccount, DEFAULT_SECP256R1_PRECOMPILE_ADDRESS } from "abstractionkit";
 
 import { WebAuthnHelper } from "@/utils/webauthn";
 import { WebAuthnCredentials } from "@/types/webauthn";
 import { BACKPACK_GUARDIAN_ADDRESS } from "@/utils/constants";
-import { createAndSendSponsoredUserOp, sendUserOperation } from "@/utils/safe";
+import {
+  createAndSendSponsoredUserOp,
+  sendUserOperation,
+  createSafeAccount,
+  createDeployTransaction,
+} from "@/utils/safe";
 import { createEnableModuleTransaction, createAddGuardianTransaction } from "@/utils/socialRecovery";
 import pylon from "@/libs/pylon-sdk";
 
 interface OnboardSafeCallbacks {
   onRecoverySetup?: () => void;
   onError?: (error: Error) => void;
+  onDeployment?: () => void;
 }
 
 interface OnboardSafeParams {
@@ -25,6 +32,16 @@ interface OnboardSafeParams {
     phone: string;
   };
   callbacks?: OnboardSafeCallbacks;
+}
+
+interface DeploySafeParams {
+  credentials: WebAuthnCredentials;
+  recoveryMethods: {
+    email: string;
+    phone: string;
+  };
+  callbacks?: OnboardSafeCallbacks;
+  safeAccount?: SafeAccount;
 }
 
 /**
@@ -94,6 +111,87 @@ export const setupSocialRecovery = async ({
     return guardianAddresses;
   } catch (error) {
     console.error("Error setting up social recovery:", error);
+    callbacks?.onError?.(error as Error);
+    throw error;
+  }
+};
+
+/**
+ * Deploys a new individual safe account and sets up social recovery in a single transaction
+ * This handles both the initial deployment and social recovery setup
+ */
+export const deployAndSetupSafe = async ({
+  credentials,
+  recoveryMethods,
+  callbacks,
+  safeAccount,
+}: DeploySafeParams): Promise<{ address: Address }> => {
+  try {
+    // Initialize WebAuthn helper
+    const webauthnHelper = new WebAuthnHelper({
+      credentialId: credentials.credentialId,
+      publicKey: credentials.publicKey,
+    });
+
+    // Create individual safe account with initialization
+    const safeAccountInitialized =
+      safeAccount ||
+      SafeAccount.initializeNewAccount([credentials.publicKey], {
+        threshold: 1,
+        eip7212WebAuthnPrecompileVerifierForSharedSigner: DEFAULT_SECP256R1_PRECOMPILE_ADDRESS,
+      });
+
+    const walletAddr = safeAccountInitialized.accountAddress as Address;
+
+    // Generate recovery wallets
+    const recoveryInputs: RecoveryWalletGenerateInput[] = [
+      { identifier: recoveryMethods.email, method: RecoveryWalletMethod.EMAIL },
+      { identifier: recoveryMethods.phone, method: RecoveryWalletMethod.PHONE },
+    ];
+
+    const recoveryWallets = await pylon.generateRecoveryWallets(recoveryInputs);
+
+    // Create social recovery transactions
+    const guardianAddresses = [
+      BACKPACK_GUARDIAN_ADDRESS as Address,
+      ...recoveryWallets.map((wallet: RecoveryWalletGenerateOutput) => wallet.publicAddress as Address),
+    ];
+
+    // Create all transactions in the correct order
+    const enableModuleTx = createEnableModuleTransaction(walletAddr);
+    const addGuardianTxs = guardianAddresses.map((address) => createAddGuardianTransaction(address, BigInt(2)));
+
+    // Combine all transactions in order
+    const allTransactions = [enableModuleTx, ...addGuardianTxs];
+
+    // Create and send user operation for deployment and setup
+    const { userOp, hash } = await createAndSendSponsoredUserOp(walletAddr, allTransactions, {
+      signer: credentials.publicKey,
+      isWebAuthn: true,
+      safeAccount: safeAccountInitialized,
+    });
+
+    // Sign the operation
+    const { signature: signatureData } = await webauthnHelper.signMessage(hash);
+
+    // Send the operation with initialization
+    const response = await sendUserOperation(walletAddr, userOp, {
+      signer: credentials.publicKey,
+      signature: signatureData,
+    });
+
+    // Wait for the account to be deployed and setup
+    const receipt = await response.included();
+    if (!receipt.success) {
+      throw new Error("Failed to deploy and setup safe account");
+    }
+
+    callbacks?.onDeployment?.();
+    callbacks?.onRecoverySetup?.();
+
+    return { address: walletAddr };
+  } catch (error) {
+    console.error("Error deploying and setting up safe:", error);
     callbacks?.onError?.(error as Error);
     throw error;
   }
