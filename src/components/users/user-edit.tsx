@@ -10,8 +10,11 @@ import { Eye, EyeOff, Fingerprint, Plus, Trash2 } from "lucide-react";
 import { ScrollShadow } from "@nextui-org/scroll-shadow";
 import { Tooltip } from "@nextui-org/tooltip";
 
-import { WebAuthnHelper } from "@/utils/webauthn";
 import { formatPhoneNumber, getOpepenAvatar } from "@/utils/helpers";
+import { addPasskeyToSafe } from "@/utils/safe/passkey";
+import { useToast } from "@/hooks/useToast";
+import { useUser } from "@/contexts/UserContext";
+import { WebAuthnHelper } from "@/utils/webauthn";
 
 interface UserEditModalProps {
   isOpen: boolean;
@@ -39,6 +42,8 @@ export default function UserEditModal({
   const [showEmail, setShowEmail] = useState(false);
   const [showPhone, setShowPhone] = useState(false);
   const [isAddingPasskey, setIsAddingPasskey] = useState(false);
+  const { getSigningCredentials } = useUser();
+  const { toast } = useToast();
 
   const fullName = `${user.firstName} ${user.lastName}`;
 
@@ -88,13 +93,70 @@ export default function UserEditModal({
   const handleAddPasskey = async () => {
     try {
       setIsAddingPasskey(true);
-      const webauthn = new WebAuthnHelper();
 
-      await webauthn.createPasskey(user.email);
-      // Refresh user data after adding passkey
-      // TODO: Implement refresh logic
+      // 1. Add passkey to new safe individual account
+      // 2. Add passkey to existing safe individual account
+
+      if (!user.walletAddress) {
+        throw new Error("No wallet address found");
+      }
+
+      const credentials = getSigningCredentials();
+      if (!credentials) {
+        throw new Error("No passkey found");
+      }
+
+      const result = await addPasskeyToSafe({
+        safeAddress: user.walletAddress as `0x${string}`,
+        userEmail: user.email,
+        credential: {
+          publicKey: credentials.publicKey,
+          credentialId: credentials.credentialId,
+        },
+        callbacks: {
+          onSent: () => {
+            toast({
+              title: "Adding passkey...",
+              description: "Please wait while we add your passkey to your account",
+            });
+          },
+          onSuccess: () => {
+            toast({
+              title: "Passkey added!",
+              description: "Your new passkey has been added to your account",
+            });
+          },
+          onError: (error: Error) => {
+            toast({
+              title: "Error adding passkey",
+              description: error.message,
+              variant: "destructive",
+            });
+          },
+        },
+      });
+
+      // Optimistically update the UI with the new passkey
+      const newPasskey = {
+        credentialId: result.credentialId,
+        publicKey: result.publicKey,
+        displayName: "New Passkey",
+        createdAt: new Date().toISOString(),
+        lastUsedAt: new Date().toISOString(),
+        counter: 0,
+      };
+
+      setEditedUser((prev) => ({
+        ...prev,
+        registeredPasskeys: [...(prev.registeredPasskeys || []), newPasskey],
+      }));
     } catch (error) {
       console.error("Failed to add passkey:", error);
+      toast({
+        title: "Error adding passkey",
+        description: error instanceof Error ? error.message : "An unknown error occurred",
+        variant: "destructive",
+      });
     } finally {
       setIsAddingPasskey(false);
     }
@@ -248,16 +310,25 @@ export default function UserEditModal({
               <div className="flex items-center justify-between">
                 <h3 className="text-sm font-medium text-foreground/70">Security & Passkeys</h3>
                 {isSelf && (
-                  <Button
-                    className="bg-primary/10 text-primary"
-                    endContent={<Plus className="w-4 h-4" />}
-                    isLoading={isAddingPasskey}
-                    size="sm"
-                    variant="flat"
-                    onPress={handleAddPasskey}
+                  <Tooltip
+                    content={
+                      editedUser.registeredPasskeys?.length
+                        ? "Only one passkey is allowed per user"
+                        : "Add a passkey to enable passwordless login"
+                    }
                   >
-                    Add Passkey
-                  </Button>
+                    <Button
+                      className="bg-primary/10 text-primary"
+                      endContent={<Plus className="w-4 h-4" />}
+                      isLoading={isAddingPasskey}
+                      // isDisabled={Boolean(editedUser.registeredPasskeys?.length)}
+                      size="sm"
+                      variant="flat"
+                      onPress={handleAddPasskey}
+                    >
+                      Add Passkey
+                    </Button>
+                  </Tooltip>
                 )}
               </div>
 

@@ -23,7 +23,7 @@ interface StepConfig {
 export const getSteps = (): StepConfig[] => [
   {
     number: "1",
-    title: "Company Account",
+    title: "Company Details",
     content: ({ isValidating, onNext }) => (
       <>
         <CompanyDetailsStep />
@@ -33,7 +33,7 @@ export const getSteps = (): StepConfig[] => [
   },
   {
     number: "2",
-    title: "Company Details",
+    title: "Company Account",
     content: ({ isValidating, onNext, onPrevious }) => (
       <>
         <CompanyAccountStep />

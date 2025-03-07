@@ -7,7 +7,7 @@ import { Card, CardBody } from "@nextui-org/card";
 import { Button } from "@nextui-org/button";
 import { Input } from "@nextui-org/input";
 import { Link } from "@nextui-org/link";
-import { Backpack, Mail, Sun, Moon } from "lucide-react";
+import { Backpack, Mail, Sun, Moon, ArrowLeft } from "lucide-react";
 import { useRouter } from "next/navigation";
 
 import { WebAuthnHelper } from "@/utils/webauthn";
@@ -79,10 +79,10 @@ const AuthPage = () => {
   const handlePasskeyAuth = async (credentials: PasskeyCredential[]) => {
     setIsLoading(true);
     try {
-      const webauthnHelper = new WebAuthnHelper();
-      const { publicKey, credentialId } = await webauthnHelper.loginWithPasskey(
-        credentials.map((cred) => cred.credentialId)
-      );
+      const webauthn = await WebAuthnHelper.login(credentials.map((cred) => cred.credentialId));
+
+      // Get credentials from the instance
+      const { publicKey, credentialId } = webauthn.getCredentials();
 
       // Set credentials in context
       setCredentials({ publicKey, credentialId });
@@ -143,6 +143,20 @@ const AuthPage = () => {
       <div className="flex-1 flex flex-col items-center justify-center p-4">
         <Card className="w-full max-w-md bg-content1/95 backdrop-blur-xl border border-border shadow-2xl">
           <CardBody className="py-8 px-6">
+            {emailSent && (
+              <div className="absolute top-8 left-6">
+                <Button
+                  className="bg-transparent hover:bg-content2 min-w-unit-16 h-unit-8 px-3"
+                  radius="full"
+                  size="sm"
+                  variant="light"
+                  onPress={handleBack}
+                  startContent={<ArrowLeft className="w-4 h-4" />}
+                >
+                  Back
+                </Button>
+              </div>
+            )}
             <div className="flex flex-col items-center gap-6 mb-6">
               <Backpack className="w-10 h-10 text-primary" />
               <div className="text-center">
@@ -185,23 +199,14 @@ const AuthPage = () => {
               </div>
             ) : (
               <div className="space-y-4">
-                <div className="flex flex-col gap-4">
-                  <Button
-                    className="w-full bg-primary text-primary-foreground hover:opacity-90 h-12 text-base"
-                    isDisabled={resendCooldown > 0}
-                    isLoading={isLoading}
-                    onClick={() => handleEmailAuth()}
-                  >
-                    {resendCooldown > 0 ? `Resend in ${resendCooldown}s` : isLoading ? "Sending..." : "Resend Email"}
-                  </Button>
-                  <Button
-                    className="w-full border-default-200 bg-default-100 dark:bg-default-50 hover:!bg-default-200 h-12 text-base"
-                    variant="bordered"
-                    onClick={handleBack}
-                  >
-                    Back
-                  </Button>
-                </div>
+                <Button
+                  className="w-full bg-primary text-primary-foreground hover:opacity-90 h-12 text-base"
+                  isDisabled={resendCooldown > 0}
+                  isLoading={isLoading}
+                  onClick={() => handleEmailAuth()}
+                >
+                  {resendCooldown > 0 ? `Resend in ${resendCooldown}s` : isLoading ? "Sending..." : "Resend Email"}
+                </Button>
 
                 {passkeyCredentials.length > 0 && (
                   <div className="text-center mt-4">

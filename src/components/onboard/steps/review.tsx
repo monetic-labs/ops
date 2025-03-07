@@ -32,28 +32,28 @@ export const ReviewStep = ({ onStepChange }: { onStepChange: (step: number) => v
           <h3 className="text-lg font-semibold">Company Information</h3>
           <EditButton step={1} />
         </div>
-        <div className="grid grid-cols-2 gap-4 rounded-lg border border-default-200 p-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 rounded-lg border border-default-200 p-4">
           <div>
             <p className="text-sm text-default-500">Company Name</p>
-            <p>{formData.companyName}</p>
+            <p className="break-words">{formData.companyName}</p>
           </div>
           <div>
             <p className="text-sm text-default-500">Company Email</p>
-            <p>{formData.companyEmail}</p>
+            <p className="break-words">{formData.companyEmail}</p>
           </div>
           {formData.companyWebsite && (
             <div>
               <p className="text-sm text-default-500">Company Website</p>
-              <p>{formData.companyWebsite}</p>
+              <p className="break-words">{formData.companyWebsite}</p>
             </div>
           )}
           <div>
             <p className="text-sm text-default-500">Address</p>
-            <p>
+            <p className="break-words">
               {formData.streetAddress1}
               {formData.streetAddress2 && <span>, {formData.streetAddress2}</span>}
             </p>
-            <p>
+            <p className="break-words">
               {formData.city}, {formData.state} {formData.postcode}
             </p>
           </div>
@@ -66,23 +66,23 @@ export const ReviewStep = ({ onStepChange }: { onStepChange: (step: number) => v
           <h3 className="text-lg font-semibold">Company Details</h3>
           <EditButton step={2} />
         </div>
-        <div className="grid grid-cols-2 gap-4 rounded-lg border border-default-200 p-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 rounded-lg border border-default-200 p-4">
           <div>
             <p className="text-sm text-default-500">Registration Number</p>
-            <p>{formData.companyRegistrationNumber}</p>
+            <p className="break-words">{formData.companyRegistrationNumber}</p>
           </div>
           <div>
             <p className="text-sm text-default-500">Tax ID</p>
-            <p>{formatEIN(formData.companyTaxId)}</p>
+            <p className="break-words">{formatEIN(formData.companyTaxId)}</p>
           </div>
           <div>
             <p className="text-sm text-default-500">Company Type</p>
-            <p>{formatCompanyType(formData.companyType)}</p>
+            <p className="break-words">{formatCompanyType(formData.companyType)}</p>
           </div>
           {formData.companyDescription && (
-            <div className="col-span-2">
+            <div className="col-span-1 md:col-span-2">
               <p className="text-sm text-default-500">Company Description</p>
-              <p>{formData.companyDescription}</p>
+              <p className="break-words">{formData.companyDescription}</p>
             </div>
           )}
         </div>
@@ -97,20 +97,22 @@ export const ReviewStep = ({ onStepChange }: { onStepChange: (step: number) => v
         <div className="space-y-6">
           {formData.users.map((user, index) => (
             <div key={index} className="rounded-lg border border-default-200 p-4">
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <p className="text-sm text-default-500">Name</p>
-                  <p>
+                  <p className="break-words">
                     {user.firstName} {user.lastName}
                   </p>
                 </div>
                 <div>
                   <p className="text-sm text-default-500">Email</p>
-                  <p>{user.email}</p>
+                  <p className="break-words">{user.email}</p>
                 </div>
                 <div>
                   <p className="text-sm text-default-500">Phone</p>
-                  <p>{formatPhoneNumber(user.phoneNumber.number, user.phoneNumber.extension)}</p>
+                  <p className="break-words">
+                    {formatPhoneNumber(user.phoneNumber.number, user.phoneNumber.extension)}
+                  </p>
                 </div>
                 <div>
                   <p className="text-sm text-default-500">Roles</p>

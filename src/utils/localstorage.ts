@@ -1,6 +1,7 @@
 import { Address } from "viem";
 
 import { WebAuthnCredentials } from "@/types/webauthn";
+import { FormData } from "@/validations/onboard/schemas";
 
 export interface AuthState {
   credentials: WebAuthnCredentials;
@@ -17,8 +18,54 @@ export interface UserProfile {
   profileImage?: string;
 }
 
+export interface OnboardingProgress {
+  currentStep: number;
+  formData: Partial<FormData>;
+  lastUpdated: number;
+  token?: string;
+}
+
 export class LocalStorage {
   private static KEY = "@backpack/state";
+  private static ONBOARDING_EXPIRY = 24 * 60 * 60 * 1000; // 24 hours in milliseconds
+
+  // Onboarding Methods
+  static saveOnboardingProgress(data: Partial<OnboardingProgress>) {
+    const existing = this.getOnboardingProgress();
+    const progress = {
+      ...existing,
+      ...data,
+      lastUpdated: Date.now(),
+    };
+
+    this.set("onboarding", progress);
+    this.dispatchStorageChange();
+  }
+
+  static getOnboardingProgress(): OnboardingProgress | null {
+    const progress = this.get("onboarding");
+
+    if (!progress) return null;
+
+    // Check if the data is expired (24 hours)
+    if (Date.now() - progress.lastUpdated > this.ONBOARDING_EXPIRY) {
+      this.clearOnboardingProgress();
+      return null;
+    }
+
+    return progress;
+  }
+
+  static clearOnboardingProgress() {
+    const data = localStorage.getItem(this.KEY);
+    if (!data) return;
+
+    const parsed = JSON.parse(data);
+    delete parsed.onboarding;
+
+    localStorage.setItem(this.KEY, JSON.stringify(parsed));
+    this.dispatchStorageChange();
+  }
 
   // User Profile Methods
   static setProfileImage(image: string) {

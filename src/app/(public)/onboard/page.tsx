@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Spinner } from "@nextui-org/spinner";
-import { useForm, FormProvider } from "react-hook-form";
+import { useForm, FormProvider, SubmitHandler } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Accordion, AccordionItem } from "@nextui-org/accordion";
 import { Modal, ModalContent } from "@nextui-org/modal";
@@ -21,6 +21,7 @@ import { schema, FormData, UserRole } from "@/validations/onboard/schemas";
 import { StatusModal, StatusStep } from "@/components/onboard/status-modal";
 import { useTheme } from "@/hooks/useTheme";
 import { ExpiryTimer } from "@/components/onboard/expiry-time";
+import { LocalStorage } from "@/utils/localstorage";
 
 import { getSteps } from "./config/steps";
 import { CircleWithNumber, CheckCircleIcon } from "./components/StepIndicator";
@@ -45,14 +46,15 @@ export default function OnboardPage() {
 
     if (!token) {
       router.replace("/auth");
-
       return;
     }
 
     try {
       const decoded = jwtDecode<OnboardingToken>(token);
-
       setTokenExpiry(decoded.exp);
+
+      // Save token to storage
+      LocalStorage.saveOnboardingProgress({ token });
     } catch (error) {
       console.error("Error decoding token:", error);
       router.replace("/auth");
@@ -60,10 +62,14 @@ export default function OnboardPage() {
   }, [searchParams, router]);
 
   const handleExpiry = () => {
+    LocalStorage.clearOnboardingProgress();
     router.replace("/auth");
   };
 
-  const [currentStep, setCurrentStep] = useState(1);
+  const [currentStep, setCurrentStep] = useState(() => {
+    const saved = LocalStorage.getOnboardingProgress();
+    return saved?.currentStep || 1;
+  });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isRedirecting, setIsRedirecting] = useState(false);
   const [showPasskeyModal, setShowPasskeyModal] = useState(false);
@@ -80,21 +86,37 @@ export default function OnboardPage() {
     mode: "onChange",
     reValidateMode: "onChange",
     defaultValues: (() => {
-      const token = searchParams?.get("token");
+      const saved = LocalStorage.getOnboardingProgress();
+      if (saved?.formData) {
+        return saved.formData;
+      }
 
+      const token = searchParams?.get("token");
       if (!token) return getDefaultValues();
 
       try {
         const decoded = jwtDecode<OnboardingToken>(token);
-
         return getDefaultValues(decoded.email);
       } catch (error) {
         console.error("Error decoding token:", error);
-
         return getDefaultValues();
       }
     })(),
   });
+
+  // Save form progress when it changes
+  const formValues = methods.watch();
+  useEffect(() => {
+    LocalStorage.saveOnboardingProgress({
+      currentStep,
+      formData: formValues,
+    });
+  }, [currentStep, formValues]);
+
+  // Clear storage on successful submission
+  const handleSubmitSuccess = () => {
+    LocalStorage.clearOnboardingProgress();
+  };
 
   const {
     handleSubmit: handleFormSubmit,
@@ -109,75 +131,19 @@ export default function OnboardPage() {
     setStatusSteps((steps) => steps.map((s, i) => (i === step ? { ...s, isComplete } : s)));
   };
 
-  const handleNext = async () => {
-    switch (currentStep) {
-      case 3: {
-        const users = watch("users");
-        const person1 = users[0];
-        const isValidPerson1 =
-          person1 &&
-          person1.firstName?.length >= 2 &&
-          person1.lastName?.length >= 2 &&
-          person1.phoneNumber?.number?.length >= 9;
-
-        if (!isValidPerson1) {
-          setError("users", {
-            type: "required",
-            message: "Please fill out all required fields for Person 1",
-          });
-
-          return;
-        }
-
-        const phoneNumbers = users.map((user) => user.phoneNumber?.number).filter(Boolean);
-        const hasDuplicatePhones = new Set(phoneNumbers).size !== phoneNumbers.length;
-
-        if (hasDuplicatePhones) {
-          users.forEach((_, index) => {
-            setError(`users.${index}.phoneNumber`, {
-              type: "validate",
-              message: "Phone number must be unique",
-            });
-          });
-
-          return;
-        }
-
-        clearErrors("users");
-        setCurrentStep(Math.min(currentStep + 1, 6));
-
-        return;
-      }
-      default: {
-        const fields = getFieldsForStep(currentStep);
-        const isStepValid = await trigger(fields);
-
-        if (isStepValid) {
-          setCurrentStep(Math.min(currentStep + 1, 6));
-        }
-      }
-    }
-  };
-
-  const handlePrevious = () => {
-    setCurrentStep(Math.max(currentStep - 1, 1));
-  };
-
-  const handleEdit = (stepNumber: number) => {
-    setCurrentStep(stepNumber);
-  };
-
-  const handleSubmit = handleFormSubmit(async (formData) => {
+  const onSubmit: SubmitHandler<FormData> = () => {
     setShowPasskeyModal(true);
-  });
+  };
+
+  const handleSubmit = handleFormSubmit(onSubmit);
 
   const handlePasskeyConfirm = async (formData: FormData) => {
     setShowPasskeyModal(false);
     setIsSubmitting(true);
+
     try {
       // Create passkey first
-      const webauthnHelper = new WebAuthnHelper();
-      const { publicKeyCoordinates: publicKey, credentialId } = await webauthnHelper.createPasskey(
+      const { publicKeyCoordinates: publicKey, credentialId } = await WebAuthnHelper.createPasskey(
         formData.users[0].email
       );
 
@@ -336,6 +302,64 @@ export default function OnboardPage() {
     }
   };
 
+  const handleNext = async () => {
+    switch (currentStep) {
+      case 3: {
+        const users = watch("users");
+        const person1 = users[0];
+        const isValidPerson1 =
+          person1 &&
+          person1.firstName?.length >= 2 &&
+          person1.lastName?.length >= 2 &&
+          person1.phoneNumber?.number?.length >= 9;
+
+        if (!isValidPerson1) {
+          setError("users", {
+            type: "required",
+            message: "Please fill out all required fields for Person 1",
+          });
+
+          return;
+        }
+
+        const phoneNumbers = users.map((user) => user.phoneNumber?.number).filter(Boolean);
+        const hasDuplicatePhones = new Set(phoneNumbers).size !== phoneNumbers.length;
+
+        if (hasDuplicatePhones) {
+          users.forEach((_, index) => {
+            setError(`users.${index}.phoneNumber`, {
+              type: "validate",
+              message: "Phone number must be unique",
+            });
+          });
+
+          return;
+        }
+
+        clearErrors("users");
+        setCurrentStep(Math.min(currentStep + 1, 6));
+
+        return;
+      }
+      default: {
+        const fields = getFieldsForStep(currentStep);
+        const isStepValid = await trigger(fields);
+
+        if (isStepValid) {
+          setCurrentStep(Math.min(currentStep + 1, 6));
+        }
+      }
+    }
+  };
+
+  const handlePrevious = () => {
+    setCurrentStep(Math.max(currentStep - 1, 1));
+  };
+
+  const handleEdit = (stepNumber: number) => {
+    setCurrentStep(stepNumber);
+  };
+
   return (
     <section className="w-full relative z-10 max-w-3xl mx-auto px-4 py-12">
       <Button
@@ -365,7 +389,7 @@ export default function OnboardPage() {
         <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-background/50 to-background/80 rounded-2xl" />
         <div className="relative bg-content1/40 backdrop-blur-xl border border-border rounded-2xl shadow-xl">
           <FormProvider {...methods}>
-            <form noValidate onSubmit={handleSubmit}>
+            <form noValidate onSubmit={handleFormSubmit(onSubmit)}>
               <Accordion className="p-1" selectedKeys={[currentStep.toString()]} variant="shadow">
                 {getSteps().map((step, index) => (
                   <AccordionItem

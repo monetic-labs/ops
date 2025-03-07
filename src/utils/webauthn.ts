@@ -14,24 +14,52 @@ import pylon from "@/libs/pylon-sdk";
 
 import { isLocal, isProduction, isStaging } from "./helpers";
 
+export interface PasskeyCredentials {
+  publicKey: WebauthnPublicKey;
+  credentialId: string;
+}
+
 export class WebAuthnHelper {
   private static readonly appName = `Backpack${!isLocal ? "" : " Staging"}`;
   private static readonly hostName = WebAuthnHelper.getHostName();
-  private publicKey: WebauthnPublicKey | null = null;
-  private credentialId: string | null = null;
+  private readonly publicKey: WebauthnPublicKey;
+  private readonly credentialId: string;
 
-  constructor({ publicKey, credentialId }: { publicKey?: WebauthnPublicKey; credentialId?: string } = {}) {
-    this.publicKey = publicKey || null;
-    this.credentialId = credentialId || null;
+  constructor({ publicKey, credentialId }: PasskeyCredentials) {
+    this.publicKey = publicKey;
+    this.credentialId = credentialId;
+  }
+
+  /**
+   * Get the public key of the passkey
+   */
+  get getPublicKey(): WebauthnPublicKey {
+    return this.publicKey;
+  }
+
+  /**
+   * Get the credential ID of the passkey
+   */
+  get getCredentialId(): string {
+    return this.credentialId;
+  }
+
+  /**
+   * Get both the public key and credential ID
+   */
+  getCredentials(): PasskeyCredentials {
+    return {
+      publicKey: this.publicKey,
+      credentialId: this.credentialId,
+    };
   }
 
   /**
    * Request a challenge from the server for registration
    * @returns The challenge string
    */
-  async requestChallenge(): Promise<string> {
+  private static async requestChallenge(): Promise<string> {
     const response = await pylon.generatePasskeyChallenge();
-
     return response.challenge;
   }
 
@@ -40,7 +68,7 @@ export class WebAuthnHelper {
    * @param email User's email for registration
    * @returns WebauthnPublicKey for use with Safe
    */
-  async createPasskey(email: string): Promise<{
+  static async createPasskey(email: string): Promise<{
     credentialId: string;
     publicKey: Hex;
     publicKeyCoordinates: WebauthnPublicKey;
@@ -61,23 +89,32 @@ export class WebAuthnHelper {
           ...rawOptions.user,
           id: Bytes.fromString(rawOptions.user.id),
         },
+        ...(rawOptions.excludeCredentials && {
+          excludeCredentials: rawOptions.excludeCredentials.map((credentialId) => ({
+            id: Bytes.fromString(credentialId),
+          })),
+        }),
       });
 
-      const { x, y } = PublicKey.from(credential.publicKey);
+      // Extract transports from the raw credential
+      const rawCredential = credential.raw as PublicKeyCredential;
+      const response = rawCredential.response as AuthenticatorAttestationResponse;
+      const transports = response.getTransports();
 
-      this.publicKey = { x, y };
-      this.credentialId = credential.id;
+      const { x, y } = PublicKey.from(credential.publicKey);
 
       // Register passkey with server
       const { passkeyId } = await pylon.registerPasskey({
         credentialId: credential.id,
+        challenge: rawOptions.challenge,
         publicKey: PublicKey.toHex(credential.publicKey),
+        transports,
       });
 
       return {
         credentialId: credential.id,
         publicKey: PublicKey.toHex(credential.publicKey),
-        publicKeyCoordinates: this.publicKey,
+        publicKeyCoordinates: { x, y },
         passkeyId,
       };
     } catch (error) {
@@ -87,17 +124,15 @@ export class WebAuthnHelper {
   }
 
   /**
-   * Logs in with an existing passkey
-   * @returns The credential and public key if successful
+   * Logs in with an existing passkey and returns a WebAuthnHelper instance
+   * @returns A new WebAuthnHelper instance if successful
    * @param credentialIds - The credential IDs to use for login
-   * @todo pass in multiple credentials into `credentialId` parameter
    */
-  async loginWithPasskey(credentialIds?: string[]): Promise<{ publicKey: WebauthnPublicKey; credentialId: string }> {
+  static async login(credentialIds?: string[]): Promise<WebAuthnHelper> {
     try {
       const challengeStr = await this.requestChallenge();
       const challenge = Bytes.fromString(challengeStr);
 
-      // TODO: get options from pylon
       const {
         raw: credential,
         signature,
@@ -122,13 +157,10 @@ export class WebAuthnHelper {
 
       const { x, y } = PublicKey.fromHex(publicKey as Hex);
 
-      this.publicKey = { x, y };
-      this.credentialId = credential.id;
-
-      return {
-        publicKey: this.publicKey,
+      return new WebAuthnHelper({
+        publicKey: { x, y },
         credentialId: credential.id,
-      };
+      });
     } catch (error) {
       console.error("Error logging in with passkey:", error);
       throw new Error("Failed to authenticate with passkey");
@@ -139,14 +171,10 @@ export class WebAuthnHelper {
    * Verifies that the user still has access to their passkey
    * @returns true if verification succeeds, throws error otherwise
    */
-  async verifyPasskey(): Promise<boolean> {
-    if (!this.credentialId) {
-      throw new Error("No credential available. Please create or use a passkey first.");
-    }
-
+  async verify(): Promise<boolean> {
     try {
       const challenge = Bytes.fromString(`verify_${Date.now()}`);
-      const { signature, metadata } = await sign({
+      await sign({
         challenge: OxHex.fromBytes(challenge),
         credentialId: this.credentialId,
         userVerification: "required",
@@ -167,19 +195,10 @@ export class WebAuthnHelper {
   async signMessage(
     message: Hex
   ): Promise<SignerSignaturePair & { rawSignature: Signature.Signature<false>; metadata: SignMetadata }> {
-    if (!this.credentialId || !this.publicKey) {
-      // Try to login with passkey if no credential is available
-      await this.loginWithPasskey();
-
-      if (!this.credentialId || !this.publicKey) {
-        throw new Error("No credential available. Please create or use a passkey first.");
-      }
-    }
-
     // Get signature and WebAuthn data using ox
     const { signature, metadata } = await sign({
       challenge: message,
-      credentialId: this.credentialId || undefined,
+      credentialId: this.credentialId,
       userVerification: "required",
     });
 

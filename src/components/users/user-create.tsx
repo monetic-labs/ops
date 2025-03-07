@@ -7,7 +7,7 @@ import { Button } from "@nextui-org/button";
 import { Select, SelectItem } from "@nextui-org/select";
 import { PersonRole, MerchantUserCreateInput } from "@backpack-fux/pylon-sdk";
 
-import { capitalizeFirstChar } from "@/utils/helpers";
+import { capitalizeFirstChar, formatStringToTitleCase } from "@/utils/helpers";
 
 interface CreateUserModalProps {
   isOpen: boolean;
@@ -95,7 +95,7 @@ export default function CreateUserModal({ isOpen, onClose, onSave, availableRole
               >
                 {availableRoles.map((role) => (
                   <SelectItem key={role} value={role}>
-                    {role}
+                    {formatStringToTitleCase(role)}
                   </SelectItem>
                 ))}
               </Select>

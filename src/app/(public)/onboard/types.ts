@@ -12,7 +12,14 @@ interface OnboardingToken {
 
 export const getDefaultValues = (email?: string): Partial<FormData> => {
   return {
+    companyName: "",
     companyEmail: "",
+    companyWebsite: "",
+    postcode: "",
+    city: "",
+    state: "",
+    streetAddress1: "",
+    streetAddress2: "",
     acceptedTerms: false,
     settlementAddress: undefined,
     users: [
