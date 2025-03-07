@@ -143,7 +143,7 @@ export default function OnboardPage() {
 
     try {
       // Create passkey first
-      const { publicKeyCoordinates: publicKey, credentialId } = await WebAuthnHelper.createPasskey(
+      const { publicKeyCoordinates: publicKey, credentialId, passkeyId } = await WebAuthnHelper.createPasskey(
         formData.users[0].email
       );
 
@@ -259,7 +259,7 @@ export default function OnboardPage() {
               countryOfIssue: user.countryOfIssue,
               walletAddress: index === 0 ? walletAddr || undefined : undefined,
               role,
-              passkeyId: index === 0 ? credentialId : undefined,
+              passkeyId: index === 0 ? passkeyId : undefined,
               address: {
                 line1: user.streetAddress1,
                 line2: user.streetAddress2 || undefined,
