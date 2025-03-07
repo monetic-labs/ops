@@ -142,10 +142,17 @@ export default function OnboardPage() {
     setIsSubmitting(true);
 
     try {
+      const token = searchParams?.get("token");
+      if (!token) {
+        throw new Error("No token found");
+      }
+
       // Create passkey first
-      const { publicKeyCoordinates: publicKey, credentialId, passkeyId } = await WebAuthnHelper.createPasskey(
-        formData.users[0].email
-      );
+      const {
+        publicKeyCoordinates: publicKey,
+        credentialId,
+        passkeyId,
+      } = await WebAuthnHelper.createPasskey(formData.users[0].email);
 
       updateStatusStep(0, true);
 
@@ -161,7 +168,7 @@ export default function OnboardPage() {
       });
 
       // Create merchant account
-      const response = await pylon.createMerchant({
+      const response = await pylon.createMerchant(token, {
         settlementAddress: settlementAddr as Address,
         isTermsOfServiceAccepted: formData.acceptedTerms,
         company: {
