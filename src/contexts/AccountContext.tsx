@@ -86,7 +86,7 @@ export function AccountProvider({ children }: { children: ReactNode }) {
     virtualAccount: null as GetVirtualAccountResponse | null,
   });
 
-  const { user } = useUser();
+  const { user, isLoading: isLoadingUser } = useUser();
   const { signers, isLoading: isLoadingSigners, mapSignersToUsers, updateAccountSigners } = useSigners();
 
   const filterVisibleAccounts = (accounts: Account[]) => {
@@ -112,15 +112,8 @@ export function AccountProvider({ children }: { children: ReactNode }) {
     const isSettlementAccount = account.name.toLowerCase() === "operating";
     const isCardAccount = account.name.toLowerCase() === "rain card";
 
-    const mappedSigners = mapSignersToUsers(account.signers as Address[], account.name);
-
-    const accountSigners = mappedSigners
-      .filter((signer) => signer.isAccount)
-      .map((signer) => ({
-        ...signer,
-        name: account.name,
-      }));
-
+    const processedSigners = mapSignersToUsers(account.signers as Address[], account.name);
+    const accountSigners = processedSigners.filter((signer) => signer.isAccount);
     if (accountSigners.length > 0) {
       updateAccountSigners(accountSigners);
     }
@@ -135,7 +128,7 @@ export function AccountProvider({ children }: { children: ReactNode }) {
       icon: getAccountIcon(account.name),
       isDeployed: account.isDeployed,
       threshold: account.threshold ?? 0,
-      signers: mappedSigners,
+      signers: processedSigners,
       isSettlement: account.isSettlement || isSettlementAccount,
       isCard: isCardAccount,
       recentActivity: [],
@@ -160,8 +153,6 @@ export function AccountProvider({ children }: { children: ReactNode }) {
       ]);
 
       const transformedAccounts = accounts.map(transformAccount);
-
-      // Only show predefined accounts to owners
       const predefinedToShow = user?.role === PersonRole.OWNER ? PREDEFINED_ACCOUNTS : [];
       const visibleAccounts = filterVisibleAccounts(transformedAccounts);
       const accountsWithPredefined = [...visibleAccounts, ...predefinedToShow];
@@ -177,21 +168,19 @@ export function AccountProvider({ children }: { children: ReactNode }) {
 
       return accountsWithPredefined;
     } catch (error) {
-      console.error("Error fetching accounts:", error);
       setState((prev) => ({
         ...prev,
         isLoadingAccounts: false,
       }));
-
       return [];
     }
   };
 
   useEffect(() => {
-    if (!isLoadingSigners) {
+    if (!isLoadingSigners && !isLoadingUser && user) {
       fetchAccounts();
     }
-  }, [isLoadingSigners]);
+  }, [isLoadingSigners, isLoadingUser, user]);
 
   const getAccountIcon = (name: string): LucideIcon => {
     const iconMap: Record<string, LucideIcon> = {

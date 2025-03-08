@@ -84,23 +84,22 @@ export function UserProvider({ children, token }: UserProviderProps) {
     let isSubscribed = true;
 
     const checkAuthStatus = async () => {
+      // Don't check if we shouldn't
+      if (!shouldCheckAuth) {
+        setIsLoading(false);
+
+        return;
+      }
+
+      // Skip auth check if we're on the verify route (token exchange in progress)
+      if (pathname?.startsWith("/auth/verify")) {
+        setIsLoading(false);
+
+        return;
+      }
+
       try {
-        // Keep loading true while checking auth, even if shouldCheckAuth is false
         setIsLoading(true);
-
-        // If we have a previous user and we're not explicitly checking auth,
-        // maintain the current state to prevent flashing
-        if (!shouldCheckAuth && user) {
-          setIsLoading(false);
-          return;
-        }
-
-        // Skip auth check if we're on the verify route (token exchange in progress)
-        if (pathname?.startsWith("/auth/verify")) {
-          setIsLoading(false);
-          return;
-        }
-
         const userData = await pylon.getUserById();
 
         if (!isSubscribed) return;
@@ -108,35 +107,38 @@ export function UserProvider({ children, token }: UserProviderProps) {
         if (!userData) {
           setUser(undefined);
           setCredentials(undefined);
+          setIsLoading(false);
           setShouldCheckAuth(false);
-        } else {
-          setUser(userData);
 
-          // If we have registered passkeys but no credentials set, use the first one
-          if (!credentials && userData?.registeredPasskeys?.length > 0) {
-            const passkey = userData.registeredPasskeys[0];
-            const { x, y } = PublicKey.fromHex(passkey.publicKey as Hex);
+          return;
+        }
 
-            setCredentials({
-              publicKey: { x, y },
-              credentialId: passkey.credentialId,
-            });
-          }
+        setUser(userData);
+
+        // If we have registered passkeys but no credentials set, use the first one
+        if (!credentials && userData?.registeredPasskeys?.length > 0) {
+          const passkey = userData.registeredPasskeys[0];
+          const { x, y } = PublicKey.fromHex(passkey.publicKey as Hex);
+
+          setCredentials({
+            publicKey: { x, y },
+            credentialId: passkey.credentialId,
+          });
         }
 
         // Add a small delay to ensure state updates are processed
         await new Promise((resolve) => setTimeout(resolve, 500));
+
+        setIsLoading(false);
+        setShouldCheckAuth(false);
       } catch (error) {
         console.error("Error fetching user data:", error);
         if (!isSubscribed) return;
 
         setUser(undefined);
         setCredentials(undefined);
+        setIsLoading(false);
         setShouldCheckAuth(false);
-      } finally {
-        if (isSubscribed) {
-          setIsLoading(false);
-        }
       }
     };
 
@@ -145,7 +147,7 @@ export function UserProvider({ children, token }: UserProviderProps) {
     return () => {
       isSubscribed = false;
     };
-  }, [pathname, shouldCheckAuth, credentials, user]);
+  }, [pathname, shouldCheckAuth, credentials]);
 
   const handleLogout = async () => {
     try {
