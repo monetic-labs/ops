@@ -30,6 +30,7 @@ export default function AccountMeta() {
     registerSubAccount,
     refreshAccounts,
     updateAccountBalancesAfterTransfer,
+    deployAccount,
   } = useAccounts();
 
   const [activeTab, setActiveTab] = useState<string>("activity");
@@ -107,16 +108,15 @@ export default function AccountMeta() {
     setToAccount(null);
   };
 
-  const handleDeploy = () => {
+  const handleDeploy = async (): Promise<void> => {
     if (!selectedAccount) return;
-    registerSubAccount(selectedAccount.address, selectedAccount.name);
-    setSelectedAccount({
-      ...selectedAccount,
-      isDeployed: true,
-      signers: selectedSigners,
-      threshold,
-    });
-    setIsDeployModalOpen(false);
+
+    try {
+      await deployAccount(selectedAccount.id, selectedSigners, threshold);
+    } catch (error) {
+      console.error("Failed to deploy account:", error);
+      throw error;
+    }
   };
 
   return (
@@ -165,7 +165,7 @@ export default function AccountMeta() {
               className="bg-primary text-primary-foreground px-4 py-2 rounded-md hover:bg-primary/80 transition-colors"
               onClick={() => setIsDeployModalOpen(true)}
             >
-              Deploy Account
+              Activate Account
             </button>
           </div>
         )}

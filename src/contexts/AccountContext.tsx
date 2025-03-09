@@ -1,20 +1,26 @@
 "use client";
 
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
-import { Address } from "viem";
+import { Address, Hex } from "viem";
 import {
   Network,
   StableCurrency,
   MerchantAccountGetOutput,
   GetVirtualAccountResponse,
   PersonRole,
+  MerchantAccountCreateInput,
 } from "@backpack-fux/pylon-sdk";
 import { Building2, CreditCard, PiggyBank, PlusCircle, type LucideIcon } from "lucide-react";
 
-import { Account } from "@/types/account";
+import { Account, Signer } from "@/types/account";
 import pylon from "@/libs/pylon-sdk";
 import { useSigners } from "@/contexts/SignersContext";
 import { useUser } from "@/contexts/UserContext";
+import { createSubAccountDeploymentTransactions } from "@/utils/safe";
+import { SafeAccountV0_3_0 as SafeAccount } from "abstractionkit";
+import { deploySafeAccount } from "@/utils/safe/deploy";
+import { WebAuthnCredentials } from "@/types/webauthn";
+import { PublicKey } from "ox";
 
 interface AccountContextState {
   accounts: Account[];
@@ -31,6 +37,7 @@ interface AccountContextState {
   refreshAccounts: (force?: boolean) => Promise<Account[]>;
   updateAccountBalancesAfterTransfer: (fromAddress: Address, toAddress: Address, amount: string) => Promise<Account[]>;
   updateVirtualAccountDestination: (destinationAddress: Address) => Promise<void>;
+  deployAccount: (accountId: string, signers: Signer[], threshold: number) => Promise<boolean>;
 }
 
 const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes in milliseconds
@@ -86,7 +93,7 @@ export function AccountProvider({ children }: { children: ReactNode }) {
     virtualAccount: null as GetVirtualAccountResponse | null,
   });
 
-  const { user, isLoading: isLoadingUser } = useUser();
+  const { user, isLoading: isLoadingUser, getSigningCredentials } = useUser();
   const { signers, isLoading: isLoadingSigners, mapSignersToUsers, updateAccountSigners } = useSigners();
 
   const filterVisibleAccounts = (accounts: Account[]) => {
@@ -218,7 +225,7 @@ export function AccountProvider({ children }: { children: ReactNode }) {
     setSelectedAccount: (account: Account) => setState((prev) => ({ ...prev, selectedAccount: account })),
     registerSubAccount: async (accountAddress: Address, accountName: string) => {
       try {
-        const accountData = {
+        const accountData: MerchantAccountCreateInput = {
           name: accountName,
           ledgerAddress: accountAddress,
           network: Network.BASE,
@@ -311,6 +318,55 @@ export function AccountProvider({ children }: { children: ReactNode }) {
       } catch (error) {
         console.error("Error updating virtual account:", error);
         fetchAccounts(true).catch(console.error);
+      }
+    },
+    deployAccount: async (accountId: string, signers: Signer[], threshold: number) => {
+      try {
+        // Get user credentials using the useUser hook
+        const credentials = getSigningCredentials();
+        if (!credentials) {
+          throw new Error("No signing credentials available");
+        }
+
+        // Find the account to deploy
+        const accountToDeploy = state.accounts.find((acc) => acc.id === accountId);
+        if (!accountToDeploy) {
+          throw new Error("Account not found");
+        }
+
+        // Get the individual safe address
+        const individualSafeAddress = user?.walletAddress as Address;
+        if (!individualSafeAddress) {
+          throw new Error("No wallet address available");
+        }
+
+        // Extract signer addresses
+        const signerAddresses = signers.map((s) => s.address as Address);
+
+        // Deploy the safe account
+        await deploySafeAccount({
+          individualSafeAddress,
+          credentials,
+          signerAddresses,
+          threshold,
+          callbacks: {
+            onSuccess: (safeAddress) => {
+              // Update local state
+              setState((prev) => ({
+                ...prev,
+                accounts: prev.accounts.map((account) =>
+                  account.id === accountId ? { ...account, isDeployed: true, signers, threshold } : account
+                ),
+              }));
+            },
+            onError: (error) => console.error("Deployment error:", error),
+          },
+        });
+
+        return true;
+      } catch (error) {
+        console.error("Error deploying account:", error);
+        throw error;
       }
     },
   };

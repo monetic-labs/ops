@@ -297,6 +297,7 @@ export default function OnboardPage() {
             onError: () => setIsSubmitting(false),
           },
           safeAccount,
+          settlementSafeAddress: settlementAddr,
         });
 
         updateStatusStep(3, true);

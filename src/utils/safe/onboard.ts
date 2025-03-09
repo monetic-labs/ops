@@ -42,6 +42,7 @@ interface DeploySafeParams {
   };
   callbacks?: OnboardSafeCallbacks;
   safeAccount?: SafeAccount;
+  settlementSafeAddress?: Address;
 }
 
 /**
@@ -118,14 +119,15 @@ export const setupSocialRecovery = async ({
 
 /**
  * Deploys a new individual safe account and sets up social recovery in a single transaction
- * This handles both the initial deployment and social recovery setup
+ * This handles both the initial deployments and social recovery setup
  */
 export const deployAndSetupSafe = async ({
   credentials,
   recoveryMethods,
   callbacks,
   safeAccount,
-}: DeploySafeParams): Promise<{ address: Address }> => {
+  settlementSafeAddress,
+}: DeploySafeParams): Promise<{ address: Address; settlementAddress?: Address }> => {
   try {
     // Initialize WebAuthn helper
     const webauthnHelper = new WebAuthnHelper({
@@ -162,7 +164,13 @@ export const deployAndSetupSafe = async ({
     const addGuardianTxs = guardianAddresses.map((address) => createAddGuardianTransaction(address, BigInt(2)));
 
     // Combine all transactions in order
-    const allTransactions = [enableModuleTx, ...addGuardianTxs];
+    let allTransactions = [enableModuleTx, ...addGuardianTxs];
+
+    // If settlement safe address is provided, deploy it as well
+    if (settlementSafeAddress) {
+      const deploySettlementTx = createDeployTransaction(settlementSafeAddress);
+      allTransactions = [...allTransactions, deploySettlementTx];
+    }
 
     // Create and send user operation for deployment and setup
     const { userOp, hash } = await createAndSendSponsoredUserOp(walletAddr, allTransactions, {
@@ -189,7 +197,7 @@ export const deployAndSetupSafe = async ({
     callbacks?.onDeployment?.();
     callbacks?.onRecoverySetup?.();
 
-    return { address: walletAddr };
+    return { address: walletAddr, settlementAddress: settlementSafeAddress };
   } catch (error) {
     console.error("Error deploying and setting up safe:", error);
     callbacks?.onError?.(error as Error);
