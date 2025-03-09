@@ -242,8 +242,8 @@ export const getUserOpHash = (userOp: UserOperationV7): Hex => {
   }) as Hex;
 };
 
-export const createDeployTransaction = (safeAddress: Address): MetaTransaction => {
-  const [factoryAddress, factoryData] = SafeAccount.createFactoryAddressAndData([safeAddress], { threshold: 1 });
+export const createDeployTransaction = (safeAddress: Address, threshold: number = 1): MetaTransaction => {
+  const [factoryAddress, factoryData] = SafeAccount.createFactoryAddressAndData([safeAddress], { threshold });
 
   return {
     to: factoryAddress,

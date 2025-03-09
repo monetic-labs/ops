@@ -79,20 +79,55 @@ export function DeployAccountModal({
     setDeployError(null);
 
     try {
+      console.log("Starting account deployment with signers:", selectedSigners);
+      console.log("Using threshold:", threshold);
+
       await onDeploy();
       // Only close on success
       onClose();
       toast.success("Account activated successfully!");
     } catch (error) {
       console.error("Deployment error:", error);
+
+      // Log detailed error information
+      if (error instanceof Error) {
+        console.error("Error name:", error.name);
+        console.error("Error message:", error.message);
+        console.error("Error stack:", error.stack);
+
+        // Try to extract more details if available
+        if ("cause" in error) {
+          console.error("Error cause:", (error as any).cause);
+        }
+      }
+
       let errorMessage = "Failed to activate account";
 
       if (error instanceof Error) {
+        // Handle specific error cases
         if (error.message.includes("Create2 call failed")) {
           errorMessage = "This account may already be deployed. Please refresh and try again.";
         } else if (error.message.includes("eth_estimateUserOperationGas")) {
           errorMessage = "Failed to estimate gas for deployment. The account may already be deployed.";
+        } else if (
+          error.message.includes("Invalid UserOp signature") ||
+          error.message.includes("paymaster signature")
+        ) {
+          errorMessage =
+            "Signature validation failed. Please ensure your passkey is properly registered and try again.";
+
+          // Add more specific guidance for signature issues
+          if (error.message.includes("Invalid UserOp signature")) {
+            errorMessage += " There may be an issue with your WebAuthn credentials.";
+          } else if (error.message.includes("paymaster signature")) {
+            errorMessage += " There may be an issue with the transaction sponsorship.";
+          }
+        } else if (error.message.includes("bundler")) {
+          errorMessage = "The transaction bundler service is experiencing issues. Please try again later.";
+        } else if (error.message.includes("paymaster")) {
+          errorMessage = "Transaction sponsorship failed. Please try again later.";
         } else {
+          // Use the actual error message for other cases
           errorMessage = error.message;
         }
       }

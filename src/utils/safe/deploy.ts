@@ -12,6 +12,7 @@ import {
   createSignedUserOperation,
   createSettlementOperationWithApproval,
 } from "@/utils/safe";
+import { createApproveHashTemplate } from "@/utils/safe/templates";
 
 interface DeploymentCallbacks {
   onSent?: () => void;
@@ -41,6 +42,8 @@ export const deploySafeAccount = async ({
   callbacks,
 }: DeploymentConfig): Promise<{ safeAddress: Address }> => {
   try {
+    callbacks?.onSent?.();
+
     // Initialize WebAuthn helper
     const webauthnHelper = new WebAuthnHelper({
       credentialId: credentials.credentialId,
@@ -74,16 +77,8 @@ export const deploySafeAccount = async ({
       }
     );
 
-    // Create approval transaction from individual account
-    const approveHashTransaction = {
-      to: safeSubAccountAddress,
-      value: BigInt(0),
-      data: encodeFunctionData({
-        abi: safeAbi,
-        functionName: "approveHash",
-        args: [deploymentHash],
-      }),
-    };
+    // Create approval transaction from individual account using the helper function
+    const approveHashTransaction = createApproveHashTemplate(safeSubAccountAddress, deploymentHash);
 
     // Get approval from individual account
     const { userOp: individualApprovalOp, hash: approvalHash } = await createAndSendSponsoredUserOp(
@@ -95,35 +90,66 @@ export const deploySafeAccount = async ({
       }
     );
 
-    // Sign and send the approval
-    const { signature } = await webauthnHelper.signMessage(approvalHash);
-    const signedApprovalOp = createSignedUserOperation(
-      individualApprovalOp,
-      { signer: credentials.publicKey, signature },
-      { precompileAddress: DEFAULT_SECP256R1_PRECOMPILE_ADDRESS }
-    );
+    // Create a promise that will resolve when the entire process is complete
+    return new Promise((resolve, reject) => {
+      // Sign and send the approval
+      webauthnHelper
+        .signMessage(approvalHash)
+        .then(({ signature }) => {
+          const signedApprovalOp = createSignedUserOperation(
+            individualApprovalOp,
+            { signer: credentials.publicKey, signature },
+            { precompileAddress: DEFAULT_SECP256R1_PRECOMPILE_ADDRESS }
+          );
 
-    // Execute the deployment with approval
-    const finalDeploymentOp = createSettlementOperationWithApproval(
-      individualSafeAddress,
-      deploymentUserOp,
-      DEFAULT_SECP256R1_PRECOMPILE_ADDRESS
-    );
+          // Track the approval operation
+          sendAndTrackUserOperation(individualAccount, signedApprovalOp, {
+            onSent: callbacks?.onSent,
+            onError: (error) => {
+              console.error("Error in approval operation:", error);
+              callbacks?.onError?.(error);
+              reject(error);
+            },
+            onSuccess: async () => {
+              try {
+                // Execute the deployment with approval
+                const finalDeploymentOp = createSettlementOperationWithApproval(
+                  individualSafeAddress,
+                  deploymentUserOp,
+                  DEFAULT_SECP256R1_PRECOMPILE_ADDRESS
+                );
 
-    // Track both operations
-    await sendAndTrackUserOperation(individualAccount, signedApprovalOp, {
-      onSent: callbacks?.onSent,
-      onError: callbacks?.onError,
-      onSuccess: async () => {
-        await sendAndTrackUserOperation(safeAccount, finalDeploymentOp, {
-          onSent: callbacks?.onSent,
-          onSuccess: () => callbacks?.onSuccess?.(safeSubAccountAddress),
-          onError: callbacks?.onError,
+                // Track the deployment operation
+                await sendAndTrackUserOperation(safeAccount, finalDeploymentOp, {
+                  onSent: callbacks?.onSent,
+                  onSuccess: () => {
+                    callbacks?.onSuccess?.(safeSubAccountAddress);
+                    resolve({ safeAddress: safeSubAccountAddress });
+                  },
+                  onError: (error) => {
+                    console.error("Error in deployment operation:", error);
+                    callbacks?.onError?.(error);
+                    reject(error);
+                  },
+                });
+              } catch (error) {
+                console.error("Error in deployment phase:", error);
+                callbacks?.onError?.(error as Error);
+                reject(error);
+              }
+            },
+          }).catch((error) => {
+            console.error("Error in approval phase:", error);
+            callbacks?.onError?.(error as Error);
+            reject(error);
+          });
+        })
+        .catch((error) => {
+          console.error("Error signing message:", error);
+          callbacks?.onError?.(error as Error);
+          reject(error);
         });
-      },
     });
-
-    return { safeAddress: safeSubAccountAddress };
   } catch (error) {
     console.error("Error deploying safe account:", error);
     callbacks?.onError?.(error as Error);

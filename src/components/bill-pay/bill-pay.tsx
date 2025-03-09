@@ -9,11 +9,12 @@ import { NewBillPay, ExistingBillPay } from "@/types/bill-pay";
 import { isTesting } from "@/utils/helpers";
 import { MOCK_SETTLEMENT_ADDRESS } from "@/utils/constants";
 import { ResponsiveButton } from "@/components/generics/responsive-button";
-import { useUser } from "@/contexts/UserContext";
+import { useAccounts } from "@/contexts/AccountContext";
 
 import CreateBillPayModal from "./bill-actions/create";
 import TransfersTab from "./transfers-tab";
 import ContactsTab from "./contacts-tab";
+import { Account } from "@/types/account";
 
 type BillPayTabsProps = {
   handleSubTabChange: (key: string) => void;
@@ -24,9 +25,11 @@ export default function BillPayTabs({ handleSubTabChange }: BillPayTabsProps) {
   const [selectedService, setSelectedService] = useState<string>(billPayConfig[0].id);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
-  const { user } = useUser();
-  const settlementAccount = user?.merchant.accounts.find((account) => account.isSettlement)?.ledgerAddress as Address;
-  const settlementAddress = isTesting ? MOCK_SETTLEMENT_ADDRESS : settlementAccount;
+  const { accounts } = useAccounts();
+  const settlementAccount = accounts.find(
+    (account) => account.isSettlement && account.isDeployed && !account.isDisabled
+  ) as Account;
+  const settlementAddress = isTesting ? MOCK_SETTLEMENT_ADDRESS : settlementAccount?.address;
 
   const renderTabContent = (tabId: string) => {
     switch (tabId) {
@@ -56,7 +59,12 @@ export default function BillPayTabs({ handleSubTabChange }: BillPayTabsProps) {
           ))}
         </Tabs>
         {selectedService === "transfers" && (
-          <ResponsiveButton icon={PlusIcon} label="Create Transfer" onPress={() => setIsCreateModalOpen(true)} />
+          <ResponsiveButton
+            isDisabled={!settlementAddress}
+            icon={PlusIcon}
+            label="Create Transfer"
+            onPress={() => setIsCreateModalOpen(true)}
+          />
         )}
       </div>
       <div className="mt-4">{renderTabContent(selectedService)}</div>
