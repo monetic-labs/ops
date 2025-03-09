@@ -207,7 +207,11 @@ export default function AccountMeta() {
                     <ActivityView activities={selectedAccount.recentActivity} isLoading={isLoadingAccounts} />
                   )}
                   {activeTab === "signers" && (
-                    <SignersView isLoading={isLoadingAccounts} signers={selectedAccount.signers} />
+                    <SignersView
+                      isLoading={isLoadingAccounts}
+                      signers={selectedAccount.signers}
+                      account={selectedAccount}
+                    />
                   )}
                   {activeTab === "policies" && (
                     <PoliciesView isLoading={isLoadingAccounts} signers={selectedAccount.signers} />

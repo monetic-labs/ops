@@ -10,7 +10,9 @@ import { Address } from "viem";
 
 import { MoneyInput } from "@/components/generics/money-input";
 import { BalanceDisplay } from "@/components/generics/balance-display";
-import { executeNestedTransfer, executeNestedTransferFromRainCardAcccount } from "@/utils/safe/transfer";
+import { executeNestedTransaction } from "@/utils/safe/transaction";
+import { executeNestedTransferFromRainCardAcccount } from "@/utils/safe/rain";
+import { createERC20TransferTemplate } from "@/utils/safe/templates";
 import { getEstimatedTransferFee } from "@/utils/safe/simulation";
 import { useUser } from "@/contexts/UserContext";
 import { TransferStatus, TransferStatusOverlay } from "@/components/generics/transfer-status";
@@ -153,32 +155,27 @@ export function SendModal({
         });
 
         setIsLoading(false);
-
         return;
       }
 
-      // Standard transfer for all other cases
-      await executeNestedTransfer({
+      // Regular ERC20 transfer
+      await executeNestedTransaction({
         fromSafeAddress: user.walletAddress as Address,
-        throughSafeAddress: selectedAccount.address as Address,
-        toAddress: toAccount.address as Address,
-        tokenAddress: BASE_USDC.ADDRESS,
-        tokenDecimals: BASE_USDC.DECIMALS,
-        amount,
+        throughSafeAddress: selectedAccount.address,
+        transactions: [
+          createERC20TransferTemplate({
+            tokenAddress: BASE_USDC.ADDRESS,
+            toAddress: toAccount.address as Address,
+            amount,
+            decimals: BASE_USDC.DECIMALS,
+          }),
+        ],
         credentials,
         callbacks: {
-          onPreparing: () => {
-            setTransferStatus(TransferStatus.PREPARING);
-          },
-          onSigning: () => {
-            setTransferStatus(TransferStatus.SIGNING);
-          },
-          onSigningComplete: () => {
-            setTransferStatus(TransferStatus.SENDING);
-          },
-          onSent: () => {
-            setTransferStatus(TransferStatus.CONFIRMING);
-          },
+          onPreparing: () => setTransferStatus(TransferStatus.PREPARING),
+          onSigning: () => setTransferStatus(TransferStatus.SIGNING),
+          onSigningComplete: () => setTransferStatus(TransferStatus.SENDING),
+          onSent: () => setTransferStatus(TransferStatus.CONFIRMING),
           onSuccess: () => {
             setTransferStatus(TransferStatus.SENT);
             toast.success("Transfer completed successfully");
@@ -192,9 +189,9 @@ export function SendModal({
         },
       });
     } catch (error) {
-      console.error("Transfer failed:", error);
+      console.error("Error in transfer process:", error);
       setTransferStatus(TransferStatus.ERROR);
-      toast.error("Transfer failed. Please try again.");
+    } finally {
       setIsLoading(false);
     }
   };

@@ -37,7 +37,9 @@ export function PoliciesView({ signers, isLoading }: { signers: Signer[]; isLoad
               </div>
               <div className="flex flex-col">
                 <span className="text-sm text-foreground/60">Threshold Required</span>
-                <span className="text-lg font-medium mt-1">2 signers</span>
+                <span className="text-lg font-medium mt-1">
+                  {signers.length > 1 ? `${signers.length} signers` : "1 signer"}
+                </span>
               </div>
             </div>
           </div>

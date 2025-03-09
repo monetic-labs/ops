@@ -14,7 +14,7 @@ export type Signer = {
   name: string;
   image: string;
   role?: PersonRole;
-  isAccount?: boolean;
+  isAccount: boolean;
   hasSigned?: boolean;
 };
 

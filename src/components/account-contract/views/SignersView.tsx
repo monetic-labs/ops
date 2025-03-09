@@ -2,12 +2,21 @@ import { PersonRole } from "@backpack-fux/pylon-sdk";
 import { Button } from "@nextui-org/button";
 import { Avatar } from "@nextui-org/avatar";
 import { ShieldCheck } from "lucide-react";
+import { useState } from "react";
 
 import { useUser } from "@/contexts/UserContext";
 import { formatStringToTitleCase } from "@/utils/helpers";
-import { Signer } from "@/types/account";
+import { Signer, Account } from "@/types/account";
+import { AddSignerModal } from "../modals/AddSignerModal";
 
-export function SignersView({ signers, isLoading }: { signers: Signer[]; isLoading: boolean }) {
+interface SignersViewProps {
+  signers: Signer[];
+  isLoading: boolean;
+  account: Account;
+}
+
+export function SignersView({ signers, isLoading, account }: SignersViewProps) {
+  const [showAddSigner, setShowAddSigner] = useState(false);
   const { user } = useUser();
   const isOwner = user?.role === PersonRole.OWNER;
   const isMember = user?.role === PersonRole.MEMBER;
@@ -31,7 +40,11 @@ export function SignersView({ signers, isLoading }: { signers: Signer[]; isLoadi
       <div className="flex justify-between items-center">
         <h3 className="text-lg font-semibold">Active Signers</h3>
         {isOwner && (
-          <Button className="bg-primary text-primary-foreground hover:bg-primary/90" size="sm">
+          <Button
+            className="bg-primary text-primary-foreground hover:bg-primary/90"
+            size="sm"
+            onPress={() => setShowAddSigner(true)}
+          >
             Add Signer
           </Button>
         )}
@@ -73,6 +86,13 @@ export function SignersView({ signers, isLoading }: { signers: Signer[]; isLoadi
           </div>
         ))}
       </div>
+
+      <AddSignerModal
+        isOpen={showAddSigner}
+        onClose={() => setShowAddSigner(false)}
+        account={account}
+        onSuccess={() => setShowAddSigner(false)}
+      />
     </div>
   );
 }

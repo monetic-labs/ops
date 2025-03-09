@@ -12,6 +12,7 @@ import { Address, Hex } from "viem";
 import { entryPoint07Address } from "viem/account-abstraction";
 
 import { BUNDLER_URL, chain, PAYMASTER_URL, PUBLIC_RPC, SPONSORSHIP_POLICY_ID, publicClient } from "@/config/web3";
+import { createAddOwnerTemplate, createRemoveOwnerTemplate } from "./safe/templates";
 
 interface SafeAccountConfig {
   signers: (WebauthnPublicKey | Address)[];
@@ -34,46 +35,6 @@ export const createSafeAccount = ({ signers, isWebAuthn, threshold = 1 }: SafeAc
   };
 };
 
-// Create transaction to swap owner
-export const createSwapOwnerTransaction = async (
-  safeAccount: SafeAccount,
-  prevOwner: Address,
-  oldOwner: WebauthnPublicKey | Address,
-  newOwner: WebauthnPublicKey | Address
-): Promise<MetaTransaction[]> => {
-  return safeAccount.createSwapOwnerMetaTransactions(PUBLIC_RPC, newOwner, oldOwner, {
-    prevOwner,
-    eip7212WebAuthnPrecompileVerifier: DEFAULT_SECP256R1_PRECOMPILE_ADDRESS,
-  });
-};
-
-// Create transaction to remove owner
-export const createRemoveOwnerTransaction = async (
-  safeAccount: SafeAccount,
-  prevOwner: Address,
-  owner: WebauthnPublicKey | Address,
-  newThreshold: number
-): Promise<MetaTransaction[]> => {
-  const tx = await safeAccount.createRemoveOwnerMetaTransaction(PUBLIC_RPC, owner, newThreshold, {
-    prevOwner,
-    eip7212WebAuthnPrecompileVerifier: DEFAULT_SECP256R1_PRECOMPILE_ADDRESS,
-  });
-
-  return [tx];
-};
-
-// Create transaction to add owner
-export const createAddOwnerTransaction = async (
-  safeAccount: SafeAccount,
-  owner: WebauthnPublicKey | Address,
-  newThreshold: number
-): Promise<MetaTransaction[]> => {
-  return await safeAccount.createAddOwnerWithThresholdMetaTransactions(owner, newThreshold, {
-    nodeRpcUrl: PUBLIC_RPC,
-    eip7212WebAuthnPrecompileVerifier: DEFAULT_SECP256R1_PRECOMPILE_ADDRESS,
-  });
-};
-
 // Create deployment transactions for a sub-account
 export const createSubAccountDeploymentTransactions = async (
   safeAccount: SafeAccount,
@@ -94,7 +55,7 @@ export const createSubAccountDeploymentTransactions = async (
     const addOwnerTxs = await Promise.all(
       finalSigners
         .filter((signer) => signer !== deployerAddress)
-        .map((signer) => createAddOwnerTransaction(safeAccount, signer, 1))
+        .map((signer) => createAddOwnerTemplate(safeAccount, signer, 1))
     );
 
     transactions.push(...addOwnerTxs.flat());
@@ -104,13 +65,13 @@ export const createSubAccountDeploymentTransactions = async (
   if (!isDeployerFinalSigner && finalSigners.length > 0) {
     // Remove deployer and set final threshold
     const lastSigner = finalSigners[finalSigners.length - 1];
-    const removeOwnerTxs = await createRemoveOwnerTransaction(safeAccount, lastSigner, deployerAddress, threshold);
+    const removeOwnerTxs = await createRemoveOwnerTemplate(safeAccount, lastSigner, deployerAddress, threshold);
 
     transactions.push(...removeOwnerTxs);
   } else if (threshold > 1) {
     // Update threshold using the last signer
     const lastSigner = finalSigners[finalSigners.length - 1];
-    const updateThresholdTxs = await createAddOwnerTransaction(safeAccount, lastSigner, threshold);
+    const updateThresholdTxs = await createAddOwnerTemplate(safeAccount, lastSigner, threshold);
 
     transactions.push(...updateThresholdTxs);
   }

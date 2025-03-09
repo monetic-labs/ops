@@ -2,7 +2,8 @@ import { Address } from "viem";
 import { SafeAccountV0_3_0 as SafeAccount, WebauthnPublicKey } from "abstractionkit";
 
 import { PasskeyCredentials, WebAuthnHelper } from "@/utils/webauthn";
-import { createAddOwnerTransaction, createAndSendSponsoredUserOp, sendUserOperation } from "@/utils/safe";
+import { createAndSendSponsoredUserOp, sendUserOperation } from "@/utils/safe";
+import { createAddOwnerTemplate } from "./templates";
 
 interface AddPasskeyCallbacks {
   onSent?: () => void;
@@ -46,7 +47,7 @@ export async function addPasskeyToSafe({
     const safeAccount = new SafeAccount(safeAddress);
 
     // Create transaction to add the new signer while keeping the same threshold
-    const addOwnerTxs = await createAddOwnerTransaction(safeAccount, result.publicKeyCoordinates, threshold);
+    const addOwnerTxs = await createAddOwnerTemplate(safeAccount, result.publicKeyCoordinates, threshold);
 
     // Create and send the sponsored user operation
     const { userOp, hash } = await createAndSendSponsoredUserOp(safeAddress, addOwnerTxs, {

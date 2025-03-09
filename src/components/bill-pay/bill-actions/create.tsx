@@ -15,7 +15,7 @@ import { toast } from "sonner";
 
 import { useExistingDisbursement } from "@/hooks/bill-pay/useExistingDisbursement";
 import { TransferStatus, TransferStatusOverlay } from "@/components/generics/transfer-status";
-import { executeNestedTransfer } from "@/utils/safe/transfer";
+import { executeNestedTransaction } from "@/utils/safe/transaction";
 import { useBalance } from "@/hooks/account-contracts/useBalance";
 import { validateBillPay } from "@/validations/bill-pay";
 import {
@@ -33,6 +33,7 @@ import ModalFooterWithSupport from "../../generics/footer-modal-support";
 
 import ExistingTransferFields from "./fields/existing-transfer";
 import NewTransferFields from "./fields/new-transfer";
+import { createERC20TransferTemplate } from "@/utils/safe/templates";
 
 type CreateBillPayModalProps = {
   isOpen: boolean;
@@ -173,13 +174,17 @@ export default function CreateBillPayModal({
 
       const liquidationAddress = getLiquidationAddress(response, isExistingBillPay(billPay));
 
-      await executeNestedTransfer({
+      const erc20TransferTemplate = createERC20TransferTemplate({
+        tokenAddress: BASE_USDC.ADDRESS,
+        toAddress: liquidationAddress,
+        amount: billPay.amount,
+        decimals: BASE_USDC.DECIMALS,
+      });
+
+      await executeNestedTransaction({
         fromSafeAddress: user.walletAddress as Address,
         throughSafeAddress: settlementAddress,
-        toAddress: liquidationAddress,
-        tokenAddress: BASE_USDC.ADDRESS,
-        tokenDecimals: BASE_USDC.DECIMALS,
-        amount: billPay.amount,
+        transactions: [erc20TransferTemplate],
         credentials,
         callbacks: {
           onPreparing: () => setTransferStatus(TransferStatus.PREPARING),
