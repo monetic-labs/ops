@@ -1,5 +1,10 @@
-import { Address, encodeFunctionData } from "viem";
-import { SafeAccountV0_3_0 as SafeAccount, DEFAULT_SECP256R1_PRECOMPILE_ADDRESS } from "abstractionkit";
+import { Address } from "viem";
+import {
+  SafeAccountV0_3_0 as SafeAccount,
+  DEFAULT_SECP256R1_PRECOMPILE_ADDRESS,
+  GasOption,
+  UserOperationV7,
+} from "abstractionkit";
 
 import { WebAuthnHelper } from "@/utils/webauthn";
 import { WebAuthnCredentials } from "@/types/webauthn";
@@ -11,8 +16,13 @@ import {
   sendAndTrackUserOperation,
   createSignedUserOperation,
   createSettlementOperationWithApproval,
+  sponsorUserOperation,
+  getUserOpHash,
+  sendUserOperation,
+  trackUserOperationResponse,
 } from "@/utils/safe";
 import { createApproveHashTemplate } from "@/utils/safe/templates";
+import { BUNDLER_URL, PUBLIC_RPC } from "@/config/web3";
 
 interface DeploymentCallbacks {
   onSent?: () => void;
@@ -30,9 +40,7 @@ interface DeploymentConfig {
 
 /**
  * Deploys a new Safe account through an existing individual safe account
- * This is a nested transaction where:
- * 1. Individual account approves the deployment
- * 2. New safe account is deployed with the approval
+ * This is a direct deployment approach following Candide's documentation for initial deployments
  */
 export const deploySafeAccount = async ({
   individualSafeAddress,
@@ -42,7 +50,11 @@ export const deploySafeAccount = async ({
   callbacks,
 }: DeploymentConfig): Promise<{ safeAddress: Address }> => {
   try {
-    callbacks?.onSent?.();
+    console.log("Starting safe account deployment with parameters:", {
+      individualSafeAddress,
+      signerAddresses,
+      threshold,
+    });
 
     // Initialize WebAuthn helper
     const webauthnHelper = new WebAuthnHelper({
@@ -50,14 +62,13 @@ export const deploySafeAccount = async ({
       publicKey: credentials.publicKey,
     });
 
-    // Create the individual account instance
-    const individualAccount = new SafeAccount(individualSafeAddress);
-
     // Create the new safe account to be deployed
     const { address: safeSubAccountAddress, instance: safeAccount } = createSafeAccount({
       signers: [individualSafeAddress],
       isWebAuthn: false,
     });
+
+    console.log("Created safe account:", safeSubAccountAddress);
 
     // Create deployment transactions
     const deploymentTxs = await createSubAccountDeploymentTransactions(
@@ -67,91 +78,77 @@ export const deploySafeAccount = async ({
       threshold
     );
 
-    // Create and sponsor deployment operation
-    const { userOp: deploymentUserOp, hash: deploymentHash } = await createAndSendSponsoredUserOp(
-      safeSubAccountAddress,
-      deploymentTxs,
-      {
-        signer: individualSafeAddress,
-        isWebAuthn: false,
-      }
-    );
+    console.log("Created deployment transactions:", deploymentTxs);
 
-    // Create approval transaction from individual account using the helper function
-    const approveHashTransaction = createApproveHashTemplate(safeSubAccountAddress, deploymentHash);
-
-    // Get approval from individual account
-    const { userOp: individualApprovalOp, hash: approvalHash } = await createAndSendSponsoredUserOp(
-      individualSafeAddress,
-      [approveHashTransaction],
-      {
-        signer: credentials.publicKey,
-        isWebAuthn: true,
-      }
-    );
-
-    // Create a promise that will resolve when the entire process is complete
+    // Following Candide's approach for initial deployments
     return new Promise((resolve, reject) => {
-      // Sign and send the approval
-      webauthnHelper
-        .signMessage(approvalHash)
-        .then(({ signature }) => {
-          const signedApprovalOp = createSignedUserOperation(
-            individualApprovalOp,
-            { signer: credentials.publicKey, signature },
-            { precompileAddress: DEFAULT_SECP256R1_PRECOMPILE_ADDRESS }
-          );
+      try {
+        // Create user operation directly
+        safeAccount
+          .createUserOperation(deploymentTxs, PUBLIC_RPC, BUNDLER_URL)
+          .then(async (userOp) => {
+            console.log("Created user operation for deployment");
 
-          // Track the approval operation
-          sendAndTrackUserOperation(individualAccount, signedApprovalOp, {
-            onSent: callbacks?.onSent,
-            onError: (error) => {
-              console.error("Error in approval operation:", error);
-              callbacks?.onError?.(error);
+            try {
+              // Get the hash to sign
+              const userOpHash = getUserOpHash(userOp);
+              console.log("User operation hash for signing:", userOpHash);
+
+              // Sign the hash with WebAuthn
+              const { signature } = await webauthnHelper.signMessage(userOpHash);
+              console.log("Signed user operation hash");
+
+              // Create signed user operation
+              const signedUserOp = createSignedUserOperation(
+                userOp,
+                { signer: credentials.publicKey, signature },
+                { precompileAddress: DEFAULT_SECP256R1_PRECOMPILE_ADDRESS }
+              );
+              console.log("Created signed user operation");
+
+              // Send the user operation directly
+              const response = await sendUserOperation(safeSubAccountAddress, signedUserOp, {
+                signer: credentials.publicKey,
+                signature,
+              });
+              console.log("Sent user operation, tracking response");
+
+              // Track the user operation
+              await trackUserOperationResponse(response, {
+                onSent: () => {
+                  console.log("User operation sent");
+                  callbacks?.onSent?.();
+                },
+                onSuccess: () => {
+                  console.log("Deployment successful");
+                  callbacks?.onSuccess?.(safeSubAccountAddress);
+                  resolve({ safeAddress: safeSubAccountAddress });
+                },
+                onError: (error) => {
+                  console.error("Error in deployment:", error);
+                  callbacks?.onError?.(error);
+                  reject(error);
+                },
+              });
+            } catch (error) {
+              console.error("Error in deployment process:", error);
+              callbacks?.onError?.(error as Error);
               reject(error);
-            },
-            onSuccess: async () => {
-              try {
-                // Execute the deployment with approval
-                const finalDeploymentOp = createSettlementOperationWithApproval(
-                  individualSafeAddress,
-                  deploymentUserOp,
-                  DEFAULT_SECP256R1_PRECOMPILE_ADDRESS
-                );
-
-                // Track the deployment operation
-                await sendAndTrackUserOperation(safeAccount, finalDeploymentOp, {
-                  onSent: callbacks?.onSent,
-                  onSuccess: () => {
-                    callbacks?.onSuccess?.(safeSubAccountAddress);
-                    resolve({ safeAddress: safeSubAccountAddress });
-                  },
-                  onError: (error) => {
-                    console.error("Error in deployment operation:", error);
-                    callbacks?.onError?.(error);
-                    reject(error);
-                  },
-                });
-              } catch (error) {
-                console.error("Error in deployment phase:", error);
-                callbacks?.onError?.(error as Error);
-                reject(error);
-              }
-            },
-          }).catch((error) => {
-            console.error("Error in approval phase:", error);
+            }
+          })
+          .catch((error) => {
+            console.error("Error creating user operation:", error);
             callbacks?.onError?.(error as Error);
             reject(error);
           });
-        })
-        .catch((error) => {
-          console.error("Error signing message:", error);
-          callbacks?.onError?.(error as Error);
-          reject(error);
-        });
+      } catch (error) {
+        console.error("Error in deployment setup:", error);
+        callbacks?.onError?.(error as Error);
+        reject(error);
+      }
     });
   } catch (error) {
-    console.error("Error deploying safe account:", error);
+    console.error("Error in deployment setup:", error);
     callbacks?.onError?.(error as Error);
     throw error;
   }

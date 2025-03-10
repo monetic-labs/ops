@@ -79,9 +79,6 @@ export function DeployAccountModal({
     setDeployError(null);
 
     try {
-      console.log("Starting account deployment with signers:", selectedSigners);
-      console.log("Using threshold:", threshold);
-
       await onDeploy();
       // Only close on success
       onClose();
