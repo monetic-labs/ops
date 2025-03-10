@@ -92,12 +92,12 @@ export const setupSocialRecovery = async ({
     });
 
     // Sign the operation
-    const signature = await webauthnHelper.signMessage(hash);
+    const { signature } = await webauthnHelper.signMessage(hash);
 
     // Send the operation
     const response = await sendUserOperation(walletAddress, userOp, {
       signer: credentials.publicKey,
-      signature: signature.signature,
+      signature,
     });
 
     // Wait for receipt
