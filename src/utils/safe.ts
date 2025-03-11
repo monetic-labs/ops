@@ -21,7 +21,7 @@ interface SafeAccountConfig {
 }
 
 // Core Safe Account Functions
-export const createSafeAccount = ({ signers, isWebAuthn, threshold = 1 }: SafeAccountConfig) => {
+export const createSafeAccount = ({ signers, isWebAuthn = false, threshold = 1 }: SafeAccountConfig) => {
   const account = SafeAccount.initializeNewAccount(signers, {
     threshold,
     ...(isWebAuthn && {

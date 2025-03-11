@@ -41,7 +41,7 @@ interface DeploySafeParams {
     phone: string;
   };
   callbacks?: OnboardSafeCallbacks;
-  safeAccount?: SafeAccount;
+  individualSafeAccount: SafeAccount;
   settlementSafeAddress?: Address;
 }
 
@@ -125,7 +125,7 @@ export const deployAndSetupSafe = async ({
   credentials,
   recoveryMethods,
   callbacks,
-  safeAccount,
+  individualSafeAccount,
   settlementSafeAddress,
 }: DeploySafeParams): Promise<{ address: Address; settlementAddress?: Address }> => {
   try {
@@ -135,15 +135,8 @@ export const deployAndSetupSafe = async ({
       publicKey: credentials.publicKey,
     });
 
-    // Create individual safe account with initialization
-    const safeAccountInitialized =
-      safeAccount ||
-      SafeAccount.initializeNewAccount([credentials.publicKey], {
-        threshold: 1,
-        eip7212WebAuthnPrecompileVerifierForSharedSigner: DEFAULT_SECP256R1_PRECOMPILE_ADDRESS,
-      });
-
-    const walletAddr = safeAccountInitialized.accountAddress as Address;
+    // Get the individual account address
+    const individualAddr = individualSafeAccount.accountAddress as Address;
 
     // Generate recovery wallets
     const recoveryInputs: RecoveryWalletGenerateInput[] = [
@@ -160,7 +153,7 @@ export const deployAndSetupSafe = async ({
     ];
 
     // Create all transactions in the correct order
-    const enableModuleTx = createEnableModuleTransaction(walletAddr);
+    const enableModuleTx = createEnableModuleTransaction(individualAddr);
     const addGuardianTxs = guardianAddresses.map((address) => createAddGuardianTransaction(address, BigInt(2)));
 
     // Combine all transactions in order
@@ -168,22 +161,25 @@ export const deployAndSetupSafe = async ({
 
     // If settlement safe address is provided, deploy it as well
     if (settlementSafeAddress) {
-      const deploySettlementTx = createDeployTransaction(settlementSafeAddress);
-      allTransactions = [...allTransactions, deploySettlementTx];
+      const deploySettlementTx = createDeployTransaction(individualAddr);
+      allTransactions = [deploySettlementTx, ...allTransactions];
     }
 
     // Create and send user operation for deployment and setup
-    const { userOp, hash } = await createAndSendSponsoredUserOp(walletAddr, allTransactions, {
+    const { userOp, hash } = await createAndSendSponsoredUserOp(individualAddr, allTransactions, {
       signer: credentials.publicKey,
       isWebAuthn: true,
-      safeAccount: safeAccountInitialized,
+      safeAccount: individualSafeAccount,
     });
+
+    // Call the deployment callback here before signing
+    callbacks?.onDeployment?.();
 
     // Sign the operation
     const { signature: signatureData } = await webauthnHelper.signMessage(hash);
 
     // Send the operation with initialization
-    const response = await sendUserOperation(walletAddr, userOp, {
+    const response = await sendUserOperation(individualAddr, userOp, {
       signer: credentials.publicKey,
       signature: signatureData,
     });
@@ -194,10 +190,10 @@ export const deployAndSetupSafe = async ({
       throw new Error("Failed to deploy and setup safe account");
     }
 
-    callbacks?.onDeployment?.();
+    // Call the recovery setup callback after successful deployment
     callbacks?.onRecoverySetup?.();
 
-    return { address: walletAddr, settlementAddress: settlementSafeAddress };
+    return { address: individualAddr, settlementAddress: settlementSafeAddress };
   } catch (error) {
     console.error("Error deploying and setting up safe:", error);
     callbacks?.onError?.(error as Error);

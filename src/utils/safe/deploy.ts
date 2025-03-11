@@ -14,10 +14,8 @@ import {
   sendAndTrackUserOperation,
   createSignedUserOperation,
   createSettlementOperationWithApproval,
-  createDeployTransaction,
 } from "@/utils/safe";
 import { createApproveHashTemplate } from "./templates";
-import { BUNDLER_URL, PUBLIC_RPC } from "@/config/web3";
 
 interface DeploymentCallbacks {
   onPreparing?: () => void;
@@ -71,12 +69,17 @@ export const deploySafeAccount = async ({
     });
 
     // Create deployment transactions
-    const deploymentTx = createDeployTransaction(settlementAccountAddress, threshold);
+    const deploymentTxs = await createSubAccountDeploymentTransactions(
+      settlementAccount,
+      individualSafeAddress,
+      signerAddresses,
+      threshold
+    );
 
     // Create and sponsor settlement account operation
     const { userOp: settlementUserOp, hash: settlementOpHash } = await createAndSendSponsoredUserOp(
       settlementAccountAddress,
-      [deploymentTx],
+      deploymentTxs,
       {
         signer: individualSafeAddress,
         isWebAuthn: false,

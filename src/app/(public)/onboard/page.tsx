@@ -15,14 +15,14 @@ import { ISO3166Alpha2Country, ISO3166Alpha3Country, PersonRole } from "@backpac
 import { SafeAccountV0_3_0 as SafeAccount, DEFAULT_SECP256R1_PRECOMPILE_ADDRESS } from "abstractionkit";
 
 import { WebAuthnHelper } from "@/utils/webauthn";
-import { createSafeAccount } from "@/utils/safe";
-import { deployAndSetupSafe, setupSocialRecovery } from "@/utils/safe/onboard";
+import { deployAndSetupSafe } from "@/utils/safe/onboard";
 import pylon from "@/libs/pylon-sdk";
 import { schema, FormData, UserRole } from "@/validations/onboard/schemas";
 import { StatusModal, StatusStep } from "@/components/onboard/status-modal";
 import { useTheme } from "@/hooks/useTheme";
 import { ExpiryTimer } from "@/components/onboard/expiry-time";
 import { LocalStorage } from "@/utils/localstorage";
+import { useUser } from "@/contexts/UserContext";
 
 import { getSteps } from "./config/steps";
 import { CircleWithNumber, CheckCircleIcon } from "./components/StepIndicator";
@@ -40,6 +40,7 @@ export default function OnboardPage() {
   const searchParams = useSearchParams();
   const { toggleTheme, isDark } = useTheme();
   const [tokenExpiry, setTokenExpiry] = useState<number | null>(null);
+  const { setCredentials } = useUser();
 
   // Token check and expiry setup
   useEffect(() => {
@@ -157,22 +158,25 @@ export default function OnboardPage() {
 
       updateStatusStep(0, true);
 
-      // Initialize the safe account configuration
-      const safeAccount = SafeAccount.initializeNewAccount([publicKey], {
+      // Initialize the individual safe account
+      const individualAccount = SafeAccount.initializeNewAccount([publicKey], {
         threshold: 1,
         eip7212WebAuthnPrecompileVerifierForSharedSigner: DEFAULT_SECP256R1_PRECOMPILE_ADDRESS,
       });
 
-      const walletAddr = safeAccount.accountAddress as Address;
+      const individualAddress = individualAccount.accountAddress as Address;
 
-      // Create settlement safe account address (without deploying)
-      const { address: settlementAddr } = createSafeAccount({
-        signers: [walletAddr],
-      });
+      // Calculate the settlement safe account address
+      const settlementAddress = SafeAccount.createAccountAddress([individualAddress], {
+        threshold: 1,
+      }) as Address;
 
-      // Create the merchant account first
+      // Update status to show merchant account creation is in progress
+      updateStatusStep(1, false);
+
+      // Create the merchant account
       const merchantResponse = await pylon.createMerchant(token, {
-        settlementAddress: settlementAddr as Address,
+        settlementAddress: settlementAddress,
         isTermsOfServiceAccepted: formData.acceptedTerms,
         company: {
           name: formData.companyName,
@@ -199,7 +203,7 @@ export default function OnboardPage() {
             nationalId: formData.users[0].socialSecurityNumber,
             countryOfIssue: formData.users[0].countryOfIssue,
             birthDate: formData.users[0].birthDate,
-            walletAddress: walletAddr || undefined,
+            walletAddress: individualAddress,
             address: {
               line1: formData.users[0].streetAddress1,
               line2: formData.users[0].streetAddress2 || undefined,
@@ -267,7 +271,7 @@ export default function OnboardPage() {
               birthDate: user.birthDate,
               nationalId: user.socialSecurityNumber,
               countryOfIssue: user.countryOfIssue,
-              walletAddress: index === 0 ? walletAddr || undefined : undefined,
+              walletAddress: index === 0 ? individualAddress : undefined,
               role,
               passkeyId: index === 0 ? passkeyId : undefined,
               address: {
@@ -283,6 +287,9 @@ export default function OnboardPage() {
           }),
       });
 
+      // Mark merchant creation as complete
+      updateStatusStep(1, true);
+
       if (merchantResponse) {
         // Now deploy and setup the safe account
         await deployAndSetupSafe({
@@ -292,19 +299,22 @@ export default function OnboardPage() {
             phone: formData.users[0].phoneNumber.number,
           },
           callbacks: {
-            onDeployment: () => updateStatusStep(1, true),
-            onRecoverySetup: () => updateStatusStep(2, true),
+            onDeployment: () => updateStatusStep(2, true),
+            onRecoverySetup: () => updateStatusStep(3, true),
             onError: () => setIsSubmitting(false),
           },
-          safeAccount,
-          settlementSafeAddress: settlementAddr,
+          individualSafeAccount: individualAccount,
+          settlementSafeAddress: settlementAddress,
         });
 
-        updateStatusStep(3, true);
+        // Add a delay to ensure all steps are visible
         await new Promise((resolve) => setTimeout(resolve, 1500));
+
         setIsSubmitting(false);
         setIsRedirecting(true);
-        router.push("/");
+        handleSubmitSuccess(); // Clear onboarding progress from localStorage
+        setCredentials({ publicKey, credentialId }); // Set credentials in UserContext
+        router.push("/"); // Redirect to home page
       }
     } catch (error) {
       console.error("Error in onboarding process:", error);

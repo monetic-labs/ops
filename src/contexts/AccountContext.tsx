@@ -16,11 +16,7 @@ import { Account, Signer } from "@/types/account";
 import pylon from "@/libs/pylon-sdk";
 import { useSigners } from "@/contexts/SignersContext";
 import { useUser } from "@/contexts/UserContext";
-import { createSubAccountDeploymentTransactions } from "@/utils/safe";
-import { SafeAccountV0_3_0 as SafeAccount } from "abstractionkit";
 import { deploySafeAccount } from "@/utils/safe/deploy";
-import { WebAuthnCredentials } from "@/types/webauthn";
-import { PublicKey } from "ox";
 
 interface AccountContextState {
   accounts: Account[];
