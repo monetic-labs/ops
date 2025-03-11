@@ -4,17 +4,12 @@ import {
   RecoveryWalletGenerateInput,
   RecoveryWalletGenerateOutput,
 } from "@backpack-fux/pylon-sdk";
-import { SafeAccountV0_3_0 as SafeAccount, DEFAULT_SECP256R1_PRECOMPILE_ADDRESS } from "abstractionkit";
+import { SafeAccountV0_3_0 as SafeAccount } from "abstractionkit";
 
 import { WebAuthnHelper } from "@/utils/webauthn";
 import { WebAuthnCredentials } from "@/types/webauthn";
 import { BACKPACK_GUARDIAN_ADDRESS } from "@/utils/constants";
-import {
-  createAndSendSponsoredUserOp,
-  sendUserOperation,
-  createSafeAccount,
-  createDeployTransaction,
-} from "@/utils/safe";
+import { createAndSendSponsoredUserOp, sendUserOperation, createDeployTransaction } from "@/utils/safe";
 import { createEnableModuleTransaction, createAddGuardianTransaction } from "@/utils/socialRecovery";
 import pylon from "@/libs/pylon-sdk";
 
@@ -42,7 +37,7 @@ interface DeploySafeParams {
   };
   callbacks?: OnboardSafeCallbacks;
   individualSafeAccount: SafeAccount;
-  settlementSafeAddress?: Address;
+  settlementSafeAddress: Address;
 }
 
 /**
@@ -157,13 +152,11 @@ export const deployAndSetupSafe = async ({
     const addGuardianTxs = guardianAddresses.map((address) => createAddGuardianTransaction(address, BigInt(2)));
 
     // Combine all transactions in order
-    let allTransactions = [enableModuleTx, ...addGuardianTxs];
+    const allTransactions = [enableModuleTx, ...addGuardianTxs];
 
-    // If settlement safe address is provided, deploy it as well
-    if (settlementSafeAddress) {
-      const deploySettlementTx = createDeployTransaction(individualAddr);
-      allTransactions = [deploySettlementTx, ...allTransactions];
-    }
+    // Deploy the settlement account using the individual account as the deployer
+    const deploySettlementTx = createDeployTransaction([individualAddr]);
+    allTransactions.push(deploySettlementTx);
 
     // Create and send user operation for deployment and setup
     const { userOp, hash } = await createAndSendSponsoredUserOp(individualAddr, allTransactions, {

@@ -43,7 +43,7 @@ export const createSubAccountDeploymentTransactions = async (
   threshold: number
 ): Promise<MetaTransaction[]> => {
   // Start with deployment transaction
-  const deployTx = createDeployTransaction(safeAccount.accountAddress as Address);
+  const deployTx = createDeployTransaction([safeAccount.accountAddress as Address]);
   const transactions: MetaTransaction[] = [deployTx];
 
   // Determine if deployer should be a final signer
@@ -242,8 +242,8 @@ export const getUserOpHash = (userOp: UserOperationV7): Hex => {
   }) as Hex;
 };
 
-export const createDeployTransaction = (safeAddress: Address, threshold: number = 1): MetaTransaction => {
-  const [factoryAddress, factoryData] = SafeAccount.createFactoryAddressAndData([safeAddress], { threshold });
+export const createDeployTransaction = (signers: Address[], threshold: number = 1): MetaTransaction => {
+  const [factoryAddress, factoryData] = SafeAccount.createFactoryAddressAndData(signers, { threshold });
 
   return {
     to: factoryAddress,

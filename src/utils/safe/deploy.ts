@@ -1,21 +1,15 @@
 import { Address } from "viem";
-import {
-  SafeAccountV0_3_0 as SafeAccount,
-  DEFAULT_SECP256R1_PRECOMPILE_ADDRESS,
-  MetaTransaction,
-} from "abstractionkit";
+import { SafeAccountV0_3_0 as SafeAccount, DEFAULT_SECP256R1_PRECOMPILE_ADDRESS } from "abstractionkit";
 
 import { WebAuthnHelper } from "@/utils/webauthn";
 import { WebAuthnCredentials } from "@/types/webauthn";
 import {
   createSafeAccount,
-  createSubAccountDeploymentTransactions,
+  createDeployTransaction,
   createAndSendSponsoredUserOp,
   sendAndTrackUserOperation,
   createSignedUserOperation,
-  createSettlementOperationWithApproval,
 } from "@/utils/safe";
-import { createApproveHashTemplate } from "./templates";
 
 interface DeploymentCallbacks {
   onPreparing?: () => void;
@@ -35,14 +29,9 @@ interface DeploymentConfig {
 }
 
 /**
- * Deploys a new Safe sub-account (settlement account) through an existing individual safe account
- * The individual safe account is controlled by WebAuthn signers
- * The settlement account is owned by the individual safe account
- *
- * This follows the nested accounts pattern from Candide:
- * 1. Create settlement account with individual account as owner
- * 2. Individual account approves the settlement account deployment
- * 3. Settlement account is deployed with the approval
+ * Deploys a new Safe sub-account using a simpler direct approach
+ * 1. First, deploy the sub-account with initial signers
+ * 2. Later, configure additional signers and threshold in a separate operation
  */
 export const deploySafeAccount = async ({
   individualSafeAddress,
@@ -63,96 +52,58 @@ export const deploySafeAccount = async ({
     const individualAccount = new SafeAccount(individualSafeAddress);
 
     // Create the new settlement account to be deployed
-    const { address: settlementAccountAddress, instance: settlementAccount } = createSafeAccount({
-      signers: [individualSafeAddress],
+    // Include all signers directly in the initial deployment
+    const allSigners = [individualSafeAddress, ...signerAddresses.filter((addr) => addr !== individualSafeAddress)];
+
+    // Calculate the settlement account address
+    const { address: settlementAccountAddress } = createSafeAccount({
+      signers: allSigners,
       isWebAuthn: false,
+      threshold,
     });
 
-    // Create deployment transactions
-    const deploymentTxs = await createSubAccountDeploymentTransactions(
-      settlementAccount,
+    // Create a simple deployment transaction with all signers
+    const deployTx = createDeployTransaction(allSigners, threshold);
+
+    // Create and sponsor individual account operation to deploy the settlement account
+    const { userOp: deployUserOp, hash: deployHash } = await createAndSendSponsoredUserOp(
       individualSafeAddress,
-      signerAddresses,
-      threshold
-    );
-
-    // Create and sponsor settlement account operation
-    const { userOp: settlementUserOp, hash: settlementOpHash } = await createAndSendSponsoredUserOp(
-      settlementAccountAddress,
-      deploymentTxs,
-      {
-        signer: individualSafeAddress,
-        isWebAuthn: false,
-      }
-    );
-
-    // Create approval transaction from individual account
-    const approveHashTransaction = createApproveHashTemplate(settlementAccountAddress, settlementOpHash);
-
-    callbacks?.onSigning?.();
-
-    // Create and sponsor individual account operation
-    const { userOp: individualUserOp, hash: approvalHash } = await createAndSendSponsoredUserOp(
-      individualSafeAddress,
-      [approveHashTransaction],
+      [deployTx],
       {
         signer: credentials.publicKey,
         isWebAuthn: true,
       }
     );
 
-    // Sign and format the approval operation
-    const { signature } = await webauthnHelper.signMessage(approvalHash);
-    const signedIndividualOp = createSignedUserOperation(
-      individualUserOp,
+    callbacks?.onSigning?.();
+
+    // Sign the deployment operation
+    const { signature } = await webauthnHelper.signMessage(deployHash);
+    const signedDeployOp = createSignedUserOperation(
+      deployUserOp,
       { signer: credentials.publicKey, signature },
       { precompileAddress: DEFAULT_SECP256R1_PRECOMPILE_ADDRESS }
     );
 
-    // Call onSigningComplete callback after signing is complete
     callbacks?.onSigningComplete?.();
 
-    // Create a promise that will resolve when the entire process is complete
+    // Create a promise that will resolve when the deployment is complete
     return new Promise((resolve, reject) => {
-      // Send and track both operations
-      sendAndTrackUserOperation(individualAccount, signedIndividualOp, {
+      // Send and track the deployment operation
+      sendAndTrackUserOperation(individualAccount, signedDeployOp, {
         onSent: callbacks?.onSent,
         onError: (error) => {
+          console.error("Error in deployment:", error);
           callbacks?.onError?.(error);
           reject(error);
         },
-        onSuccess: async () => {
-          try {
-            // Create and send settlement operation with approval
-            const finalSettlementOp = createSettlementOperationWithApproval(
-              individualSafeAddress,
-              settlementUserOp,
-              DEFAULT_SECP256R1_PRECOMPILE_ADDRESS
-            );
-
-            // Only call onSent callback here, as this is when the final transaction is sent
-            callbacks?.onSent?.();
-
-            await sendAndTrackUserOperation(settlementAccount, finalSettlementOp, {
-              onSent: callbacks?.onSent,
-              onSuccess: () => {
-                // Only call onSuccess when the entire process is complete
-                callbacks?.onSuccess?.(settlementAccountAddress);
-                resolve({ safeAddress: settlementAccountAddress });
-              },
-              onError: (error) => {
-                callbacks?.onError?.(error);
-                reject(error);
-              },
-            });
-          } catch (error) {
-            console.error("Error in deployment (second phase):", error);
-            callbacks?.onError?.(error as Error);
-            reject(error);
-          }
+        onSuccess: () => {
+          console.log("Settlement account deployed successfully:", settlementAccountAddress);
+          callbacks?.onSuccess?.(settlementAccountAddress);
+          resolve({ safeAddress: settlementAccountAddress });
         },
       }).catch((error) => {
-        console.error("Error in deployment (first phase):", error);
+        console.error("Error in deployment:", error);
         callbacks?.onError?.(error as Error);
         reject(error);
       });
