@@ -23,7 +23,10 @@ const checkComplianceStatus = async (
   authToken: string
 ): Promise<{ isFullyApproved: boolean } | null> => {
   try {
-    const response = await fetch(`${origin}/api/check-compliance`, {
+    // Make sure we're using the same protocol (http or https) as the origin
+    const apiUrl = new URL("/api/check-compliance", origin);
+
+    const response = await fetch(apiUrl.toString(), {
       headers: { Cookie: `${MERCHANT_COOKIE_NAME}=${authToken}` },
     });
 
