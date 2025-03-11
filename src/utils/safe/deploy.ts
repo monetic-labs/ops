@@ -35,7 +35,7 @@ interface DeploymentConfig {
 }
 
 /**
- * Deploys a new Safe account (settlement account) through an existing individual safe account
+ * Deploys a new Safe sub-account (settlement account) through an existing individual safe account
  * The individual safe account is controlled by WebAuthn signers
  * The settlement account is owned by the individual safe account
  *

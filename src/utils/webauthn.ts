@@ -12,16 +12,12 @@ import { Hex } from "viem";
 
 import pylon from "@/libs/pylon-sdk";
 
-import { isLocal, isProduction, isStaging } from "./helpers";
-
 export interface PasskeyCredentials {
   publicKey: WebauthnPublicKey;
   credentialId: string;
 }
 
 export class WebAuthnHelper {
-  private static readonly appName = `Backpack${!isLocal ? "" : " Staging"}`;
-  private static readonly hostName = WebAuthnHelper.getHostName();
   private readonly publicKey: WebauthnPublicKey;
   private readonly credentialId: string;
 
@@ -234,15 +230,5 @@ export class WebAuthnHelper {
       clientDataFields: OxHex.fromString(fields),
       rs: [signature.r, signature.s],
     };
-  }
-
-  private static getHostName(): string {
-    if (isProduction) {
-      return "services.backpack.network";
-    } else if (isLocal) {
-      return "localhost";
-    } else if (isStaging) {
-      return "staging.services.backpack.network";
-    } else throw new Error("Invalid environment");
   }
 }
