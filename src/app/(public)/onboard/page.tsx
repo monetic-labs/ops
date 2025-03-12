@@ -19,6 +19,7 @@ import { deployAndSetupSafe } from "@/utils/safe/onboard";
 import pylon from "@/libs/pylon-sdk";
 import { schema, FormData, UserRole } from "@/validations/onboard/schemas";
 import { StatusModal, StatusStep } from "@/components/onboard/status-modal";
+import { RequirementsModal } from "@/components/onboard/requirements-modal";
 import { useTheme } from "@/hooks/useTheme";
 import { ExpiryTimer } from "@/components/onboard/expiry-time";
 import { LocalStorage } from "@/utils/localstorage";
@@ -41,6 +42,8 @@ export default function OnboardPage() {
   const { toggleTheme, isDark } = useTheme();
   const [tokenExpiry, setTokenExpiry] = useState<number | null>(null);
   const { setCredentials } = useUser();
+  const [showRequirementsModal, setShowRequirementsModal] = useState(false);
+  const [showOnboardingSteps, setShowOnboardingSteps] = useState(false);
 
   // Token check and expiry setup
   useEffect(() => {
@@ -57,11 +60,32 @@ export default function OnboardPage() {
 
       // Save token to storage
       LocalStorage.saveOnboardingProgress({ token });
+
+      // Check if requirements modal has been shown
+      const savedProgress = LocalStorage.getOnboardingProgress();
+      if (!savedProgress?.requirementsShown) {
+        setShowRequirementsModal(true);
+        setShowOnboardingSteps(false);
+      } else {
+        setShowOnboardingSteps(true);
+      }
     } catch (error) {
       console.error("Error decoding token:", error);
       router.replace("/auth");
     }
   }, [searchParams, router]);
+
+  const handleRequirementsModalClose = () => {
+    setShowRequirementsModal(false);
+    setShowOnboardingSteps(true);
+
+    // Save that requirements have been shown
+    const savedProgress = LocalStorage.getOnboardingProgress() || {};
+    LocalStorage.saveOnboardingProgress({
+      ...savedProgress,
+      requirementsShown: true,
+    });
+  };
 
   const handleExpiry = () => {
     LocalStorage.clearOnboardingProgress();
@@ -109,7 +133,9 @@ export default function OnboardPage() {
   // Save form progress when it changes
   const formValues = methods.watch();
   useEffect(() => {
+    const savedProgress = LocalStorage.getOnboardingProgress() || {};
     LocalStorage.saveOnboardingProgress({
+      ...savedProgress,
       currentStep,
       formData: formValues,
     });
@@ -405,57 +431,63 @@ export default function OnboardPage() {
         )}
       </div>
 
-      <div className="relative">
-        <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-background/50 to-background/80 rounded-2xl" />
-        <div className="relative bg-content1/40 backdrop-blur-xl border border-border rounded-2xl shadow-xl">
-          <FormProvider {...methods}>
-            <form noValidate onSubmit={handleFormSubmit(onSubmit)}>
-              <Accordion className="p-1" selectedKeys={[currentStep.toString()]} variant="shadow">
-                {getSteps().map((step, index) => (
-                  <AccordionItem
-                    key={step.number}
-                    aria-label={step.title}
-                    classNames={{
-                      base: [
-                        "bg-content1/40 backdrop-blur-xl border-none rounded-xl mb-2 last:mb-0",
-                        "data-[open=true]:bg-content2/40",
-                        currentStep > Number(step.number) && "opacity-80",
-                      ]
-                        .filter(Boolean)
-                        .join(" "),
-                      title: [
-                        "text-lg font-semibold",
-                        currentStep > Number(step.number) ? "text-foreground/60" : "text-foreground",
-                      ].join(" "),
-                      trigger: "px-8 py-4 data-[hover=true]:bg-content2/40 rounded-xl transition-colors",
-                      indicator: "text-foreground/40",
-                      content: "px-8 py-6",
-                    }}
-                    isDisabled={index > currentStep - 1}
-                    startContent={
-                      currentStep > Number(step.number) ? (
-                        <CheckCircleIcon />
-                      ) : (
-                        <CircleWithNumber number={step.number} />
-                      )
-                    }
-                    title={step.title}
-                  >
-                    {step.content({
-                      isValidating,
-                      onNext: handleNext,
-                      onPrevious: handlePrevious,
-                      onStepChange: handleEdit,
-                      isSubmitting,
-                      isValid,
-                    })}
-                  </AccordionItem>
-                ))}
-              </Accordion>
-            </form>
-          </FormProvider>
+      {/* Requirements Modal */}
+      <RequirementsModal isOpen={showRequirementsModal} onClose={handleRequirementsModalClose} />
+
+      {/* Onboarding Steps */}
+      {showOnboardingSteps && (
+        <div className="relative">
+          <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-background/50 to-background/80 rounded-2xl" />
+          <div className="relative bg-content1/40 backdrop-blur-xl border border-border rounded-2xl shadow-xl">
+            <FormProvider {...methods}>
+              <form noValidate onSubmit={handleFormSubmit(onSubmit)}>
+                <Accordion className="p-1" selectedKeys={[currentStep.toString()]} variant="shadow">
+                  {getSteps().map((step, index) => (
+                    <AccordionItem
+                      key={step.number}
+                      aria-label={step.title}
+                      classNames={{
+                        base: [
+                          "bg-content1/40 backdrop-blur-xl border-none rounded-xl mb-2 last:mb-0",
+                          "data-[open=true]:bg-content2/40",
+                          currentStep > Number(step.number) && "opacity-80",
+                        ]
+                          .filter(Boolean)
+                          .join(" "),
+                        title: [
+                          "text-lg font-semibold",
+                          currentStep > Number(step.number) ? "text-foreground/60" : "text-foreground",
+                        ].join(" "),
+                        trigger: "px-8 py-4 data-[hover=true]:bg-content2/40 rounded-xl transition-colors",
+                        indicator: "text-foreground/40",
+                        content: "px-8 py-6",
+                      }}
+                      isDisabled={index > currentStep - 1}
+                      startContent={
+                        currentStep > Number(step.number) ? (
+                          <CheckCircleIcon />
+                        ) : (
+                          <CircleWithNumber number={step.number} />
+                        )
+                      }
+                      title={step.title}
+                    >
+                      {step.content({
+                        isValidating,
+                        onNext: handleNext,
+                        onPrevious: handlePrevious,
+                        onStepChange: handleEdit,
+                        isSubmitting,
+                        isValid,
+                      })}
+                    </AccordionItem>
+                  ))}
+                </Accordion>
+              </form>
+            </FormProvider>
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Passkey Modal */}
       <Modal

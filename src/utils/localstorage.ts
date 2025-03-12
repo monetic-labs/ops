@@ -23,6 +23,7 @@ export interface OnboardingProgress {
   formData: Partial<FormData>;
   lastUpdated: number;
   token?: string;
+  requirementsShown?: boolean;
 }
 
 export class LocalStorage {

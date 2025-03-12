@@ -33,24 +33,27 @@ export const TermsStep = () => {
   return (
     <div className="mb-8 space-y-6">
       <div className="flex justify-between items-start gap-4">
-        <Checkbox
-          {...register("acceptedTerms")}
-          classNames={{
-            base: "max-w-full",
-            wrapper:
-              "before:border-primary group-data-[selected=true]:before:border-primary group-data-[selected=true]:before:bg-primary",
-            label: errors?.acceptedTerms ? "text-danger" : "text-foreground/90",
-          }}
-          icon={<CustomCheckIcon className="text-primary-foreground" />}
-          size="lg"
-          onValueChange={handleAcceptTerms}
-        >
-          <div className="flex flex-wrap gap-1">
+        <div className="flex items-start gap-3">
+          <Checkbox
+            {...register("acceptedTerms")}
+            classNames={{
+              base: "max-w-full",
+              wrapper:
+                "before:border-primary group-data-[selected=true]:before:border-primary group-data-[selected=true]:before:bg-primary",
+              label: "hidden",
+            }}
+            icon={<CustomCheckIcon className="text-primary-foreground" />}
+            size="lg"
+            onValueChange={handleAcceptTerms}
+          />
+
+          <div className={`flex flex-wrap gap-1 ${errors?.acceptedTerms ? "text-danger" : "text-foreground/90"}`}>
             <span className="text-foreground/90">I acknowledge and accept the</span>
             <Link
               isExternal
               className="text-primary font-medium inline-flex items-center gap-1 hover:opacity-80 transition-opacity"
               href="https://backpack.network/terms-of-service"
+              onClick={(e) => e.stopPropagation()}
             >
               terms of service
               <ExternalLink className="w-3 h-3" />
@@ -60,6 +63,7 @@ export const TermsStep = () => {
               isExternal
               className="text-primary font-medium inline-flex items-center gap-1 hover:opacity-80 transition-opacity"
               href="https://backpack.network/privacy-policy"
+              onClick={(e) => e.stopPropagation()}
             >
               privacy policy
               <ExternalLink className="w-3 h-3" />
@@ -68,7 +72,7 @@ export const TermsStep = () => {
               for Backpack, including but not limited to, the Rain Card and Bill Pay services.
             </span>
           </div>
-        </Checkbox>
+        </div>
       </div>
       {errors?.acceptedTerms && <p className="text-danger text-sm">{errors.acceptedTerms.message?.toString()}</p>}
     </div>
