@@ -121,10 +121,10 @@ export const RequirementsModal = ({ isOpen, onClose }: RequirementsModalProps) =
                 </p>
                 <ul className="list-disc pl-4 text-xs sm:text-sm text-foreground/70 space-y-1">
                   <li className="break-words">
-                    Document confirming the company's legal existence (e.g., certificate of incorporation or a recent
-                    excerpt from a state company registry)
+                    Document confirming the company&apos;s legal existence (e.g., certificate of incorporation or a
+                    recent excerpt from a state company registry)
                   </li>
-                  <li className="break-words">Document identifying the company's beneficial owners</li>
+                  <li className="break-words">Document identifying the company&apos;s beneficial owners</li>
                 </ul>
                 <p className="text-xs sm:text-sm text-foreground/70 mt-2 break-words">
                   For more information, you can refer to the{" "}
