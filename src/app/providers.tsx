@@ -14,6 +14,7 @@ import { ShortcutsProvider } from "@/components/generics/shortcuts-provider";
 import { UsersProvider } from "@/contexts/UsersContext";
 import { AccountProvider } from "@/contexts/AccountContext";
 import { SignersProvider } from "@/contexts/SignersContext";
+import { isProduction } from "@/utils/helpers";
 
 export interface ProvidersProps {
   children: React.ReactNode;
@@ -40,7 +41,7 @@ export function Providers({ children, themeProps, userId }: ProvidersProps) {
           <MessagingProvider>
             <ShortcutsProvider initialValue={shortcutsInitialValue}>
               <PrivyProvider
-                appId="cm6kflcul00yk102qos0gjism"
+                appId={isProduction ? "cm85gmfvb012rwm22n8qrz403" : "cm6kflcul00yk102qos0gjism"}
                 config={{
                   loginMethods: ["email", "sms"],
                   embeddedWallets: {
