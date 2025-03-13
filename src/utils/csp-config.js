@@ -71,8 +71,17 @@ const INTERNAL_SERVICES = {
     "https://staging-api.backpack.network",
     "https://staging.services.backpack.network",
     "https://services.backpack.network",
+    "https://staging-api.backpack.network/v1/*",
+    "https://api.backpack.network/v1/*",
   ],
   frame: [],
+  form: [
+    "https://*.backpack.network",
+    "https://api.backpack.network",
+    "https://staging-api.backpack.network",
+    "https://staging.services.backpack.network",
+    "https://services.backpack.network",
+  ],
 };
 
 // Media & Content
@@ -147,7 +156,7 @@ function generateCSP({ isDevelopment = false } = {}) {
     "font-src": ["'self'", "data:"],
     "object-src": ["'none'"],
     "base-uri": ["'self'"],
-    "form-action": ["'self'"],
+    "form-action": ["'self'", ...(INTERNAL_SERVICES.form || [])],
     "frame-ancestors": ["'none'"],
     "child-src": AUTH_SERVICES.frame,
     "frame-src": frameSources,
