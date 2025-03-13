@@ -44,7 +44,15 @@ const BLOCKCHAIN_SERVICES = {
 const PAYMENT_SERVICES = {
   script: ["https://*.worldpay.com"],
   connect: ["https://faucet.circle.com", "https://*.worldpay.com"],
-  frame: ["https://*.worldpay.com"],
+  frame: ["https://*.worldpay.com", "https://faucet.circle.com"],
+};
+
+// Compliance & KYC Services
+const COMPLIANCE_SERVICES = {
+  script: ["https://*.withpersona.com", "https://*.bridge.xyz", "https://*.raincards.xyz"],
+  connect: ["https://*.withpersona.com", "https://*.bridge.xyz", "https://*.raincards.xyz"],
+  frame: ["https://*.withpersona.com", "https://*.bridge.xyz", "https://*.raincards.xyz"],
+  form: ["https://*.withpersona.com", "https://*.bridge.xyz", "https://*.raincards.xyz"],
 };
 
 // Analytics & Monitoring
@@ -106,6 +114,7 @@ function generateCSP({ isDevelopment = false } = {}) {
     ...PAYMENT_SERVICES.script,
     ...ANALYTICS_SERVICES.script,
     ...INTERNAL_SERVICES.script,
+    ...COMPLIANCE_SERVICES.script,
     // Always include Vercel Live scripts for feedback
     ...DEV_SERVICES.script,
   ];
@@ -118,6 +127,7 @@ function generateCSP({ isDevelopment = false } = {}) {
     ...PAYMENT_SERVICES.connect,
     ...ANALYTICS_SERVICES.connect,
     ...INTERNAL_SERVICES.connect,
+    ...COMPLIANCE_SERVICES.connect,
     // Always include Vercel Live connect sources
     ...DEV_SERVICES.connect,
   ];
@@ -130,6 +140,7 @@ function generateCSP({ isDevelopment = false } = {}) {
     ...PAYMENT_SERVICES.frame,
     ...ANALYTICS_SERVICES.frame,
     ...INTERNAL_SERVICES.frame,
+    ...COMPLIANCE_SERVICES.frame,
     // Always include Vercel Live frame sources
     ...DEV_SERVICES.frame,
   ];
@@ -156,7 +167,7 @@ function generateCSP({ isDevelopment = false } = {}) {
     "font-src": ["'self'", "data:"],
     "object-src": ["'none'"],
     "base-uri": ["'self'"],
-    "form-action": ["'self'", ...(INTERNAL_SERVICES.form || [])],
+    "form-action": ["'self'", ...(INTERNAL_SERVICES.form || []), ...(COMPLIANCE_SERVICES.form || [])],
     "frame-ancestors": ["'none'"],
     "child-src": AUTH_SERVICES.frame,
     "frame-src": frameSources,
