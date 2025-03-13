@@ -42,6 +42,7 @@ export function Providers({ children, themeProps, userId }: ProvidersProps) {
             <ShortcutsProvider initialValue={shortcutsInitialValue}>
               <PrivyProvider
                 appId={isProduction ? "cm85gmfvb012rwm22n8qrz403" : "cm6kflcul00yk102qos0gjism"}
+                clientId={isProduction ? "client-WY5hqrV6F9aaGAzjh5pznYyH9Vbwb1dWf2r6KD479P2kh" : undefined}
                 config={{
                   loginMethods: ["email", "sms"],
                   embeddedWallets: {
