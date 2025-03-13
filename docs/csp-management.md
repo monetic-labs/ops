@@ -14,6 +14,8 @@ We use a modular approach to CSP management:
 2. **Category-Based Organization**: External services are organized by category (auth, blockchain, payment, etc.)
 3. **Development Mode**: CSP runs in report-only mode during development to avoid breaking functionality
 4. **Violation Reporting**: CSP violations are logged with guidance on how to fix them
+5. **Vercel Integration**: Vercel Live scripts are included in both development and production environments
+6. **Comprehensive Directives**: We include both `script-src` and `script-src-elem` directives to ensure compatibility across browsers
 
 ## Current Service Integrations
 
@@ -23,7 +25,7 @@ Our CSP configuration includes the following service categories:
 2. **Wallet & Blockchain Services**: WalletConnect, various RPC endpoints, Candide
 3. **Payment & Banking Services**: Circle, Worldpay
 4. **Analytics & Monitoring**: (Reserved for future use)
-5. **Development & Debugging**: Vercel Live
+5. **Development & Debugging**: Vercel Live (including feedback scripts and wildcards)
 6. **Internal Services**: Backpack API endpoints (including staging environments)
 7. **Media & Content**: Avatar services, WalletConnect explorer
 

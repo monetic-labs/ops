@@ -56,9 +56,9 @@ const ANALYTICS_SERVICES = {
 
 // Development & Debugging
 const DEV_SERVICES = {
-  script: ["https://vercel.live"],
-  connect: ["https://vercel.live"],
-  frame: ["https://vercel.live"],
+  script: ["https://vercel.live", "https://*.vercel.live", "https://vercel.live/_next-live/feedback/feedback.js"],
+  connect: ["https://vercel.live", "https://*.vercel.live"],
+  frame: ["https://vercel.live", "https://*.vercel.live"],
 };
 
 // Internal Services
@@ -67,8 +67,10 @@ const INTERNAL_SERVICES = {
   connect: [
     "https://*.backpack.network",
     "wss://*.backpack.network",
+    "https://api.backpack.network",
     "https://staging-api.backpack.network",
     "https://staging.services.backpack.network",
+    "https://services.backpack.network",
   ],
   frame: [],
 };
@@ -95,7 +97,8 @@ function generateCSP({ isDevelopment = false } = {}) {
     ...PAYMENT_SERVICES.script,
     ...ANALYTICS_SERVICES.script,
     ...INTERNAL_SERVICES.script,
-    ...(isDevelopment ? DEV_SERVICES.script : []),
+    // Always include Vercel Live scripts for feedback
+    ...DEV_SERVICES.script,
   ];
 
   // Combine all connect sources
@@ -106,7 +109,8 @@ function generateCSP({ isDevelopment = false } = {}) {
     ...PAYMENT_SERVICES.connect,
     ...ANALYTICS_SERVICES.connect,
     ...INTERNAL_SERVICES.connect,
-    ...(isDevelopment ? DEV_SERVICES.connect : []),
+    // Always include Vercel Live connect sources
+    ...DEV_SERVICES.connect,
   ];
 
   // Combine all frame sources
@@ -117,7 +121,8 @@ function generateCSP({ isDevelopment = false } = {}) {
     ...PAYMENT_SERVICES.frame,
     ...ANALYTICS_SERVICES.frame,
     ...INTERNAL_SERVICES.frame,
-    ...(isDevelopment ? DEV_SERVICES.frame : []),
+    // Always include Vercel Live frame sources
+    ...DEV_SERVICES.frame,
   ];
 
   // Add localhost in development
@@ -130,6 +135,7 @@ function generateCSP({ isDevelopment = false } = {}) {
   return {
     "default-src": ["'self'"],
     "script-src": scriptSources,
+    "script-src-elem": scriptSources,
     "style-src": ["'self'", "'unsafe-inline'"],
     "img-src": [
       "'self'",
