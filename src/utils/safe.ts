@@ -99,9 +99,9 @@ export const createUserOperation = async (
       ? new SafeAccount(walletAddress)
       : SafeAccount.initializeNewAccount([config.signer], {
           threshold: 1,
-          // ...(config.isWebAuthn && {
-          //   eip7212WebAuthnPrecompileVerifierForSharedSigner: DEFAULT_SECP256R1_PRECOMPILE_ADDRESS,
-          // }),
+          ...(config.isWebAuthn && {
+            eip7212WebAuthnPrecompileVerifierForSharedSigner: DEFAULT_SECP256R1_PRECOMPILE_ADDRESS,
+          }),
         }));
 
   // Verify the calculated address matches
@@ -114,9 +114,9 @@ export const createUserOperation = async (
     ...(config.dummySignature
       ? { dummySignerSignaturePairs: [config.dummySignature] }
       : { expectedSigners: [config.signer] }),
-    // ...(config.isWebAuthn && {
-    //   eip7212WebAuthnPrecompileVerifier: DEFAULT_SECP256R1_PRECOMPILE_ADDRESS,
-    // }),
+    ...(config.isWebAuthn && {
+      eip7212WebAuthnPrecompileVerifier: DEFAULT_SECP256R1_PRECOMPILE_ADDRESS,
+    }),
   });
 
   return userOp;
@@ -145,7 +145,7 @@ export const formatWebAuthnSignature = (
 
   return SafeAccount.formatSignaturesToUseroperationSignature([signerSignaturePair], {
     isInit,
-    // eip7212WebAuthnPrecompileVerifier: precompileAddress,
+    eip7212WebAuthnPrecompileVerifier: precompileAddress,
   });
 };
 

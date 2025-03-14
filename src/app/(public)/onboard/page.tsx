@@ -187,7 +187,7 @@ export default function OnboardPage() {
       // Initialize the individual safe account
       const individualAccount = SafeAccount.initializeNewAccount([publicKey], {
         threshold: 1,
-        // eip7212WebAuthnPrecompileVerifierForSharedSigner: DEFAULT_SECP256R1_PRECOMPILE_ADDRESS,
+        eip7212WebAuthnPrecompileVerifierForSharedSigner: DEFAULT_SECP256R1_PRECOMPILE_ADDRESS,
       });
 
       const individualAddress = individualAccount.accountAddress as Address;
