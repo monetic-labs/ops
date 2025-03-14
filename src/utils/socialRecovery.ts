@@ -2,11 +2,15 @@ import { SocialRecoveryModule, SocialRecoveryModuleGracePeriodSelector, MetaTran
 import { Address } from "viem";
 
 import { PUBLIC_RPC } from "@/config/web3";
-import { isLocal } from "@/utils/helpers";
+import { isLocal, isProduction } from "@/utils/helpers";
 import { BACKPACK_GUARDIAN_ADDRESS } from "@/utils/constants";
 
 // Default module instance with 7-day grace period
-export const defaultSocialRecoveryModule = new SocialRecoveryModule(SocialRecoveryModuleGracePeriodSelector.After7Days);
+export const defaultSocialRecoveryModule = new SocialRecoveryModule(
+  !isProduction
+    ? SocialRecoveryModuleGracePeriodSelector.After3Minutes
+    : SocialRecoveryModuleGracePeriodSelector.After7Days
+);
 
 /**
  * Checks if Backpack is configured as a guardian for the given account.

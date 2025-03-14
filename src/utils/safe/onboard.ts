@@ -149,7 +149,9 @@ export const deployAndSetupSafe = async ({
 
     // Create all transactions in the correct order
     const enableModuleTx = createEnableModuleTransaction(individualAddr);
-    const addGuardianTxs = guardianAddresses.map((address) => createAddGuardianTransaction(address, BigInt(2)));
+    const addGuardianTxs = guardianAddresses.map((address, index) => 
+      createAddGuardianTransaction(address, index === 0 ? BigInt(1) : BigInt(2))
+    );
 
     // Combine all transactions in order
     const allTransactions = [enableModuleTx, ...addGuardianTxs];

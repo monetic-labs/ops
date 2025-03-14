@@ -6,11 +6,9 @@ import "viem/window";
 
 // Environment variables validation
 const CANDIDE_API_KEY = process.env.NEXT_PUBLIC_CANDIDE_API_KEY;
-
 if (!CANDIDE_API_KEY) throw new Error("NEXT_PUBLIC_CANDIDE_API_KEY is not set");
 
 const policyId = process.env.NEXT_PUBLIC_CANDIDE_BASE_SPONSORSHIP_POLICY_ID;
-
 if (!policyId) throw new Error("CANDIDE_BASE_SEPOLIA_SPONSORSHIP_POLICY_ID is not set");
 
 // Chain configuration
@@ -40,14 +38,23 @@ const getSponsorshipPolicyId = (chain: Chain): string => {
   }
 };
 
+// Define RPC endpoints based on environment
+const baseMainnetRPCs = [
+  http("https://8453.rpc.thirdweb.com"),
+  http("https://base-mainnet.public.blastapi.io"),
+  http("https://rpc.ankr.com/base"),
+];
+
+const baseSepoliaRPCs = [
+  http("https://84532.rpc.thirdweb.com"),
+  http("https://base-sepolia.public.blastapi.io"),
+  http("https://rpc.ankr.com/base_sepolia"),
+];
+
 // Public client configuration
 export const publicClient = createPublicClient({
   chain,
-  transport: fallback([
-    http("https://84532.rpc.thirdweb.com"),
-    http("https://base-sepolia.public.blastapi.io"),
-    http("https://rpc.ankr.com/base_sepolia"),
-  ]),
+  transport: fallback(isProduction ? baseMainnetRPCs : baseSepoliaRPCs),
   cacheTime: 5_000,
   batch: {
     multicall: true,

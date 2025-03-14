@@ -31,8 +31,9 @@ const BLOCKCHAIN_SERVICES = {
     // RPC Endpoints
     "https://*.base.org/",
     "https://*.rpc.thirdweb.com/",
-    "https://rpc.ankr.com/base_sepolia",
+    "https://rpc.ankr.com/",
     "https://*.public.blastapi.io/",
+    "https://*.g.alchemy.com/v2/",
 
     // Candide
     "https://*.candide.dev/",
@@ -168,7 +169,12 @@ function generateCSP({ isDevelopment = false } = {}) {
     "object-src": ["'none'"],
     "base-uri": ["'self'"],
     "form-action": ["'self'", ...(INTERNAL_SERVICES.form || []), ...(COMPLIANCE_SERVICES.form || [])],
-    "frame-ancestors": ["'none'"],
+    "frame-ancestors": [
+      "'self'",
+      "https://*.backpack.network",
+      "https://services.backpack.network",
+      "https://staging.services.backpack.network",
+    ],
     "child-src": AUTH_SERVICES.frame,
     "frame-src": frameSources,
     "connect-src": connectSources,
