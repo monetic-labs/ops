@@ -4,7 +4,7 @@ import { GasOption, fetchGasPrice } from "abstractionkit";
 import { chainlinkAbi } from "@/utils/abi/chainlink";
 import { publicClient, chain, PUBLIC_RPC } from "@/config/web3";
 
-import { formatAmountUSD } from "../helpers";
+import { formatAmountUSD } from "@/utils/helpers";
 
 // Chainlink ETH/USD Price Feed addresses
 const CHAINLINK_ETH_USD_PRICE_FEED: Record<number, Address> = {

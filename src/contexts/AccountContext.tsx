@@ -16,7 +16,7 @@ import { Account, Signer } from "@/types/account";
 import pylon from "@/libs/pylon-sdk";
 import { useSigners } from "@/contexts/SignersContext";
 import { useUser } from "@/contexts/UserContext";
-import { deploySafeAccount } from "@/utils/safe/deploy";
+import { deploySubAccount } from "@/utils/safe/features/subaccount";
 
 interface AccountContextState {
   accounts: Account[];
@@ -340,13 +340,13 @@ export function AccountProvider({ children }: { children: ReactNode }) {
         const signerAddresses = signers.map((s) => s.address as Address);
 
         // Deploy the safe account
-        await deploySafeAccount({
+        await deploySubAccount({
           individualSafeAddress,
           credentials,
           signerAddresses,
           threshold,
           callbacks: {
-            onSuccess: (safeAddress) => {
+            onSuccess: (safeAddress: Address) => {
               // Update local state
               setState((prev) => ({
                 ...prev,
@@ -355,7 +355,7 @@ export function AccountProvider({ children }: { children: ReactNode }) {
                 ),
               }));
             },
-            onError: (error) => console.error("Deployment error:", error),
+            onError: (error: Error) => console.error("Deployment error:", error),
           },
         });
 

@@ -13,6 +13,13 @@ export interface SafeData {
   signers: Address[];
 }
 
+/**
+ * Retrieves detailed information about a Safe account
+ * Including deployment status, balance, threshold, and signers
+ *
+ * @param safeAddress The address of the Safe account to query
+ * @returns A SafeData object with account information
+ */
 export async function getSafeData(safeAddress: Address): Promise<SafeData> {
   try {
     // Check if contract is deployed

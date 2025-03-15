@@ -3,7 +3,7 @@ import { Address } from "viem";
 
 import { ConfiguredEmail } from "@/components/account-settings/security/types";
 import pylon from "@/libs/pylon-sdk";
-import { createAddGuardianTransaction } from "@/utils/socialRecovery";
+import { createAddGuardianTransaction } from "@/utils/safe/recovery";
 
 import { EmailVerification, PendingChanges } from "./types";
 

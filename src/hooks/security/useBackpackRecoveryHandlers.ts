@@ -7,7 +7,7 @@ import {
   createRevokeGuardianTransaction,
   createEnableModuleTransaction,
   createAddGuardianTransaction,
-} from "@/utils/socialRecovery";
+} from "@/utils/safe/recovery";
 import { createAndSendSponsoredUserOp, sendUserOperation } from "@/utils/safe";
 
 type UseBackpackRecoveryHandlersProps = {

@@ -9,7 +9,7 @@ import {
   createRevokeGuardianTransaction,
   createAddGuardianTransaction,
   createEnableModuleTransaction,
-} from "@/utils/socialRecovery";
+} from "@/utils/safe/recovery";
 import { useUser } from "@/contexts/UserContext";
 import { WebAuthnHelper } from "@/utils/webauthn";
 import { BACKPACK_GUARDIAN_ADDRESS } from "@/utils/constants";

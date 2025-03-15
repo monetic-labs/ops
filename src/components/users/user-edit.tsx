@@ -11,7 +11,8 @@ import { ScrollShadow } from "@nextui-org/scroll-shadow";
 import { Tooltip } from "@nextui-org/tooltip";
 
 import { formatPhoneNumber, getOpepenAvatar } from "@/utils/helpers";
-import { addPasskeyToSafe } from "@/utils/safe/passkey";
+import { addPasskeyToSafe } from "@/utils/safe/features/passkey";
+import { deployIndividualSafe } from "@/utils/safe/features/deploy";
 import { useToast } from "@/hooks/useToast";
 import { useUser } from "@/contexts/UserContext";
 import { WebAuthnHelper } from "@/utils/webauthn";
@@ -94,62 +95,129 @@ export default function UserEditModal({
     try {
       setIsAddingPasskey(true);
 
-      // 1. Add passkey to new safe individual account
-      // 2. Add passkey to existing safe individual account
-
+      // Determine which scenario we're handling
       if (!user.walletAddress) {
-        throw new Error("No wallet address found");
-      }
+        // Scenario 1: User doesn't have an individual account yet
+        // We need to create a new account with recovery
 
-      const credentials = getSigningCredentials();
-      if (!credentials) {
-        throw new Error("No passkey found");
-      }
+        toast({
+          title: "Creating account...",
+          description: "Setting up your account with passkey authentication",
+        });
 
-      const result = await addPasskeyToSafe({
-        safeAddress: user.walletAddress as `0x${string}`,
-        userEmail: user.email,
-        credential: {
-          publicKey: credentials.publicKey,
+        // Deploy a new individual account with recovery
+        const { address: newWalletAddress, credentials } = await deployIndividualSafe({
+          email: user.email,
+          phone: user.phone || "", // Fallback to empty string if phone is not available
+          callbacks: {
+            onPasskeyCreated: () => {
+              toast({
+                title: "Passkey created...",
+                description: "Your secure passkey has been created",
+              });
+            },
+            onDeployment: () => {
+              toast({
+                title: "Deploying account...",
+                description: "Your account is being created on the blockchain",
+              });
+            },
+            onRecoverySetup: () => {
+              toast({
+                title: "Setting up recovery...",
+                description: "Configuring recovery options for your account",
+              });
+            },
+            onError: (error: Error) => {
+              toast({
+                title: "Error creating account",
+                description: error.message,
+                variant: "destructive",
+              });
+            },
+          },
+        });
+
+        // Optimistically update the UI with the new wallet address and passkey
+        const newPasskey = {
           credentialId: credentials.credentialId,
-        },
-        callbacks: {
-          onSent: () => {
-            toast({
-              title: "Adding passkey...",
-              description: "Please wait while we add your passkey to your account",
-            });
-          },
-          onSuccess: () => {
-            toast({
-              title: "Passkey added!",
-              description: "Your new passkey has been added to your account",
-            });
-          },
-          onError: (error: Error) => {
-            toast({
-              title: "Error adding passkey",
-              description: error.message,
-              variant: "destructive",
-            });
-          },
-        },
-      });
+          publicKey: JSON.stringify(credentials.publicKey),
+          displayName: "My Passkey",
+          createdAt: new Date().toISOString(),
+          lastUsedAt: new Date().toISOString(),
+          counter: 0,
+        };
 
-      // Optimistically update the UI with the new passkey
-      const newPasskey = {
-        credentialId: result.credentialId,
-        publicKey: result.publicKey,
-        displayName: "New Passkey",
-        createdAt: new Date().toISOString(),
-        lastUsedAt: new Date().toISOString(),
-        counter: 0,
-      };
+        setEditedUser((prev) => ({
+          ...prev,
+          walletAddress: newWalletAddress,
+          registeredPasskeys: [...(prev.registeredPasskeys || []), newPasskey],
+        }));
 
-      setEditedUser((prev) => ({
-        ...prev,
-        registeredPasskeys: [...(prev.registeredPasskeys || []), newPasskey],
-      }));
+        toast({
+          title: "Account created!",
+          description: "Your account has been successfully created with passkey authentication",
+        });
+      } else {
+        // Scenario 2: User has an existing individual account
+        // Add a new passkey to the existing account
+
+        // Get the existing signing credentials
+        const existingCredentials = getSigningCredentials();
+        if (!existingCredentials) {
+          throw new Error("No existing passkey found to authorize this operation");
+        }
+
+        toast({
+          title: "Preparing to add passkey...",
+          description: "You'll need to authorize with your existing passkey",
+        });
+
+        const result = await addPasskeyToSafe({
+          safeAddress: user.walletAddress as `0x${string}`,
+          userEmail: user.email,
+          credential: {
+            publicKey: existingCredentials.publicKey,
+            credentialId: existingCredentials.credentialId,
+          },
+          callbacks: {
+            onSent: () => {
+              toast({
+                title: "Adding passkey...",
+                description: "Please wait while we add your passkey to your account",
+              });
+            },
+            onSuccess: () => {
+              toast({
+                title: "Passkey added!",
+                description: "Your new passkey has been added to your account",
+              });
+            },
+            onError: (error: Error) => {
+              toast({
+                title: "Error adding passkey",
+                description: error.message,
+                variant: "destructive",
+              });
+            },
+          },
+        });
+
+        // Optimistically update the UI with the new passkey
+        const newPasskey = {
+          credentialId: result.credentialId,
+          publicKey: result.publicKey,
+          displayName: "New Passkey",
+          createdAt: new Date().toISOString(),
+          lastUsedAt: new Date().toISOString(),
+          counter: 0,
+        };
+
+        setEditedUser((prev) => ({
+          ...prev,
+          registeredPasskeys: [...(prev.registeredPasskeys || []), newPasskey],
+        }));
+      }
     } catch (error) {
       console.error("Failed to add passkey:", error);
       toast({
@@ -314,7 +382,9 @@ export default function UserEditModal({
                     content={
                       editedUser.registeredPasskeys?.length
                         ? "Only one passkey is allowed per user"
-                        : "Add a passkey to enable passwordless login"
+                        : user.walletAddress
+                          ? "Add a passkey to enable passwordless login"
+                          : "Create an account with passkey authentication"
                     }
                   >
                     <Button
@@ -326,7 +396,7 @@ export default function UserEditModal({
                       variant="flat"
                       onPress={handleAddPasskey}
                     >
-                      Add Passkey
+                      {!user.walletAddress ? "Create Account" : "Add Passkey"}
                     </Button>
                   </Tooltip>
                 )}

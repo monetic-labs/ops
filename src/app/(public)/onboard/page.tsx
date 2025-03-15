@@ -15,7 +15,7 @@ import { ISO3166Alpha2Country, ISO3166Alpha3Country, PersonRole } from "@backpac
 import { SafeAccountV0_3_0 as SafeAccount, DEFAULT_SECP256R1_PRECOMPILE_ADDRESS } from "abstractionkit";
 
 import { WebAuthnHelper } from "@/utils/webauthn";
-import { deployAndSetupSafe } from "@/utils/safe/onboard";
+import { deployIndividualSafe } from "@/utils/safe/features/deploy";
 import pylon from "@/libs/pylon-sdk";
 import { schema, FormData, UserRole } from "@/validations/onboard/schemas";
 import { StatusModal, StatusStep } from "@/components/onboard/status-modal";
@@ -318,7 +318,7 @@ export default function OnboardPage() {
 
       if (merchantResponse) {
         // Now deploy and setup the safe account
-        await deployAndSetupSafe({
+        await deployIndividualSafe({
           credentials: { publicKey, credentialId },
           recoveryMethods: {
             email: formData.users[0].email,
@@ -327,7 +327,7 @@ export default function OnboardPage() {
           callbacks: {
             onDeployment: () => updateStatusStep(2, true),
             onRecoverySetup: () => updateStatusStep(3, true),
-            onError: () => setIsSubmitting(false),
+            onError: (error: Error) => setIsSubmitting(false),
           },
           individualSafeAccount: individualAccount,
           settlementSafeAddress: settlementAddress,

@@ -4,7 +4,7 @@ import { Address } from "viem";
 
 import { RecoveryWallet, ConfiguredEmail, ConfiguredPhone } from "@/components/account-settings/security/types";
 import { useUser } from "@/contexts/UserContext";
-import { isBackpackGuardian } from "@/utils/socialRecovery";
+import { isBackpackGuardian } from "@/utils/safe/recovery";
 import pylon from "@/libs/pylon-sdk";
 
 type RecoveryWalletGenerateInput = {

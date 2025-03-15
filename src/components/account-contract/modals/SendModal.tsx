@@ -10,10 +10,10 @@ import { Address } from "viem";
 
 import { MoneyInput } from "@/components/generics/money-input";
 import { BalanceDisplay } from "@/components/generics/balance-display";
-import { executeNestedTransaction } from "@/utils/safe/transaction";
-import { executeNestedTransferFromRainCardAcccount } from "@/utils/safe/rain";
+import { executeNestedTransaction } from "@/utils/safe/flows/nested";
+import { executeNestedTransferFromRainCardAcccount } from "@/utils/safe/features/rain";
 import { createERC20TransferTemplate } from "@/utils/safe/templates";
-import { getEstimatedTransferFee } from "@/utils/safe/simulation";
+import { getEstimatedTransferFee } from "@/utils/safe/features/fee-estimation";
 import { useUser } from "@/contexts/UserContext";
 import { TransferStatus, TransferStatusOverlay } from "@/components/generics/transfer-status";
 import { formatAmountUSD } from "@/utils/helpers";
@@ -111,10 +111,17 @@ export function SendModal({
     if (!selectedAccount || !toAccount || !amount || !credentials || !user?.walletAddress) return;
 
     try {
+      console.log("=== Transfer Debug: Starting transfer process ===");
+      console.log("fromAccount:", selectedAccount);
+      console.log("toAccount:", toAccount);
+      console.log("amount:", amount);
+      console.log("userWallet:", user.walletAddress);
+
       setIsLoading(true);
 
       // Edge case: Rain Card to Sub-account (withdrawal)
       if (selectedAccount.isCard && !toAccount.isCard) {
+        console.log("Transfer type: Rain Card withdrawal");
         setTransferStatus(TransferStatus.PREPARING);
 
         // Use the Rain Card withdrawal flow
@@ -130,24 +137,34 @@ export function SendModal({
           rainCollateralProxyAddress: selectedAccount.address as Address,
           callbacks: {
             onPreparing: () => {
+              console.log("Rain withdrawal state: PREPARING");
               setTransferStatus(TransferStatus.PREPARING);
             },
             onSigning: () => {
+              console.log("Rain withdrawal state: SIGNING");
               setTransferStatus(TransferStatus.SIGNING);
             },
             onSigningComplete: () => {
+              console.log("Rain withdrawal state: SIGNING COMPLETE");
               setTransferStatus(TransferStatus.SENDING);
             },
             onSent: () => {
+              console.log("Rain withdrawal state: SENT/CONFIRMING");
               setTransferStatus(TransferStatus.CONFIRMING);
             },
             onSuccess: () => {
+              console.log("Rain withdrawal state: SUCCESS");
               setTransferStatus(TransferStatus.SENT);
               toast.success("Rain Card withdrawal completed successfully");
               onTransfer(); // Update account balances
             },
-            onError: (error) => {
+            onError: (error: Error) => {
               console.error("Rain Card withdrawal error:", error);
+              console.error("Error details:", {
+                message: error.message,
+                name: error.name,
+                stack: error.stack,
+              });
               setTransferStatus(TransferStatus.ERROR);
               toast.error("Rain Card withdrawal failed. Please try again.");
             },
@@ -158,31 +175,55 @@ export function SendModal({
         return;
       }
 
+      console.log("Transfer type: Regular ERC20 transfer");
+
+      // Creating ERC20 template
+      console.log("Creating ERC20 transfer template...");
+      const transferTemplate = createERC20TransferTemplate({
+        tokenAddress: BASE_USDC.ADDRESS,
+        toAddress: toAccount.address as Address,
+        amount,
+        decimals: BASE_USDC.DECIMALS,
+      });
+      console.log("Transfer template created:", transferTemplate);
+
       // Regular ERC20 transfer
+      console.log("Executing nested transaction...");
       await executeNestedTransaction({
         fromSafeAddress: user.walletAddress as Address,
         throughSafeAddress: selectedAccount.address,
-        transactions: [
-          createERC20TransferTemplate({
-            tokenAddress: BASE_USDC.ADDRESS,
-            toAddress: toAccount.address as Address,
-            amount,
-            decimals: BASE_USDC.DECIMALS,
-          }),
-        ],
+        transactions: [transferTemplate],
         credentials,
         callbacks: {
-          onPreparing: () => setTransferStatus(TransferStatus.PREPARING),
-          onSigning: () => setTransferStatus(TransferStatus.SIGNING),
-          onSigningComplete: () => setTransferStatus(TransferStatus.SENDING),
-          onSent: () => setTransferStatus(TransferStatus.CONFIRMING),
+          onPreparing: () => {
+            console.log("Transaction state: PREPARING");
+            setTransferStatus(TransferStatus.PREPARING);
+          },
+          onSigning: () => {
+            console.log("Transaction state: SIGNING");
+            setTransferStatus(TransferStatus.SIGNING);
+          },
+          onSigningComplete: () => {
+            console.log("Transaction state: SIGNING COMPLETE");
+            setTransferStatus(TransferStatus.SENDING);
+          },
+          onSent: () => {
+            console.log("Transaction state: SENT/CONFIRMING");
+            setTransferStatus(TransferStatus.CONFIRMING);
+          },
           onSuccess: () => {
+            console.log("Transaction state: SUCCESS");
             setTransferStatus(TransferStatus.SENT);
             toast.success("Transfer completed successfully");
             onTransfer(); // Update account balances
           },
-          onError: (error) => {
+          onError: (error: Error) => {
             console.error("Transfer error:", error);
+            console.error("Error details:", {
+              message: error.message,
+              name: error.name,
+              stack: error.stack,
+            });
             setTransferStatus(TransferStatus.ERROR);
             toast.error("Transfer failed. Please try again.");
           },
@@ -190,7 +231,15 @@ export function SendModal({
       });
     } catch (error) {
       console.error("Error in transfer process:", error);
+      if (error instanceof Error) {
+        console.error("Error details:", {
+          message: error.message,
+          name: error.name,
+          stack: error.stack,
+        });
+      }
       setTransferStatus(TransferStatus.ERROR);
+      toast.error(`Transfer failed: ${error instanceof Error ? error.message : "Unknown error"}`);
     } finally {
       setIsLoading(false);
     }

@@ -15,7 +15,7 @@ import { toast } from "sonner";
 
 import { useExistingDisbursement } from "@/hooks/bill-pay/useExistingDisbursement";
 import { TransferStatus, TransferStatusOverlay } from "@/components/generics/transfer-status";
-import { executeNestedTransaction } from "@/utils/safe/transaction";
+import { executeNestedTransaction } from "@/utils/safe/flows/nested";
 import { useBalance } from "@/hooks/account-contracts/useBalance";
 import { validateBillPay } from "@/validations/bill-pay";
 import {
@@ -138,10 +138,20 @@ export default function CreateBillPayModal({
     if (!settlementAddress || !user?.walletAddress) return;
 
     try {
+      console.log("=== Bill Payment Debug: Starting payment process ===");
+      console.log("settlementAddress:", settlementAddress);
+      console.log("user.walletAddress:", user.walletAddress);
+      console.log("billPay details:", {
+        amount: billPay.amount,
+        vendorMethod: billPay.vendorMethod,
+        isExisting: isExistingBillPay(billPay),
+      });
+
       if (!billPay.vendorMethod) {
         throw new Error("Payment method is required");
       }
 
+      console.log("Creating disbursement...");
       const response = isExistingBillPay(billPay)
         ? await createExistingDisbursement(billPay.disbursementId, {
             amount: billPay.amount,
@@ -168,43 +178,76 @@ export default function CreateBillPayModal({
             }),
           });
 
+      console.log("Disbursement created successfully:", response);
+
       if (!response) {
         throw new Error(`Failed to create ${isExistingBillPay(billPay) ? "existing" : "new"} disbursement`);
       }
 
       const liquidationAddress = getLiquidationAddress(response, isExistingBillPay(billPay));
+      console.log("Liquidation address:", liquidationAddress);
 
+      console.log("Creating ERC20 transfer template...");
       const erc20TransferTemplate = createERC20TransferTemplate({
         tokenAddress: BASE_USDC.ADDRESS,
         toAddress: liquidationAddress,
         amount: billPay.amount,
         decimals: BASE_USDC.DECIMALS,
       });
+      console.log("Transfer template created:", erc20TransferTemplate);
 
+      console.log("Executing nested transaction...");
       await executeNestedTransaction({
         fromSafeAddress: user.walletAddress as Address,
         throughSafeAddress: settlementAddress,
         transactions: [erc20TransferTemplate],
         credentials,
         callbacks: {
-          onPreparing: () => setTransferStatus(TransferStatus.PREPARING),
-          onSigning: () => setTransferStatus(TransferStatus.SIGNING),
-          onSent: () => setTransferStatus(TransferStatus.CONFIRMING),
+          onPreparing: () => {
+            console.log("Transaction state: PREPARING");
+            setTransferStatus(TransferStatus.PREPARING);
+          },
+          onSigning: () => {
+            console.log("Transaction state: SIGNING");
+            setTransferStatus(TransferStatus.SIGNING);
+          },
+          onSigningComplete: () => {
+            console.log("Transaction state: SIGNING COMPLETE");
+            setTransferStatus(TransferStatus.SENDING);
+          },
+          onSent: () => {
+            console.log("Transaction state: SENT/CONFIRMING");
+            setTransferStatus(TransferStatus.CONFIRMING);
+          },
           onSuccess: () => {
+            console.log("Transaction state: SUCCESS");
             setTransferStatus(TransferStatus.SENT);
             toast.success("Bill payment completed successfully");
             onSuccess?.();
           },
-          onError: (error) => {
-            console.error("Bill payment error:", error);
+          onError: (error: Error) => {
+            console.error("Bill payment transaction error:", error);
+            console.error("Error details:", {
+              message: error.message,
+              name: error.name,
+              stack: error.stack,
+            });
             setTransferStatus(TransferStatus.ERROR);
             toast.error("Bill payment failed. Please try again.");
           },
         },
       });
     } catch (error) {
-      console.error("Error creating disbursement:", error);
+      console.error("Error in bill payment process:", error);
+      if (error instanceof Error) {
+        console.error("Error details:", {
+          message: error.message,
+          name: error.name,
+          stack: error.stack,
+        });
+      }
       setTransferStatus(TransferStatus.ERROR);
+      toast.error(`Bill payment failed: ${error instanceof Error ? error.message : "Unknown error"}`);
     }
   };
 

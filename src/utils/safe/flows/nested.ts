@@ -6,30 +6,34 @@ import {
 } from "abstractionkit";
 
 import { WebAuthnHelper } from "@/utils/webauthn";
+import { WebAuthnCredentials } from "@/types/webauthn";
 import {
   createAndSendSponsoredUserOp,
   sendAndTrackUserOperation,
   createSignedUserOperation,
   createSettlementOperationWithApproval,
-} from "@/utils/safe";
-import { createApproveHashTemplate } from "./templates";
-import { WebAuthnCredentials } from "@/types/webauthn";
+  OperationTrackingCallbacks,
+} from "../core/operations";
+import { createApproveHashTemplate } from "../templates";
 
-export interface TransactionCallbacks {
+/**
+ * Standard callback interface for nested transactions
+ */
+export interface NestedTransactionCallbacks extends OperationTrackingCallbacks {
   onPreparing?: () => void;
   onSigning?: () => void;
   onSigningComplete?: () => void;
-  onSent?: () => void;
-  onSuccess?: () => void;
-  onError?: (error: Error) => void;
 }
 
+/**
+ * Configuration for nested transactions
+ */
 export interface NestedTransactionConfig {
   fromSafeAddress: Address;
   throughSafeAddress: Address;
   transactions: MetaTransaction[];
   credentials: WebAuthnCredentials;
-  callbacks?: TransactionCallbacks;
+  callbacks?: NestedTransactionCallbacks;
 }
 
 /**
@@ -42,6 +46,9 @@ export interface NestedTransactionConfig {
  * - For adding signers: Use with createAddOwnerTemplate
  * - For ERC20 transfers: Use with createERC20TransferTemplate
  * - For Rain withdrawals: Use with createRainWithdrawalTemplate
+ *
+ * @param config Configuration for the nested transaction
+ * @returns Promise resolving to a success indicator
  */
 export const executeNestedTransaction = async ({
   fromSafeAddress,
@@ -102,7 +109,7 @@ export const executeNestedTransaction = async ({
     return new Promise((resolve, reject) => {
       // Send and track both operations
       sendAndTrackUserOperation(fromSafe, signedFromSafeOp, {
-        onSent: callbacks?.onSigning,
+        onSent: callbacks?.onSent,
         onError: (error) => {
           callbacks?.onError?.(error);
           reject(error);

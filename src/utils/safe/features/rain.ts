@@ -1,11 +1,15 @@
 import { Address, Hex } from "viem";
 import { RainWithdrawalSignatureReady } from "@backpack-fux/pylon-sdk";
 
-import { createRainWithdrawalTemplate } from "./templates";
-import { executeNestedTransaction, TransactionCallbacks } from "./transaction";
+import { createRainWithdrawalTemplate } from "../templates";
+import { executeNestedTransaction } from "../flows/nested";
+import { DirectTransactionCallbacks } from "../flows/direct";
 import pylon from "@/libs/pylon-sdk";
 import { WebAuthnCredentials } from "@/types/webauthn";
 
+/**
+ * Configuration for Rain Card transfer operations
+ */
 interface RainCardTransferConfig {
   fromSafeAddress: Address;
   throughSafeAddress: Address;
@@ -16,14 +20,24 @@ interface RainCardTransferConfig {
   rainCollateralProxyAddress: Address;
   amount: string;
   credentials: WebAuthnCredentials;
-  callbacks?: TransactionCallbacks;
+  callbacks?: DirectTransactionCallbacks;
 }
 
+/**
+ * Retrieves a withdrawal signature from the backend with retry capability
+ * If signature generation is pending, it will wait and retry
+ *
+ * @param amount Amount to withdraw
+ * @param adminAddress Admin address of the Rain Card
+ * @param recipientAddress Recipient address for the withdrawal
+ * @param callbacks Optional callbacks for progress updates
+ * @returns The withdrawal signature
+ */
 const getWithdrawalSignatureWithRetry = async (
   amount: string,
   adminAddress: Address,
   recipientAddress: Address,
-  callbacks?: TransactionCallbacks
+  callbacks?: DirectTransactionCallbacks
 ): Promise<RainWithdrawalSignatureReady["signature"]> => {
   while (true) {
     const response = await pylon.requestWithdrawalSignatureForRainAccount({
@@ -47,11 +61,16 @@ const getWithdrawalSignatureWithRetry = async (
 
 /**
  * Executes a nested transfer from Rain Card Account to a safe
- * This is a nested transaction where:
+ * This is a specialized withdrawal flow for Rain Card accounts
+ *
+ * The flow consists of:
  * 1. First we get a withdrawal signature from Pylon
  * 2. Then we create a userOp to withdraw from the Rain Card Account to the safe
  * 3. First safe approves the transfer
  * 4. Second safe executes the transfer with the approval
+ *
+ * @param config Configuration for the Rain Card transfer
+ * @returns Promise that resolves when the transfer completes successfully
  */
 export const executeNestedTransferFromRainCardAcccount = async ({
   fromSafeAddress,

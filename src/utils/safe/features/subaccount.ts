@@ -3,43 +3,52 @@ import { SafeAccountV0_3_0 as SafeAccount, DEFAULT_SECP256R1_PRECOMPILE_ADDRESS 
 
 import { WebAuthnHelper } from "@/utils/webauthn";
 import { WebAuthnCredentials } from "@/types/webauthn";
+import { createSafeAccount } from "../core/account";
 import {
-  createSafeAccount,
   createDeployTransaction,
   createAndSendSponsoredUserOp,
   sendAndTrackUserOperation,
   createSignedUserOperation,
-} from "@/utils/safe";
+} from "../core/operations";
+import { DirectTransactionCallbacks } from "../flows/direct";
 
-interface DeploymentCallbacks {
+/**
+ * Callbacks for subaccount deployment
+ */
+export interface SubAccountCallbacks {
   onPreparing?: () => void;
   onSigning?: () => void;
   onSigningComplete?: () => void;
   onSent?: () => void;
-  onSuccess?: (safeAddress: Address) => void;
   onError?: (error: Error) => void;
+  onSuccess?: (safeAddress: Address) => void;
 }
 
-interface DeploymentConfig {
+/**
+ * Configuration for subaccount deployment
+ */
+export interface SubAccountConfig {
   individualSafeAddress: Address;
   credentials: WebAuthnCredentials;
   signerAddresses: Address[];
   threshold: number;
-  callbacks?: DeploymentCallbacks;
+  callbacks?: SubAccountCallbacks;
 }
 
 /**
- * Deploys a new Safe sub-account using a simpler direct approach
- * 1. First, deploy the sub-account with initial signers
- * 2. Later, configure additional signers and threshold in a separate operation
+ * Deploys a new Safe sub-account using the primary individual account
+ * The sub-account will be deployed with the specified signers and threshold
+ *
+ * @param config Configuration for subaccount deployment
+ * @returns Promise with the deployed subaccount address
  */
-export const deploySafeAccount = async ({
+export const deploySubAccount = async ({
   individualSafeAddress,
   credentials,
   signerAddresses,
   threshold,
   callbacks,
-}: DeploymentConfig): Promise<{ safeAddress: Address }> => {
+}: SubAccountConfig): Promise<{ safeAddress: Address }> => {
   try {
     callbacks?.onPreparing?.();
 
@@ -51,12 +60,12 @@ export const deploySafeAccount = async ({
     // Create account instances
     const individualAccount = new SafeAccount(individualSafeAddress);
 
-    // Create the new settlement account to be deployed
+    // Create the new subaccount to be deployed
     // Include all signers directly in the initial deployment
     const allSigners = [individualSafeAddress, ...signerAddresses.filter((addr) => addr !== individualSafeAddress)];
 
-    // Calculate the settlement account address
-    const { address: settlementAccountAddress } = createSafeAccount({
+    // Calculate the subaccount address
+    const { address: subaccountAddress } = createSafeAccount({
       signers: allSigners,
       isWebAuthn: false,
       threshold,
@@ -65,7 +74,7 @@ export const deploySafeAccount = async ({
     // Create a simple deployment transaction with all signers
     const deployTx = createDeployTransaction(allSigners, threshold);
 
-    // Create and sponsor individual account operation to deploy the settlement account
+    // Create and sponsor individual account operation to deploy the subaccount
     const { userOp: deployUserOp, hash: deployHash } = await createAndSendSponsoredUserOp(
       individualSafeAddress,
       [deployTx],
@@ -93,23 +102,25 @@ export const deploySafeAccount = async ({
       sendAndTrackUserOperation(individualAccount, signedDeployOp, {
         onSent: callbacks?.onSent,
         onError: (error) => {
-          console.error("Error in deployment:", error);
+          console.error("Error in subaccount deployment:", error);
           callbacks?.onError?.(error);
           reject(error);
         },
         onSuccess: () => {
-          console.log("Settlement account deployed successfully:", settlementAccountAddress);
-          callbacks?.onSuccess?.(settlementAccountAddress);
-          resolve({ safeAddress: settlementAccountAddress });
+          console.log("Subaccount deployed successfully:", subaccountAddress);
+          if (callbacks?.onSuccess) {
+            callbacks.onSuccess(subaccountAddress);
+          }
+          resolve({ safeAddress: subaccountAddress });
         },
       }).catch((error) => {
-        console.error("Error in deployment:", error);
+        console.error("Error in subaccount deployment:", error);
         callbacks?.onError?.(error as Error);
         reject(error);
       });
     });
   } catch (error) {
-    console.error("Error in deployment setup:", error);
+    console.error("Error in subaccount deployment setup:", error);
     callbacks?.onError?.(error as Error);
     throw error;
   }
