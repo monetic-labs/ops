@@ -707,8 +707,8 @@ export const SecuritySettingsModal = ({ isOpen, onClose }: { isOpen: boolean; on
                       Recovery Module Not Installed
                     </h4>
                     <p className="text-sm text-blue-600/80 dark:text-blue-400/80 mt-1">
-                      Configure your recovery options below and click "Save Security Settings" to install the recovery
-                      module and set up your guardians. This will require a one-time passkey signature.
+                      Configure your recovery options below and click &quot;Save Security Settings&quot; to install the
+                      recovery module and set up your guardians. This will require a one-time passkey signature.
                     </p>
                   </div>
                 </div>
