@@ -65,6 +65,7 @@ export function DeployAccountModal({
 
   const handleAddSigner = (signerId: string) => {
     const signer = availableSigners.find((s) => s.address === signerId);
+
     if (signer) {
       setSelectedSigners([...selectedSigners, signer]);
     }
@@ -146,14 +147,14 @@ export function DeployAccountModal({
 
   return (
     <Modal
-      isOpen={isOpen}
-      onClose={isDeploying ? undefined : onClose}
       classNames={{
         base: "max-w-xl mx-auto bg-background",
         header: "border-b border-divider py-4",
         body: "p-0",
         footer: "border-t border-divider py-4",
       }}
+      isOpen={isOpen}
+      onClose={isDeploying ? undefined : onClose}
     >
       <ModalContent>
         {() => (
@@ -177,7 +178,7 @@ export function DeployAccountModal({
                 {/* Error message - placed right after the account info */}
                 {deployError && (
                   <div className="flex items-center gap-2 p-3 bg-danger-50 text-danger border border-danger-200 rounded-lg">
-                    <AlertCircle size={18} className="flex-shrink-0" />
+                    <AlertCircle className="flex-shrink-0" size={18} />
                     <p className="text-sm">{deployError}</p>
                   </div>
                 )}
@@ -203,7 +204,7 @@ export function DeployAccountModal({
                           inputWrapper: "bg-default-100 border-none h-10",
                         }}
                         placeholder="Search signers..."
-                        startContent={<Search size={16} className="text-foreground/60" />}
+                        startContent={<Search className="text-foreground/60" size={16} />}
                         value={searchQuery}
                         onValueChange={setSearchQuery}
                       />
@@ -245,10 +246,10 @@ export function DeployAccountModal({
                       {/* Show more button */}
                       {hasMoreSigners && (
                         <Button
-                          variant="flat"
+                          className="w-full mt-1"
                           color="primary"
                           size="sm"
-                          className="w-full mt-1"
+                          variant="flat"
                           onPress={() => setShowAllSigners(true)}
                         >
                           Show {filteredSigners.length - 3} more signers
@@ -265,21 +266,21 @@ export function DeployAccountModal({
                   <div className="space-y-2">
                     <div className="text-sm text-foreground/60">Add a signer</div>
                     <div className="flex items-center gap-2 bg-default-100 rounded-lg px-3">
-                      <Plus size={18} className="text-foreground/60 flex-shrink-0" />
+                      <Plus className="text-foreground/60 flex-shrink-0" size={18} />
                       <Select
-                        isDisabled={isLoading || availableSigners.length === 0}
-                        placeholder="Select a signer to add"
-                        selectedKeys={[]}
                         className="w-full"
                         classNames={{
                           trigger: "h-10 border-0 bg-transparent",
                           value: "text-foreground",
                         }}
+                        isDisabled={isLoading || availableSigners.length === 0}
+                        placeholder="Select a signer to add"
                         popoverProps={{
                           classNames: {
                             content: "p-0",
                           },
                         }}
+                        selectedKeys={[]}
                         onChange={(e) => handleAddSigner(e.target.value)}
                       >
                         {availableSigners.map((signer) => (
@@ -333,9 +334,9 @@ export function DeployAccountModal({
                         // For more than 5 signers, show a more compact UI
                         <div className="w-full">
                           <Select
+                            className="w-full"
                             label="Required signatures"
                             selectedKeys={[threshold.toString()]}
-                            className="w-full"
                             onChange={(e) => setThreshold(parseInt(e.target.value))}
                           >
                             {Array.from({ length: selectedSigners.length }, (_, i) => i + 1).map((num) => (
@@ -363,21 +364,21 @@ export function DeployAccountModal({
 
             <ModalFooter className="px-6 flex justify-between">
               <Button
-                color="danger"
-                variant="flat"
-                radius="lg"
                 className="px-6"
-                onPress={onClose}
+                color="danger"
                 isDisabled={isDeploying}
+                radius="lg"
+                variant="flat"
+                onPress={onClose}
               >
                 Cancel
               </Button>
               <Button
-                color="primary"
-                radius="lg"
                 className="px-6"
+                color="primary"
                 isDisabled={selectedSigners.length === 0 || isDeploying}
                 isLoading={isDeploying}
+                radius="lg"
                 startContent={!isDeploying && <Shield size={16} />}
                 onPress={handleDeployClick}
               >

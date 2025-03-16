@@ -2,9 +2,11 @@ import { Address } from "viem";
 import { SafeAccountV0_3_0 as SafeAccount } from "abstractionkit";
 
 import { WebAuthnCredentials } from "@/types/webauthn";
+
 import { createSafeAccount } from "../core/account";
 import { createDeployTransaction } from "../core/operations";
 import { executeDirectTransaction, DirectTransactionCallbacks } from "../flows/direct";
+
 import { createPasskeyCredentials } from "./passkey";
 import { RecoveryMethods, generateRecoveryAddresses, createRecoveryTransactions } from "./recovery";
 
@@ -96,17 +98,21 @@ export const deployIndividualSafe = async ({
     // Only include deploy transaction for new accounts
     if (!isUsingExistingAccount) {
       const deployTx = createDeployTransaction([individualAddress], 1);
+
       allTransactions.push(deployTx);
     }
 
     // Add recovery transactions
     const recoveryTxs = createRecoveryTransactions(individualAddress, guardianAddresses);
+
     allTransactions.push(...recoveryTxs);
 
     // Add settlement account deployment if requested
     let settlementAddress: Address | undefined = existingSettlementAddress;
+
     if (deploySettlement) {
       const deploySettlementTx = createDeployTransaction([individualAddress]);
+
       allTransactions.push(deploySettlementTx);
 
       // Calculate the settlement address if not provided

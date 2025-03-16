@@ -1,3 +1,5 @@
+import { RecoveryWalletMethod } from "@backpack-fux/pylon-sdk";
+
 export type SecuritySettingsModalProps = {
   isOpen: boolean;
   onClose: () => void;
@@ -69,8 +71,16 @@ export type TeamRecoveryProps = {
   onRemoveTeamMember: () => void;
 };
 
+export type RecoveryWalletGenerateInput = {
+  identifier: string;
+  method: RecoveryWalletMethod;
+};
+
 export interface PendingChanges {
-  toAdd: string[];
+  toAdd: Array<{
+    identifier: string;
+    method: RecoveryWalletMethod;
+  }>;
   toDelete: string[];
-  onChainTransactions: any[]; // TODO: Type this properly
+  toggleBackpack: boolean;
 }

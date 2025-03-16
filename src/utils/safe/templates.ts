@@ -5,9 +5,11 @@ import {
   SafeAccountV0_3_0 as SafeAccount,
   WebauthnPublicKey,
 } from "abstractionkit";
+
+import { PUBLIC_RPC } from "@/config/web3";
+
 import { safeAbi } from "../abi/safe";
 import { rainControllerAbi } from "../abi/rain";
-import { PUBLIC_RPC } from "@/config/web3";
 
 export const createApproveHashTemplate = (safeAddress: Address, opHash: Hex): MetaTransaction => {
   return {

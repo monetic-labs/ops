@@ -5,10 +5,12 @@ import {
   MetaTransaction,
 } from "abstractionkit";
 import { Address } from "viem";
+
 import { publicClient } from "@/config/web3";
 
-import { createDeployTransaction } from "./operations";
 import { createAddOwnerTemplate, createRemoveOwnerTemplate } from "../templates";
+
+import { createDeployTransaction } from "./operations";
 
 /**
  * Configuration for creating a Safe account
@@ -48,9 +50,11 @@ export const createSafeAccount = ({ signers, isWebAuthn = false, threshold = 1 }
 export const isContractDeployed = async (address: Address): Promise<boolean> => {
   try {
     const code = await publicClient.getCode({ address });
+
     return Boolean(code && code.length > 2);
   } catch (error) {
     console.error("Error checking contract deployment:", error);
+
     return false;
   }
 };

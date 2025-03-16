@@ -3,6 +3,7 @@ import { SafeAccountV0_3_0 as SafeAccount, DEFAULT_SECP256R1_PRECOMPILE_ADDRESS 
 
 import { WebAuthnHelper } from "@/utils/webauthn";
 import { WebAuthnCredentials } from "@/types/webauthn";
+
 import { createSafeAccount } from "../core/account";
 import {
   createDeployTransaction,
@@ -10,7 +11,6 @@ import {
   sendAndTrackUserOperation,
   createSignedUserOperation,
 } from "../core/operations";
-import { DirectTransactionCallbacks } from "../flows/direct";
 
 /**
  * Callbacks for subaccount deployment

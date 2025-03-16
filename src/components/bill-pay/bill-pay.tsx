@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { Tab, Tabs } from "@nextui-org/tabs";
-import { Address } from "viem";
 import { PlusIcon } from "lucide-react";
 
 import { billPayConfig } from "@/config/tabs";
@@ -10,11 +9,11 @@ import { isTesting } from "@/utils/helpers";
 import { MOCK_SETTLEMENT_ADDRESS } from "@/utils/constants";
 import { ResponsiveButton } from "@/components/generics/responsive-button";
 import { useAccounts } from "@/contexts/AccountContext";
+import { Account } from "@/types/account";
 
 import CreateBillPayModal from "./bill-actions/create";
 import TransfersTab from "./transfers-tab";
 import ContactsTab from "./contacts-tab";
-import { Account } from "@/types/account";
 
 type BillPayTabsProps = {
   handleSubTabChange: (key: string) => void;
@@ -60,8 +59,8 @@ export default function BillPayTabs({ handleSubTabChange }: BillPayTabsProps) {
         </Tabs>
         {selectedService === "transfers" && (
           <ResponsiveButton
-            isDisabled={!settlementAddress}
             icon={PlusIcon}
+            isDisabled={!settlementAddress}
             label="Create Transfer"
             onPress={() => setIsCreateModalOpen(true)}
           />

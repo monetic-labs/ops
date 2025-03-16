@@ -149,9 +149,9 @@ const AuthPage = () => {
                   className="bg-transparent hover:bg-content2 min-w-unit-16 h-unit-8 px-3"
                   radius="full"
                   size="sm"
+                  startContent={<ArrowLeft className="w-4 h-4" />}
                   variant="light"
                   onPress={handleBack}
-                  startContent={<ArrowLeft className="w-4 h-4" />}
                 >
                   Back
                 </Button>

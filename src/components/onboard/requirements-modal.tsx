@@ -6,6 +6,7 @@ import { Button } from "@nextui-org/button";
 import { Checkbox } from "@nextui-org/checkbox";
 import { Divider } from "@nextui-org/divider";
 import { FileText, CreditCard, Building, Users, Clock, Shield, ExternalLink } from "lucide-react";
+
 import { useMediaQuery } from "@/hooks/onboard/useMediaQuery";
 import { useTheme } from "@/hooks/useTheme";
 
@@ -54,17 +55,17 @@ export const RequirementsModal = ({ isOpen, onClose }: RequirementsModalProps) =
 
   return (
     <Modal
-      isOpen={isOpen}
-      onClose={onClose}
-      isDismissable={false}
       hideCloseButton
-      size={isMobile ? "md" : "2xl"}
       classNames={{
         base: "bg-content1 backdrop-blur-xl border border-border shadow-2xl max-w-[95vw] mx-auto",
         wrapper: "p-1 sm:p-4",
         body: "overflow-hidden",
       }}
+      isDismissable={false}
+      isOpen={isOpen}
       scrollBehavior="inside"
+      size={isMobile ? "md" : "2xl"}
+      onClose={onClose}
     >
       <ModalContent>
         {() => (
@@ -129,10 +130,10 @@ export const RequirementsModal = ({ isOpen, onClose }: RequirementsModalProps) =
                 <p className="text-xs sm:text-sm text-foreground/70 mt-2 break-words">
                   For more information, you can refer to the{" "}
                   <a
-                    href="https://support.sumsub.com/business-verification/business-verification-overview"
-                    target="_blank"
-                    rel="noopener noreferrer"
                     className="text-primary underline inline-flex items-center gap-0.5 hover:text-primary-500"
+                    href="https://support.sumsub.com/business-verification/business-verification-overview"
+                    rel="noopener noreferrer"
+                    target="_blank"
                   >
                     business verification guide
                     <ExternalLink className="w-3 h-3 inline shrink-0" />
@@ -142,15 +143,15 @@ export const RequirementsModal = ({ isOpen, onClose }: RequirementsModalProps) =
 
               <div className="mt-2 sm:mt-4 w-full">
                 <Checkbox
-                  isSelected={acknowledged}
-                  onValueChange={setAcknowledged}
-                  size="md"
-                  color="primary"
                   classNames={{
                     label: "text-xs sm:text-sm break-words text-foreground/80",
                     wrapper: "before:border-2",
                     base: "max-w-full",
                   }}
+                  color="primary"
+                  isSelected={acknowledged}
+                  size="md"
+                  onValueChange={setAcknowledged}
                 >
                   I have all the required information and am ready to proceed with the account setup process.
                 </Checkbox>
@@ -158,9 +159,9 @@ export const RequirementsModal = ({ isOpen, onClose }: RequirementsModalProps) =
             </ModalBody>
             <ModalFooter className="px-3 sm:px-6 py-3 sm:py-4">
               <Button
+                className="w-full font-medium"
                 color="primary"
                 isDisabled={!acknowledged}
-                className="w-full font-medium"
                 size={isMobile ? "md" : "lg"}
                 onPress={onClose}
               >

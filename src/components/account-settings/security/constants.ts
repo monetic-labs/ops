@@ -1,6 +1,6 @@
 import { Mail, Phone, Key, Backpack, Users } from "lucide-react";
 
-import { OrgMember, RecoveryMethod } from "./types";
+import { RecoveryMethod } from "./types";
 
 export const GRACE_PERIOD_OPTIONS = [
   { label: "3 Days", value: "3", description: "Shortest timelock, suitable for frequent users" },
@@ -14,30 +14,9 @@ export const GRACE_PERIOD_OPTIONS = [
 ];
 
 export const DEAD_SWITCH_OPTIONS = [
-  { label: "6 Months", value: "6", description: "Shortest inactivity period before transfer" },
-  { label: "1 Year", value: "12", description: "Standard inactivity period" },
+  { label: "6 Months", value: "6", description: "Shortest inactivity period" },
+  { label: "1 Year", value: "12", description: "Standard inactivity period", isRecommended: true },
   { label: "2 Years", value: "24", description: "Extended inactivity period" },
-];
-
-export const MOCK_ORG_MEMBERS: OrgMember[] = [
-  {
-    id: "usr_01",
-    displayName: "Sarah Chen",
-    email: "sarah@example.com",
-    role: "OWNER",
-  },
-  {
-    id: "usr_02",
-    displayName: "Alex Rodriguez",
-    email: "alex@example.com",
-    role: "MEMBER",
-  },
-  {
-    id: "usr_03",
-    displayName: "Jordan Taylor",
-    email: "jordan@example.com",
-    role: "MEMBER",
-  },
 ];
 
 export const RECOVERY_OPTIONS = [

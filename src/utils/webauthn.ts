@@ -56,6 +56,7 @@ export class WebAuthnHelper {
    */
   private static async requestChallenge(): Promise<string> {
     const response = await pylon.generatePasskeyChallenge();
+
     return response.challenge;
   }
 
@@ -170,6 +171,7 @@ export class WebAuthnHelper {
   async verify(): Promise<boolean> {
     try {
       const challenge = Bytes.fromString(`verify_${Date.now()}`);
+
       await sign({
         challenge: OxHex.fromBytes(challenge),
         credentialId: this.credentialId,

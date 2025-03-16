@@ -172,6 +172,7 @@ export function SendModal({
         });
 
         setIsLoading(false);
+
         return;
       }
 
@@ -185,6 +186,7 @@ export function SendModal({
         amount,
         decimals: BASE_USDC.DECIMALS,
       });
+
       console.log("Transfer template created:", transferTemplate);
 
       // Regular ERC20 transfer

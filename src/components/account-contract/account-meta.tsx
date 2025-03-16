@@ -208,9 +208,9 @@ export default function AccountMeta() {
                   )}
                   {activeTab === "signers" && (
                     <SignersView
+                      account={selectedAccount}
                       isLoading={isLoadingAccounts}
                       signers={selectedAccount.signers}
-                      account={selectedAccount}
                     />
                   )}
                   {activeTab === "policies" && (

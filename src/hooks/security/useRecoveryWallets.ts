@@ -4,30 +4,105 @@ import { Address } from "viem";
 
 import { RecoveryWallet, ConfiguredEmail, ConfiguredPhone } from "@/components/account-settings/security/types";
 import { useUser } from "@/contexts/UserContext";
-import { isBackpackGuardian } from "@/utils/safe/recovery";
+import { defaultSocialRecoveryModule, isModuleEnabled, getGuardianThreshold } from "@/utils/safe/features/recovery";
+import { BACKPACK_GUARDIAN_ADDRESS } from "@/utils/constants";
+import { PUBLIC_RPC } from "@/config/web3";
 import pylon from "@/libs/pylon-sdk";
-
-type RecoveryWalletGenerateInput = {
-  identifier: string;
-  method: RecoveryWalletMethod;
-};
 
 export const useRecoveryWallets = (isOpen: boolean) => {
   const [recoveryWallets, setRecoveryWallets] = useState<RecoveryWallet[]>([]);
   const [configuredEmails, setConfiguredEmails] = useState<ConfiguredEmail[]>([]);
   const [configuredPhone, setConfiguredPhone] = useState<ConfiguredPhone | null>(null);
   const [isBackpackRecoveryEnabled, setIsBackpackRecoveryEnabled] = useState(false);
+  const [isModuleInstalled, setIsModuleInstalled] = useState(false);
+  const [currentThreshold, setCurrentThreshold] = useState(0);
   const { user } = useUser();
 
   const fetchRecoveryWallets = async () => {
+    if (!user?.walletAddress) return;
+
     try {
-      const wallets = await pylon.getRecoveryWallets();
+      // First check if the module is installed
+      const moduleEnabled = await isModuleEnabled(user.walletAddress as Address);
+      setIsModuleInstalled(moduleEnabled);
 
-      setRecoveryWallets(wallets);
+      // If module isn't enabled yet, don't try to fetch guardians
+      if (!moduleEnabled) {
+        setRecoveryWallets([]);
+        setConfiguredEmails([]);
+        setConfiguredPhone(null);
+        setIsBackpackRecoveryEnabled(false);
+        setCurrentThreshold(0);
+        return;
+      }
 
-      // Set configured emails
-      const emailWallets = wallets.filter((w) => w.recoveryMethod === RecoveryWalletMethod.EMAIL);
+      // Get the current threshold from the module
+      const threshold = await getGuardianThreshold(user.walletAddress as Address);
+      setCurrentThreshold(threshold);
 
+      // 1. Get all guardians from the blockchain (single source of truth)
+      const onChainGuardians = await defaultSocialRecoveryModule.getGuardians(
+        PUBLIC_RPC,
+        user.walletAddress as Address
+      );
+
+      // 2. Get all recovery wallets from Pylon (for user-friendly identifiers)
+      const pylonWallets = await pylon.getRecoveryWallets();
+
+      // 3. Check if Backpack is a guardian
+      const backpackAddressLower = BACKPACK_GUARDIAN_ADDRESS.toLowerCase();
+      let isBackpackGuardian = false;
+
+      // Manually check each guardian address with case-insensitive comparison
+      for (let i = 0; i < onChainGuardians.length; i++) {
+        const guardianAddress = onChainGuardians[i].toLowerCase();
+        if (guardianAddress === backpackAddressLower) {
+          isBackpackGuardian = true;
+          break;
+        }
+      }
+
+      // Only log critical status info
+      console.log("🎒 Backpack guardian status:", isBackpackGuardian ? "Enabled" : "Disabled");
+
+      setIsBackpackRecoveryEnabled(isBackpackGuardian);
+
+      // 4. Map on-chain guardians to Pylon wallets
+      const matchedWallets: RecoveryWallet[] = [];
+
+      // Process each on-chain guardian address
+      for (const guardianAddress of onChainGuardians) {
+        if (guardianAddress.toLowerCase() === BACKPACK_GUARDIAN_ADDRESS.toLowerCase()) {
+          // Skip Backpack guardian as it's handled separately
+          continue;
+        }
+
+        // Find matching Pylon wallet by address
+        const pylonWallet = pylonWallets.find((w) => w.publicAddress.toLowerCase() === guardianAddress.toLowerCase());
+
+        if (pylonWallet) {
+          // If we found a match in Pylon, use its details
+          matchedWallets.push(pylonWallet);
+        } else {
+          // If no match in Pylon, create a placeholder wallet
+          matchedWallets.push({
+            id: `blockchain-${guardianAddress}`,
+            identifier: `Unknown Guardian (${guardianAddress.substring(0, 6)}...${guardianAddress.substring(guardianAddress.length - 4)})`,
+            recoveryMethod: "UNKNOWN" as any,
+            publicAddress: guardianAddress as string,
+            userCustodialId: "",
+            custodialProvider: "",
+            updatedAt: new Date().toISOString(),
+            createdAt: new Date().toISOString(),
+            userId: "",
+          });
+        }
+      }
+
+      setRecoveryWallets(matchedWallets);
+
+      // 5. Set configured emails
+      const emailWallets = matchedWallets.filter((w) => w.recoveryMethod === RecoveryWalletMethod.EMAIL);
       setConfiguredEmails(
         emailWallets.map((w) => ({
           email: w.identifier,
@@ -36,44 +111,35 @@ export const useRecoveryWallets = (isOpen: boolean) => {
         }))
       );
 
-      // Set configured phone
-      const phoneWallet = wallets.find((w) => w.recoveryMethod === RecoveryWalletMethod.PHONE);
-
+      // 6. Set configured phone
+      const phoneWallet = matchedWallets.find((w) => w.recoveryMethod === RecoveryWalletMethod.PHONE);
       if (phoneWallet) {
         setConfiguredPhone({
           number: phoneWallet.identifier,
           isVerified: true,
           recoveryWalletId: phoneWallet.id,
         });
-      }
-
-      // Check Backpack guardian status
-      if (user?.walletAddress) {
-        try {
-          const isGuardian = await isBackpackGuardian(user.walletAddress as Address);
-
-          setIsBackpackRecoveryEnabled(isGuardian);
-        } catch (error) {
-          console.error("Failed to check Backpack guardian status:", error);
-          setIsBackpackRecoveryEnabled(false);
-        }
+      } else {
+        setConfiguredPhone(null);
       }
     } catch (error) {
-      console.error("Failed to fetch recovery wallets:", error);
+      console.error("❌ Failed to fetch recovery wallets:", error);
     }
   };
 
   useEffect(() => {
-    if (isOpen) {
+    if (isOpen && user?.walletAddress) {
       fetchRecoveryWallets();
     }
-  }, [isOpen]);
+  }, [isOpen, user?.walletAddress]);
 
   return {
     recoveryWallets,
     configuredEmails,
     configuredPhone,
     isBackpackRecoveryEnabled,
+    isModuleInstalled,
+    currentThreshold,
     setConfiguredEmails,
     setConfiguredPhone,
     setIsBackpackRecoveryEnabled,

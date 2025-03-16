@@ -53,6 +53,7 @@ export function SignersProvider({ children }: { children: ReactNode }) {
     if (user.registeredPasskeys && user.registeredPasskeys.length > 0) {
       try {
         const derivedAddress = getAddress(user.registeredPasskeys[0].publicKey);
+
         return {
           address: derivedAddress,
           name: getFullName(user.firstName, user.lastName),
@@ -62,6 +63,7 @@ export function SignersProvider({ children }: { children: ReactNode }) {
         };
       } catch (error) {
         console.error("Error deriving address from public key:", error);
+
         return null;
       }
     }
@@ -106,6 +108,7 @@ export function SignersProvider({ children }: { children: ReactNode }) {
   const getAvailableSigners = useCallback(
     (currentSigners: Address[] = []): Signer[] => {
       const allSigners = [...state.signers, ...state.accountSigners];
+
       return allSigners.filter(
         (signer) => !currentSigners.some((current) => current.toLowerCase() === signer.address.toLowerCase())
       );
@@ -129,6 +132,7 @@ export function SignersProvider({ children }: { children: ReactNode }) {
 
         // First check if it's a user signer
         const userSigner = state.signers.find((signer) => signer.address.toLowerCase() === address.toLowerCase());
+
         if (userSigner) {
           return userSigner;
         }
@@ -137,6 +141,7 @@ export function SignersProvider({ children }: { children: ReactNode }) {
         const accountSigner = state.accountSigners.find(
           (signer) => signer.address.toLowerCase() === address.toLowerCase()
         );
+
         if (accountSigner) {
           return accountSigner;
         }
@@ -171,6 +176,7 @@ export function SignersProvider({ children }: { children: ReactNode }) {
 
         // Default case - unknown signer
         const shortAddress = `${address.slice(0, 6)}...${address.slice(-4)}`;
+
         return {
           address,
           name: `Unknown Signer (${shortAddress})`,
@@ -230,8 +236,10 @@ export function SignersProvider({ children }: { children: ReactNode }) {
 
 export function useSigners() {
   const context = useContext(SignersContext);
+
   if (!context) {
     throw new Error("useSigners must be used within a SignersProvider");
   }
+
   return context;
 }

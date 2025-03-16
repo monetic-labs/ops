@@ -1,7 +1,7 @@
 "use client";
 
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
-import { Address, Hex } from "viem";
+import { Address } from "viem";
 import {
   Network,
   StableCurrency,
@@ -117,6 +117,7 @@ export function AccountProvider({ children }: { children: ReactNode }) {
 
     const processedSigners = mapSignersToUsers(account.signers as Address[], account.name);
     const accountSigners = processedSigners.filter((signer) => signer.isAccount);
+
     if (accountSigners.length > 0) {
       updateAccountSigners(accountSigners);
     }
@@ -175,6 +176,7 @@ export function AccountProvider({ children }: { children: ReactNode }) {
         ...prev,
         isLoadingAccounts: false,
       }));
+
       return [];
     }
   };
@@ -320,18 +322,21 @@ export function AccountProvider({ children }: { children: ReactNode }) {
       try {
         // Get user credentials using the useUser hook
         const credentials = getSigningCredentials();
+
         if (!credentials) {
           throw new Error("No signing credentials available");
         }
 
         // Find the account to deploy
         const accountToDeploy = state.accounts.find((acc) => acc.id === accountId);
+
         if (!accountToDeploy) {
           throw new Error("Account not found");
         }
 
         // Get the individual safe address
         const individualSafeAddress = user?.walletAddress as Address;
+
         if (!individualSafeAddress) {
           throw new Error("No wallet address available");
         }

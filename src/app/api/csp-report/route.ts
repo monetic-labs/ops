@@ -46,6 +46,7 @@ export async function POST(request: Request) {
 
     // Provide guidance for common violations
     let guidance = "";
+
     if (violatedDirective?.includes("script-src")) {
       guidance = `To fix this, add "${blockedUri}" to the script-src directive in your CSP configuration.`;
     } else if (violatedDirective?.includes("connect-src")) {
@@ -67,6 +68,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error("Error processing CSP report:", error);
+
     return NextResponse.json({ error: "Failed to process CSP report" }, { status: 500 });
   }
 }

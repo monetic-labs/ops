@@ -11,7 +11,7 @@ import { LogOut, User, Backpack, Shield, Moon, Sun, MessageCircle } from "lucide
 import { MerchantUserGetByIdOutput as MerchantUser } from "@backpack-fux/pylon-sdk";
 
 import { useUser } from "@/contexts/UserContext";
-import { getDisplayName, isProduction } from "@/utils/helpers";
+import { getDisplayName } from "@/utils/helpers";
 import { useTheme } from "@/hooks/useTheme";
 import { useMessagingState, useMessagingActions } from "@/libs/messaging/store";
 import { useAccounts } from "@/contexts/AccountContext";

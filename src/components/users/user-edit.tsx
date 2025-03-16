@@ -15,7 +15,6 @@ import { addPasskeyToSafe } from "@/utils/safe/features/passkey";
 import { deployIndividualSafe } from "@/utils/safe/features/deploy";
 import { useToast } from "@/hooks/useToast";
 import { useUser } from "@/contexts/UserContext";
-import { WebAuthnHelper } from "@/utils/webauthn";
 
 interface UserEditModalProps {
   isOpen: boolean;
@@ -164,6 +163,7 @@ export default function UserEditModal({
 
         // Get the existing signing credentials
         const existingCredentials = getSigningCredentials();
+
         if (!existingCredentials) {
           throw new Error("No existing passkey found to authorize this operation");
         }

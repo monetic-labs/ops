@@ -12,6 +12,7 @@ import { Address, Hex } from "viem";
 import { entryPoint07Address } from "viem/account-abstraction";
 
 import { BUNDLER_URL, chain, PAYMASTER_URL, PUBLIC_RPC, SPONSORSHIP_POLICY_ID } from "@/config/web3";
+
 import { isContractDeployed } from "./account";
 
 /**

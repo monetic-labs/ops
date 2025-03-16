@@ -51,11 +51,13 @@ export default function OnboardPage() {
 
     if (!token) {
       router.replace("/auth");
+
       return;
     }
 
     try {
       const decoded = jwtDecode<OnboardingToken>(token);
+
       setTokenExpiry(decoded.exp);
 
       // Save token to storage
@@ -63,6 +65,7 @@ export default function OnboardPage() {
 
       // Check if requirements modal has been shown
       const savedProgress = LocalStorage.getOnboardingProgress();
+
       if (!savedProgress?.requirementsShown) {
         setShowRequirementsModal(true);
         setShowOnboardingSteps(false);
@@ -81,6 +84,7 @@ export default function OnboardPage() {
 
     // Save that requirements have been shown
     const savedProgress = LocalStorage.getOnboardingProgress() || {};
+
     LocalStorage.saveOnboardingProgress({
       ...savedProgress,
       requirementsShown: true,
@@ -94,6 +98,7 @@ export default function OnboardPage() {
 
   const [currentStep, setCurrentStep] = useState(() => {
     const saved = LocalStorage.getOnboardingProgress();
+
     return saved?.currentStep || 1;
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -113,18 +118,22 @@ export default function OnboardPage() {
     reValidateMode: "onChange",
     defaultValues: (() => {
       const saved = LocalStorage.getOnboardingProgress();
+
       if (saved?.formData) {
         return saved.formData;
       }
 
       const token = searchParams?.get("token");
+
       if (!token) return getDefaultValues();
 
       try {
         const decoded = jwtDecode<OnboardingToken>(token);
+
         return getDefaultValues(decoded.email);
       } catch (error) {
         console.error("Error decoding token:", error);
+
         return getDefaultValues();
       }
     })(),
@@ -132,8 +141,10 @@ export default function OnboardPage() {
 
   // Save form progress when it changes
   const formValues = methods.watch();
+
   useEffect(() => {
     const savedProgress = LocalStorage.getOnboardingProgress() || {};
+
     LocalStorage.saveOnboardingProgress({
       ...savedProgress,
       currentStep,
@@ -171,6 +182,7 @@ export default function OnboardPage() {
 
     try {
       const token = searchParams?.get("token");
+
       if (!token) {
         throw new Error("No token found");
       }

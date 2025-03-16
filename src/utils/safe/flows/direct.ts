@@ -1,8 +1,9 @@
 import { Address } from "viem";
-import { MetaTransaction, SafeAccountV0_3_0 as SafeAccount } from "abstractionkit";
+import { MetaTransaction } from "abstractionkit";
 
 import { WebAuthnCredentials } from "@/types/webauthn";
 import { WebAuthnHelper } from "@/utils/webauthn";
+
 import { createAndSendSponsoredUserOp, sendUserOperation, OperationTrackingCallbacks } from "../core/operations";
 
 /**
@@ -74,6 +75,7 @@ export const executeDirectTransaction = async ({
     }
 
     callbacks?.onSuccess?.();
+
     return { success: true };
   } catch (error) {
     console.error("Error executing direct transaction:", error);

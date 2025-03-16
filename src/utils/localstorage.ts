@@ -51,6 +51,7 @@ export class LocalStorage {
     // Check if the data is expired (24 hours)
     if (Date.now() - progress.lastUpdated > this.ONBOARDING_EXPIRY) {
       this.clearOnboardingProgress();
+
       return null;
     }
 
@@ -59,9 +60,11 @@ export class LocalStorage {
 
   static clearOnboardingProgress() {
     const data = localStorage.getItem(this.KEY);
+
     if (!data) return;
 
     const parsed = JSON.parse(data);
+
     delete parsed.onboarding;
 
     localStorage.setItem(this.KEY, JSON.stringify(parsed));

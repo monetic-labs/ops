@@ -3,8 +3,9 @@ import { SafeAccountV0_3_0 as SafeAccount, WebauthnPublicKey } from "abstraction
 
 import { PasskeyCredentials, WebAuthnHelper } from "@/utils/webauthn";
 import { WebAuthnCredentials } from "@/types/webauthn";
+
 import { createAddOwnerTemplate } from "../templates";
-import { executeDirectTransaction, DirectTransactionCallbacks } from "../flows/direct";
+import { executeDirectTransaction } from "../flows/direct";
 
 /**
  * Creates a new passkey and returns the credentials
@@ -14,6 +15,7 @@ import { executeDirectTransaction, DirectTransactionCallbacks } from "../flows/d
  */
 export async function createPasskeyCredentials(email: string): Promise<WebAuthnCredentials> {
   const passkeyResult = await WebAuthnHelper.createPasskey(email);
+
   if (!passkeyResult?.credentialId || !passkeyResult?.publicKey || !passkeyResult?.publicKeyCoordinates) {
     throw new Error("Failed to create passkey");
   }
@@ -59,6 +61,7 @@ export async function addPasskeyToSafe({
   try {
     // Create the new passkey for the user to add
     const result = await WebAuthnHelper.createPasskey(userEmail);
+
     if (!result?.credentialId || !result?.publicKey || !result?.publicKeyCoordinates) {
       throw new Error("Failed to create passkey");
     }

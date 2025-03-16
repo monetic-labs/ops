@@ -28,12 +28,12 @@ import {
 import { useNewDisbursement } from "@/hooks/bill-pay/useNewDisbursement";
 import { useUser } from "@/contexts/UserContext";
 import { BASE_USDC } from "@/utils/constants";
+import { createERC20TransferTemplate } from "@/utils/safe/templates";
 
 import ModalFooterWithSupport from "../../generics/footer-modal-support";
 
 import ExistingTransferFields from "./fields/existing-transfer";
 import NewTransferFields from "./fields/new-transfer";
-import { createERC20TransferTemplate } from "@/utils/safe/templates";
 
 type CreateBillPayModalProps = {
   isOpen: boolean;
@@ -185,6 +185,7 @@ export default function CreateBillPayModal({
       }
 
       const liquidationAddress = getLiquidationAddress(response, isExistingBillPay(billPay));
+
       console.log("Liquidation address:", liquidationAddress);
 
       console.log("Creating ERC20 transfer template...");
@@ -194,6 +195,7 @@ export default function CreateBillPayModal({
         amount: billPay.amount,
         decimals: BASE_USDC.DECIMALS,
       });
+
       console.log("Transfer template created:", erc20TransferTemplate);
 
       console.log("Executing nested transaction...");

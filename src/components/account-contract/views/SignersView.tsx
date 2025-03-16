@@ -7,6 +7,7 @@ import { useState } from "react";
 import { useUser } from "@/contexts/UserContext";
 import { formatStringToTitleCase } from "@/utils/helpers";
 import { Signer, Account } from "@/types/account";
+
 import { AddSignerModal } from "../modals/AddSignerModal";
 
 interface SignersViewProps {
@@ -88,9 +89,9 @@ export function SignersView({ signers, isLoading, account }: SignersViewProps) {
       </div>
 
       <AddSignerModal
+        account={account}
         isOpen={showAddSigner}
         onClose={() => setShowAddSigner(false)}
-        account={account}
         onSuccess={() => setShowAddSigner(false)}
       />
     </div>
