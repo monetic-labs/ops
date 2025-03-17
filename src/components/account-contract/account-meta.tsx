@@ -15,9 +15,11 @@ import { DeployAccountModal } from "./modals/DeployAccountModal";
 import { ActivityView } from "./views/ActivityView";
 import { SignersView } from "./views/SignersView";
 import { PoliciesView } from "./views/PoliciesView";
+import { InvestmentsView } from "./views/InvestmentsView";
 import { SendModal } from "./modals/SendModal";
 import { ReceiveModal } from "./modals/ReceiveModal";
 import { AccountSelectionModal } from "./modals/AccountSelectionModal";
+import { CreateInvestmentPlanModal } from "./modals/CreateInvestmentPlanModal";
 
 export default function AccountMeta() {
   const {
@@ -36,6 +38,7 @@ export default function AccountMeta() {
   const [activeTab, setActiveTab] = useState<string>("activity");
   const [isSendModalOpen, setIsSendModalOpen] = useState(false);
   const [isReceiveModalOpen, setIsReceiveModalOpen] = useState(false);
+  const [isCreateInvestmentModalOpen, setIsCreateInvestmentModalOpen] = useState(false);
   const [amount, setAmount] = useState("");
   const [toAccount, setToAccount] = useState<Account | null>(null);
   const [isExpanded, setIsExpanded] = useState(true);
@@ -68,6 +71,14 @@ export default function AccountMeta() {
 
   const handleReceive = () => {
     setIsReceiveModalOpen(true);
+  };
+
+  const handleInvest = () => {
+    setIsCreateInvestmentModalOpen(true);
+  };
+
+  const handleCreateInvestmentPlan = () => {
+    setIsCreateInvestmentModalOpen(true);
   };
 
   const handleAccountSelect = (account: Account) => {
@@ -119,6 +130,22 @@ export default function AccountMeta() {
     }
   };
 
+  const handleCreatePlan = async (plan: {
+    assetId: string;
+    amount: number;
+    frequency: string;
+    startDate: Date;
+    endDate?: Date;
+  }): Promise<void> => {
+    console.log("Creating investment plan:", plan);
+    // In a real implementation, this would call an API to create the plan
+    setIsCreateInvestmentModalOpen(false);
+    // If the investments tab isn't active, switch to it
+    if (activeTab !== "investments") {
+      setActiveTab("investments");
+    }
+  };
+
   return (
     <>
       {/* Send Modal */}
@@ -154,6 +181,14 @@ export default function AccountMeta() {
         selectedSettlementAccount={accounts[0]}
         onChangeSettlementAccount={setSelectedAccount}
         onClose={() => setIsReceiveModalOpen(false)}
+      />
+
+      {/* Create Investment Plan Modal */}
+      <CreateInvestmentPlanModal
+        isOpen={isCreateInvestmentModalOpen}
+        onClose={() => setIsCreateInvestmentModalOpen(false)}
+        account={selectedAccount}
+        onCreatePlan={handleCreatePlan}
       />
 
       <Card className="w-full bg-content1/90 border border-border backdrop-blur-sm relative">
@@ -215,6 +250,13 @@ export default function AccountMeta() {
                   )}
                   {activeTab === "policies" && (
                     <PoliciesView isLoading={isLoadingAccounts} signers={selectedAccount.signers} />
+                  )}
+                  {activeTab === "investments" && (
+                    <InvestmentsView
+                      account={selectedAccount}
+                      isLoading={isLoadingAccounts}
+                      onCreateInvestmentPlan={handleCreateInvestmentPlan}
+                    />
                   )}
                 </div>
               </div>

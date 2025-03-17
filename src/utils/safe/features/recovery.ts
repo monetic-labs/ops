@@ -30,14 +30,6 @@ export const defaultSocialRecoveryModule = new SocialRecoveryModule(
     : SocialRecoveryModuleGracePeriodSelector.After7Days
 );
 
-// Log module details for debugging
-console.log("Social Recovery Module Configuration:", {
-  moduleAddress: defaultSocialRecoveryModule.moduleAddress,
-  customSepolia: THREE_MINUTE_BASE_SEPOLIA,
-  isProduction: isProduction,
-  backpackGuardianAddress: BACKPACK_GUARDIAN_ADDRESS,
-});
-
 /**
  * Creates a social recovery module with a specific grace period
  *

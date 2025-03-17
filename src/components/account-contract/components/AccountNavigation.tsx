@@ -1,5 +1,5 @@
 import { Button } from "@nextui-org/button";
-import { Activity, Users, Shield } from "lucide-react";
+import { Activity, Users, Shield, TrendingUp } from "lucide-react";
 
 interface NavigationItem {
   key: string;
@@ -32,6 +32,11 @@ export function AccountNavigation({ selectedTab, onTabChange }: AccountNavigatio
       key: "policies",
       icon: <Shield className="w-4 h-4" />,
       label: "Policies",
+    },
+    {
+      key: "investments",
+      icon: <TrendingUp className="w-4 h-4" />,
+      label: "Investments",
     },
   ];
 
