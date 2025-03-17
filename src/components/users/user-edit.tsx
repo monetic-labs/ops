@@ -47,6 +47,17 @@ export default function UserEditModal({
 
   const fullName = `${user.firstName} ${user.lastName}`;
 
+  // Add validation check for email and phone
+  const isEmailValid = (email: string) => {
+    return email && /\S+@\S+\.\S+/.test(email);
+  };
+
+  const isPhoneValid = (phone: string) => {
+    return phone && phone.replace(/\D/g, "").length >= 10;
+  };
+
+  const isValidForPasskey = isEmailValid(editedUser.email) && isPhoneValid(editedUser.phone || "");
+
   const handleSave = () => {
     onSave(editedUser);
     onClose();
@@ -92,6 +103,25 @@ export default function UserEditModal({
 
   const handleAddPasskey = async () => {
     try {
+      // Add validation before proceeding
+      if (!isEmailValid(user.email)) {
+        toast({
+          title: "Valid email required",
+          description: "Please enter a valid email address before creating an account with passkey.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      if (!isPhoneValid(user.phone || "")) {
+        toast({
+          title: "Valid phone number required",
+          description: "Please enter a valid phone number before creating an account with passkey.",
+          variant: "destructive",
+        });
+        return;
+      }
+
       setIsAddingPasskey(true);
 
       // Determine which scenario we're handling
@@ -107,7 +137,7 @@ export default function UserEditModal({
         // Deploy a new individual account with recovery
         const { address: newWalletAddress, credentials } = await deployIndividualSafe({
           email: user.email,
-          phone: user.phone || "", // Fallback to empty string if phone is not available
+          phone: user.phone || "",
           callbacks: {
             onPasskeyCreated: () => {
               toast({
@@ -382,25 +412,47 @@ export default function UserEditModal({
                     content={
                       editedUser.registeredPasskeys?.length
                         ? "Only one passkey is allowed per user"
-                        : user.walletAddress
-                          ? "Add a passkey to enable passwordless login"
-                          : "Create an account with passkey authentication"
+                        : !isValidForPasskey
+                          ? "Valid email and phone number are required to create an account with passkey"
+                          : user.walletAddress
+                            ? "Add a passkey to enable passwordless login"
+                            : "Create an account with passkey authentication"
                     }
                   >
-                    <Button
-                      className="bg-primary/10 text-primary"
-                      endContent={<Plus className="w-4 h-4" />}
-                      isLoading={isAddingPasskey}
-                      // isDisabled={Boolean(editedUser.registeredPasskeys?.length)}
-                      size="sm"
-                      variant="flat"
-                      onPress={handleAddPasskey}
-                    >
-                      {!user.walletAddress ? "Create Account" : "Add Passkey"}
-                    </Button>
+                    <div>
+                      <Button
+                        className="bg-primary/10 text-primary"
+                        endContent={<Plus className="w-4 h-4" />}
+                        isLoading={isAddingPasskey}
+                        isDisabled={!isValidForPasskey && !user.walletAddress}
+                        size="sm"
+                        variant="flat"
+                        onPress={handleAddPasskey}
+                      >
+                        {!user.walletAddress ? "Create Account" : "Add Passkey"}
+                      </Button>
+                    </div>
                   </Tooltip>
                 )}
               </div>
+
+              {(!isEmailValid(editedUser.email) || !isPhoneValid(editedUser.phone || "")) && !user.walletAddress && (
+                <div className="p-3 rounded-lg bg-warning/10 mb-2">
+                  <p className="text-sm text-warning-600 font-medium">Important Requirements</p>
+                  <p className="text-xs mt-1">
+                    A valid email address and phone number are required to set up your account with social recovery.
+                    These will be used to help you recover your account if you lose access.
+                  </p>
+                  <ul className="text-xs list-disc list-inside mt-2">
+                    {!isEmailValid(editedUser.email) && (
+                      <li className="text-danger">Please provide a valid email address</li>
+                    )}
+                    {!isPhoneValid(editedUser.phone || "") && (
+                      <li className="text-danger">Please provide a valid phone number</li>
+                    )}
+                  </ul>
+                </div>
+              )}
 
               <ScrollShadow className="max-h-[200px]">
                 <div className="space-y-2">

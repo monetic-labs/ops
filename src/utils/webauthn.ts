@@ -123,7 +123,7 @@ export class WebAuthnHelper {
   /**
    * Logs in with an existing passkey and returns a WebAuthnHelper instance
    * @returns A new WebAuthnHelper instance if successful
-   * @param credentialIds - The credential IDs to use for login
+   * @param credentialIds - The existing credential IDs to target for login
    */
   static async login(credentialIds?: string[]): Promise<WebAuthnHelper> {
     try {
@@ -137,7 +137,7 @@ export class WebAuthnHelper {
       } = await sign({
         challenge: OxHex.fromBytes(challenge),
         userVerification: "required",
-        ...(credentialIds && { credentialId: credentialIds[0] }),
+        ...(credentialIds && { credentialId: credentialIds }),
       });
 
       const serializedSignature = {
@@ -167,14 +167,16 @@ export class WebAuthnHelper {
   /**
    * Verifies that the user still has access to their passkey
    * @returns true if verification succeeds, throws error otherwise
+   * @param allowCredentials - Optional array of credential IDs to allow for verification
    */
-  async verify(): Promise<boolean> {
+  async verify(allowCredentials?: string[]): Promise<boolean> {
     try {
       const challenge = Bytes.fromString(`verify_${Date.now()}`);
 
       await sign({
         challenge: OxHex.fromBytes(challenge),
-        credentialId: this.credentialId,
+        // If allowCredentials is provided, use it, otherwise use just this credential
+        ...(allowCredentials ? { allowCredentials } : { credentialId: this.credentialId }),
         userVerification: "required",
       });
 

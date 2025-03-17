@@ -42,7 +42,8 @@ const checkComplianceStatus = async (
       isFullyApproved:
         status?.kycStatus.toUpperCase() === BridgeComplianceKycStatus.APPROVED.toUpperCase() &&
         status?.rainKybStatus.toUpperCase() === RainComplianceKybStatus.APPROVED.toUpperCase() &&
-        status?.rainKycStatus.toUpperCase() === RainComplianceKybStatus.APPROVED.toUpperCase(),
+        (!status?.rainKycStatus ||
+          status.rainKycStatus.toUpperCase() === RainComplianceKybStatus.APPROVED.toUpperCase()),
     };
   } catch (error) {
     console.error("Compliance check error:", error);
