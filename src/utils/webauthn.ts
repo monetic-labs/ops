@@ -122,8 +122,8 @@ export class WebAuthnHelper {
 
   /**
    * Logs in with an existing passkey and returns a WebAuthnHelper instance
-   * @returns A new WebAuthnHelper instance if successful
-   * @param credentialIds - The existing credential IDs to target for login
+   * @param credentialIds - Array of credential IDs to use for authentication
+   * @returns A new WebAuthnHelper instance with the credential that was used for authentication
    */
   static async login(credentialIds?: string[]): Promise<WebAuthnHelper> {
     try {
@@ -167,16 +167,14 @@ export class WebAuthnHelper {
   /**
    * Verifies that the user still has access to their passkey
    * @returns true if verification succeeds, throws error otherwise
-   * @param allowCredentials - Optional array of credential IDs to allow for verification
    */
-  async verify(allowCredentials?: string[]): Promise<boolean> {
+  async verify(): Promise<boolean> {
     try {
       const challenge = Bytes.fromString(`verify_${Date.now()}`);
 
       await sign({
         challenge: OxHex.fromBytes(challenge),
-        // If allowCredentials is provided, use it, otherwise use just this credential
-        ...(allowCredentials ? { allowCredentials } : { credentialId: this.credentialId }),
+        credentialId: this.credentialId,
         userVerification: "required",
       });
 

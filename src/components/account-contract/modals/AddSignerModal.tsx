@@ -14,7 +14,8 @@ import { useUser } from "@/contexts/UserContext";
 import { executeNestedTransaction } from "@/utils/safe/flows/nested";
 import { createAddOwnerTemplate } from "@/utils/safe/templates";
 import { TransferStatus, TransferStatusOverlay } from "@/components/generics/transfer-status";
-import { useToast } from "@/hooks/useToast";
+import { useToast } from "@/hooks/generics/useToast";
+import { usePasskeySelection } from "@/contexts/PasskeySelectionContext";
 
 interface AddSignerModalProps {
   isOpen: boolean;
@@ -31,8 +32,9 @@ export function AddSignerModal({ isOpen, onClose, account, onSuccess }: AddSigne
 
   const { users } = useUsers();
   const { getAvailableSigners } = useSigners();
-  const { user, getSigningCredentials } = useUser();
+  const { user, getCredentials } = useUser();
   const { toast } = useToast();
+  const { selectCredential } = usePasskeySelection();
 
   // Filter users who have wallet addresses and aren't already signers
   const availableUsers = users.filter(
@@ -63,9 +65,9 @@ export function AddSignerModal({ isOpen, onClose, account, onSuccess }: AddSigne
     }
 
     // Get the credentials from the context
-    const credentials = getSigningCredentials();
+    const credentials = getCredentials();
 
-    if (!credentials) {
+    if (!credentials || credentials.length === 0) {
       toast({
         title: "Authentication Error",
         description: "No passkey found. Please ensure you have a registered passkey.",
@@ -84,12 +86,21 @@ export function AddSignerModal({ isOpen, onClose, account, onSuccess }: AddSigne
       const safeAccount = new SafeAccount(account.address);
       const addOwnerTxs = await createAddOwnerTemplate(safeAccount, selectedUser as Address);
 
+      // Select a credential to use - this will automatically handle showing the modal if needed
+      let selectedCredential;
+      try {
+        selectedCredential = await selectCredential();
+      } catch (error) {
+        console.error("Credential selection failed:", error);
+        throw new Error("Passkey selection failed. Please try again.");
+      }
+
       // Execute the nested transaction with proper status tracking
       await executeNestedTransaction({
         fromSafeAddress: user?.walletAddress as Address,
         throughSafeAddress: account.address as Address,
         transactions: addOwnerTxs,
-        credentials,
+        credentials: selectedCredential,
         callbacks: {
           onPreparing: () => {
             setStatus(TransferStatus.PREPARING);

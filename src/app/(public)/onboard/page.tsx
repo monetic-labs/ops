@@ -20,7 +20,7 @@ import pylon from "@/libs/pylon-sdk";
 import { schema, FormData, UserRole } from "@/validations/onboard/schemas";
 import { StatusModal, StatusStep } from "@/components/onboard/status-modal";
 import { RequirementsModal } from "@/components/onboard/requirements-modal";
-import { useTheme } from "@/hooks/useTheme";
+import { useTheme } from "@/hooks/generics/useTheme";
 import { ExpiryTimer } from "@/components/onboard/expiry-time";
 import { LocalStorage } from "@/utils/localstorage";
 import { useUser } from "@/contexts/UserContext";
@@ -41,7 +41,7 @@ export default function OnboardPage() {
   const searchParams = useSearchParams();
   const { toggleTheme, isDark } = useTheme();
   const [tokenExpiry, setTokenExpiry] = useState<number | null>(null);
-  const { setCredentials } = useUser();
+  const { addCredential } = useUser();
   const [showRequirementsModal, setShowRequirementsModal] = useState(false);
   const [showOnboardingSteps, setShowOnboardingSteps] = useState(false);
 
@@ -351,7 +351,7 @@ export default function OnboardPage() {
         setIsSubmitting(false);
         setIsRedirecting(true);
         handleSubmitSuccess(); // Clear onboarding progress from localStorage
-        setCredentials({ publicKey, credentialId }); // Set credentials in UserContext
+        addCredential({ publicKey, credentialId }); // Add credential to UserContext
         router.push("/"); // Redirect to home page
       }
     } catch (error) {

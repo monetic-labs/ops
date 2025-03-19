@@ -11,6 +11,7 @@ import { RecoveryWalletMethod } from "@backpack-fux/pylon-sdk";
 import pylon from "@/libs/pylon-sdk";
 import { useRecoveryWallets } from "@/hooks/security/useRecoveryWallets";
 import { useUser } from "@/contexts/UserContext";
+import { usePasskeySelection } from "@/contexts/PasskeySelectionContext";
 import {
   createEnableModuleTransaction,
   defaultSocialRecoveryModule,
@@ -52,7 +53,8 @@ export const SecuritySettingsModal = ({ isOpen, onClose }: { isOpen: boolean; on
   const [transactionDelay, setTransactionDelay] = useState("12");
 
   // User context
-  const { user, credentials } = useUser();
+  const { user } = useUser();
+  const { selectCredential } = usePasskeySelection();
 
   // Recovery wallets hook - kept as external due to complexity and reusability
   const {
@@ -173,78 +175,118 @@ export const SecuritySettingsModal = ({ isOpen, onClose }: { isOpen: boolean; on
   };
 
   // SIMPLIFIED: Add email directly without verification
-  const handleAddEmail = () => {
+  const handleAddEmail = async () => {
     if (!emailInput || emailInput.trim() === "" || configuredEmails.some((e) => e.email === emailInput)) return;
 
-    const email = emailInput.trim();
+    try {
+      // Get credentials for authentication if needed
+      await selectCredential().catch((error) => {
+        console.error("❌ Passkey selection canceled:", error);
+        throw new Error("Passkey selection was canceled");
+      });
 
-    // Add to UI state as if already verified
-    const newEmail = { email, isVerified: true };
+      const email = emailInput.trim();
 
-    setConfiguredEmails((prev) => [...prev, newEmail]);
+      // Add to UI state as if already verified
+      const newEmail = { email, isVerified: true };
 
-    // Add to pending changes for blockchain transaction
-    addPendingChange({
-      toAdd: [
-        {
-          identifier: email,
-          method: RecoveryWalletMethod.EMAIL,
-        },
-      ],
-    });
+      setConfiguredEmails((prev) => [...prev, newEmail]);
 
-    // Reset input
-    setEmailInput("");
+      // Add to pending changes for blockchain transaction
+      addPendingChange({
+        toAdd: [
+          {
+            identifier: email,
+            method: RecoveryWalletMethod.EMAIL,
+          },
+        ],
+      });
+
+      // Reset input
+      setEmailInput("");
+    } catch (error) {
+      console.error("❌ Failed to add email:", error);
+    }
   };
 
   // SIMPLIFIED: Integrated email removal handler
-  const handleRemoveEmail = (email: string) => {
-    const emailToRemove = configuredEmails.find((e) => e.email === email);
+  const handleRemoveEmail = async (email: string) => {
+    try {
+      // Get credentials for authentication if needed
+      await selectCredential().catch((error) => {
+        console.error("❌ Passkey selection canceled:", error);
+        throw new Error("Passkey selection was canceled");
+      });
 
-    if (!emailToRemove?.recoveryWalletId) return;
+      const emailToRemove = configuredEmails.find((e) => e.email === email);
 
-    addPendingChange({
-      toDelete: [emailToRemove.recoveryWalletId],
-    });
+      if (!emailToRemove?.recoveryWalletId) return;
+
+      addPendingChange({
+        toDelete: [emailToRemove.recoveryWalletId],
+      });
+    } catch (error) {
+      console.error("❌ Failed to remove email:", error);
+    }
   };
 
   // SIMPLIFIED: Add phone directly without verification
-  const handleAddPhone = () => {
+  const handleAddPhone = async () => {
     if (!phoneInput || phoneInput.trim() === "") return;
 
-    // Process the phone number - clean digits only
-    const digits = phoneInput.replace(/\D/g, "");
+    try {
+      // Get credentials for authentication if needed
+      await selectCredential().catch((error) => {
+        console.error("❌ Passkey selection canceled:", error);
+        throw new Error("Passkey selection was canceled");
+      });
 
-    // Ensure phone number starts with country code 1
-    const fullPhone = digits.startsWith("1") ? `1${digits.substring(1)}` : `1${digits}`;
+      // Process the phone number - clean digits only
+      const digits = phoneInput.replace(/\D/g, "");
 
-    // Skip if phone already exists
-    if (configuredPhone && configuredPhone.number === fullPhone) return;
+      // Ensure phone number starts with country code 1
+      const fullPhone = digits.startsWith("1") ? `1${digits.substring(1)}` : `1${digits}`;
 
-    // Add to UI state as if already verified
-    setConfiguredPhone({ number: fullPhone, isVerified: true });
+      // Skip if phone already exists
+      if (configuredPhone && configuredPhone.number === fullPhone) return;
 
-    // Add to pending changes for blockchain transaction
-    addPendingChange({
-      toAdd: [
-        {
-          identifier: fullPhone,
-          method: RecoveryWalletMethod.PHONE,
-        },
-      ],
-    });
+      // Add to UI state as if already verified
+      setConfiguredPhone({ number: fullPhone, isVerified: true });
 
-    // Reset input
-    setPhoneInput("");
+      // Add to pending changes for blockchain transaction
+      addPendingChange({
+        toAdd: [
+          {
+            identifier: fullPhone,
+            method: RecoveryWalletMethod.PHONE,
+          },
+        ],
+      });
+
+      // Reset input
+      setPhoneInput("");
+    } catch (error) {
+      console.error("❌ Failed to add phone:", error);
+    }
   };
 
   // SIMPLIFIED: Integrated phone removal handler
-  const handleRemovePhone = () => {
-    if (!configuredPhone?.recoveryWalletId) return;
+  const handleRemovePhone = async () => {
+    try {
+      // Get credentials for authentication if needed
+      await selectCredential().catch((error) => {
+        console.error("❌ Passkey selection canceled:", error);
+        throw new Error("Passkey selection was canceled");
+      });
 
-    addPendingChange({
-      toDelete: [configuredPhone.recoveryWalletId],
-    });
+      if (!configuredPhone?.recoveryWalletId) return;
+
+      addPendingChange({
+        toDelete: [configuredPhone.recoveryWalletId],
+      });
+    } catch (error) {
+      console.error("❌ Failed to remove phone:", error);
+    }
   };
 
   // SIMPLIFIED: Toggle Backpack guardian without immediate transaction
@@ -266,41 +308,56 @@ export const SecuritySettingsModal = ({ isOpen, onClose }: { isOpen: boolean; on
       await new Promise((resolve) => setTimeout(resolve, 100));
     }
 
-    // Now toggle based on the correct state
-    const newBackpackState = !isBackpackRecoveryEnabled;
-
-    // Update the UI state immediately
-    setIsBackpackRecoveryEnabled(newBackpackState);
-
-    // Add to pending changes for blockchain transaction
-    if (newBackpackState) {
-      // If enabling Backpack, set the toggleBackpack flag to true
-      addPendingChange({
-        toggleBackpack: true,
+    try {
+      const credentials = await selectCredential().catch((error) => {
+        console.error("❌ Passkey selection canceled:", error);
+        throw new Error("Passkey selection was canceled");
       });
-    } else {
-      // If disabling Backpack, check if we need to add a revoke transaction
-      const backpackGuardian = recoveryWallets.find(
-        (wallet) => wallet.publicAddress?.toLowerCase() === BACKPACK_GUARDIAN_ADDRESS.toLowerCase()
-      );
 
-      if (backpackGuardian) {
+      // Now toggle based on the correct state
+      const newBackpackState = !isBackpackRecoveryEnabled;
+
+      // Update the UI state immediately
+      setIsBackpackRecoveryEnabled(newBackpackState);
+
+      // Add to pending changes for blockchain transaction
+      if (newBackpackState) {
+        // If enabling Backpack, set the toggleBackpack flag to true
         addPendingChange({
-          toDelete: [backpackGuardian.id],
-          toggleBackpack: false,
+          toggleBackpack: true,
         });
+      } else {
+        // If disabling Backpack, check if we need to add a revoke transaction
+        const backpackGuardian = recoveryWallets.find(
+          (wallet) => wallet.publicAddress?.toLowerCase() === BACKPACK_GUARDIAN_ADDRESS.toLowerCase()
+        );
+
+        if (backpackGuardian) {
+          addPendingChange({
+            toDelete: [backpackGuardian.id],
+            toggleBackpack: false,
+          });
+        }
       }
+    } catch (error) {
+      console.error("❌ Failed to toggle Backpack guardian:", error);
     }
   };
 
   const handleSaveSettings = async () => {
-    if (!user?.walletAddress || !credentials || isSaving) return;
+    if (!user?.walletAddress || isSaving) return;
     setIsSaving(true);
 
     // Log critical operation start
     console.log("🔒 Starting security settings update");
 
     try {
+      // Get credentials using the passkey selection context
+      const credentials = await selectCredential().catch((error) => {
+        console.error("❌ Passkey selection canceled:", error);
+        throw new Error("Passkey selection was canceled");
+      });
+
       // If we have no module installed yet and we're configuring guardians for the first time,
       // we can use the high-level setupSocialRecovery function
       if (!isModuleInstalled && pendingChanges.toAdd.length > 0) {

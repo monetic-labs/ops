@@ -11,7 +11,7 @@ import { isLocal, isProduction } from "@/utils/helpers";
 import { BACKPACK_GUARDIAN_ADDRESS } from "@/utils/constants";
 import pylon from "@/libs/pylon-sdk";
 import { WebAuthnCredentials } from "@/types/webauthn";
-import { safeAbi } from "@/utils/abi/safe";
+import { SAFE_ABI } from "@/utils/abi/safe";
 
 import { executeDirectTransaction, DirectTransactionCallbacks } from "../flows/direct";
 
@@ -266,7 +266,7 @@ export async function isModuleEnabled(
   try {
     const isEnabled = await publicClient.readContract({
       address: accountAddress,
-      abi: safeAbi,
+      abi: SAFE_ABI,
       functionName: "isModuleEnabled",
       args: [moduleAddress],
     });

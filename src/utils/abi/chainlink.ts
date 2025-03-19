@@ -1,4 +1,4 @@
-export const chainlinkAbi = [
+export const CHAINLINK_ABI = [
   {
     inputs: [
       { internalType: "address", name: "_aggregator", type: "address" },

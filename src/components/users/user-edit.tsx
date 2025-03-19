@@ -5,16 +5,24 @@ import { Modal, ModalBody, ModalContent, ModalFooter, ModalHeader } from "@nextu
 import { Select, SelectItem } from "@nextui-org/select";
 import { Divider } from "@nextui-org/divider";
 import { User } from "@nextui-org/user";
-import { useState } from "react";
-import { Eye, EyeOff, Fingerprint, Plus, Trash2 } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Eye, EyeOff, Fingerprint, Plus, Trash2, CheckCircle, AlertCircle, Clock, Info } from "lucide-react";
 import { ScrollShadow } from "@nextui-org/scroll-shadow";
 import { Tooltip } from "@nextui-org/tooltip";
+import { Chip } from "@nextui-org/chip";
 
 import { formatPhoneNumber, getOpepenAvatar } from "@/utils/helpers";
-import { addPasskeyToSafe } from "@/utils/safe/features/passkey";
+import {
+  addPasskeyToSafe,
+  PasskeyStatus,
+  syncPasskeysWithSafe,
+  PasskeyWithStatus,
+} from "@/utils/safe/features/passkey";
 import { deployIndividualSafe } from "@/utils/safe/features/deploy";
-import { useToast } from "@/hooks/useToast";
+import { useToast } from "@/hooks/generics/useToast";
 import { useUser } from "@/contexts/UserContext";
+import { Address, Hex } from "viem";
+import { PublicKey } from "ox";
 
 interface UserEditModalProps {
   isOpen: boolean;
@@ -42,7 +50,10 @@ export default function UserEditModal({
   const [showEmail, setShowEmail] = useState(false);
   const [showPhone, setShowPhone] = useState(false);
   const [isAddingPasskey, setIsAddingPasskey] = useState(false);
-  const { getSigningCredentials } = useUser();
+  const [passkeysWithStatus, setPasskeysWithStatus] = useState<PasskeyWithStatus[]>([]);
+  const [isSyncingPasskeys, setIsSyncingPasskeys] = useState(false);
+  const [skipNextSync, setSkipNextSync] = useState(false);
+  const { getCredentials } = useUser();
   const { toast } = useToast();
 
   const fullName = `${user.firstName} ${user.lastName}`;
@@ -56,7 +67,65 @@ export default function UserEditModal({
     return phone && phone.replace(/\D/g, "").length >= 10;
   };
 
-  const isValidForPasskey = isEmailValid(editedUser.email) && isPhoneValid(editedUser.phone || "");
+  // Check if there's at least one active passkey on-chain
+  const hasActiveOnchainPasskey = passkeysWithStatus.some((p) => p.status === PasskeyStatus.ACTIVE_ONCHAIN);
+
+  // Only require email/phone validation for first passkey or if no active passkeys exist
+  const isValidForPasskey =
+    hasActiveOnchainPasskey || (isEmailValid(editedUser.email) && isPhoneValid(editedUser.phone || ""));
+
+  // Sync passkeys when the modal opens or when user data changes
+  useEffect(() => {
+    const syncPasskeys = async () => {
+      if (skipNextSync) {
+        setSkipNextSync(false);
+        return;
+      }
+
+      if (!editedUser.walletAddress || !editedUser.registeredPasskeys?.length) {
+        // If no wallet or no passkeys, reset the state
+        setPasskeysWithStatus(
+          (editedUser.registeredPasskeys || []).map((passkey) => ({
+            ...passkey,
+            displayName: passkey.displayName || "Unnamed Device",
+            status: PasskeyStatus.UNKNOWN,
+            lastUsedAt: passkey.lastUsedAt || new Date().toISOString(),
+            publicKey: passkey.publicKey || "",
+          }))
+        );
+        return;
+      }
+
+      try {
+        setIsSyncingPasskeys(true);
+
+        const syncedPasskeys = await syncPasskeysWithSafe(
+          editedUser.walletAddress as Address,
+          editedUser.registeredPasskeys
+        );
+
+        setPasskeysWithStatus(syncedPasskeys);
+      } catch (error) {
+        console.error("Error syncing passkeys:", error);
+        // Fall back to unsynchronized display
+        setPasskeysWithStatus(
+          (editedUser.registeredPasskeys || []).map((passkey) => ({
+            ...passkey,
+            displayName: passkey.displayName || "Unnamed Device",
+            status: PasskeyStatus.UNKNOWN,
+            lastUsedAt: passkey.lastUsedAt || new Date().toISOString(),
+            publicKey: passkey.publicKey || "",
+          }))
+        );
+      } finally {
+        setIsSyncingPasskeys(false);
+      }
+    };
+
+    if (isOpen && !isAddingPasskey) {
+      syncPasskeys();
+    }
+  }, [isOpen, editedUser.walletAddress, editedUser.registeredPasskeys, skipNextSync, isAddingPasskey]);
 
   const handleSave = () => {
     onSave(editedUser);
@@ -102,24 +171,34 @@ export default function UserEditModal({
   };
 
   const handleAddPasskey = async () => {
-    try {
-      // Add validation before proceeding
-      if (!isEmailValid(user.email)) {
-        toast({
-          title: "Valid email required",
-          description: "Please enter a valid email address before creating an account with passkey.",
-          variant: "destructive",
-        });
-        return;
-      }
+    // Remove test toast for production
+    // toast({
+    //   title: "Test Toast",
+    //   description: "This is a test toast to verify the toast system is working.",
+    //   variant: "default",
+    // });
 
-      if (!isPhoneValid(user.phone || "")) {
-        toast({
-          title: "Valid phone number required",
-          description: "Please enter a valid phone number before creating an account with passkey.",
-          variant: "destructive",
-        });
-        return;
+    try {
+      // For first passkey creation, validate email and phone
+      if (!user.walletAddress) {
+        // Recheck validation before proceeding
+        if (!isEmailValid(user.email)) {
+          toast({
+            title: "Valid email required",
+            description: "Please enter a valid email address before creating your account with passkey.",
+            variant: "destructive",
+          });
+          return;
+        }
+
+        if (!isPhoneValid(user.phone || "")) {
+          toast({
+            title: "Valid phone number required",
+            description: "Please enter a valid phone number before creating your account with passkey.",
+            variant: "destructive",
+          });
+          return;
+        }
       }
 
       setIsAddingPasskey(true);
@@ -170,7 +249,7 @@ export default function UserEditModal({
         // Optimistically update the UI with the new wallet address and passkey
         const newPasskey = {
           credentialId: credentials.credentialId,
-          publicKey: JSON.stringify(credentials.publicKey),
+          publicKey: PublicKey.toHex({ ...credentials.publicKey, prefix: 4 }),
           displayName: "My Passkey",
           createdAt: new Date().toISOString(),
           lastUsedAt: new Date().toISOString(),
@@ -187,15 +266,32 @@ export default function UserEditModal({
           title: "Account created!",
           description: "Your account has been successfully created with passkey authentication",
         });
+
+        // Automatically save changes after account creation
+        handleSave();
       } else {
         // Scenario 2: User has an existing individual account
-        // Add a new passkey to the existing account
+        // Get all available credentials
+        const availableCredentials = getCredentials();
 
-        // Get the existing signing credentials
-        const existingCredentials = getSigningCredentials();
+        // Find a valid credential for signing (one that's active on-chain)
+        const validCredential = availableCredentials?.find((cred) => {
+          const matchingPasskey = passkeysWithStatus.find(
+            (p) => p.credentialId === cred.credentialId && p.status === PasskeyStatus.ACTIVE_ONCHAIN
+          );
+          return Boolean(matchingPasskey);
+        });
 
-        if (!existingCredentials) {
-          throw new Error("No existing passkey found to authorize this operation");
+        if (!validCredential) {
+          // No valid on-chain credentials found - give more detailed error
+          toast({
+            title: "Cannot add passkey",
+            description:
+              "You need an active on-chain passkey to authorize adding new ones. If your existing passkey shows as 'Pending', activate it first by clicking the 'Activate' button next to it.",
+            variant: "destructive",
+          });
+          setIsAddingPasskey(false);
+          return;
         }
 
         toast({
@@ -203,51 +299,109 @@ export default function UserEditModal({
           description: "You'll need to authorize with your existing passkey",
         });
 
-        const result = await addPasskeyToSafe({
-          safeAddress: user.walletAddress as `0x${string}`,
-          userEmail: user.email,
-          credential: {
-            publicKey: existingCredentials.publicKey,
-            credentialId: existingCredentials.credentialId,
-          },
-          callbacks: {
-            onSent: () => {
-              toast({
-                title: "Adding passkey...",
-                description: "Please wait while we add your passkey to your account",
-              });
-            },
-            onSuccess: () => {
-              toast({
-                title: "Passkey added!",
-                description: "Your new passkey has been added to your account",
-              });
-            },
-            onError: (error: Error) => {
-              toast({
-                title: "Error adding passkey",
-                description: error.message,
-                variant: "destructive",
-              });
-            },
-          },
-        });
+        // Set flag to skip the next passkey sync to prevent losing our optimistic update
+        setSkipNextSync(true);
 
-        // Optimistically update the UI with the new passkey
-        const newPasskey = {
-          credentialId: result.credentialId,
-          publicKey: result.publicKey,
-          displayName: "New Passkey",
-          createdAt: new Date().toISOString(),
-          lastUsedAt: new Date().toISOString(),
-          counter: 0,
-        };
+        // Define the result type to match what WebAuthnHelper.createPasskey returns
+        let result:
+          | {
+              credentialId: string;
+              publicKey: string;
+              publicKeyCoordinates?: { x: bigint; y: bigint };
+            }
+          | undefined;
 
-        setEditedUser((prev) => ({
-          ...prev,
-          registeredPasskeys: [...(prev.registeredPasskeys || []), newPasskey],
-        }));
+        try {
+          result = await addPasskeyToSafe({
+            safeAddress: user.walletAddress as Address,
+            userEmail: user.email,
+            credential: {
+              publicKey: validCredential.publicKey,
+              credentialId: validCredential.credentialId,
+            },
+            callbacks: {
+              onSent: () => {
+                toast({
+                  title: "Adding passkey...",
+                  description: "Please wait while we add your passkey to your account",
+                });
+              },
+              onSuccess: () => {
+                toast({
+                  title: "Passkey added!",
+                  description: "Your new passkey has been added to your account",
+                });
+
+                // Since the transaction can take time to be confirmed on-chain,
+                // let's mark this passkey as pending for now in the UI
+                if (result && result.credentialId) {
+                  setPasskeysWithStatus((prevPasskeys) => {
+                    return prevPasskeys.map((p) =>
+                      p.credentialId === result!.credentialId ? { ...p, status: PasskeyStatus.PENDING_ONCHAIN } : p
+                    );
+                  });
+                }
+
+                // Automatically save changes to the backend after successful passkey addition
+                setTimeout(() => {
+                  handleSave();
+                }, 500); // Small delay to ensure UI updates are complete
+              },
+              onError: (error: Error) => {
+                toast({
+                  title: "Error adding passkey",
+                  description: error.message,
+                  variant: "destructive",
+                });
+
+                // On error, remove the optimistic update if result exists
+                if (result && result.credentialId) {
+                  setEditedUser((prev) => ({
+                    ...prev,
+                    registeredPasskeys:
+                      prev.registeredPasskeys?.filter((p) => p.credentialId !== result!.credentialId) || [],
+                  }));
+                }
+              },
+            },
+          });
+        } catch (cancelError) {
+          // Handle passkey creation cancellation
+          console.log("Passkey creation was canceled:", cancelError);
+          toast({
+            title: "Passkey creation canceled",
+            description: "You canceled the passkey creation process",
+            variant: "default",
+          });
+
+          // Reset states to avoid inconsistent UI
+          setSkipNextSync(false);
+          setIsAddingPasskey(false);
+          return;
+        }
+
+        // Only proceed with UI updates if we have a result (not canceled)
+        if (result && result.credentialId) {
+          // Optimistically update the UI with the new passkey
+          const newPasskey = {
+            credentialId: result.credentialId,
+            publicKey: result.publicKeyCoordinates
+              ? PublicKey.toHex({ ...result.publicKeyCoordinates, prefix: 4 })
+              : result.publicKey, // Fallback to the string version
+            displayName: "New Passkey",
+            createdAt: new Date().toISOString(),
+            lastUsedAt: new Date().toISOString(),
+            counter: 0,
+          };
+
+          setEditedUser((prev) => ({
+            ...prev,
+            registeredPasskeys: [...(prev.registeredPasskeys || []), newPasskey],
+          }));
+        }
       }
+
+      // DON'T immediately resync right after adding - let the UI show the optimistic update
     } catch (error) {
       console.error("Failed to add passkey:", error);
       toast({
@@ -257,6 +411,129 @@ export default function UserEditModal({
       });
     } finally {
       setIsAddingPasskey(false);
+    }
+  };
+
+  // Helper to add a pending passkey to the blockchain
+  const handleActivatePasskey = async (passkey: PasskeyWithStatus) => {
+    if (passkey.status !== PasskeyStatus.PENDING_ONCHAIN || !editedUser.walletAddress) {
+      return;
+    }
+
+    try {
+      // Get all available credentials
+      const availableCredentials = getCredentials();
+
+      // Find a valid credential for signing (one that's active on-chain)
+      const validCredential = availableCredentials?.find((cred) => {
+        const matchingPasskey = passkeysWithStatus.find(
+          (p) => p.credentialId === cred.credentialId && p.status === PasskeyStatus.ACTIVE_ONCHAIN
+        );
+        return Boolean(matchingPasskey);
+      });
+
+      if (!validCredential) {
+        toast({
+          title: "Authorization required",
+          description: "You need an active on-chain passkey to complete this operation",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      toast({
+        title: "Activating passkey...",
+        description: "Adding your passkey to the blockchain. You'll need to authorize with your existing passkey.",
+      });
+
+      const result = await addPasskeyToSafe({
+        safeAddress: editedUser.walletAddress as Address,
+        userEmail: editedUser.email,
+        credential: {
+          publicKey: validCredential.publicKey,
+          credentialId: validCredential.credentialId,
+        },
+        callbacks: {
+          onSuccess: () => {
+            toast({
+              title: "Passkey activated!",
+              description: "Your passkey is now registered on the blockchain and ready to use",
+            });
+
+            // Update the status in the UI
+            setPasskeysWithStatus((prev) =>
+              prev.map((p) =>
+                p.credentialId === passkey.credentialId ? { ...p, status: PasskeyStatus.ACTIVE_ONCHAIN } : p
+              )
+            );
+          },
+          onError: (error) => {
+            toast({
+              title: "Error activating passkey",
+              description: error.message,
+              variant: "destructive",
+            });
+          },
+        },
+      });
+    } catch (error) {
+      console.error("Error activating passkey:", error);
+      toast({
+        title: "Error activating passkey",
+        description: error instanceof Error ? error.message : "Unknown error occurred",
+        variant: "destructive",
+      });
+    }
+  };
+
+  // Render status badge for passkey
+  const renderPasskeyStatus = (status: PasskeyStatus) => {
+    switch (status) {
+      case PasskeyStatus.ACTIVE_ONCHAIN:
+        return (
+          <Chip
+            startContent={<CheckCircle className="w-3 h-3" />}
+            color="success"
+            size="sm"
+            variant="flat"
+            classNames={{
+              base: "h-6 px-2",
+              content: "text-xs font-medium px-1",
+            }}
+          >
+            Active
+          </Chip>
+        );
+      case PasskeyStatus.PENDING_ONCHAIN:
+        return (
+          <Chip
+            startContent={<Clock className="w-3 h-3" />}
+            color="warning"
+            size="sm"
+            variant="flat"
+            classNames={{
+              base: "h-6 px-2",
+              content: "text-xs font-medium px-1",
+            }}
+          >
+            Pending
+          </Chip>
+        );
+      default:
+        return (
+          <Chip
+            startContent={<AlertCircle className="w-3 h-3" />}
+            color="default"
+            size="sm"
+            variant="flat"
+            classNames={{
+              base: "h-6 px-2",
+              content: "text-xs font-medium px-1",
+            }}
+          >
+            Unknown
+          </Chip>
+        );
     }
   };
 
@@ -406,92 +683,114 @@ export default function UserEditModal({
             {/* Security & Passkeys */}
             <div className="space-y-4">
               <div className="flex items-center justify-between">
-                <h3 className="text-sm font-medium text-foreground/70">Security & Passkeys</h3>
+                <div className="flex items-center gap-2">
+                  <h3 className="text-sm font-medium text-foreground/70">Security & Passkeys</h3>
+                  {editedUser.walletAddress && (
+                    <Tooltip content="You can register multiple passkeys across devices for convenience and backup security">
+                      <Info className="w-3.5 h-3.5 text-primary cursor-help" />
+                    </Tooltip>
+                  )}
+                </div>
                 {isSelf && (
-                  <Tooltip
-                    content={
-                      editedUser.registeredPasskeys?.length
-                        ? "Only one passkey is allowed per user"
-                        : !isValidForPasskey
-                          ? "Valid email and phone number are required to create an account with passkey"
-                          : user.walletAddress
-                            ? "Add a passkey to enable passwordless login"
-                            : "Create an account with passkey authentication"
-                    }
-                  >
-                    <div>
-                      <Button
-                        className="bg-primary/10 text-primary"
-                        endContent={<Plus className="w-4 h-4" />}
-                        isLoading={isAddingPasskey}
-                        isDisabled={!isValidForPasskey && !user.walletAddress}
-                        size="sm"
-                        variant="flat"
-                        onPress={handleAddPasskey}
-                      >
-                        {!user.walletAddress ? "Create Account" : "Add Passkey"}
-                      </Button>
-                    </div>
-                  </Tooltip>
+                  <div>
+                    <Button
+                      className="bg-primary/10 text-primary"
+                      endContent={<Plus className="w-4 h-4" />}
+                      isLoading={isAddingPasskey}
+                      isDisabled={!isValidForPasskey}
+                      size="sm"
+                      variant="flat"
+                      onPress={handleAddPasskey}
+                    >
+                      {!user.walletAddress ? "Create Account" : "Add Passkey"}
+                    </Button>
+                    {!isValidForPasskey && !hasActiveOnchainPasskey && (
+                      <p className="text-xs text-danger mt-1">Valid email and phone required</p>
+                    )}
+                  </div>
                 )}
               </div>
 
-              {(!isEmailValid(editedUser.email) || !isPhoneValid(editedUser.phone || "")) && !user.walletAddress && (
-                <div className="p-3 rounded-lg bg-warning/10 mb-2">
-                  <p className="text-sm text-warning-600 font-medium">Important Requirements</p>
-                  <p className="text-xs mt-1">
-                    A valid email address and phone number are required to set up your account with social recovery.
-                    These will be used to help you recover your account if you lose access.
-                  </p>
-                  <ul className="text-xs list-disc list-inside mt-2">
-                    {!isEmailValid(editedUser.email) && (
-                      <li className="text-danger">Please provide a valid email address</li>
-                    )}
-                    {!isPhoneValid(editedUser.phone || "") && (
-                      <li className="text-danger">Please provide a valid phone number</li>
-                    )}
-                  </ul>
-                </div>
-              )}
+              {(!isEmailValid(editedUser.email) || !isPhoneValid(editedUser.phone || "")) &&
+                !user.walletAddress &&
+                !hasActiveOnchainPasskey && (
+                  <div className="p-3 rounded-lg bg-warning/10 mb-2">
+                    <p className="text-sm text-warning-600 font-medium">Important Requirements</p>
+                    <p className="text-xs mt-1">
+                      A valid email address and phone number are required to set up your account with social recovery.
+                      These will be used to help you recover your account if you lose access.
+                    </p>
+                    <ul className="text-xs list-disc list-inside mt-2">
+                      {!isEmailValid(editedUser.email) && (
+                        <li className="text-danger">Please provide a valid email address</li>
+                      )}
+                      {!isPhoneValid(editedUser.phone || "") && (
+                        <li className="text-danger">Please provide a valid phone number</li>
+                      )}
+                    </ul>
+                  </div>
+                )}
 
               <ScrollShadow className="max-h-[200px]">
                 <div className="space-y-2">
-                  {editedUser.registeredPasskeys && editedUser.registeredPasskeys.length > 0 ? (
-                    editedUser.registeredPasskeys.map((passkey) => (
+                  {passkeysWithStatus.length > 0 ? (
+                    passkeysWithStatus.map((passkey) => (
                       <div
                         key={passkey.credentialId}
-                        className="flex items-center justify-between p-3 rounded-lg bg-content2"
+                        className="flex items-start justify-between p-3 rounded-lg bg-content2 hover:bg-content3 transition-colors"
                       >
-                        <div className="flex items-center gap-3">
-                          <div className="p-2 rounded-lg bg-primary/10">
+                        <div className="flex items-start gap-3 flex-1">
+                          <div className="p-2 rounded-lg bg-primary/10 flex-shrink-0 mt-1">
                             <Fingerprint className="w-4 h-4 text-primary" />
                           </div>
-                          <div>
-                            <Input
-                              classNames={{
-                                input: "text-sm",
-                                inputWrapper:
-                                  "border-transparent bg-transparent hover:bg-content3 data-[hover=true]:bg-content3 group-data-[focus=true]:bg-content3 min-h-unit-8",
-                              }}
-                              isDisabled={!isSelf}
-                              placeholder="Unnamed Device"
-                              size="sm"
-                              value={passkey.displayName || ""}
-                              variant="bordered"
-                              onChange={(e) => {
-                                const updatedPasskeys = editedUser.registeredPasskeys?.map((p) =>
-                                  p.credentialId === passkey.credentialId ? { ...p, displayName: e.target.value } : p
-                                );
+                          <div className="min-w-0 flex-1">
+                            <div className="flex flex-col gap-1">
+                              <Input
+                                classNames={{
+                                  base: "w-full max-w-[calc(100%-8px)]",
+                                  input: "text-sm font-medium",
+                                  inputWrapper:
+                                    "border-transparent bg-transparent hover:bg-content3/50 data-[hover=true]:bg-content3/50 group-data-[focus=true]:bg-content3/50 min-h-unit-8 h-8 shadow-none",
+                                  innerWrapper: "h-8",
+                                }}
+                                isDisabled={!isSelf}
+                                placeholder="Unnamed Device"
+                                size="sm"
+                                value={passkey.displayName || ""}
+                                variant="bordered"
+                                onChange={(e) => {
+                                  const updatedPasskeys = editedUser.registeredPasskeys?.map((p) =>
+                                    p.credentialId === passkey.credentialId ? { ...p, displayName: e.target.value } : p
+                                  );
 
-                                setEditedUser({
-                                  ...editedUser,
-                                  registeredPasskeys: updatedPasskeys,
-                                });
-                              }}
-                            />
+                                  setEditedUser({
+                                    ...editedUser,
+                                    registeredPasskeys: updatedPasskeys,
+                                  });
+                                }}
+                              />
+
+                              {/* Status and action row */}
+                              <div className="flex items-center gap-2 ml-1">
+                                {renderPasskeyStatus(passkey.status)}
+                                {passkey.status === PasskeyStatus.PENDING_ONCHAIN && isSelf && (
+                                  <Button
+                                    size="sm"
+                                    variant="flat"
+                                    color="primary"
+                                    className="h-6 text-xs px-3"
+                                    startContent={<CheckCircle className="w-3 h-3" />}
+                                    onPress={() => handleActivatePasskey(passkey)}
+                                  >
+                                    Activate
+                                  </Button>
+                                )}
+                              </div>
+                            </div>
                           </div>
                         </div>
-                        <div className="flex items-center">
+
+                        <div className="flex items-center ml-2 mt-1">
                           <Tooltip content="Remove passkey (Coming soon)">
                             <Button isDisabled isIconOnly className="bg-transparent" size="sm" variant="light">
                               <Trash2 className="w-4 h-4 text-danger/70" />
@@ -513,6 +812,31 @@ export default function UserEditModal({
                   )}
                 </div>
               </ScrollShadow>
+
+              {/* Information about passkey sync */}
+              {passkeysWithStatus.some((p) => p.status === PasskeyStatus.PENDING_ONCHAIN) && (
+                <div className="p-3 rounded-lg bg-info/10 mt-2">
+                  <p className="text-sm text-warning-600 font-medium">About Pending Passkeys</p>
+                  <p className="text-xs mt-1">
+                    Pending passkeys are stored securely but not yet activated on the blockchain. To use them for
+                    signing transactions, you&apos;ll need to activate them first using an existing
+                    blockchain-registered passkey.
+                  </p>
+                </div>
+              )}
+
+              {/* Simple explanation about using multiple passkeys */}
+              <div className="p-3 rounded-lg bg-primary/5 mt-2">
+                <p className="text-sm text-foreground font-medium">Why Use Multiple Passkeys?</p>
+                <p className="text-xs mt-1">
+                  Adding more than one passkey to your account makes it safer and easier to use. To add a new passkey,
+                  you need to confirm it with one you already have.
+                </p>
+                <ul className="text-xs list-disc list-inside mt-2">
+                  <li>Set up passkeys for different gadgets like your phone or laptop.</li>
+                  <li>Have extra passkeys ready in case you can&apos;t use one of your devices.</li>
+                </ul>
+              </div>
             </div>
           </div>
         </ModalBody>

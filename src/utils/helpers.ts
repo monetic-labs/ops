@@ -28,12 +28,15 @@ export const centsToDollars = (cents: number): string => {
 };
 
 export const formatAmountUSD = (value: number) => {
+  // Ensure value is properly rounded to 2 decimal places to avoid floating point issues
+  const roundedValue = Math.round(value * 100) / 100;
+
   return new Intl.NumberFormat("en-US", {
     currency: "USD",
     style: "currency",
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
-  }).format(value);
+  }).format(roundedValue);
 };
 
 export const formatDecimals = (value: string): string => {
@@ -109,6 +112,24 @@ export const formattedDate = (timestamp: string): string => {
   };
 
   return date.toLocaleString("en-GB", options);
+};
+
+/**
+ * Get the current week's start and end dates
+ */
+export const getCurrentWeek = () => {
+  const now = dayjs();
+  const startOfWeek = now.startOf("week").format("YYYY-MM-DD");
+  const endOfWeek = now.endOf("week").format("YYYY-MM-DD");
+
+  return { startOfWeek, endOfWeek };
+};
+
+/**
+ * Format a date string to a human-readable format
+ */
+export const formatDateString = (date: string | Date): string => {
+  return dayjs(date).format("MMM D, YYYY");
 };
 
 export const getTimeAgo = (timestamp: string): string => {
@@ -254,4 +275,26 @@ export const formatDuration = (seconds: number): string => {
   if (remainingSeconds > 0 && days === 0) parts.push(`${remainingSeconds}s`);
 
   return parts.join(" ");
+};
+
+/**
+ * Currency utility functions for precise calculations
+ */
+
+// Safely add or subtract currency amounts with 2 decimal precision
+export const preciseCurrencyCalculation = (a: number, b: number, operation: "add" | "subtract"): number => {
+  // Convert to integers (cents) to avoid floating point issues
+  const aInCents = Math.round(a * 100);
+  const bInCents = Math.round(b * 100);
+
+  // Perform operation in cents (integers)
+  const resultInCents = operation === "add" ? aInCents + bInCents : aInCents - bInCents;
+
+  // Convert back to dollars with 2 decimal places precision
+  return resultInCents / 100;
+};
+
+// Round to 2 decimal places for display
+export const roundToCurrency = (amount: number): number => {
+  return Math.round(amount * 100) / 100;
 };

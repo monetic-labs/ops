@@ -12,8 +12,9 @@ import { useRouter } from "next/navigation";
 
 import { WebAuthnHelper } from "@/utils/webauthn";
 import { useUser } from "@/contexts/UserContext";
-import { useTheme } from "@/hooks/useTheme";
+import { useTheme } from "@/hooks/generics/useTheme";
 import pylon from "@/libs/pylon-sdk";
+import { LocalStorage } from "@/utils/localstorage";
 
 interface PasskeyOptions {
   challenge: string;
@@ -32,9 +33,9 @@ const AuthPage = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [notification, setNotification] = useState<string | null>(null);
   const [email, setEmail] = useState("");
-  const [passkeyCredentials, setPasskeyCredentials] = useState<PasskeyCredential[]>([]);
+  const [passkeyCredentials, setPasskeysCredentials] = useState<PasskeyCredential[]>([]);
   const router = useRouter();
-  const { isAuthenticated, setCredentials } = useUser();
+  const { isAuthenticated, addCredential, forceAuthCheck } = useUser();
   const [emailSent, setEmailSent] = useState(false);
   const [resendCooldown, setResendCooldown] = useState(0);
 
@@ -62,7 +63,7 @@ const AuthPage = () => {
 
       if (passkeys && passkeys.length > 0) {
         // User has passkeys, immediately try passkey login
-        setPasskeyCredentials(passkeys);
+        setPasskeysCredentials(passkeys);
         setNotification("Authenticating with passkey...");
         await handlePasskeyAuth(passkeys);
       } else {
@@ -79,17 +80,31 @@ const AuthPage = () => {
   const handlePasskeyAuth = async (credentials: PasskeyCredential[]) => {
     setIsLoading(true);
     try {
+      // Authenticate with WebAuthn
       const webauthn = await WebAuthnHelper.login(credentials.map((cred) => cred.credentialId));
 
       // Get credentials from the instance
       const { publicKey, credentialId } = webauthn.getCredentials();
 
-      // Set credentials in context
-      setCredentials({ publicKey, credentialId });
+      // Add the authenticated credential to our context
+      addCredential({ publicKey, credentialId });
       setNotification("Successfully authenticated. Redirecting...");
 
-      // Add a small delay to show the success message
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      // Store the credential ID in localStorage for persistence
+      try {
+        LocalStorage.saveSelectedCredentialId(credentialId);
+      } catch (error) {
+        console.error("Error storing credential:", error);
+        // Continue even if storage fails
+      }
+
+      // Force an auth check to ensure session is created
+      await forceAuthCheck();
+
+      // Add a delay to ensure auth state is fully established
+      await new Promise((resolve) => setTimeout(resolve, 1500));
+
+      // Only redirect after auth state has had time to update
       router.push("/");
     } catch (error) {
       console.error("Passkey error:", error);
@@ -101,6 +116,8 @@ const AuthPage = () => {
       setTimeout(async () => {
         await handleEmailAuth();
       }, 1500);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -192,7 +209,7 @@ const AuthPage = () => {
                   className="w-full bg-primary text-primary-foreground hover:opacity-90 h-12 text-base"
                   isDisabled={!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || isLoading}
                   isLoading={isLoading}
-                  onClick={() => checkAuthOptions(email)}
+                  onPress={() => checkAuthOptions(email)}
                 >
                   {isLoading ? "Please wait..." : "Continue"}
                 </Button>
@@ -203,7 +220,7 @@ const AuthPage = () => {
                   className="w-full bg-primary text-primary-foreground hover:opacity-90 h-12 text-base"
                   isDisabled={resendCooldown > 0}
                   isLoading={isLoading}
-                  onClick={() => handleEmailAuth()}
+                  onPress={() => handleEmailAuth()}
                 >
                   {resendCooldown > 0 ? `Resend in ${resendCooldown}s` : isLoading ? "Sending..." : "Resend Email"}
                 </Button>

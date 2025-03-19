@@ -4,7 +4,7 @@ import { Switch } from "@nextui-org/switch";
 
 interface BackpackRecoveryProps {
   isBackpackRecoveryEnabled: boolean;
-  handleToggleBackpack: () => void;
+  handleToggleBackpack: () => Promise<void>;
 }
 
 const BackpackRecovery: React.FC<BackpackRecoveryProps> = ({ isBackpackRecoveryEnabled, handleToggleBackpack }) => {

@@ -10,6 +10,7 @@ import { MOCK_SETTLEMENT_ADDRESS } from "@/utils/constants";
 import { ResponsiveButton } from "@/components/generics/responsive-button";
 import { useAccounts } from "@/contexts/AccountContext";
 import { Account } from "@/types/account";
+import { useUser, AuthStatus } from "@/contexts/UserContext";
 
 import CreateBillPayModal from "./bill-actions/create";
 import TransfersTab from "./transfers-tab";
@@ -23,6 +24,10 @@ export default function BillPayTabs({ handleSubTabChange }: BillPayTabsProps) {
   const [billPay, setBillPay] = useState<NewBillPay | ExistingBillPay>(DEFAULT_NEW_BILL_PAY);
   const [selectedService, setSelectedService] = useState<string>(billPayConfig[0].id);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+
+  // Add auth status check to prevent premature modal rendering
+  const { authStatus, isLoading: isAuthLoading } = useUser();
+  const isFullyAuthenticated = !isAuthLoading && authStatus === AuthStatus.AUTHENTICATED;
 
   const { accounts } = useAccounts();
   const settlementAccount = accounts.find(
@@ -67,19 +72,23 @@ export default function BillPayTabs({ handleSubTabChange }: BillPayTabsProps) {
         )}
       </div>
       <div className="mt-4">{renderTabContent(selectedService)}</div>
-      <CreateBillPayModal
-        billPay={billPay}
-        isOpen={isCreateModalOpen}
-        setBillPay={setBillPay}
-        settlementAddress={settlementAddress}
-        onClose={() => {
-          setIsCreateModalOpen(false);
-          setBillPay(DEFAULT_NEW_BILL_PAY);
-        }}
-        onSave={(newBillPay) => {
-          console.log("Creating transfer:", newBillPay);
-        }}
-      />
+
+      {/* Only render the modal when fully authenticated */}
+      {isFullyAuthenticated && (
+        <CreateBillPayModal
+          billPay={billPay}
+          isOpen={isCreateModalOpen}
+          setBillPay={setBillPay}
+          settlementAddress={settlementAddress}
+          onClose={() => {
+            setIsCreateModalOpen(false);
+            setBillPay(DEFAULT_NEW_BILL_PAY);
+          }}
+          onSave={(newBillPay) => {
+            console.log("Creating transfer:", newBillPay);
+          }}
+        />
+      )}
     </div>
   );
 }

@@ -7,6 +7,7 @@ import { ThemeProviderProps } from "next-themes/dist/types";
 import { NextUIProvider } from "@nextui-org/system";
 import { PrivyProvider } from "@privy-io/react-auth";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { Toaster } from "sonner";
 // import { PylonProvider } from "@backpack-fux/pylon-sdk";
 
 import { MessagingProvider } from "@/components/messaging/messaging-provider";
@@ -14,6 +15,8 @@ import { ShortcutsProvider } from "@/components/generics/shortcuts-provider";
 import { UsersProvider } from "@/contexts/UsersContext";
 import { AccountProvider } from "@/contexts/AccountContext";
 import { SignersProvider } from "@/contexts/SignersContext";
+import { PasskeySelectionProvider } from "@/contexts/PasskeySelectionContext";
+import { PasskeySelectionModal } from "@/components/generics/passkey-selection-modal";
 import { isProduction } from "@/utils/helpers";
 
 export interface ProvidersProps {
@@ -38,6 +41,7 @@ export function Providers({ children, themeProps, userId }: ProvidersProps) {
     <QueryClientProvider client={queryClient}>
       <NextUIProvider navigate={router.push}>
         <NextThemesProvider {...themeProps}>
+          <Toaster position="top-center" closeButton richColors />
           <MessagingProvider>
             <ShortcutsProvider initialValue={shortcutsInitialValue}>
               <PrivyProvider
@@ -52,7 +56,12 @@ export function Providers({ children, themeProps, userId }: ProvidersProps) {
               >
                 <UsersProvider>
                   <SignersProvider>
-                    <AccountProvider>{children}</AccountProvider>
+                    <PasskeySelectionProvider>
+                      <AccountProvider>
+                        {children}
+                        <PasskeySelectionModal />
+                      </AccountProvider>
+                    </PasskeySelectionProvider>
                   </SignersProvider>
                 </UsersProvider>
               </PrivyProvider>

@@ -10,11 +10,12 @@ import NextLink from "next/link";
 import { LogOut, User, Backpack, Shield, Moon, Sun, MessageCircle } from "lucide-react";
 import { MerchantUserGetByIdOutput as MerchantUser } from "@backpack-fux/pylon-sdk";
 
-import { useUser } from "@/contexts/UserContext";
+import { useUser, AuthStatus } from "@/contexts/UserContext";
 import { getDisplayName } from "@/utils/helpers";
-import { useTheme } from "@/hooks/useTheme";
+import { useTheme } from "@/hooks/generics/useTheme";
 import { useMessagingState, useMessagingActions } from "@/libs/messaging/store";
 import { useAccounts } from "@/contexts/AccountContext";
+import { LocalStorage } from "@/utils/localstorage";
 
 import { ProfileSettingsModal } from "./account-settings/profile-modal";
 import { SecuritySettingsModal } from "./account-settings/security-modal";
@@ -267,13 +268,16 @@ export const Navbar = () => {
   const router = useRouter();
   const { user, isAuthenticated, isLoading, logout } = useUser();
   const pathname = usePathname();
-  const isPublicRoute = pathname?.startsWith("/auth") || pathname?.startsWith("/invite");
+  const isAuthPage = pathname === "/auth";
 
-  useEffect(() => {
-    if (!isLoading && !isAuthenticated && !isPublicRoute) {
-      router.push("/auth");
+  // Simple logout handler
+  const handleLogout = async () => {
+    try {
+      await logout();
+    } catch (error) {
+      console.error("Error during logout:", error);
     }
-  }, [isAuthenticated, isLoading, router, isPublicRoute]);
+  };
 
   return (
     <NextUINavbar
@@ -296,8 +300,9 @@ export const Navbar = () => {
         </NavbarBrand>
       </NavbarContent>
 
+      {/* Navigation content based on auth state */}
       {isLoading ? null : isAuthenticated && user ? (
-        <AuthenticatedNav handleSignOut={async () => logout()} user={user} />
+        <AuthenticatedNav handleSignOut={handleLogout} user={user} />
       ) : (
         <UnauthenticatedNav />
       )}

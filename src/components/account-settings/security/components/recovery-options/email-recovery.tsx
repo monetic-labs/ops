@@ -8,8 +8,8 @@ interface EmailRecoveryProps {
   configuredEmails: { email: string; isVerified: boolean }[];
   emailInput: string;
   setEmailInput: (value: string) => void;
-  handleAddEmail: () => void;
-  handleRemoveEmail: (email: string) => void;
+  handleAddEmail: () => Promise<void>;
+  handleRemoveEmail: (email: string) => Promise<void>;
 }
 
 const EmailRecovery: React.FC<EmailRecoveryProps> = ({

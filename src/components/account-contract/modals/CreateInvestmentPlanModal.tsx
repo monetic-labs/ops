@@ -7,6 +7,8 @@ import { RadioGroup, Radio } from "@nextui-org/radio";
 import { Card, CardBody } from "@nextui-org/card";
 import { Chip } from "@nextui-org/chip";
 import { Divider } from "@nextui-org/divider";
+import { DatePicker } from "@nextui-org/date-picker";
+import { parseDate, CalendarDate } from "@internationalized/date";
 import { Info, ArrowRight, Calendar, Bitcoin, Coins, AlertTriangle } from "lucide-react";
 import { Slider } from "@nextui-org/slider";
 
@@ -181,13 +183,39 @@ export function CreateInvestmentPlanModal({ isOpen, onClose, account, onCreatePl
   };
 
   // Handle the start date selection
-  const handleStartDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setStartDate(new Date(e.target.value));
+  const handleStartDateChange = (value: CalendarDate | null) => {
+    if (value) {
+      // Convert to JavaScript Date
+      const year = value.year;
+      const month = value.month - 1; // JS Date months are 0-indexed
+      const day = value.day;
+      setStartDate(new Date(year, month, day));
+    }
   };
 
+  // Effect to validate end date whenever start date changes
+  useEffect(() => {
+    // If we have both start date and end date set
+    if (hasEndDate && startDate && endDate) {
+      // Check if end date is before or on the start date
+      // We need at least one day difference between start and end dates
+      if (endDate <= startDate) {
+        // Reset the end date since it's no longer valid
+        setEndDate(undefined);
+      }
+    }
+  }, [startDate, hasEndDate]);
+
   // Handle the end date selection
-  const handleEndDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setEndDate(new Date(e.target.value));
+  const handleEndDateChange = (value: CalendarDate | null) => {
+    if (value) {
+      const year = value.year;
+      const month = value.month - 1; // JS Date months are 0-indexed
+      const day = value.day;
+      setEndDate(new Date(year, month, day));
+    } else {
+      setEndDate(undefined);
+    }
   };
 
   // Handle the end date toggle
@@ -283,6 +311,21 @@ export function CreateInvestmentPlanModal({ isOpen, onClose, account, onCreatePl
   // Get the selected asset details
   const getSelectedAsset = () => {
     return cryptoAssets.find((asset) => asset.id === selectedAsset);
+  };
+
+  // Convert JavaScript Date to CalendarDate
+  const dateToCalendarDate = (date: Date | undefined): CalendarDate | undefined => {
+    if (!date) return undefined;
+    return parseDate(
+      `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`
+    );
+  };
+
+  // Get date that is one day after the given date
+  const getNextDay = (date: Date): Date => {
+    const nextDay = new Date(date);
+    nextDay.setDate(date.getDate() + 1);
+    return nextDay;
   };
 
   return (
@@ -465,7 +508,8 @@ export function CreateInvestmentPlanModal({ isOpen, onClose, account, onCreatePl
                     <div className="flex items-start gap-2 p-3 bg-warning/10 rounded-lg text-sm mt-4">
                       <AlertTriangle className="w-4 h-4 text-warning mt-0.5 flex-shrink-0" />
                       <p>
-                        You're investing more than 50% of your balance. Ensure you keep enough funds for other expenses.
+                        You&apos;re investing more than 50% of your balance. Ensure you keep enough funds for other
+                        expenses.
                       </p>
                     </div>
                   )}
@@ -479,46 +523,54 @@ export function CreateInvestmentPlanModal({ isOpen, onClose, account, onCreatePl
             <div className="space-y-4">
               <div className="flex items-center gap-2 mb-2">
                 <h4 className="text-lg font-medium">Set your schedule</h4>
-                <Chip size="sm" color="primary" variant="flat">
+                <Chip color="primary" size="sm" variant="flat">
                   {getSelectedAsset()?.name} • {formatAmountUSD(getNumericAmount())} {frequency}
                 </Chip>
               </div>
 
               <div className="space-y-4">
                 <div>
-                  <label className="text-sm text-foreground/70 mb-1 flex items-center gap-1">
+                  <label
+                    htmlFor="start-date-picker"
+                    className="flex items-center gap-1 mb-1 text-sm text-foreground/70"
+                  >
                     <Calendar className="w-4 h-4" /> When would you like to start?
                   </label>
-                  <Input
-                    type="date"
-                    value={startDate?.toISOString().split("T")[0]}
+                  <DatePicker
+                    id="start-date-picker"
+                    isRequired
+                    minValue={dateToCalendarDate(tomorrow)}
+                    value={dateToCalendarDate(startDate)}
                     onChange={handleStartDateChange}
-                    min={tomorrow.toISOString().split("T")[0]}
-                    className="max-w-xs"
+                    variant="bordered"
                     size="sm"
+                    className="max-w-xs"
                   />
                 </div>
 
                 <div>
-                  <label className="text-sm text-foreground/70 mb-1 block">Would you like to set an end date?</label>
+                  <label htmlFor="end-date-radio-group" className="mb-1 block text-sm text-foreground/70">
+                    Would you like to set an end date?
+                  </label>
                   <RadioGroup
-                    orientation="horizontal"
-                    value={hasEndDate ? "yes" : "no"}
+                    id="end-date-radio-group"
                     onValueChange={handleEndDateToggle}
+                    orientation="horizontal"
                     size="sm"
+                    value={hasEndDate ? "yes" : "no"}
                   >
                     <Radio value="no">No end date</Radio>
                     <Radio value="yes">Set end date</Radio>
                   </RadioGroup>
 
                   {hasEndDate && (
-                    <Input
-                      type="date"
-                      value={endDate?.toISOString().split("T")[0] || ""}
+                    <DatePicker
+                      value={endDate ? dateToCalendarDate(endDate) : undefined}
                       onChange={handleEndDateChange}
-                      min={startDate.toISOString().split("T")[0]}
-                      className="max-w-xs mt-2"
+                      minValue={dateToCalendarDate(getNextDay(startDate))}
+                      variant="bordered"
                       size="sm"
+                      className="max-w-xs mt-2"
                     />
                   )}
                 </div>

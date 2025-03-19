@@ -8,7 +8,7 @@ import { Avatar } from "@nextui-org/avatar";
 import { XIcon, Upload, Trash2 } from "lucide-react";
 import { MerchantUserGetByIdOutput as MerchantUser } from "@backpack-fux/pylon-sdk";
 
-import { useToast } from "@/hooks/useToast";
+import { useToast } from "@/hooks/generics/useToast";
 import { formatPhoneNumber } from "@/utils/helpers";
 import { useUser } from "@/contexts/UserContext";
 

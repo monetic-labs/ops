@@ -10,8 +10,8 @@ interface PhoneRecoveryProps {
   configuredPhone: { number: string; isVerified: boolean } | null;
   phoneInput: string;
   setPhoneInput: (value: string) => void;
-  handleAddPhone: () => void;
-  handleRemovePhone: () => void;
+  handleAddPhone: () => Promise<void>;
+  handleRemovePhone: () => Promise<void>;
 }
 
 const PhoneRecovery: React.FC<PhoneRecoveryProps> = ({

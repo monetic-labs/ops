@@ -16,8 +16,9 @@ import { createERC20TransferTemplate } from "@/utils/safe/templates";
 import { getEstimatedTransferFee } from "@/utils/safe/features/fee-estimation";
 import { useUser } from "@/contexts/UserContext";
 import { TransferStatus, TransferStatusOverlay } from "@/components/generics/transfer-status";
-import { formatAmountUSD } from "@/utils/helpers";
+import { formatAmountUSD, roundToCurrency } from "@/utils/helpers";
 import { BASE_USDC } from "@/utils/constants";
+import { usePasskeySelection } from "@/contexts/PasskeySelectionContext";
 
 interface SendModalProps {
   isOpen: boolean;
@@ -54,7 +55,20 @@ export function SendModal({
   const [transferStatus, setTransferStatus] = useState<TransferStatus>(TransferStatus.IDLE);
   const [estimatedFee, setEstimatedFee] = useState("0.00");
   const { credentials, user } = useUser();
+  const { selectCredential } = usePasskeySelection();
   const [isLoading, setIsLoading] = useState(false);
+
+  // Utility function for precise balance calculation and formatting
+  const getFormattedBalance = (accountBalance: number, transferAmount: number, isSource: boolean): string => {
+    const amountNum = parseFloat(transferAmount.toString()) || 0;
+    if (isSource) {
+      // For source account, subtract the amount
+      return roundToCurrency(accountBalance - amountNum).toLocaleString();
+    } else {
+      // For destination account, add the amount
+      return roundToCurrency(accountBalance + amountNum).toLocaleString();
+    }
+  };
 
   // Reset internal state when modal is closed
   useEffect(() => {
@@ -119,6 +133,17 @@ export function SendModal({
 
       setIsLoading(true);
 
+      // Select a credential to use - this will automatically handle showing the modal if needed
+      let selectedCredential;
+      try {
+        selectedCredential = await selectCredential();
+      } catch (error) {
+        console.error("Credential selection failed:", error);
+        toast.error("Failed to select a passkey. Please try again.");
+        setIsLoading(false);
+        return;
+      }
+
       // Edge case: Rain Card to Sub-account (withdrawal)
       if (selectedAccount.isCard && !toAccount.isCard) {
         console.log("Transfer type: Rain Card withdrawal");
@@ -132,7 +157,7 @@ export function SendModal({
           tokenAddress: BASE_USDC.ADDRESS,
           tokenDecimals: BASE_USDC.DECIMALS,
           amount,
-          credentials,
+          credentials: selectedCredential,
           rainControllerAddress: selectedAccount.rainControllerAddress as Address,
           rainCollateralProxyAddress: selectedAccount.address as Address,
           callbacks: {
@@ -195,7 +220,7 @@ export function SendModal({
         fromSafeAddress: user.walletAddress as Address,
         throughSafeAddress: selectedAccount.address,
         transactions: [transferTemplate],
-        credentials,
+        credentials: selectedCredential,
         callbacks: {
           onPreparing: () => {
             console.log("Transaction state: PREPARING");
@@ -339,7 +364,7 @@ export function SendModal({
                               className={`text-sm ${parseFloat(amount) > (selectedAccount?.balance || 0) ? "text-danger" : "text-foreground/60"}`}
                             >
                               New balance: $
-                              {((selectedAccount?.balance || 0) - parseFloat(amount || "0")).toLocaleString()}
+                              {getFormattedBalance(selectedAccount.balance || 0, parseFloat(amount), true)}
                             </span>
                           )}
                         </div>
@@ -377,7 +402,7 @@ export function SendModal({
                           </div>
                           {amount && toAccount && (
                             <span className="text-sm text-foreground/60 text-right">
-                              New balance: ${((toAccount.balance || 0) + parseFloat(amount || "0")).toLocaleString()}
+                              New balance: ${getFormattedBalance(toAccount.balance || 0, parseFloat(amount), false)}
                             </span>
                           )}
                         </div>

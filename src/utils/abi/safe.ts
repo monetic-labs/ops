@@ -1,4 +1,4 @@
-export const safeAbi = [
+export const SAFE_ABI = [
   {
     anonymous: false,
     inputs: [{ indexed: false, internalType: "address", name: "owner", type: "address" }],

@@ -5,14 +5,15 @@ import { useEffect, useCallback } from "react";
 import { useMessagingStore, useMessagingActions } from "@/libs/messaging/store";
 import { useWebSocket } from "@/hooks/messaging/useWebSocket";
 import { Message } from "@/types/messaging";
-import { useUser } from "@/contexts/UserContext";
+import { useUser, AuthStatus } from "@/contexts/UserContext";
+import { LocalStorage } from "@/utils/localstorage";
 
 interface MessagingProviderProps {
   children: React.ReactNode;
 }
 
 export const MessagingProvider = ({ children }: MessagingProviderProps) => {
-  const { user, isAuthenticated } = useUser();
+  const { user, authStatus, isLoading } = useUser();
   const {
     message: { setUserId, appendMessage, clearUnreadCount },
     ui: { setWidth },
@@ -37,10 +38,14 @@ export const MessagingProvider = ({ children }: MessagingProviderProps) => {
 
   // Set userId when authenticated user changes
   useEffect(() => {
-    if (isAuthenticated && user?.id) {
+    // Skip if still loading authentication state
+    if (isLoading) return;
+
+    // Only proceed if fully authenticated
+    if (authStatus === AuthStatus.AUTHENTICATED && user?.id) {
       setUserId(user.id);
     }
-  }, [isAuthenticated, user, setUserId]);
+  }, [authStatus, isLoading, user, setUserId]);
 
   // Clear unread count when chat is opened
   useEffect(() => {

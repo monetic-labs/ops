@@ -26,9 +26,11 @@ import {
   NewBillPay,
 } from "@/types/bill-pay";
 import { useNewDisbursement } from "@/hooks/bill-pay/useNewDisbursement";
-import { useUser } from "@/contexts/UserContext";
+import { useUser, AuthStatus } from "@/contexts/UserContext";
+import { usePasskeySelection } from "@/contexts/PasskeySelectionContext";
 import { BASE_USDC } from "@/utils/constants";
 import { createERC20TransferTemplate } from "@/utils/safe/templates";
+import { LocalStorage } from "@/utils/localstorage";
 
 import ModalFooterWithSupport from "../../generics/footer-modal-support";
 
@@ -74,7 +76,8 @@ export default function CreateBillPayModal({
   settlementAddress,
   onSuccess,
 }: CreateBillPayModalProps) {
-  const { user, credentials, isAuthenticated } = useUser();
+  const { user, isAuthenticated, authStatus, isLoading: isUserLoading } = useUser();
+  const { selectCredential } = usePasskeySelection();
   const [isNewSender, setIsNewSender] = useState(false);
   const [transferStatus, setTransferStatus] = useState<TransferStatus>(TransferStatus.IDLE);
   const [formIsValid, setFormIsValid] = useState(false);
@@ -125,13 +128,29 @@ export default function CreateBillPayModal({
     setFormIsValid(formValid);
   }, [billPay, settlementBalance]);
 
-  if (!credentials) {
-    if (isAuthenticated) {
-      toast.error("Please set up a passkey to make transfers");
+  // Avoid rendering or checking authentication if not open
+  if (!isOpen) {
+    return null;
+  }
+
+  // Check authentication status properly using the enum
+  if (!isUserLoading) {
+    // In these cases, close the modal without error
+    if (
+      authStatus === AuthStatus.LOGGING_OUT ||
+      authStatus === AuthStatus.INITIALIZING ||
+      authStatus === AuthStatus.CHECKING
+    ) {
       onClose();
+      return null;
     }
 
-    return null;
+    // Only show error if explicitly unauthenticated
+    if (authStatus === AuthStatus.UNAUTHENTICATED) {
+      toast.error("Please log in to make transfers");
+      onClose();
+      return null;
+    }
   }
 
   const handleSave = async () => {
@@ -149,6 +168,16 @@ export default function CreateBillPayModal({
 
       if (!billPay.vendorMethod) {
         throw new Error("Payment method is required");
+      }
+
+      // Select a credential to use - this will automatically handle showing the modal if needed
+      let selectedCredential;
+      try {
+        selectedCredential = await selectCredential();
+      } catch (error) {
+        console.error("Credential selection failed:", error);
+        toast.error("Failed to select a passkey. Please try again.");
+        return;
       }
 
       console.log("Creating disbursement...");
@@ -203,7 +232,7 @@ export default function CreateBillPayModal({
         fromSafeAddress: user.walletAddress as Address,
         throughSafeAddress: settlementAddress,
         transactions: [erc20TransferTemplate],
-        credentials,
+        credentials: selectedCredential,
         callbacks: {
           onPreparing: () => {
             console.log("Transaction state: PREPARING");

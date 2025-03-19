@@ -17,6 +17,8 @@ import pylon from "@/libs/pylon-sdk";
 import { useSigners } from "@/contexts/SignersContext";
 import { useUser } from "@/contexts/UserContext";
 import { deploySubAccount } from "@/utils/safe/features/subaccount";
+import { usePasskeySelection } from "@/contexts/PasskeySelectionContext";
+import { preciseCurrencyCalculation, roundToCurrency, getCurrentWeek, formatDateString } from "@/utils/helpers";
 
 interface AccountContextState {
   accounts: Account[];
@@ -89,8 +91,9 @@ export function AccountProvider({ children }: { children: ReactNode }) {
     virtualAccount: null as GetVirtualAccountResponse | null,
   });
 
-  const { user, isLoading: isLoadingUser, getSigningCredentials } = useUser();
+  const { user, isLoading: isLoadingUser, getCredentials } = useUser();
   const { signers, isLoading: isLoadingSigners, mapSignersToUsers, updateAccountSigners } = useSigners();
+  const { selectCredential } = usePasskeySelection();
 
   const filterVisibleAccounts = (accounts: Account[]) => {
     if (!user) return [];
@@ -261,18 +264,35 @@ export function AccountProvider({ children }: { children: ReactNode }) {
     updateAccountBalancesAfterTransfer: async (fromAddress: Address, toAddress: Address, amount: string) => {
       const amountValue = parseFloat(amount);
 
+      // Log the before and after balances for debugging
+      const fromAccount = state.accounts.find((acc) => acc.address.toLowerCase() === fromAddress.toLowerCase());
+      const toAccount = state.accounts.find((acc) => acc.address.toLowerCase() === toAddress.toLowerCase());
+
+      if (fromAccount && toAccount) {
+        console.log("Before transfer balances:", {
+          fromAccount: fromAccount.balance,
+          toAccount: toAccount.balance,
+          transferAmount: amountValue,
+        });
+      }
+
+      // Update state with optimistic updates using precise calculations
       setState((prev) => {
         const updatedAccounts = prev.accounts.map((account) => {
-          if (account.address === fromAddress) {
+          if (account.address.toLowerCase() === fromAddress.toLowerCase()) {
+            // Use precise calculation and ensure non-negative balance
+            const newBalance = preciseCurrencyCalculation(account.balance, amountValue, "subtract");
             return {
               ...account,
-              balance: Math.max(0, account.balance - amountValue),
+              balance: Math.max(0, roundToCurrency(newBalance)),
             };
           }
-          if (account.address === toAddress) {
+          if (account.address.toLowerCase() === toAddress.toLowerCase()) {
+            // Use precise calculation for adding to balance
+            const newBalance = preciseCurrencyCalculation(account.balance, amountValue, "add");
             return {
               ...account,
-              balance: account.balance + amountValue,
+              balance: roundToCurrency(newBalance),
             };
           }
 
@@ -285,10 +305,22 @@ export function AccountProvider({ children }: { children: ReactNode }) {
         };
       });
 
-      setTimeout(() => {
-        fetchAccounts(true).catch(console.error);
-      }, 3000);
+      // Return the updated account information for immediate UI feedback
+      const updatedFromAccount = state.accounts.find(
+        (acc) => acc.address.toLowerCase() === fromAddress.toLowerCase()
+      )?.balance;
 
+      const updatedToAccount = state.accounts.find(
+        (acc) => acc.address.toLowerCase() === toAddress.toLowerCase()
+      )?.balance;
+
+      // Log the updated balances
+      console.log("Successfully updated account balances:", {
+        fromAccount: updatedFromAccount,
+        toAccount: updatedToAccount,
+      });
+
+      // Return the updated accounts but don't auto-refresh
       return state.accounts;
     },
     updateVirtualAccountDestination: async (destinationAddress: Address) => {
@@ -321,9 +353,9 @@ export function AccountProvider({ children }: { children: ReactNode }) {
     deployAccount: async (accountId: string, signers: Signer[], threshold: number) => {
       try {
         // Get user credentials using the useUser hook
-        const credentials = getSigningCredentials();
+        const credentials = getCredentials();
 
-        if (!credentials) {
+        if (!credentials || credentials.length === 0) {
           throw new Error("No signing credentials available");
         }
 
@@ -344,10 +376,19 @@ export function AccountProvider({ children }: { children: ReactNode }) {
         // Extract signer addresses
         const signerAddresses = signers.map((s) => s.address as Address);
 
+        // Select a credential to use - this will automatically handle showing the modal if needed
+        let selectedCredential;
+        try {
+          selectedCredential = await selectCredential();
+        } catch (error) {
+          console.error("Credential selection failed:", error);
+          throw new Error("Passkey selection failed. Please try again.");
+        }
+
         // Deploy the safe account
         await deploySubAccount({
           individualSafeAddress,
-          credentials,
+          credentials: selectedCredential,
           signerAddresses,
           threshold,
           callbacks: {

@@ -9,7 +9,7 @@ import data from "@emoji-mart/data";
 import Picker from "@emoji-mart/react";
 
 import { useSupportService } from "@/hooks/messaging/useSupportService";
-import { useTheme } from "@/hooks/useTheme";
+import { useTheme } from "@/hooks/generics/useTheme";
 import { useScreenshot } from "@/hooks/messaging/useScreenshot";
 import { useFileUpload } from "@/hooks/messaging/useFileUpload";
 

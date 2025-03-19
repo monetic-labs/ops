@@ -92,7 +92,8 @@ export function InvestmentsView({ account, isLoading = false, onCreateInvestment
           </div>
           <p className="text-sm text-foreground/60 mb-3">
             Dollar-cost averaging is an investment strategy where you invest a fixed amount at regular intervals,
-            regardless of the asset's price. This reduces the impact of volatility and helps you build wealth over time.
+            regardless of the asset&apos;s price. This reduces the impact of volatility and helps you build wealth over
+            time.
           </p>
           <Button
             variant="light"

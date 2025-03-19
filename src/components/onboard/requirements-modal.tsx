@@ -8,7 +8,7 @@ import { Divider } from "@nextui-org/divider";
 import { FileText, CreditCard, Building, Users, Clock, Shield, ExternalLink } from "lucide-react";
 
 import { useMediaQuery } from "@/hooks/onboard/useMediaQuery";
-import { useTheme } from "@/hooks/useTheme";
+import { useTheme } from "@/hooks/generics/useTheme";
 
 interface RequirementsModalProps {
   isOpen: boolean;

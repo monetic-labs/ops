@@ -14,7 +14,7 @@ import { getOpepenAvatar, formatAmountUSD, isTesting, formatStringToTitleCase } 
 import { useGetTransfers } from "@/hooks/bill-pay/useGetTransfers";
 import { DEFAULT_NEW_BILL_PAY } from "@/types/bill-pay";
 import { MOCK_SETTLEMENT_ADDRESS } from "@/utils/constants";
-import { useUser } from "@/contexts/UserContext";
+import { useUser, AuthStatus } from "@/contexts/UserContext";
 
 const transferColumns: Column<MerchantDisbursementEventGetOutput>[] = [
   {
@@ -92,7 +92,9 @@ export default function Transfers() {
   const [selectedTransfer, setSelectedTransfer] = useState<MerchantDisbursementEventGetOutput | null>(null);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
-  const { user } = useUser();
+  const { user, authStatus, isLoading: isAuthLoading } = useUser();
+  const isFullyAuthenticated = !isAuthLoading && authStatus === AuthStatus.AUTHENTICATED;
+
   const settlementAccount = user?.merchant.accounts.find((account) => account.isSettlement)?.ledgerAddress as Address;
   const settlementAddress = isTesting ? MOCK_SETTLEMENT_ADDRESS : settlementAccount;
 
@@ -126,17 +128,19 @@ export default function Transfers() {
         />
       )}
 
-      <CreateBillPayModal
-        billPay={DEFAULT_NEW_BILL_PAY}
-        isOpen={isCreateModalOpen}
-        setBillPay={() => {}}
-        settlementAddress={settlementAddress}
-        onClose={() => setIsCreateModalOpen(false)}
-        onSave={(newBillPay) => {
-          console.log("Creating transfer:", newBillPay);
-          setIsCreateModalOpen(false);
-        }}
-      />
+      {isFullyAuthenticated && (
+        <CreateBillPayModal
+          billPay={DEFAULT_NEW_BILL_PAY}
+          isOpen={isCreateModalOpen}
+          setBillPay={() => {}}
+          settlementAddress={settlementAddress}
+          onClose={() => setIsCreateModalOpen(false)}
+          onSave={(newBillPay) => {
+            console.log("Creating transfer:", newBillPay);
+            setIsCreateModalOpen(false);
+          }}
+        />
+      )}
     </>
   );
 }

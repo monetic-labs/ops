@@ -1,4 +1,4 @@
-export const rainControllerAbi = [
+export const RAIN_CONTROLLER_ABI = [
   {
     inputs: [
       { internalType: "address", name: "_controllerAdmin", type: "address" },

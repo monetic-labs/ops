@@ -10,33 +10,55 @@ import pylon from "@/libs/pylon-sdk";
 import { WebAuthnCredentials } from "@/types/webauthn";
 import { LocalStorage } from "@/utils/localstorage";
 
+// Define authentication status enum
+export enum AuthStatus {
+  INITIALIZING = "initializing",
+  CHECKING = "checking",
+  AUTHENTICATED = "authenticated",
+  UNAUTHENTICATED = "unauthenticated",
+  LOGGING_OUT = "logging-out",
+}
+
+// Session interface for localStorage
+interface Session {
+  isAuthenticated: boolean;
+  lastVerified: number;
+  userId?: string;
+}
+
 interface UserState {
   user: MerchantUser | undefined;
-  credentials: WebAuthnCredentials | undefined;
-  isLoading: boolean;
-  isAuthenticated: boolean;
+  credentials: WebAuthnCredentials[] | undefined;
+  authStatus: AuthStatus;
   profile?: {
     profileImage: string | null;
   };
 }
 
 interface UserContextType extends UserState {
-  logout: () => void;
-  getSigningCredentials: () => WebAuthnCredentials | undefined;
-  setCredentials: (credentials: WebAuthnCredentials) => void;
+  isLoading: boolean;
+  isAuthenticated: boolean;
+  logout: () => Promise<void>;
+  getCredentials: () => WebAuthnCredentials[] | undefined;
+  addCredential: (credential: WebAuthnCredentials) => void;
   updateProfileImage: (image: string | null) => Promise<void>;
+  forceAuthCheck: () => Promise<boolean>;
 }
 
-const UserContext = createContext<UserContextType>({
+const defaultState: UserContextType = {
   user: undefined,
   credentials: undefined,
+  authStatus: AuthStatus.INITIALIZING,
   isLoading: true,
   isAuthenticated: false,
-  logout: () => {},
-  getSigningCredentials: () => undefined,
-  setCredentials: () => {},
+  logout: async () => {},
+  getCredentials: () => undefined,
+  addCredential: () => {},
   updateProfileImage: async () => {},
-});
+  forceAuthCheck: async () => false,
+};
+
+const UserContext = createContext<UserContextType>(defaultState);
 
 const PUBLIC_ROUTES = ["/auth", "/auth/recovery", "/invite", "/onboard"];
 
@@ -52,154 +74,233 @@ export function UserProvider({ children, token }: UserProviderProps) {
 
   // Core state
   const [user, setUser] = useState<MerchantUser | undefined>();
-  const [credentials, setCredentials] = useState<WebAuthnCredentials | undefined>();
-  const [isLoading, setIsLoading] = useState(true);
-  const [shouldCheckAuth, setShouldCheckAuth] = useState(Boolean(token));
+  const [credentials, setCredentials] = useState<WebAuthnCredentials[] | undefined>();
+  const [authStatus, setAuthStatus] = useState<AuthStatus>(AuthStatus.INITIALIZING);
   const [profile, setProfile] = useState<UserState["profile"]>();
+  const [session, setSession] = useState<Session | null>(null);
 
-  // Load profile from localStorage on mount and listen for changes
+  // Derived states
+  const isLoading = authStatus === AuthStatus.INITIALIZING || authStatus === AuthStatus.CHECKING;
+  const isAuthenticated = authStatus === AuthStatus.AUTHENTICATED;
+
+  // Load saved session on mount
   useEffect(() => {
-    const savedProfile = LocalStorage.getProfile();
-
-    if (savedProfile) {
-      setProfile({ profileImage: savedProfile.profileImage || null });
-    }
-
-    // Listen for storage changes
-    const handleStorageChange = () => {
-      const updatedProfile = LocalStorage.getProfile();
-
-      if (updatedProfile) {
-        setProfile({ profileImage: updatedProfile.profileImage || null });
+    try {
+      const savedSession = LocalStorage.getSession();
+      if (savedSession) {
+        setSession(savedSession);
+        if (savedSession.isAuthenticated) {
+          setAuthStatus(AuthStatus.CHECKING);
+        } else {
+          setAuthStatus(AuthStatus.UNAUTHENTICATED);
+        }
+      } else {
+        setAuthStatus(AuthStatus.UNAUTHENTICATED);
       }
-    };
-
-    window.addEventListener("storage", handleStorageChange);
-
-    return () => window.removeEventListener("storage", handleStorageChange);
+    } catch (error) {
+      console.error("Error loading saved session:", error);
+      setAuthStatus(AuthStatus.UNAUTHENTICATED);
+    }
   }, []);
 
-  // Check auth status and fetch user data
+  // Load profile from localStorage
   useEffect(() => {
-    let isSubscribed = true;
-
-    const checkAuthStatus = async () => {
-      // Don't check if we shouldn't
-      if (!shouldCheckAuth) {
-        setIsLoading(false);
-
-        return;
+    try {
+      const savedProfile = LocalStorage.getProfile();
+      if (savedProfile) {
+        setProfile({ profileImage: savedProfile.profileImage || null });
       }
+    } catch (error) {
+      console.error("Error loading profile:", error);
+    }
+  }, []);
 
-      // Skip auth check if we're on the verify route (token exchange in progress)
-      if (pathname?.startsWith("/auth/verify")) {
-        setIsLoading(false);
+  // Core authentication check function
+  const checkAuthentication = async (): Promise<boolean> => {
+    try {
+      setAuthStatus(AuthStatus.CHECKING);
 
-        return;
-      }
+      const userData = await pylon.getUserById();
 
-      try {
-        setIsLoading(true);
-        const userData = await pylon.getUserById();
-
-        if (!isSubscribed) return;
-
-        if (!userData) {
-          setUser(undefined);
-          setCredentials(undefined);
-          setIsLoading(false);
-          setShouldCheckAuth(false);
-
-          return;
-        }
-
-        setUser(userData);
-
-        // If we have registered passkeys but no credentials set, use the first one
-        if (!credentials && userData?.registeredPasskeys?.length > 0) {
-          const passkey = userData.registeredPasskeys[0];
-          const { x, y } = PublicKey.fromHex(passkey.publicKey as Hex);
-
-          setCredentials({
-            publicKey: { x, y },
-            credentialId: passkey.credentialId,
-          });
-        }
-
-        // Add a small delay to ensure state updates are processed
-        await new Promise((resolve) => setTimeout(resolve, 500));
-
-        setIsLoading(false);
-        setShouldCheckAuth(false);
-      } catch (error) {
-        console.error("Error fetching user data:", error);
-        if (!isSubscribed) return;
-
+      if (!userData) {
+        // No user found
         setUser(undefined);
         setCredentials(undefined);
-        setIsLoading(false);
-        setShouldCheckAuth(false);
+
+        const newSession: Session = {
+          isAuthenticated: false,
+          lastVerified: Date.now(),
+        };
+        LocalStorage.saveSession(newSession);
+        setSession(newSession);
+
+        setAuthStatus(AuthStatus.UNAUTHENTICATED);
+        return false;
       }
-    };
 
-    checkAuthStatus();
+      // User found
+      setUser(userData);
 
-    return () => {
-      isSubscribed = false;
-    };
-  }, [pathname, shouldCheckAuth, credentials]);
+      // Process credentials if needed
+      if (!credentials && userData?.registeredPasskeys?.length > 0) {
+        try {
+          const credentialsArray = userData.registeredPasskeys.map((passkey) => {
+            const { x, y } = PublicKey.fromHex(passkey.publicKey as Hex);
+            return {
+              publicKey: { x, y },
+              credentialId: passkey.credentialId,
+            };
+          });
+          setCredentials(credentialsArray);
+        } catch (error) {
+          console.error("Error processing credentials:", error);
+        }
+      }
 
+      // Update session
+      const newSession: Session = {
+        isAuthenticated: true,
+        lastVerified: Date.now(),
+        userId: userData.id,
+      };
+      LocalStorage.saveSession(newSession);
+      setSession(newSession);
+
+      setAuthStatus(AuthStatus.AUTHENTICATED);
+      return true;
+    } catch (error) {
+      console.error("Auth check failed:", error);
+
+      // Update session as unauthenticated
+      const newSession: Session = {
+        isAuthenticated: false,
+        lastVerified: Date.now(),
+      };
+      LocalStorage.saveSession(newSession);
+      setSession(newSession);
+
+      setAuthStatus(AuthStatus.UNAUTHENTICATED);
+      return false;
+    }
+  };
+
+  // Public function to force auth check
+  const forceAuthCheck = async (): Promise<boolean> => {
+    return await checkAuthentication();
+  };
+
+  // Run auth check when needed
+  useEffect(() => {
+    if (authStatus === AuthStatus.INITIALIZING) {
+      // Skip auth check if we're on the verify route, handled separately
+      if (pathname?.startsWith("/auth/verify")) {
+        return;
+      }
+
+      // Skip if we loaded a saved session
+      if (session !== null) {
+        return;
+      }
+
+      // If we have no session yet, check auth
+      checkAuthentication();
+    }
+  }, [authStatus, pathname, session]);
+
+  // Logout function
   const handleLogout = async () => {
     try {
-      setIsLoading(true);
+      setAuthStatus(AuthStatus.LOGGING_OUT);
+
+      // Clear passkey data
+      LocalStorage.clearSelectedCredentialId();
+
+      // Clear session
+      LocalStorage.clearSession();
+      setSession(null);
+
+      // Call API logout
       await pylon.logout();
+
+      // Clear state
       setUser(undefined);
       setCredentials(undefined);
-      setShouldCheckAuth(false);
+      setAuthStatus(AuthStatus.UNAUTHENTICATED);
+
+      // Redirect after logout
       router.replace("/auth");
     } catch (error) {
       console.error("Logout failed:", error);
-    } finally {
-      setIsLoading(false);
+
+      // Even on error, clean up local state
+      LocalStorage.clearSession();
+      setSession(null);
+      setUser(undefined);
+      setCredentials(undefined);
+      setAuthStatus(AuthStatus.UNAUTHENTICATED);
     }
   };
 
-  const handleSetCredentials = (newCredentials: WebAuthnCredentials) => {
-    setIsLoading(true);
-    setShouldCheckAuth(true);
-    setCredentials(newCredentials);
+  // Handle credential addition
+  const handleAddCredential = (newCredential: WebAuthnCredentials) => {
+    // Add to credentials array
+    setCredentials((prev) => {
+      // If array doesn't exist yet, create it with the new credential
+      if (!prev) return [newCredential];
+
+      // Check if credential already exists by credentialId
+      const exists = prev.some((cred) => cred.credentialId === newCredential.credentialId);
+      if (exists) {
+        // Replace the existing credential
+        return prev.map((cred) => (cred.credentialId === newCredential.credentialId ? newCredential : cred));
+      }
+
+      // Add the new credential to the array
+      return [...prev, newCredential];
+    });
+
+    // Force auth check as credentials changed
+    checkAuthentication();
   };
 
-  // Simplified route protection using early returns
+  // Handle routing based on auth state
   useEffect(() => {
-    if (isLoading) return;
+    // Skip if still initializing/checking or logging out
+    if (isLoading || authStatus === AuthStatus.LOGGING_OUT) {
+      return;
+    }
 
-    const isPublicRoute = PUBLIC_ROUTES.some((route) => pathname?.startsWith(route));
-    const hasOnboardToken = pathname?.startsWith("/onboard") && searchParams?.get("token");
+    // Skip for special paths
     const isVerifyRoute = pathname?.startsWith("/auth/verify");
+    const hasOnboardToken = pathname?.startsWith("/onboard") && searchParams?.get("token");
+    if (isVerifyRoute || hasOnboardToken) {
+      return;
+    }
 
-    // Skip protection for special cases
-    if (isVerifyRoute || hasOnboardToken) return;
+    // Check if current route is public
+    const isPublicRoute = PUBLIC_ROUTES.some((route) => pathname?.startsWith(route));
 
-    // Handle routing
-    if (!isPublicRoute && !user) {
+    // Handle routing based on auth state
+    if (!isAuthenticated && !isPublicRoute) {
       router.replace("/auth");
-    } else if (user && isPublicRoute) {
+    } else if (isAuthenticated && isPublicRoute && !pathname?.startsWith("/invite")) {
       router.replace("/");
     }
-  }, [user, isLoading, pathname, router, searchParams]);
+  }, [isAuthenticated, isLoading, authStatus, pathname, router, searchParams]);
 
-  // Memoize the context value to prevent unnecessary rerenders
+  // Memoize context value
   const contextValue = useMemo(
     () => ({
       user,
       credentials,
+      authStatus,
       isLoading,
-      isAuthenticated: Boolean(user),
+      isAuthenticated,
       profile,
       logout: handleLogout,
-      getSigningCredentials: () => credentials,
-      setCredentials: handleSetCredentials,
+      getCredentials: () => credentials,
+      addCredential: handleAddCredential,
+      forceAuthCheck,
       updateProfileImage: async (image: string | null) => {
         try {
           // Update localStorage first
@@ -215,12 +316,11 @@ export function UserProvider({ children, token }: UserProviderProps) {
           return Promise.resolve();
         } catch (error) {
           console.error("Error updating profile image:", error);
-
           return Promise.reject(error);
         }
       },
     }),
-    [user, credentials, isLoading, profile]
+    [user, credentials, authStatus, isLoading, isAuthenticated, profile, forceAuthCheck]
   );
 
   return <UserContext.Provider value={contextValue}>{children}</UserContext.Provider>;
@@ -236,8 +336,12 @@ export const useUser = () => {
   return context;
 };
 
-export const useSigningCredentials = () => {
-  const { getSigningCredentials } = useUser();
+export const useCredentials = () => {
+  const { getCredentials } = useUser();
+  return getCredentials();
+};
 
-  return getSigningCredentials();
+export const useCredentialIds = () => {
+  const credentials = useCredentials();
+  return credentials?.map((cred) => cred.credentialId) || [];
 };

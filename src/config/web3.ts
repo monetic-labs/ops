@@ -1,4 +1,4 @@
-import { http, createPublicClient, Chain, fallback } from "viem";
+import { http, createPublicClient, Chain, fallback, createWalletClient, publicActions } from "viem";
 import { baseSepolia, base } from "viem/chains";
 
 import { isProduction } from "@/utils/helpers";

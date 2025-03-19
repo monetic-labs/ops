@@ -1,7 +1,7 @@
 import { Address, formatUnits } from "viem";
 import { GasOption, fetchGasPrice } from "abstractionkit";
 
-import { chainlinkAbi } from "@/utils/abi/chainlink";
+import { CHAINLINK_ABI } from "@/utils/abi/chainlink";
 import { publicClient, chain, PUBLIC_RPC } from "@/config/web3";
 import { formatAmountUSD } from "@/utils/helpers";
 
@@ -27,7 +27,7 @@ export async function getEthPriceInUsd(): Promise<number> {
 
     const latestAnswerResult = await publicClient.readContract({
       address: priceFeedAddress,
-      abi: chainlinkAbi,
+      abi: CHAINLINK_ABI,
       functionName: "latestAnswer",
     });
 

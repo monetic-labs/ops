@@ -2,7 +2,8 @@ import { useEffect, useRef } from "react";
 import io, { Socket } from "socket.io-client";
 
 import { Message, SupportMessage } from "@/types/messaging";
-import { useUser } from "@/contexts/UserContext";
+import { useUser, AuthStatus } from "@/contexts/UserContext";
+import { LocalStorage } from "@/utils/localstorage";
 
 const baseUrl = process.env.NEXT_PUBLIC_PYLON_BASE_URL;
 
@@ -20,10 +21,12 @@ interface WebSocketOptions {
 
 export const useWebSocket = ({ handleMessage }: WebSocketOptions) => {
   const wsRef = useRef<Socket>();
-  const { isAuthenticated } = useUser();
+  const { authStatus, isLoading } = useUser();
 
   useEffect(() => {
-    if (!isAuthenticated) {
+    if (isLoading) return;
+
+    if (authStatus !== AuthStatus.AUTHENTICATED) {
       if (wsRef.current) {
         wsRef.current.close();
         wsRef.current = null as any;
@@ -69,7 +72,7 @@ export const useWebSocket = ({ handleMessage }: WebSocketOptions) => {
       wsRef.current?.close();
       wsRef.current = null as any;
     };
-  }, [handleMessage, isAuthenticated]);
+  }, [handleMessage, authStatus, isLoading]);
 
   return {
     isConnected: () => wsRef.current?.connected || false,

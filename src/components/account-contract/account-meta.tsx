@@ -4,6 +4,7 @@ import type { Account, Signer } from "@/types/account";
 
 import { useState } from "react";
 import { Card, CardBody } from "@nextui-org/card";
+import { toast } from "sonner";
 
 import { useAccounts } from "@/contexts/AccountContext";
 
@@ -105,18 +106,31 @@ export default function AccountMeta() {
     }
   };
 
-  const handleTransfer = () => {
-    if (!selectedAccount || !toAccount || !isAmountValid()) return;
-
-    // Update balances optimistically and then refresh from blockchain
-    if (selectedAccount && toAccount) {
-      updateAccountBalancesAfterTransfer(selectedAccount.address, toAccount.address, amount);
+  const handleTransfer = async () => {
+    if (!selectedAccount || !toAccount || !amount || parseFloat(amount) <= 0) {
+      return;
     }
 
-    // Close the send modal and reset the transfer state
     setIsSendModalOpen(false);
-    setAmount("");
-    setToAccount(null);
+
+    try {
+      // Log transaction start
+      console.log("Starting transfer transaction...");
+      console.log(`From: ${selectedAccount.name} (${selectedAccount.address})`);
+      console.log(`To: ${toAccount.name} (${toAccount.address})`);
+      console.log(`Amount: ${amount} USDC`);
+
+      // Call the updateAccountBalancesAfterTransfer function to update account balances
+      // This will optimistically update the UI without waiting for network confirmation
+      updateAccountBalancesAfterTransfer(selectedAccount.address, toAccount.address, amount);
+
+      // Reset transfer state
+      setAmount("");
+      setToAccount(null);
+    } catch (error) {
+      console.error("Error in transfer transaction:", error);
+      toast.error("Transfer failed. Please try again.");
+    }
   };
 
   const handleDeploy = async (): Promise<void> => {

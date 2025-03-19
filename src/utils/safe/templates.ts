@@ -8,15 +8,15 @@ import {
 
 import { PUBLIC_RPC } from "@/config/web3";
 
-import { safeAbi } from "../abi/safe";
-import { rainControllerAbi } from "../abi/rain";
+import { SAFE_ABI } from "../abi/safe";
+import { RAIN_CONTROLLER_ABI } from "../abi/rain";
 
 export const createApproveHashTemplate = (safeAddress: Address, opHash: Hex): MetaTransaction => {
   return {
     to: safeAddress,
     value: BigInt(0),
     data: encodeFunctionData({
-      abi: safeAbi,
+      abi: SAFE_ABI,
       functionName: "approveHash",
       args: [opHash],
     }),
@@ -48,7 +48,7 @@ export const createRainWithdrawalTemplate = ({
     to: rainControllerAddress,
     value: BigInt(0),
     data: encodeFunctionData({
-      abi: rainControllerAbi,
+      abi: RAIN_CONTROLLER_ABI,
       functionName: "withdrawAsset",
       args: [
         rainCollateralProxyAddress, // proxy address (Rain Card account)
