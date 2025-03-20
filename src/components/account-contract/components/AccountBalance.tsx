@@ -7,6 +7,7 @@ import { PersonRole } from "@backpack-fux/pylon-sdk";
 import { useUser } from "@/contexts/UserContext";
 import { formatAmountUSD, isProduction } from "@/utils/helpers";
 import { useSigners } from "@/contexts/SignersContext";
+import { MAIN_ACCOUNT } from "@/utils/constants";
 
 interface AccountBalanceProps {
   account: Account;
@@ -24,7 +25,7 @@ export function AccountBalance({ account, onSend, onReceive, isLoading = false }
     user?.walletAddress && signers.some((s) => s.address.toLowerCase() === user.walletAddress?.toLowerCase());
 
   // Check if this is the operating account
-  const isOperatingAccount = account.name.toLowerCase() === "operating";
+  const isOperatingAccount = account.name.toLowerCase() === MAIN_ACCOUNT;
 
   // Only show the Request Funds button for the operating account in non-production environments
   const showRequestFundsButton = !isProduction && isOperatingAccount && account.isDeployed;

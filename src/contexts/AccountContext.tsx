@@ -19,6 +19,7 @@ import { useUser } from "@/contexts/UserContext";
 import { deploySubAccount } from "@/utils/safe/features/subaccount";
 import { usePasskeySelection } from "@/contexts/PasskeySelectionContext";
 import { preciseCurrencyCalculation, roundToCurrency, getCurrentWeek, formatDateString } from "@/utils/helpers";
+import { CARD_ACCOUNT, MAIN_ACCOUNT } from "@/utils/constants";
 
 interface AccountContextState {
   accounts: Account[];
@@ -115,8 +116,8 @@ export function AccountProvider({ children }: { children: ReactNode }) {
   };
 
   const transformAccount = (account: MerchantAccountGetOutput): Account => {
-    const isSettlementAccount = account.name.toLowerCase() === "operating";
-    const isCardAccount = account.name.toLowerCase() === "rain card";
+    const isSettlementAccount = account.name.toLowerCase() === MAIN_ACCOUNT;
+    const isCardAccount = account.name.toLowerCase() === CARD_ACCOUNT;
 
     const processedSigners = mapSignersToUsers(account.signers as Address[], account.name);
     const accountSigners = processedSigners.filter((signer) => signer.isAccount);
@@ -192,8 +193,8 @@ export function AccountProvider({ children }: { children: ReactNode }) {
 
   const getAccountIcon = (name: string): LucideIcon => {
     const iconMap: Record<string, LucideIcon> = {
-      operating: Building2,
-      "rain card": CreditCard,
+      MAIN_ACCOUNT: Building2,
+      CARD_ACCOUNT: CreditCard,
       savings: PiggyBank,
       "new account": PlusCircle,
     };

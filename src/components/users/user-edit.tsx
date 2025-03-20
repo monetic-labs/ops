@@ -31,8 +31,8 @@ interface UserEditModalProps {
   isEditable: boolean;
   availableRoles: PersonRole[];
   onClose: () => void;
-  onSave: (updatedUser: MerchantUserGetOutput) => void;
-  onRemove: (userId: string) => void;
+  onSave: (updatedUser: MerchantUserGetOutput) => Promise<boolean>;
+  onRemove: (userId: string) => Promise<boolean>;
 }
 
 export default function UserEditModal({
@@ -127,15 +127,37 @@ export default function UserEditModal({
     }
   }, [isOpen, editedUser.walletAddress, editedUser.registeredPasskeys, skipNextSync, isAddingPasskey]);
 
-  const handleSave = () => {
-    onSave(editedUser);
-    onClose();
+  const handleSave = async () => {
+    try {
+      // Create a copy of the edited user to avoid modifying the original
+      const userToSave = { ...editedUser };
+
+      // If walletAddress is null/undefined/empty, remove it from the object to avoid schema validation issues
+      if (!userToSave.walletAddress) {
+        delete userToSave.walletAddress;
+      }
+
+      const success = await onSave(userToSave);
+      if (success) {
+        onClose();
+      }
+    } catch (error) {
+      console.error("Error saving user:", error);
+      // Toast is handled by the parent component
+    }
   };
 
-  const handleRemove = () => {
-    onRemove(user.id);
-    setIsRemoveConfirmOpen(false);
-    onClose();
+  const handleRemove = async () => {
+    try {
+      const success = await onRemove(user.id);
+      if (success) {
+        setIsRemoveConfirmOpen(false);
+        onClose();
+      }
+    } catch (error) {
+      console.error("Error removing user:", error);
+      // Toast is handled by the parent component
+    }
   };
 
   const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -171,13 +193,6 @@ export default function UserEditModal({
   };
 
   const handleAddPasskey = async () => {
-    // Remove test toast for production
-    // toast({
-    //   title: "Test Toast",
-    //   description: "This is a test toast to verify the toast system is working.",
-    //   variant: "default",
-    // });
-
     try {
       // For first passkey creation, validate email and phone
       if (!user.walletAddress) {
@@ -199,14 +214,33 @@ export default function UserEditModal({
           });
           return;
         }
-      }
 
-      setIsAddingPasskey(true);
+        setIsAddingPasskey(true);
 
-      // Determine which scenario we're handling
-      if (!user.walletAddress) {
-        // Scenario 1: User doesn't have an individual account yet
-        // We need to create a new account with recovery
+        // First, save the user information without wallet address
+        const userToSave = { ...editedUser };
+        delete userToSave.walletAddress; // Remove wallet to avoid validation issues
+
+        toast({
+          title: "Saving contact information...",
+          description: "Updating your profile before creating your account",
+        });
+
+        try {
+          // Save the user information first to ensure contact info is up to date
+          await onSave(userToSave);
+        } catch (updateError) {
+          toast({
+            title: "Error updating profile",
+            description:
+              updateError instanceof Error
+                ? updateError.message
+                : "Failed to update your profile information. Please try again.",
+            variant: "destructive",
+          });
+          setIsAddingPasskey(false);
+          return;
+        }
 
         toast({
           title: "Creating account...",
@@ -267,8 +301,8 @@ export default function UserEditModal({
           description: "Your account has been successfully created with passkey authentication",
         });
 
-        // Automatically save changes after account creation
-        handleSave();
+        // Now save the user with the wallet address
+        await handleSave();
       } else {
         // Scenario 2: User has an existing individual account
         // Get all available credentials
@@ -343,8 +377,8 @@ export default function UserEditModal({
                 }
 
                 // Automatically save changes to the backend after successful passkey addition
-                setTimeout(() => {
-                  handleSave();
+                setTimeout(async () => {
+                  await handleSave();
                 }, 500); // Small delay to ensure UI updates are complete
               },
               onError: (error: Error) => {

@@ -88,17 +88,24 @@ export function UsersProvider({ children }: { children: ReactNode }) {
 
   const updateUser = useCallback(async (updatedUser: MerchantUserGetOutput) => {
     try {
-      await pylon.updateUser(updatedUser.id, {
+      // Create update payload, removing walletAddress if it's null/undefined/empty
+      const updatePayload: Record<string, any> = {
         firstName: updatedUser.firstName,
         lastName: updatedUser.lastName,
         role: updatedUser.role,
         email: updatedUser.email,
         username: updatedUser.username,
-        walletAddress: updatedUser.walletAddress,
         phone: updatedUser.phone,
-      });
+      };
 
-      // Update the local state instead of refetching
+      // Only include walletAddress if it's a valid value
+      if (updatedUser.walletAddress && /^0x[a-fA-F0-9]{40}$/.test(updatedUser.walletAddress)) {
+        updatePayload.walletAddress = updatedUser.walletAddress;
+      }
+
+      await pylon.updateUser(updatedUser.id, updatePayload);
+
+      // Optimistically update the local state
       setState((prev) => ({
         ...prev,
         users: prev.users.map((user) => (user.id === updatedUser.id ? updatedUser : user)),

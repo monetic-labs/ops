@@ -12,6 +12,7 @@ import { formatPhoneNumber, formatStringToTitleCase, getFullName, getOpepenAvata
 import { usersStatusColorMap } from "@/data";
 import { useUsers } from "@/contexts/UsersContext";
 import { useSigners } from "@/contexts/SignersContext";
+import { useToast } from "@/hooks/generics/useToast";
 
 import CreateUserModal from "./user-create";
 import UserEditModal from "./user-edit";
@@ -59,6 +60,7 @@ export default function MembersTab({ userId, isCreateModalOpen, setIsCreateModal
     removeUser,
   } = useUsers();
   const { signers, isLoading: isLoadingSigners } = useSigners();
+  const { toast } = useToast();
   const [selectedUser, setSelectedUser] = useState<MerchantUserGetOutput | null>(null);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
@@ -205,9 +207,65 @@ export default function MembersTab({ userId, isCreateModalOpen, setIsCreateModal
     try {
       await createUser(data);
       setIsCreateModalOpen(false);
+      toast({
+        title: "User created",
+        description: "The new team member has been added successfully.",
+      });
     } catch (err) {
       console.error("Failed to create user:", err);
-      // TODO: Show error toast
+      toast({
+        title: "Failed to create user",
+        description: err instanceof Error ? err.message : "An unknown error occurred",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleUpdateUser = async (updatedUser: MerchantUserGetOutput) => {
+    try {
+      const success = await updateUser(updatedUser);
+
+      if (success) {
+        toast({
+          title: "User updated",
+          description: "The user information has been updated successfully.",
+        });
+        return true;
+      } else {
+        throw new Error("Failed to update user");
+      }
+    } catch (err) {
+      console.error("Failed to update user:", err);
+      toast({
+        title: "Failed to update user",
+        description: err instanceof Error ? err.message : "An unknown error occurred",
+        variant: "destructive",
+      });
+      return false;
+    }
+  };
+
+  const handleRemoveUser = async (userId: string) => {
+    try {
+      const success = await removeUser(userId);
+
+      if (success) {
+        toast({
+          title: "User removed",
+          description: "The user has been removed successfully.",
+        });
+        return true;
+      } else {
+        throw new Error("Failed to remove user");
+      }
+    } catch (err) {
+      console.error("Failed to remove user:", err);
+      toast({
+        title: "Failed to remove user",
+        description: err instanceof Error ? err.message : "An unknown error occurred",
+        variant: "destructive",
+      });
+      return false;
     }
   };
 
@@ -248,8 +306,8 @@ export default function MembersTab({ userId, isCreateModalOpen, setIsCreateModal
           isSelf={selectedUser.id === userId}
           user={selectedUser}
           onClose={handleCloseEditModal}
-          onRemove={removeUser}
-          onSave={updateUser}
+          onRemove={handleRemoveUser}
+          onSave={handleUpdateUser}
         />
       )}
 

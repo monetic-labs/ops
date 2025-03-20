@@ -19,6 +19,7 @@ import { LocalStorage } from "@/utils/localstorage";
 
 import { ProfileSettingsModal } from "./account-settings/profile-modal";
 import { SecuritySettingsModal } from "./account-settings/security-modal";
+import { MAIN_ACCOUNT } from "@/utils/constants";
 
 interface UserInfoProps {
   userName?: string;
@@ -45,7 +46,7 @@ const AuthenticatedNav = ({ user, handleSignOut }: { user: MerchantUser; handleS
   const { accounts } = useAccounts();
 
   // Find the operating account
-  const operatingAccount = accounts.find((account) => account.name.toLowerCase() === "operating" && account.isDeployed);
+  const operatingAccount = accounts.find((account) => account.name.toLowerCase() === MAIN_ACCOUNT && account.isDeployed);
 
   const displayName = user.username || getDisplayName(user.firstName, user.lastName);
   const initials =

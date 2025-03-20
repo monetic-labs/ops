@@ -8,6 +8,7 @@ import { Signer } from "@/types/account";
 import { getFullName } from "@/utils/helpers";
 import { useUsers } from "@/contexts/UsersContext";
 import { useUser } from "@/contexts/UserContext";
+import { CARD_ACCOUNT, MAIN_ACCOUNT } from "@/utils/constants";
 
 interface SignersContextState {
   signers: Signer[];
@@ -120,7 +121,7 @@ export function SignersProvider({ children }: { children: ReactNode }) {
     (addresses: Address[], accountName?: string): Signer[] => {
       return addresses.map((address) => {
         // Special case for Rain Card - its signer should be shown as Operating
-        if (accountName?.toLowerCase() === "rain card") {
+        if (accountName?.toLowerCase() === CARD_ACCOUNT) {
           return {
             address,
             name: "Operating",
@@ -147,7 +148,25 @@ export function SignersProvider({ children }: { children: ReactNode }) {
         }
 
         // Special case for Operating account
-        if (accountName?.toLowerCase() === "operating") {
+        if (accountName?.toLowerCase() === MAIN_ACCOUNT) {
+          // First try to find a match in all users, not just the current user
+          const matchingUser = users.find(
+            (u) =>
+              u.walletAddress?.toLowerCase() === address.toLowerCase() ||
+              u.registeredPasskeys?.some((key) => key.publicKey.toLowerCase() === address.toLowerCase())
+          );
+
+          if (matchingUser) {
+            return {
+              address,
+              name: getFullName(matchingUser.firstName, matchingUser.lastName),
+              image: "",
+              role: matchingUser.role as PersonRole,
+              isAccount: false,
+            };
+          }
+
+          // Fallback to current user check (original logic)
           const isCurrentUser =
             user?.walletAddress?.toLowerCase() === address.toLowerCase() ||
             user?.registeredPasskeys?.some((key) => key.publicKey.toLowerCase() === address.toLowerCase());
@@ -155,7 +174,7 @@ export function SignersProvider({ children }: { children: ReactNode }) {
           if (isCurrentUser && user) {
             return {
               address,
-              name: `${user.firstName} ${user.lastName}`,
+              name: getFullName(user.firstName, user.lastName),
               image: "",
               role: user.role as PersonRole,
               isAccount: false,
@@ -186,7 +205,7 @@ export function SignersProvider({ children }: { children: ReactNode }) {
         };
       });
     },
-    [state.signers, state.accountSigners, user]
+    [state.signers, state.accountSigners, user, users]
   );
 
   const addSigner = useCallback(async (accountAddress: Address, signer: Address): Promise<boolean> => {

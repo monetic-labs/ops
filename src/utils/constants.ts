@@ -19,3 +19,6 @@ export const MOCK_SETTLEMENT_ADDRESS = "0x595ec62736Bf19445d7F00D66072B3a3c7aeA0
 export const MOCK_BALANCE = "750";
 
 export const BACKPACK_GUARDIAN_ADDRESS = "0x4198E85b2fDAc05993C8F5d70ab07Ab5348C0694";
+
+export const MAIN_ACCOUNT = "operating";
+export const CARD_ACCOUNT = "rain card";
