@@ -56,8 +56,7 @@ export const companyAccountSchema = z.object({
   companyRegistrationNumber: z
     .string()
     .min(1, "Registration number is required")
-    .max(15, "Registration number cannot exceed 15 characters")
-    .regex(/^\d{4}-?\d{9}$/, "Please enter a valid registration number"),
+    .max(15, "Registration number cannot exceed 15 characters"),
   companyTaxId: z
     .string()
     .min(1, "Tax ID is required")

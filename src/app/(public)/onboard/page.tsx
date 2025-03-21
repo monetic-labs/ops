@@ -364,22 +364,30 @@ export default function OnboardPage() {
     switch (currentStep) {
       case 3: {
         const users = watch("users");
+
+        // First check basic validation
         const person1 = users[0];
-        const isValidPerson1 =
+        const basicValidation =
           person1 &&
           person1.firstName?.length >= 2 &&
           person1.lastName?.length >= 2 &&
           person1.phoneNumber?.number?.length >= 9;
 
-        if (!isValidPerson1) {
+        if (!basicValidation) {
           setError("users", {
             type: "required",
             message: "Please fill out all required fields for Person 1",
           });
-
           return;
         }
 
+        // Use trigger to validate with the full schema, including regex patterns
+        const isValid = await trigger("users");
+        if (!isValid) {
+          return;
+        }
+
+        // Validate unique phone numbers
         const phoneNumbers = users.map((user) => user.phoneNumber?.number).filter(Boolean);
         const hasDuplicatePhones = new Set(phoneNumbers).size !== phoneNumbers.length;
 
@@ -390,13 +398,11 @@ export default function OnboardPage() {
               message: "Phone number must be unique",
             });
           });
-
           return;
         }
 
         clearErrors("users");
         setCurrentStep(Math.min(currentStep + 1, 6));
-
         return;
       }
       default: {
