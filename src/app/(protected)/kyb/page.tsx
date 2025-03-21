@@ -54,7 +54,7 @@ export default function KYB() {
             <div className="flex gap-3 items-start">
               <AlertTriangle className="text-warning flex-shrink-0 mt-0.5" size={20} />
               <p className="text-sm font-medium text-warning-700">
-                We're currently experiencing review delays of up to several days. Providing complete and accurate
+                We&apos;re currently experiencing review delays of up to several days. Providing complete and accurate
                 documentation upfront will help expedite your verification.
               </p>
             </div>
