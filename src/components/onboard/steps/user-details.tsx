@@ -187,7 +187,7 @@ export const UserDetailsStep = () => {
                 {...field}
                 errorMessage={errors?.users?.[index]?.streetAddress2?.message}
                 isInvalid={!!errors?.users?.[index]?.streetAddress2}
-                label="Street Address 2"
+                label="Street Address 2 (Optional)"
                 placeholder="Apt 4B"
               />
             )}

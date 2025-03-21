@@ -110,6 +110,8 @@ function generateCSP({ isDevelopment = false } = {}) {
     "'self'",
     "'unsafe-eval'",
     "'unsafe-inline'",
+    "blob:",
+    "https://*.nextsrc.dev",
     ...AUTH_SERVICES.script,
     ...BLOCKCHAIN_SERVICES.script,
     ...PAYMENT_SERVICES.script,
@@ -148,16 +150,28 @@ function generateCSP({ isDevelopment = false } = {}) {
 
   // Add localhost in development
   if (isDevelopment) {
+    scriptSources.push("http://localhost:*", "https://localhost:*", "data:");
     connectSources.push("http://localhost:*", "https://localhost:*", "ws://localhost:*", "wss://localhost:*");
     frameSources.push("http://localhost:*", "https://localhost:*");
   }
 
   // Return the complete CSP configuration
   return {
-    "default-src": ["'self'"],
+    "default-src": ["'self'", "data:", "blob:"],
     "script-src": scriptSources,
     "script-src-elem": scriptSources,
-    "style-src": ["'self'", "'unsafe-inline'"],
+    "style-src": [
+      "'self'",
+      "'unsafe-inline'",
+      "data:",
+      ...(isDevelopment ? ["http://localhost:*", "https://localhost:*"] : []),
+    ],
+    "style-src-elem": [
+      "'self'",
+      "'unsafe-inline'",
+      "data:",
+      ...(isDevelopment ? ["http://localhost:*", "https://localhost:*"] : []),
+    ],
     "img-src": [
       "'self'",
       "data:",
@@ -175,12 +189,12 @@ function generateCSP({ isDevelopment = false } = {}) {
       "https://services.backpack.network",
       "https://services.staging.backpack.network",
     ],
-    "child-src": AUTH_SERVICES.frame,
-    "frame-src": frameSources,
+    "child-src": ["'self'", "blob:", ...AUTH_SERVICES.frame],
+    "frame-src": ["'self'", "blob:", ...frameSources],
     "connect-src": connectSources,
     "worker-src": ["'self'", "blob:"],
     "manifest-src": ["'self'"],
-    "media-src": ["'self'"],
+    "media-src": ["'self'", "data:", "blob:"],
   };
 }
 

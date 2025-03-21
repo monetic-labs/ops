@@ -63,12 +63,26 @@ export const getFieldsForStep = (step: number): (keyof FormData)[] => {
     case 2:
       return ["companyRegistrationNumber", "companyTaxId", "companyType", "companyDescription"];
     case 3:
+      // For step 3, we only need to validate basic user info fields
       return ["users"];
     case 4:
+      // For step 4, we also validate the user details fields
       return ["users"];
     case 5:
       return ["acceptedTerms"];
     default:
       return [];
   }
+};
+
+// Helper to check if fields should be validated on the current step
+export const shouldValidateField = (step: number, fieldPath: string): boolean => {
+  // For step 3, only validate basic user fields
+  if (step === 3) {
+    const basicFields = ["firstName", "lastName", "email", "phoneNumber", "roles"];
+    return basicFields.some((field) => fieldPath.includes(field));
+  }
+
+  // For step 4, validate all user detail fields
+  return true;
 };

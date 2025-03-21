@@ -66,17 +66,23 @@ export const companyAccountSchema = z.object({
   companyDescription: z.string().max(100, "Description cannot exceed 100 characters").optional(),
 });
 
-export const userDetailsSchema = z.object({
+export const userBasicSchema = z.object({
   firstName: z
     .string()
     .min(2, "First name must be at least 2 characters")
     .max(50, "First name cannot exceed 50 characters")
-    .regex(/^[a-zA-Z\s-']+$/, "First name can only contain letters, spaces, hyphens, and apostrophes"),
+    .regex(
+      /^[a-zA-Z\s\-.,']+$/,
+      "First name can only contain letters, spaces, periods, hyphens, commas, and apostrophes"
+    ),
   lastName: z
     .string()
     .min(2, "Last name must be at least 2 characters")
     .max(50, "Last name cannot exceed 50 characters")
-    .regex(/^[a-zA-Z\s-']+$/, "Last name can only contain letters, spaces, hyphens, and apostrophes"),
+    .regex(
+      /^[a-zA-Z\s\-.,']+$/,
+      "Last name can only contain letters, spaces, periods, hyphens, commas, and apostrophes"
+    ),
   email: z.string().email("Please enter a valid email").max(50, "Email cannot exceed 50 characters"),
   phoneNumber: z.object({
     extension: z.string(),
@@ -89,6 +95,9 @@ export const userDetailsSchema = z.object({
   roles: z
     .array(z.enum([UserRole.BENEFICIAL_OWNER, UserRole.REPRESENTATIVE]))
     .min(1, "At least one role must be selected"),
+});
+
+export const userDetailsSchema = userBasicSchema.extend({
   countryOfIssue: z.enum(Object.values(ISO3166Alpha2Country) as [ISO3166Alpha2Country, ...ISO3166Alpha2Country[]]),
   birthDate: z
     .string()
@@ -122,7 +131,7 @@ export const userDetailsSchema = z.object({
     .min(1, "City is required")
     .min(2, "City must be at least 2 characters")
     .max(50, "City cannot exceed 50 characters")
-    .regex(/^[a-zA-Z\s-']+$/, "City can only contain letters, spaces, hyphens, and apostrophes"),
+    .regex(/^[a-zA-Z\s\-.,']+$/, "City can only contain letters, spaces, periods, hyphens, commas, and apostrophes"),
   state: z
     .string()
     .min(1, "State is required")
@@ -178,4 +187,12 @@ export const schema = z.object({
   ...termsSchema.shape,
 });
 
+// Define the types
+export type UserBasicData = z.infer<typeof userBasicSchema>;
+export type UserDetailsData = z.infer<typeof userDetailsSchema>;
 export type FormData = z.infer<typeof schema>;
+
+// Export the schemas for use in validation
+export const companySchema = companyDetailsSchema;
+export const companyRegistrationSchema = companyAccountSchema;
+export const onboardingSchema = schema;
