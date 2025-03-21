@@ -23,7 +23,7 @@ export function DocumentTips({ hideAlert = false }: DocumentTipsProps) {
             <div className="flex items-start gap-3 p-3 rounded-lg bg-warning-50 border border-warning-200">
               <AlertTriangle className="text-warning mt-0.5 flex-shrink-0" size={18} />
               <p className="text-sm font-medium text-warning-700">
-                We're currently experiencing review delays of up to several days. Providing complete and accurate
+                We&apos;re currently experiencing review delays of up to several days. Providing complete and accurate
                 documentation upfront will help expedite your verification.
               </p>
             </div>
