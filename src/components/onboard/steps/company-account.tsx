@@ -33,7 +33,7 @@ export const CompanyAccountStep = () => {
           errorMessage={errors?.companyRegistrationNumber?.message?.toString()}
           isInvalid={!!errors?.companyRegistrationNumber}
           label="Company Registration Number"
-          maxLength={12}
+          maxLength={20}
           name="companyRegistrationNumber"
           placeholder="1234567"
           startContent={<Hash className="text-foreground/40 w-4 h-4 flex-shrink-0" />}
