@@ -2,9 +2,14 @@
 
 import { useGetComplianceStatus } from "@/hooks/merchant/useGetComplianceStatus";
 import { StatusCard } from "@/components/kyb-status/status-card";
+import { DocumentTips } from "@/components/kyb-status/document-tips";
+import { AlertTriangle, FileText } from "lucide-react";
+import { Button } from "@nextui-org/button";
+import { useRef } from "react";
 
 export default function KYB() {
   const { complianceStatus } = useGetComplianceStatus();
+  const guidelinesRef = useRef<HTMLDivElement>(null);
 
   const handleBridgeKYB = () => {
     if (complianceStatus?.kycLink) {
@@ -25,6 +30,13 @@ export default function KYB() {
     }
   };
 
+  const scrollToGuidelines = () => {
+    guidelinesRef.current?.scrollIntoView({
+      behavior: "smooth",
+      block: "start",
+    });
+  };
+
   return (
     <section className="w-full flex justify-center px-4">
       <div className="w-full max-w-full flex flex-col items-center justify-center">
@@ -35,6 +47,27 @@ export default function KYB() {
             <p className="max-w-2xl mx-auto text-lg font-medium text-default-600">
               Complete your business and personal verification to access all features.
             </p>
+          </div>
+
+          {/* Critical Alert at Top */}
+          <div className="flex flex-col md:flex-row md:items-center gap-3 p-4 rounded-lg bg-warning-50 border border-warning-200">
+            <div className="flex gap-3 items-start">
+              <AlertTriangle className="text-warning flex-shrink-0 mt-0.5" size={20} />
+              <p className="text-sm font-medium text-warning-700">
+                We're currently experiencing review delays of up to several days. Providing complete and accurate
+                documentation upfront will help expedite your verification.
+              </p>
+            </div>
+            <Button
+              variant="solid"
+              color="primary"
+              size="sm"
+              startContent={<FileText size={14} />}
+              onPress={scrollToGuidelines}
+              className="mt-2 md:mt-0 md:ml-2 md:flex-shrink-0 md:whitespace-nowrap w-full md:w-auto"
+            >
+              View Guidelines
+            </Button>
           </div>
 
           {/* Business Verification Section */}
@@ -70,6 +103,12 @@ export default function KYB() {
               </div>
             </div>
           )}
+
+          {/* Document Tips Section */}
+          <div ref={guidelinesRef}>
+            <h2 className="text-2xl font-semibold mb-4">Document Upload Guidelines</h2>
+            <DocumentTips hideAlert={true} />
+          </div>
         </div>
       </div>
     </section>
