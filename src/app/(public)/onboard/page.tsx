@@ -332,6 +332,7 @@ export default function OnboardPage() {
         // Now deploy and setup the safe account
         await deployIndividualSafe({
           credentials: { publicKey, credentialId },
+          deploySettlement: true,
           recoveryMethods: {
             email: formData.users[0].email,
             phone: formData.users[0].phoneNumber.number,
