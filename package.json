@@ -17,7 +17,7 @@
   },
   "dependencies": {
     "@ai-sdk/openai": "^0.0.70",
-    "@backpack-fux/pylon-sdk": "0.2.981",
+    "@backpack-fux/pylon-sdk": "0.2.982",
     "@emoji-mart/data": "^1.2.1",
     "@emoji-mart/react": "^1.1.1",
     "@hookform/resolvers": "^3.9.1",
@@ -94,9 +94,7 @@
     "react-hook-form": "^7.54.0",
     "react-markdown": "^9.0.1",
     "remark-gfm": "^4.0.0",
-    "socket.io-client": "^4.8.1",
     "sonner": "^1.7.3",
-    "ws": "^8.18.0",
     "zustand": "^5.0.2"
   },
   "devDependencies": {
@@ -113,7 +111,6 @@
     "@types/react": "18.3.3",
     "@types/react-dom": "18.3.0",
     "@types/react-syntax-highlighter": "^15.5.13",
-    "@types/ws": "^8.5.13",
     "@typescript-eslint/eslint-plugin": "7.2.0",
     "@typescript-eslint/parser": "7.2.0",
     "@vitejs/plugin-react": "^4.3.4",

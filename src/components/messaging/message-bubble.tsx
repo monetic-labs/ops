@@ -30,7 +30,7 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({ message, contentTe
   const isUser = "role" in message ? message.role === "user" : message.type === "user";
 
   const getBubbleStyle = () => {
-    return isUser ? "bg-primary text-primary-foreground ml-auto" : "bg-content2 text-foreground mr-auto";
+    return isUser ? "bg-primary text-primary-foreground" : "bg-content2 text-foreground";
   };
 
   const getMessageId = () => {
@@ -40,6 +40,16 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({ message, contentTe
   const getMessageType = () => {
     return "role" in message ? message.role : message.type;
   };
+
+  // Get sender name if available
+  const getSenderName = () => {
+    if (!("role" in message) && message.type === "support" && message.metadata?.from) {
+      return message.metadata.from.first_name;
+    }
+    return null;
+  };
+
+  const senderName = getSenderName();
 
   const sanitizeContent = (content: string) => {
     // First use DOMPurify to remove any dangerous HTML/scripts
@@ -129,42 +139,45 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({ message, contentTe
           size="sm"
         />
       )}
-      <div className={`max-w-[85%] rounded-lg p-3 shadow-sm ${getBubbleStyle()}`} data-testid={contentBubbleTestId}>
-        {React.isValidElement(messageContent) ? (
-          messageContent
-        ) : (
-          <ReactMarkdown
-            className="break-words prose dark:prose-invert max-w-none text-sm"
-            components={{
-              code({ node, inline, className, children, ...props }: CodeProps) {
-                const match = /language-(\w+)/.exec(className || "");
-                const codeString = String(children).replace(/\n$/, "");
+      <div className={`flex flex-col flex-1 ${isUser ? "items-end" : "items-start"}`}>
+        {senderName && <span className="text-xs text-foreground/70 mb-1 font-medium pl-1">{senderName}</span>}
+        <div className={`max-w-[85%] rounded-lg p-3 shadow-sm ${getBubbleStyle()}`} data-testid={contentBubbleTestId}>
+          {React.isValidElement(messageContent) ? (
+            messageContent
+          ) : (
+            <ReactMarkdown
+              className="break-words prose dark:prose-invert max-w-none text-sm"
+              components={{
+                code({ node, inline, className, children, ...props }: CodeProps) {
+                  const match = /language-(\w+)/.exec(className || "");
+                  const codeString = String(children).replace(/\n$/, "");
 
-                if (!inline && match) {
+                  if (!inline && match) {
+                    return (
+                      <SyntaxHighlighter
+                        PreTag="div"
+                        className="rounded-md !bg-content3/50 text-xs"
+                        language={match[1]}
+                        style={vscDarkPlus}
+                      >
+                        {codeString}
+                      </SyntaxHighlighter>
+                    );
+                  }
+
                   return (
-                    <SyntaxHighlighter
-                      PreTag="div"
-                      className="rounded-md !bg-content3/50 text-xs"
-                      language={match[1]}
-                      style={vscDarkPlus}
-                    >
-                      {codeString}
-                    </SyntaxHighlighter>
+                    <code className={`${className} bg-content3/50 rounded px-1 text-xs`} {...props}>
+                      {children}
+                    </code>
                   );
-                }
-
-                return (
-                  <code className={`${className} bg-content3/50 rounded px-1 text-xs`} {...props}>
-                    {children}
-                  </code>
-                );
-              },
-            }}
-            remarkPlugins={[remarkGfm]}
-          >
-            {messageContent as string}
-          </ReactMarkdown>
-        )}
+                },
+              }}
+              remarkPlugins={[remarkGfm]}
+            >
+              {messageContent as string}
+            </ReactMarkdown>
+          )}
+        </div>
       </div>
       {isUser && (
         <Avatar

@@ -75,7 +75,6 @@ const INTERNAL_SERVICES = {
   script: [],
   connect: [
     "https://*.backpack.network",
-    "wss://*.backpack.network",
     "https://api.backpack.network",
     "https://api.staging.backpack.network",
     "https://services.staging.backpack.network",
@@ -151,7 +150,7 @@ function generateCSP({ isDevelopment = false } = {}) {
   // Add localhost in development
   if (isDevelopment) {
     scriptSources.push("http://localhost:*", "https://localhost:*", "data:");
-    connectSources.push("http://localhost:*", "https://localhost:*", "ws://localhost:*", "wss://localhost:*");
+    connectSources.push("http://localhost:*", "https://localhost:*");
     frameSources.push("http://localhost:*", "https://localhost:*");
   }
 

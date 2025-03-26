@@ -3,7 +3,7 @@
 import { useEffect, useCallback } from "react";
 
 import { useMessagingStore, useMessagingActions } from "@/libs/messaging/store";
-import { useWebSocket } from "@/hooks/messaging/useWebSocket";
+import { useSSE } from "@/hooks/messaging/useSSE";
 import { Message } from "@/types/messaging";
 import { useUser, AuthStatus } from "@/contexts/UserContext";
 import { LocalStorage } from "@/utils/localstorage";
@@ -21,15 +21,15 @@ export const MessagingProvider = ({ children }: MessagingProviderProps) => {
   const isOpen = useMessagingStore((state) => state.ui.isOpen);
 
   // Handle incoming messages
-  const handleWebSocketMessage = useCallback(
+  const handleMessage = useCallback(
     (message: Message) => {
       appendMessage(message);
     },
     [appendMessage]
   );
 
-  // Initialize WebSocket connection
-  useWebSocket({ handleMessage: handleWebSocketMessage });
+  // Initialize SSE connection for chat events
+  useSSE({ handleMessage });
 
   // Handle initial setup
   useEffect(() => {

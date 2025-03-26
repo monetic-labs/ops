@@ -27,7 +27,7 @@ Our CSP configuration includes the following service categories:
 4. **Compliance & KYC Services**: Persona, Bridge, Rain Cards
 5. **Analytics & Monitoring**: (Reserved for future use)
 6. **Development & Debugging**: (Reserved for development-only services)
-7. **Internal Services**: Backpack API endpoints (including staging environments)
+7. **Internal Services**: Backpack API endpoints (including staging environments) for HTTP and SSE connections
 8. **Media & Content**: Avatar services, WalletConnect explorer
 
 ## Adding New Services
@@ -38,7 +38,7 @@ When you need to add a new external service or domain to the CSP, follow these s
 2. Identify the appropriate category for your service (or create a new one if needed)
 3. Add the domain to the relevant directive(s):
    - `script` for JavaScript sources
-   - `connect` for API endpoints, WebSockets, etc.
+   - `connect` for API endpoints, Server-Sent Events (SSE), etc.
    - `frame` for iframes
    - `img` for image sources
 

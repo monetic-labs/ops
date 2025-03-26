@@ -59,6 +59,12 @@ export interface SupportMessage extends BaseMessage {
     timestamp?: number;
     userId?: string;
     attachment?: { url: string; name: string };
+    from?: {
+      id: number;
+      is_bot: boolean;
+      first_name: string;
+      username?: string;
+    };
   };
 }
 
