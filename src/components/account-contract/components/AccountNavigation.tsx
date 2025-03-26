@@ -9,6 +9,7 @@ interface NavigationItem {
     text: string;
     className: string;
   };
+  isDisabled?: boolean;
 }
 
 interface AccountNavigationProps {
@@ -37,6 +38,11 @@ export function AccountNavigation({ selectedTab, onTabChange }: AccountNavigatio
       key: "investments",
       icon: <TrendingUp className="w-4 h-4" />,
       label: "Investments",
+      badge: {
+        text: "Coming Soon",
+        className: "bg-primary/10 text-primary",
+      },
+      isDisabled: true,
     },
   ];
 
@@ -52,10 +58,12 @@ export function AccountNavigation({ selectedTab, onTabChange }: AccountNavigatio
                 ? "border-primary text-foreground bg-content2"
                 : "border-transparent text-foreground/60 hover:text-foreground hover:bg-content2"
             }
+            ${item.isDisabled ? "opacity-50 cursor-not-allowed" : ""}
             transition-colors whitespace-nowrap
           `}
           variant="light"
-          onPress={() => onTabChange(item.key)}
+          isDisabled={item.isDisabled}
+          onPress={() => !item.isDisabled && onTabChange(item.key)}
         >
           {item.icon}
           <span className="hidden md:inline">{item.label}</span>

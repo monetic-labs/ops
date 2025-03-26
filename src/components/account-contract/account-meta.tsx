@@ -5,8 +5,11 @@ import type { Account, Signer } from "@/types/account";
 import { useState } from "react";
 import { Card, CardBody } from "@nextui-org/card";
 import { toast } from "sonner";
+import { CreditCard, MessageCircle } from "lucide-react";
 
 import { useAccounts } from "@/contexts/AccountContext";
+import { useShortcuts } from "@/components/generics/shortcuts-provider";
+import { useSupportService } from "@/hooks/messaging/useSupportService";
 
 import { SkeletonAccountCard } from "./components/SkeletonLoaders";
 import { AccountHeader } from "./components/AccountHeader";
@@ -16,11 +19,9 @@ import { DeployAccountModal } from "./modals/DeployAccountModal";
 import { ActivityView } from "./views/ActivityView";
 import { SignersView } from "./views/SignersView";
 import { PoliciesView } from "./views/PoliciesView";
-import { InvestmentsView } from "./views/InvestmentsView";
 import { SendModal } from "./modals/SendModal";
 import { ReceiveModal } from "./modals/ReceiveModal";
 import { AccountSelectionModal } from "./modals/AccountSelectionModal";
-import { CreateInvestmentPlanModal } from "./modals/CreateInvestmentPlanModal";
 
 export default function AccountMeta() {
   const {
@@ -35,11 +36,12 @@ export default function AccountMeta() {
     updateAccountBalancesAfterTransfer,
     deployAccount,
   } = useAccounts();
+  const { openChat } = useShortcuts();
+  const { sendMessage } = useSupportService();
 
   const [activeTab, setActiveTab] = useState<string>("activity");
   const [isSendModalOpen, setIsSendModalOpen] = useState(false);
   const [isReceiveModalOpen, setIsReceiveModalOpen] = useState(false);
-  const [isCreateInvestmentModalOpen, setIsCreateInvestmentModalOpen] = useState(false);
   const [amount, setAmount] = useState("");
   const [toAccount, setToAccount] = useState<Account | null>(null);
   const [isExpanded, setIsExpanded] = useState(true);
@@ -72,14 +74,6 @@ export default function AccountMeta() {
 
   const handleReceive = () => {
     setIsReceiveModalOpen(true);
-  };
-
-  const handleInvest = () => {
-    setIsCreateInvestmentModalOpen(true);
-  };
-
-  const handleCreateInvestmentPlan = () => {
-    setIsCreateInvestmentModalOpen(true);
   };
 
   const handleAccountSelect = (account: Account) => {
@@ -144,20 +138,9 @@ export default function AccountMeta() {
     }
   };
 
-  const handleCreatePlan = async (plan: {
-    assetId: string;
-    amount: number;
-    frequency: string;
-    startDate: Date;
-    endDate?: Date;
-  }): Promise<void> => {
-    console.log("Creating investment plan:", plan);
-    // In a real implementation, this would call an API to create the plan
-    setIsCreateInvestmentModalOpen(false);
-    // If the investments tab isn't active, switch to it
-    if (activeTab !== "investments") {
-      setActiveTab("investments");
-    }
+  const handleSupportClick = async () => {
+    openChat();
+    await sendMessage("Hi, I need help with my Rain Card account.");
   };
 
   return (
@@ -197,25 +180,39 @@ export default function AccountMeta() {
         onClose={() => setIsReceiveModalOpen(false)}
       />
 
-      {/* Create Investment Plan Modal */}
-      <CreateInvestmentPlanModal
-        isOpen={isCreateInvestmentModalOpen}
-        onClose={() => setIsCreateInvestmentModalOpen(false)}
-        account={selectedAccount}
-        onCreatePlan={handleCreatePlan}
-      />
-
       <Card className="w-full bg-content1/90 border border-border backdrop-blur-sm relative">
         {selectedAccount && !selectedAccount.isDeployed && (
           <div className="absolute inset-0 bg-content1/80 backdrop-blur-sm z-10 flex flex-col items-center justify-center p-6 text-center">
-            <h3 className="text-2xl font-semibold mb-2">Activate your account</h3>
-            <p className="text-foreground/60 mb-4">This account needs to be activated before it can be used.</p>
-            <button
-              className="bg-primary text-primary-foreground px-4 py-2 rounded-md hover:bg-primary/80 transition-colors"
-              onClick={() => setIsDeployModalOpen(true)}
-            >
-              Activate Account
-            </button>
+            {selectedAccount.isCard ? (
+              <>
+                <div className="bg-warning/10 p-3 rounded-full mb-4">
+                  <CreditCard className="w-6 h-6 text-warning" />
+                </div>
+                <h3 className="text-2xl font-semibold mb-2">Rain Card Account</h3>
+                <p className="text-foreground/60 mb-4 max-w-md">
+                  This account is managed by Rain. For support or inquiries about your Rain Card, please contact our
+                  support team.
+                </p>
+                <button
+                  onClick={handleSupportClick}
+                  className="bg-warning text-warning-foreground px-4 py-2 rounded-md hover:bg-warning/80 transition-colors inline-flex items-center gap-2"
+                >
+                  <MessageCircle className="w-4 h-4" />
+                  Contact Support
+                </button>
+              </>
+            ) : (
+              <>
+                <h3 className="text-2xl font-semibold mb-2">Activate your account</h3>
+                <p className="text-foreground/60 mb-4">This account needs to be activated before it can be used.</p>
+                <button
+                  className="bg-primary text-primary-foreground px-4 py-2 rounded-md hover:bg-primary/80 transition-colors"
+                  onClick={() => setIsDeployModalOpen(true)}
+                >
+                  Activate Account
+                </button>
+              </>
+            )}
           </div>
         )}
 
@@ -264,13 +261,6 @@ export default function AccountMeta() {
                   )}
                   {activeTab === "policies" && (
                     <PoliciesView isLoading={isLoadingAccounts} signers={selectedAccount.signers} />
-                  )}
-                  {activeTab === "investments" && (
-                    <InvestmentsView
-                      account={selectedAccount}
-                      isLoading={isLoadingAccounts}
-                      onCreateInvestmentPlan={handleCreateInvestmentPlan}
-                    />
                   )}
                 </div>
               </div>
