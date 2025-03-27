@@ -27,8 +27,13 @@ Our CSP configuration includes the following service categories:
 4. **Compliance & KYC Services**: Persona, Bridge, Rain Cards
 5. **Analytics & Monitoring**: (Reserved for future use)
 6. **Development & Debugging**: (Reserved for development-only services)
-7. **Internal Services**: Backpack API endpoints (including staging environments) for HTTP and SSE connections
-8. **Media & Content**: Avatar services, WalletConnect explorer
+7. **Internal Services**:
+   - Backpack API endpoints (including staging environments) for HTTP and SSE connections
+   - Cloudflare R2 storage for file uploads and downloads
+8. **Media & Content**:
+   - Avatar services
+   - WalletConnect explorer
+   - Cloudflare R2 storage for image loading
 
 ## Adding New Services
 

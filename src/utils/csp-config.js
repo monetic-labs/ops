@@ -81,6 +81,9 @@ const INTERNAL_SERVICES = {
     "https://services.backpack.network",
     "https://api.staging.backpack.network/v1/*",
     "https://api.backpack.network/v1/*",
+    // Allow Cloudflare R2 storage for file uploads/downloads
+    "https://*.cloudflarestorage.com",
+    "https://*.r2.cloudflarestorage.com",
   ],
   frame: [],
   form: [
@@ -94,7 +97,13 @@ const INTERNAL_SERVICES = {
 
 // Media & Content
 const MEDIA_SERVICES = {
-  img: ["https://i.pravatar.cc", "https://explorer-api.walletconnect.com"],
+  img: [
+    "https://i.pravatar.cc",
+    "https://explorer-api.walletconnect.com",
+    // Allow Cloudflare R2 storage for image loading
+    "https://*.cloudflarestorage.com",
+    "https://*.r2.cloudflarestorage.com",
+  ],
 };
 
 /**
