@@ -3,9 +3,23 @@ const { generateCSP, cspObjectToString } = require("./src/utils/csp-config");
 
 const nextConfig = {
   images: {
-    domains: ["i.pravatar.cc"],
+    domains: [
+      "i.pravatar.cc",
+      "images.unsplash.com",
+      "upload.wikimedia.org",
+      "raw.githubusercontent.com",
+      "avatars.githubusercontent.com",
+    ],
   },
-  webpack(config) {
+  webpack: (config, { isServer }) => {
+    // Resolve React Aria packages to consistent versions
+    config.resolve.alias = {
+      ...config.resolve.alias,
+      "@react-aria/utils": require.resolve("@react-aria/utils"),
+      "@react-aria/focus": require.resolve("@react-aria/focus"),
+      "@react-aria/interactions": require.resolve("@react-aria/interactions"),
+    };
+
     config.module.rules.push({
       test: /\.svg$/,
       use: ["@svgr/webpack"],
@@ -14,6 +28,8 @@ const nextConfig = {
     return config;
   },
   transpilePackages: ["@backpack-fux/pylon-sdk"],
+  reactStrictMode: true,
+  swcMinify: true,
 
   // Content Security Policy configuration
   async headers() {
