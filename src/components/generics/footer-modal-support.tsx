@@ -1,9 +1,9 @@
 import React, { useEffect } from "react";
-import { Button } from "@nextui-org/button";
-import { ModalFooter } from "@nextui-org/modal";
-import { Switch } from "@nextui-org/switch";
-import { Kbd } from "@nextui-org/kbd";
-import { Tooltip } from "@nextui-org/tooltip";
+import { Button } from "@heroui/button";
+import { ModalFooter } from "@heroui/modal";
+import { Switch } from "@heroui/switch";
+import { Kbd } from "@heroui/kbd";
+import { Tooltip } from "@heroui/tooltip";
 
 import { useSupportScreenshot } from "@/hooks/messaging/useSupportService";
 

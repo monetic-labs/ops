@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { Tab, Tabs } from "@nextui-org/tabs";
+import { Tab, Tabs } from "@heroui/tabs";
 import { MessageCircle } from "lucide-react";
 
 import { useMessagingState } from "@/libs/messaging/store";

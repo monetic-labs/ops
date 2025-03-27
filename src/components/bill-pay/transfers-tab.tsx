@@ -1,8 +1,8 @@
 "use client";
 
 import React, { useState } from "react";
-import { Chip } from "@nextui-org/chip";
-import { User } from "@nextui-org/user";
+import { Chip } from "@heroui/chip";
+import { User } from "@heroui/user";
 import { MerchantDisbursementEventGetOutput } from "@backpack-fux/pylon-sdk";
 import { Address } from "viem";
 

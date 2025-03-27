@@ -2,7 +2,7 @@
 
 import { useFormContext } from "react-hook-form";
 import { CheckCircle, Edit, UserRound } from "lucide-react";
-import { Button } from "@nextui-org/button";
+import { Button } from "@heroui/button";
 
 import { FormData } from "@/validations/onboard/schemas";
 import {

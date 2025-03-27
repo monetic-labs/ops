@@ -1,9 +1,9 @@
 "use client";
 
 import React, { useRef, useState, FormEvent } from "react";
-import { Button } from "@nextui-org/button";
-import { Input } from "@nextui-org/input";
-import { Popover, PopoverTrigger, PopoverContent } from "@nextui-org/popover";
+import { Button } from "@heroui/button";
+import { Input } from "@heroui/input";
+import { Popover, PopoverTrigger, PopoverContent } from "@heroui/popover";
 import { Send, Smile, MoreHorizontal } from "lucide-react";
 import data from "@emoji-mart/data";
 import Picker from "@emoji-mart/react";

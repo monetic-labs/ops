@@ -1,9 +1,9 @@
 // REFAC THIS LATER
 
 import { MerchantCardTransactionGetOutput } from "@backpack-fux/pylon-sdk";
-import { Button } from "@nextui-org/button";
-import { Divider } from "@nextui-org/divider";
-import { Modal, ModalBody, ModalContent, ModalFooter, ModalHeader } from "@nextui-org/modal";
+import { Button } from "@heroui/button";
+import { Divider } from "@heroui/divider";
+import { Modal, ModalBody, ModalContent, ModalFooter, ModalHeader } from "@heroui/modal";
 
 interface TransactionDetailsModalProps {
   isOpen: boolean;

@@ -1,19 +1,19 @@
 import { MerchantUserGetOutput, PersonRole } from "@backpack-fux/pylon-sdk";
-import { Button } from "@nextui-org/button";
-import { Input } from "@nextui-org/input";
-import { Modal, ModalBody, ModalContent, ModalFooter, ModalHeader } from "@nextui-org/modal";
-import { Select, SelectItem } from "@nextui-org/select";
-import { Divider } from "@nextui-org/divider";
-import { User } from "@nextui-org/user";
+import { Button } from "@heroui/button";
+import { Input } from "@heroui/input";
+import { Modal, ModalBody, ModalContent, ModalFooter, ModalHeader } from "@heroui/modal";
+import { Select, SelectItem } from "@heroui/select";
+import { Divider } from "@heroui/divider";
+import { User } from "@heroui/user";
 import { useState, useEffect } from "react";
 import { Eye, EyeOff, Fingerprint, Plus, Trash2, Info } from "lucide-react";
-import { ScrollShadow } from "@nextui-org/scroll-shadow";
-import { Tooltip } from "@nextui-org/tooltip";
+import { ScrollShadow } from "@heroui/scroll-shadow";
+import { Tooltip } from "@heroui/tooltip";
 import { Address, Hex } from "viem";
 import { PublicKey } from "ox";
 import { SafeAccountV0_3_0 as SafeAccount } from "abstractionkit";
 
-import { formatPhoneNumber, getFullName, getOpepenAvatar } from "@/utils/helpers";
+import { formatPhoneNumber, formatStringToTitleCase, getFullName, getOpepenAvatar } from "@/utils/helpers";
 import { PasskeyStatus, syncPasskeysWithSafe, PasskeyWithStatus } from "@/utils/safe/features/passkey";
 import { WebAuthnHelper } from "@/utils/webauthn";
 import { createAddOwnerTemplate } from "@/utils/safe/templates";
@@ -739,9 +739,9 @@ export default function UserEditModal({
                         onPress={() => setShowEmail(!showEmail)}
                       >
                         {showEmail ? (
-                          <Eye className="w-4 h-4 text-default-400" />
-                        ) : (
                           <EyeOff className="w-4 h-4 text-default-400" />
+                        ) : (
+                          <Eye className="w-4 h-4 text-default-400" />
                         )}
                       </Button>
                     }
@@ -749,7 +749,7 @@ export default function UserEditModal({
                     label="Email"
                     placeholder="Enter email address"
                     type="email"
-                    value={showEmail ? editedUser.email : maskEmail(editedUser.email)}
+                    value={!showEmail ? editedUser.email : maskEmail(editedUser.email)}
                     variant="bordered"
                     onChange={(e) => setEditedUser({ ...editedUser, email: e.target.value })}
                   />
@@ -764,9 +764,9 @@ export default function UserEditModal({
                         onPress={() => setShowPhone(!showPhone)}
                       >
                         {showPhone ? (
-                          <Eye className="w-4 h-4 text-default-400" />
-                        ) : (
                           <EyeOff className="w-4 h-4 text-default-400" />
+                        ) : (
+                          <Eye className="w-4 h-4 text-default-400" />
                         )}
                       </Button>
                     }
@@ -774,7 +774,7 @@ export default function UserEditModal({
                     label="Phone"
                     placeholder="Enter phone number"
                     value={
-                      showPhone
+                      !showPhone
                         ? editedUser.phone
                           ? formatPhoneNumber(editedUser.phone)
                           : ""
@@ -798,11 +798,8 @@ export default function UserEditModal({
                   onChange={(e) => setEditedUser({ ...editedUser, role: e.target.value as PersonRole })}
                 >
                   {availableRoles.map((role) => (
-                    <SelectItem key={role} value={role}>
-                      {role
-                        .replace(/_/g, " ")
-                        .toLowerCase()
-                        .replace(/\b\w/g, (char) => char.toUpperCase())}
+                    <SelectItem key={role} textValue={formatStringToTitleCase(role)}>
+                      {formatStringToTitleCase(role)}
                     </SelectItem>
                   ))}
                 </Select>
@@ -868,7 +865,6 @@ export default function UserEditModal({
           </ModalFooter>
         </ModalContent>
       </Modal>
-
       {/* Confirmation Modal for Remove User */}
       <Modal isOpen={isRemoveConfirmOpen} size="sm" onClose={() => setIsRemoveConfirmOpen(false)}>
         <ModalContent>

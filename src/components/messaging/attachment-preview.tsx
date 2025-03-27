@@ -1,7 +1,7 @@
 import React from "react";
-import { Button } from "@nextui-org/button";
-import { Image } from "@nextui-org/image";
-import { Spinner } from "@nextui-org/spinner";
+import { Button } from "@heroui/button";
+import { Image } from "@heroui/image";
+import { Spinner } from "@heroui/spinner";
 import { X } from "lucide-react";
 
 interface AttachmentPreviewProps {

@@ -1,4 +1,4 @@
-import { Spinner } from "@nextui-org/spinner";
+import { Spinner } from "@heroui/spinner";
 import { CheckCircle2, XCircle } from "lucide-react";
 import { ReactNode, useEffect } from "react";
 

@@ -1,7 +1,7 @@
-import { Button } from "@nextui-org/button";
-import { Input } from "@nextui-org/input";
-import { Modal, ModalBody, ModalContent, ModalFooter, ModalHeader } from "@nextui-org/modal";
-import { Select, SelectItem } from "@nextui-org/select";
+import { Button } from "@heroui/button";
+import { Input } from "@heroui/input";
+import { Modal, ModalBody, ModalContent, ModalFooter, ModalHeader } from "@heroui/modal";
+import { Select, SelectItem } from "@heroui/select";
 import { useEffect, useState } from "react";
 
 interface CardLimitModalProps {
@@ -71,7 +71,7 @@ export default function CardLimitModal({ isOpen, onClose, cardName, currentLimit
             onChange={(e) => setCycle(e.target.value)}
           >
             {cycles.map((c) => (
-              <SelectItem key={c.value} value={c.value}>
+              <SelectItem key={c.value} textValue={c.label}>
                 {c.label}
               </SelectItem>
             ))}

@@ -1,10 +1,10 @@
 "use client";
 import { useState, useEffect } from "react";
-import { NavbarBrand, NavbarContent, NavbarItem, Navbar as NextUINavbar } from "@nextui-org/navbar";
-import { Dropdown, DropdownTrigger, DropdownMenu, DropdownItem } from "@nextui-org/dropdown";
-import { Avatar } from "@nextui-org/avatar";
-import { Button } from "@nextui-org/button";
-import { Badge } from "@nextui-org/badge";
+import { NavbarBrand, NavbarContent, NavbarItem, Navbar as NextUINavbar } from "@heroui/navbar";
+import { Dropdown, DropdownTrigger, DropdownMenu, DropdownItem } from "@heroui/dropdown";
+import { Avatar } from "@heroui/avatar";
+import { Button } from "@heroui/button";
+import { Badge } from "@heroui/badge";
 import { useRouter, usePathname } from "next/navigation";
 import NextLink from "next/link";
 import { LogOut, User, Backpack, Shield, Moon, Sun, MessageCircle } from "lucide-react";

@@ -2,9 +2,9 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { Info } from "lucide-react";
-import { Modal, ModalBody, ModalContent, ModalHeader } from "@nextui-org/modal";
-import { Divider } from "@nextui-org/divider";
-import { Tooltip } from "@nextui-org/tooltip";
+import { Modal, ModalBody, ModalContent, ModalHeader } from "@heroui/modal";
+import { Divider } from "@heroui/divider";
+import { Tooltip } from "@heroui/tooltip";
 import {
   DisbursementMethod,
   MerchantDisbursementUpdateOutput,

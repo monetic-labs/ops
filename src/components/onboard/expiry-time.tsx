@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Progress } from "@nextui-org/progress";
+import { Progress } from "@heroui/progress";
 import { Clock } from "lucide-react";
 
 import { cn } from "@/utils/cn";

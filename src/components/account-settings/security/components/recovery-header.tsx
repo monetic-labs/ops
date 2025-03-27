@@ -1,8 +1,8 @@
 "use client";
 
-import { Tooltip } from "@nextui-org/tooltip";
+import { Tooltip } from "@heroui/tooltip";
 import { Shield, InfoIcon } from "lucide-react";
-import { Select, SelectItem } from "@nextui-org/select";
+import { Select, SelectItem } from "@heroui/select";
 import { useEffect } from "react";
 
 type RecoveryHeaderProps = {
@@ -87,7 +87,7 @@ export const RecoveryHeader = ({ configuredCount, threshold, onThresholdChange }
               }}
             >
               {thresholdOptions.map((value) => (
-                <SelectItem key={value} value={value}>
+                <SelectItem key={value} textValue={`${value} of ${totalOptions} required`}>
                   <div className="flex flex-col gap-1">
                     <span>
                       {value} of {totalOptions} required

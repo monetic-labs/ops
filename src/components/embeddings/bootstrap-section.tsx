@@ -1,7 +1,7 @@
-import { Card, CardHeader, CardBody } from "@nextui-org/card";
-import { Divider } from "@nextui-org/divider";
-import { Spinner } from "@nextui-org/spinner";
-import { Button } from "@nextui-org/button";
+import { Card, CardHeader, CardBody } from "@heroui/card";
+import { Divider } from "@heroui/divider";
+import { Spinner } from "@heroui/spinner";
+import { Button } from "@heroui/button";
 
 import { useBootstrapProcessor } from "@/hooks/embeddings/useBootstrapProcessor";
 

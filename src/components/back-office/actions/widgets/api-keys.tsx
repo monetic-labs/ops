@@ -1,9 +1,9 @@
 import { useState, useEffect } from "react";
-import { Modal, ModalBody, ModalHeader, ModalContent } from "@nextui-org/modal";
-import { Button } from "@nextui-org/button";
-import { TableColumn, TableCell, Table, TableBody, TableHeader, TableRow } from "@nextui-org/table";
-import { Input } from "@nextui-org/input";
-import { Snippet } from "@nextui-org/snippet";
+import { Modal, ModalBody, ModalHeader, ModalContent } from "@heroui/modal";
+import { Button } from "@heroui/button";
+import { TableColumn, TableCell, Table, TableBody, TableHeader, TableRow } from "@heroui/table";
+import { Input } from "@heroui/input";
+import { Snippet } from "@heroui/snippet";
 
 import { useApiService } from "@/hooks/widgets/useApiService";
 import ModalFooterWithSupport from "@/components/generics/footer-modal-support";

@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from "react";
-import { Modal, ModalContent, ModalHeader, ModalBody, ModalFooter } from "@nextui-org/modal";
-import { Button } from "@nextui-org/button";
-import { Divider } from "@nextui-org/divider";
-import { Input } from "@nextui-org/input";
+import { Modal, ModalContent, ModalHeader, ModalBody, ModalFooter } from "@heroui/modal";
+import { Button } from "@heroui/button";
+import { Divider } from "@heroui/divider";
+import { Input } from "@heroui/input";
 
 interface RefundModalProps {
   isOpen: boolean;

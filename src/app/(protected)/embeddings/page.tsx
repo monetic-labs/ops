@@ -1,12 +1,12 @@
 "use client";
 
 import { useCallback, useState } from "react";
-import { Card, CardBody, CardHeader } from "@nextui-org/card";
-import { Divider } from "@nextui-org/divider";
-import { Input } from "@nextui-org/input";
-import { Spinner } from "@nextui-org/spinner";
-import { Tabs, Tab } from "@nextui-org/tabs";
-import { Button } from "@nextui-org/button";
+import { Card, CardBody, CardHeader } from "@heroui/card";
+import { Divider } from "@heroui/divider";
+import { Input } from "@heroui/input";
+import { Spinner } from "@heroui/spinner";
+import { Tabs, Tab } from "@heroui/tabs";
+import { Button } from "@heroui/button";
 
 import { FormCard } from "@/components/generics/form-card";
 import { BootstrapSection } from "@/components/embeddings/bootstrap-section";

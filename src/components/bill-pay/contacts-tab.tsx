@@ -1,8 +1,8 @@
 "use client";
 
 import React, { useEffect } from "react";
-import { Chip } from "@nextui-org/chip";
-import { User } from "@nextui-org/user";
+import { Chip } from "@heroui/chip";
+import { User } from "@heroui/user";
 import { MerchantDisbursementCreateOutput } from "@backpack-fux/pylon-sdk";
 
 import { DataTable, Column, EmptyContent } from "@/components/generics/data-table";

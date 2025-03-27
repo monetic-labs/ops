@@ -1,6 +1,6 @@
 import React from "react";
-import { Button } from "@nextui-org/button";
-import { Popover, PopoverTrigger, PopoverContent } from "@nextui-org/popover";
+import { Button } from "@heroui/button";
+import { Popover, PopoverTrigger, PopoverContent } from "@heroui/popover";
 import { Paperclip, Image as ImageIcon, Camera } from "lucide-react";
 
 interface AttachmentActionsProps {

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Tab, Tabs } from "@nextui-org/tabs";
+import { Tab, Tabs } from "@heroui/tabs";
 import { PlusIcon } from "lucide-react";
 
 import { ResponsiveButton } from "../generics/responsive-button";

@@ -1,7 +1,7 @@
 import React from "react";
 import { Info, AlertTriangle } from "lucide-react";
-import { Card, CardBody, CardHeader } from "@nextui-org/card";
-import { Accordion, AccordionItem } from "@nextui-org/accordion";
+import { Card, CardBody, CardHeader } from "@heroui/card";
+import { Accordion, AccordionItem } from "@heroui/accordion";
 
 interface DocumentTipsProps {
   hideAlert?: boolean;

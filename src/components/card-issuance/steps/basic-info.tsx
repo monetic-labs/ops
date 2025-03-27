@@ -1,5 +1,5 @@
-import { Input } from "@nextui-org/input";
-import { Select, SelectItem } from "@nextui-org/select";
+import { Input } from "@heroui/input";
+import { Select, SelectItem } from "@heroui/select";
 import { CardType } from "@backpack-fux/pylon-sdk";
 import { CreditCard, Mail, User } from "lucide-react";
 import { Controller, UseFormReturn } from "react-hook-form";
@@ -41,7 +41,7 @@ export function BasicInfoStep({ form }: BasicInfoStepProps) {
               startContent={<CreditCard className="text-foreground/50 w-4 h-4 pointer-events-none flex-shrink-0" />}
             >
               {CARD_TYPES.map((type) => (
-                <SelectItem key={type.value} value={type.value}>
+                <SelectItem key={type.value} textValue={type.label}>
                   {type.label}
                 </SelectItem>
               ))}

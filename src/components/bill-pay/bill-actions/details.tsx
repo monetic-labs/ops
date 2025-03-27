@@ -1,10 +1,10 @@
 "use client";
 
-import { Divider } from "@nextui-org/divider";
-import { Modal, ModalBody, ModalContent, ModalHeader } from "@nextui-org/modal";
+import { Divider } from "@heroui/divider";
+import { Modal, ModalBody, ModalContent, ModalHeader } from "@heroui/modal";
 import { useState } from "react";
 import { DisbursementState, MerchantDisbursementEventGetOutput } from "@backpack-fux/pylon-sdk";
-import { Input } from "@nextui-org/input";
+import { Input } from "@heroui/input";
 import { Eye, EyeOff } from "lucide-react";
 
 import ModalFooterWithSupport from "../../generics/footer-modal-support";

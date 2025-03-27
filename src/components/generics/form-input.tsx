@@ -1,5 +1,5 @@
-import { Input, InputProps } from "@nextui-org/input";
-import { Tooltip } from "@nextui-org/tooltip";
+import { Input, InputProps } from "@heroui/input";
+import { Tooltip } from "@heroui/tooltip";
 import { Control, Controller, FieldValues, Path } from "react-hook-form";
 
 interface FormInputProps<T extends FieldValues> extends Omit<InputProps, "name"> {

@@ -1,7 +1,7 @@
 import React, { useState } from "react";
-import { Modal, ModalContent, ModalHeader, ModalBody, ModalFooter } from "@nextui-org/modal";
-import { Button } from "@nextui-org/button";
-import { Input } from "@nextui-org/input";
+import { Modal, ModalContent, ModalHeader, ModalBody, ModalFooter } from "@heroui/modal";
+import { Button } from "@heroui/button";
+import { Input } from "@heroui/input";
 import { Mail, Phone, DollarSign } from "lucide-react";
 import { GetOrderLinksOutput, ISO4217Currency } from "@backpack-fux/pylon-sdk";
 

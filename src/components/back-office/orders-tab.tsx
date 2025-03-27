@@ -1,6 +1,6 @@
 import React, { forwardRef, useState } from "react";
-import { Button } from "@nextui-org/button";
-import { Snippet } from "@nextui-org/snippet";
+import { Button } from "@heroui/button";
+import { Snippet } from "@heroui/snippet";
 import { GetOrderLinksOutput } from "@backpack-fux/pylon-sdk";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 

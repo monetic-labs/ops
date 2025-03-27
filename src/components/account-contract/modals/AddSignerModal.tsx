@@ -1,8 +1,8 @@
 import { useState } from "react";
-import { Modal, ModalContent, ModalHeader, ModalBody, ModalFooter } from "@nextui-org/modal";
-import { Button } from "@nextui-org/button";
-import { Select, SelectItem } from "@nextui-org/select";
-import { User } from "@nextui-org/user";
+import { Modal, ModalContent, ModalHeader, ModalBody, ModalFooter } from "@heroui/modal";
+import { Button } from "@heroui/button";
+import { Select, SelectItem } from "@heroui/select";
+import { User } from "@heroui/user";
 import { Address } from "viem";
 import { SafeAccountV0_3_0 as SafeAccount } from "abstractionkit";
 

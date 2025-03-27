@@ -1,16 +1,16 @@
 import React, { useState, useEffect } from "react";
-import { Modal, ModalContent, ModalHeader, ModalBody, ModalFooter } from "@nextui-org/modal";
-import { Button } from "@nextui-org/button";
-import { Input } from "@nextui-org/input";
-import { Select, SelectItem } from "@nextui-org/select";
-import { RadioGroup, Radio } from "@nextui-org/radio";
-import { Card, CardBody } from "@nextui-org/card";
-import { Chip } from "@nextui-org/chip";
-import { Divider } from "@nextui-org/divider";
-import { DatePicker } from "@nextui-org/date-picker";
+import { Modal, ModalContent, ModalHeader, ModalBody, ModalFooter } from "@heroui/modal";
+import { Button } from "@heroui/button";
+import { Input } from "@heroui/input";
+import { Select, SelectItem } from "@heroui/select";
+import { RadioGroup, Radio } from "@heroui/radio";
+import { Card, CardBody } from "@heroui/card";
+import { Chip } from "@heroui/chip";
+import { Divider } from "@heroui/divider";
+import { DatePicker } from "@heroui/date-picker";
 import { parseDate, CalendarDate } from "@internationalized/date";
 import { Info, ArrowRight, Calendar, Bitcoin, Coins, AlertTriangle } from "lucide-react";
-import { Slider } from "@nextui-org/slider";
+import { Slider } from "@heroui/slider";
 
 import type { Account } from "@/types/account";
 import { formatCurrencyInput, formatAmountUSD } from "@/utils/helpers";

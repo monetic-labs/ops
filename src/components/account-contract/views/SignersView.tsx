@@ -1,6 +1,6 @@
 import { PersonRole } from "@backpack-fux/pylon-sdk";
-import { Button } from "@nextui-org/button";
-import { Avatar } from "@nextui-org/avatar";
+import { Button } from "@heroui/button";
+import { Avatar } from "@heroui/avatar";
 import { ShieldCheck } from "lucide-react";
 import { useState } from "react";
 

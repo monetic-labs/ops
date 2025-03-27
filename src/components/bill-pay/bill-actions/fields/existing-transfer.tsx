@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
-import { useInfiniteScroll } from "@nextui-org/use-infinite-scroll";
+import { useInfiniteScroll } from "@heroui/use-infinite-scroll";
 import { DisbursementMethod, FiatCurrency } from "@backpack-fux/pylon-sdk";
-import { Autocomplete, AutocompleteItem } from "@nextui-org/autocomplete";
-import { Input } from "@nextui-org/input";
+import { Autocomplete, AutocompleteItem } from "@heroui/autocomplete";
+import { Input } from "@heroui/input";
 import { Eye, EyeOff } from "lucide-react";
 
 import { useGetContacts } from "@/hooks/bill-pay/useGetContacts";
@@ -160,7 +160,6 @@ export default function ExistingTransferFields({
             data-testid={`account-holder-item-${contact.id}`}
             endContent={<div className="text-gray-400 text-xs">{contact.nickname}</div>}
             textValue={contact.accountOwnerName}
-            value={contact.accountOwnerName}
           >
             {contact.accountOwnerName}
           </AutocompleteItem>

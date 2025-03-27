@@ -1,8 +1,8 @@
 "use client";
 
-import { Checkbox } from "@nextui-org/checkbox";
+import { Checkbox } from "@heroui/checkbox";
 import { useFormContext } from "react-hook-form";
-import { Link } from "@nextui-org/link";
+import { Link } from "@heroui/link";
 import { ExternalLink } from "lucide-react";
 
 const CustomCheckIcon = (props: { className: string }) => (

@@ -1,8 +1,8 @@
-import { Button } from "@nextui-org/button";
+import { Button } from "@heroui/button";
 import { Filter, Download, Clock, CheckCircle, PenTool } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import Image from "next/image";
-import { Tooltip } from "@nextui-org/tooltip";
+import { Tooltip } from "@heroui/tooltip";
 
 import { TransferActivity } from "@/types/account";
 

@@ -1,7 +1,7 @@
 import React, { useState } from "react";
-import { Select, SelectItem } from "@nextui-org/select";
+import { Select, SelectItem } from "@heroui/select";
 import { Network, StableCurrency } from "@backpack-fux/pylon-sdk";
-import { Autocomplete, AutocompleteItem } from "@nextui-org/autocomplete";
+import { Autocomplete, AutocompleteItem } from "@heroui/autocomplete";
 
 import { capitalizeFirstChar } from "@/utils/helpers";
 import { useAccounts } from "@/contexts/AccountContext";
@@ -50,12 +50,7 @@ export default function WidgetManagement({
         }}
       >
         {(account) => (
-          <AutocompleteItem
-            key={account.address}
-            className="capitalize"
-            textValue={`${account.name} Account`}
-            value={account.address}
-          >
+          <AutocompleteItem key={account.address} className="capitalize" textValue={`${account.name} Account`}>
             <div className="flex items-center gap-2">
               <account.icon className="w-4 h-4" />
               <div className="flex flex-col">
@@ -76,7 +71,7 @@ export default function WidgetManagement({
         onSelectionChange={(keys) => onNetworkChange(Network.BASE)}
       >
         {networks.map((network) => (
-          <SelectItem key={network} value={network}>
+          <SelectItem key={network} textValue={capitalizeFirstChar(network)}>
             {capitalizeFirstChar(network)}
           </SelectItem>
         ))}
@@ -89,7 +84,7 @@ export default function WidgetManagement({
         onSelectionChange={(keys) => onCurrencyChange(StableCurrency.USDC)}
       >
         {currencies.map((currency) => (
-          <SelectItem key={currency} value={currency}>
+          <SelectItem key={currency} textValue={currency}>
             {currency}
           </SelectItem>
         ))}

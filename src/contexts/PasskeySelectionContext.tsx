@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useCallback, useMemo, createContext, useContext, ReactNode, useEffect } from "react";
-import { useDisclosure } from "@nextui-org/modal";
+import { useDisclosure } from "@heroui/modal";
 
 import { WebAuthnCredentials } from "@/types/webauthn";
 import { useUser } from "@/contexts/UserContext";

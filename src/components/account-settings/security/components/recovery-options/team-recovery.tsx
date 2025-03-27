@@ -1,9 +1,9 @@
 "use client";
 
-import { Button } from "@nextui-org/button";
-import { Select, SelectItem, SelectedItems } from "@nextui-org/select";
-import { Chip } from "@nextui-org/chip";
-import { Avatar } from "@nextui-org/avatar";
+import { Button } from "@heroui/button";
+import { Select, SelectItem, SelectedItems } from "@heroui/select";
+import { Chip } from "@heroui/chip";
+import { Avatar } from "@heroui/avatar";
 import { XIcon } from "lucide-react";
 
 import { useUsers } from "@/contexts/UsersContext";
@@ -66,7 +66,6 @@ export const TeamRecovery = ({ configuredTeamMember, onSelectTeamMember, onRemov
                 key={member.id}
                 className="data-[selected=true]:bg-default-100"
                 textValue={member.username || fullName}
-                value={member.id}
               >
                 <div className="flex items-center gap-2">
                   <Avatar className="bg-default-300" name={member.username || fullName} size="sm" />

@@ -1,6 +1,6 @@
 import React, { useState } from "react";
-import { Tooltip } from "@nextui-org/tooltip";
-import { Snippet } from "@nextui-org/snippet";
+import { Tooltip } from "@heroui/tooltip";
+import { Snippet } from "@heroui/snippet";
 
 interface IDSnippetProps {
   id: string;

@@ -1,6 +1,6 @@
 import React from "react";
-import { Modal, ModalContent, ModalBody } from "@nextui-org/modal";
-import { Button } from "@nextui-org/button";
+import { Modal, ModalContent, ModalBody } from "@heroui/modal";
+import { Button } from "@heroui/button";
 import { X as XIcon } from "lucide-react";
 
 interface FormModalProps {

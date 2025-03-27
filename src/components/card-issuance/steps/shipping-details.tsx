@@ -1,6 +1,6 @@
 import { UseFormReturn } from "react-hook-form";
-import { Input } from "@nextui-org/input";
-import { Select, SelectItem } from "@nextui-org/select";
+import { Input } from "@heroui/input";
+import { Select, SelectItem } from "@heroui/select";
 import { MapPin, Phone } from "lucide-react";
 import { z } from "zod";
 
@@ -91,7 +91,7 @@ export function ShippingDetailsStep({ form }: ShippingDetailsStepProps) {
             startContent={<MapPin className="text-foreground/50 w-4 h-4 pointer-events-none flex-shrink-0" />}
           >
             {COUNTRIES.map((country) => (
-              <SelectItem key={country.value} value={country.value}>
+              <SelectItem key={country.value} textValue={country.label}>
                 {country.label}
               </SelectItem>
             ))}
@@ -107,7 +107,7 @@ export function ShippingDetailsStep({ form }: ShippingDetailsStepProps) {
             startContent={<MapPin className="text-foreground/50 w-4 h-4 pointer-events-none flex-shrink-0" />}
           >
             {regions.map((region: Region) => (
-              <SelectItem key={region.value} value={region.value}>
+              <SelectItem key={region.value} textValue={region.label}>
                 {region.label}
               </SelectItem>
             ))}

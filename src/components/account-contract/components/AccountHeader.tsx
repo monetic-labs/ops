@@ -1,7 +1,7 @@
 import type { Account } from "@/types/account";
 
-import { Button } from "@nextui-org/button";
-import { Dropdown, DropdownTrigger, DropdownMenu, DropdownItem } from "@nextui-org/dropdown";
+import { Button } from "@heroui/button";
+import { Dropdown, DropdownTrigger, DropdownMenu, DropdownItem } from "@heroui/dropdown";
 
 import { formatAmountUSD } from "@/utils/helpers";
 

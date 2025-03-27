@@ -4,9 +4,9 @@ import {
   ISO3166Alpha2State as States,
   ISO3166Alpha2State,
 } from "@backpack-fux/pylon-sdk";
-import { Autocomplete, AutocompleteItem } from "@nextui-org/autocomplete";
-import { Input } from "@nextui-org/input";
-import { Avatar } from "@nextui-org/avatar";
+import { Autocomplete, AutocompleteItem } from "@heroui/autocomplete";
+import { Input } from "@heroui/input";
+import { Avatar } from "@heroui/avatar";
 import { getRegion } from "iso3166-helper";
 
 import { NewBillPay } from "@/types/bill-pay";
@@ -225,7 +225,7 @@ export default function NewTransferFields({ billPay, setBillPay, settlementBalan
           }}
         >
           {(item) => (
-            <AutocompleteItem key={item.key} textValue={`${item.label} (${item.key})`} value={item.value}>
+            <AutocompleteItem key={item.key} textValue={`${item.label} (${item.key})`}>
               {item.label}
             </AutocompleteItem>
           )}

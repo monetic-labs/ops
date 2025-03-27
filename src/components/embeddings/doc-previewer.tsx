@@ -1,5 +1,5 @@
-import { Card, CardBody, CardHeader } from "@nextui-org/card";
-import { Chip } from "@nextui-org/chip";
+import { Card, CardBody, CardHeader } from "@heroui/card";
+import { Chip } from "@heroui/chip";
 
 // Helper function to format content
 const formatContentPreview = (content: string) => {

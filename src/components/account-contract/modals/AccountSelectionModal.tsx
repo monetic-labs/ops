@@ -1,7 +1,7 @@
 import type { Account } from "@/types/account";
 
-import { Button } from "@nextui-org/button";
-import { Modal, ModalContent, ModalHeader, ModalBody } from "@nextui-org/modal";
+import { Button } from "@heroui/button";
+import { Modal, ModalContent, ModalHeader, ModalBody } from "@heroui/modal";
 
 import { useAccounts } from "@/contexts/AccountContext";
 import { formatAmountUSD } from "@/utils/helpers";

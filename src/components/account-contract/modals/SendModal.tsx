@@ -1,9 +1,9 @@
 import type { Account } from "@/types/account";
 
-import { Button } from "@nextui-org/button";
+import { Button } from "@heroui/button";
 import { ArrowRight, Info, X } from "lucide-react";
-import { Tooltip } from "@nextui-org/tooltip";
-import { Modal, ModalContent, ModalHeader, ModalBody, ModalFooter } from "@nextui-org/modal";
+import { Tooltip } from "@heroui/tooltip";
+import { Modal, ModalContent, ModalHeader, ModalBody, ModalFooter } from "@heroui/modal";
 import React, { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { Address } from "viem";

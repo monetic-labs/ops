@@ -3,7 +3,7 @@
 import type { Account, Signer } from "@/types/account";
 
 import { useState } from "react";
-import { Card, CardBody } from "@nextui-org/card";
+import { Card, CardBody } from "@heroui/card";
 import { toast } from "sonner";
 import { CreditCard, MessageCircle } from "lucide-react";
 

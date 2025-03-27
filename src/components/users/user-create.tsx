@@ -1,10 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import { Modal, ModalContent, ModalHeader, ModalBody, ModalFooter } from "@nextui-org/modal";
-import { Input } from "@nextui-org/input";
-import { Button } from "@nextui-org/button";
-import { Select, SelectItem } from "@nextui-org/select";
+import { Modal, ModalContent, ModalHeader, ModalBody, ModalFooter } from "@heroui/modal";
+import { Input } from "@heroui/input";
+import { Button } from "@heroui/button";
+import { Select, SelectItem } from "@heroui/select";
 import { PersonRole, MerchantUserCreateInput } from "@backpack-fux/pylon-sdk";
 
 import { capitalizeFirstChar, formatStringToTitleCase } from "@/utils/helpers";
@@ -94,7 +94,7 @@ export default function CreateUserModal({ isOpen, onClose, onSave, availableRole
                 onChange={(e) => setFormData((prev) => ({ ...prev, role: e.target.value as PersonRole }))}
               >
                 {availableRoles.map((role) => (
-                  <SelectItem key={role} value={role}>
+                  <SelectItem key={role} textValue={formatStringToTitleCase(role)}>
                     {formatStringToTitleCase(role)}
                   </SelectItem>
                 ))}

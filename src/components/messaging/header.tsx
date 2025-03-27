@@ -1,8 +1,8 @@
 "use client";
 
 import React from "react";
-import { Button } from "@nextui-org/button";
-import { Chip } from "@nextui-org/chip";
+import { Button } from "@heroui/button";
+import { Chip } from "@heroui/chip";
 import { XIcon, MessageCircle } from "lucide-react";
 
 import { useMessagingState } from "@/libs/messaging/store";

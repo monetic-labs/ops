@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Table, TableHeader, TableBody, TableColumn, TableRow, TableCell } from "@nextui-org/table";
+import { Table, TableHeader, TableBody, TableColumn, TableRow, TableCell } from "@heroui/table";
 
 import GenerateApiKeysModal from "@/components/back-office/actions/widgets/api-keys";
 

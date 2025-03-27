@@ -3,7 +3,7 @@ import { CardType, CardStatus, ISO3166Alpha2Country } from "@backpack-fux/pylon-
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Button } from "@nextui-org/button";
+import { Button } from "@heroui/button";
 
 import { CreateCardSchema } from "@/validations/card";
 import pylon from "@/libs/pylon-sdk";

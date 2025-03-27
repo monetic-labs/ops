@@ -1,9 +1,9 @@
 "use client";
 
 import { useFormContext, Controller } from "react-hook-form";
-import { Select, SelectItem } from "@nextui-org/select";
+import { Select, SelectItem } from "@heroui/select";
 import { CardCompanyType } from "@backpack-fux/pylon-sdk";
-import { Input } from "@nextui-org/input";
+import { Input } from "@heroui/input";
 import { Building2, Hash, Receipt } from "lucide-react";
 
 import { formatCompanyType, formatEIN } from "@/utils/helpers";
@@ -77,7 +77,7 @@ export const CompanyAccountStep = () => {
               onChange={(e) => field.onChange(e.target.value)}
             >
               {Object.values(CardCompanyType).map((type) => (
-                <SelectItem key={type} value={type}>
+                <SelectItem key={type} textValue={formatCompanyType(type)}>
                   {formatCompanyType(type)}
                 </SelectItem>
               ))}

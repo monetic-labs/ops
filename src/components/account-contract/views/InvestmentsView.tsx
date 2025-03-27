@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Button } from "@nextui-org/button";
+import { Button } from "@heroui/button";
 import { TrendingUp, Clock, Pause, Play, Plus, ExternalLink, Info } from "lucide-react";
 import type { Account } from "@/types/account";
 

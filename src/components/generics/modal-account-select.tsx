@@ -1,6 +1,6 @@
 import type { Account } from "@/types/account";
 
-import { Modal, ModalBody, ModalContent } from "@nextui-org/modal";
+import { Modal, ModalBody, ModalContent } from "@heroui/modal";
 
 interface AccountSelectionModalProps {
   isOpen: boolean;

@@ -1,5 +1,5 @@
 import React, { useEffect } from "react";
-import { Modal, ModalContent } from "@nextui-org/modal";
+import { Modal, ModalContent } from "@heroui/modal";
 import { motion } from "framer-motion";
 import { CheckCircle } from "lucide-react";
 

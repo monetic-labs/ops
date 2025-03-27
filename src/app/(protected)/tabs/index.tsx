@@ -1,14 +1,14 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Card, CardBody } from "@nextui-org/card";
+import { Card, CardBody } from "@heroui/card";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Tooltip } from "@nextui-org/tooltip";
+import { Tooltip } from "@heroui/tooltip";
 import {
   BridgeComplianceKycStatus as BridgeKybStatus,
   CardCompanyStatus as RainKybStatus,
 } from "@backpack-fux/pylon-sdk";
-import { Button } from "@nextui-org/button";
+import { Button } from "@heroui/button";
 import { CreditCard, Building2, Users, Receipt } from "lucide-react";
 
 import BackOfficeTabs from "@/components/back-office/back-office";

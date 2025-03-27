@@ -1,12 +1,12 @@
 import type { Account, Signer } from "@/types/account";
 
-import { Modal, ModalContent, ModalHeader, ModalBody, ModalFooter } from "@nextui-org/modal";
-import { Button } from "@nextui-org/button";
-import { Select, SelectItem } from "@nextui-org/select";
-import { User } from "@nextui-org/user";
+import { Modal, ModalContent, ModalHeader, ModalBody, ModalFooter } from "@heroui/modal";
+import { Button } from "@heroui/button";
+import { Select, SelectItem } from "@heroui/select";
+import { User } from "@heroui/user";
 import { Trash2, Plus, Shield, Users, Search, Key, CheckCircle2, AlertCircle } from "lucide-react";
-import { Input } from "@nextui-org/input";
-import { ScrollShadow } from "@nextui-org/scroll-shadow";
+import { Input } from "@heroui/input";
+import { ScrollShadow } from "@heroui/scroll-shadow";
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
 
@@ -340,7 +340,10 @@ export function DeployAccountModal({
                             onChange={(e) => setThreshold(parseInt(e.target.value))}
                           >
                             {Array.from({ length: selectedSigners.length }, (_, i) => i + 1).map((num) => (
-                              <SelectItem key={num.toString()} value={num.toString()}>
+                              <SelectItem
+                                key={num.toString()}
+                                textValue={`${num} ${num === 1 ? "signature" : "signatures"}`}
+                              >
                                 {num} {num === 1 ? "signature" : "signatures"}
                               </SelectItem>
                             ))}

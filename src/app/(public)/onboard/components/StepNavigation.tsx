@@ -1,4 +1,4 @@
-import { Button } from "@nextui-org/button";
+import { Button } from "@heroui/button";
 import { ArrowLeft, ArrowRight, Check, Plus } from "lucide-react";
 
 interface StepNavigationProps {
@@ -48,7 +48,7 @@ export const StepNavigation = ({
         Previous Step
       </Button>
     ) : showAddPerson ? null : (
-      <div className="hidden md:block" /> // Spacer only shown on desktop when no add person button
+      (<div className="hidden md:block" />) // Spacer only shown on desktop when no add person button
     )}
 
     {/* Continue/Complete Button */}

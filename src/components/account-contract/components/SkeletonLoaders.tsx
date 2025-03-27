@@ -1,5 +1,5 @@
 import { Activity, Building2, Shield, Users2 } from "lucide-react";
-import { Button } from "@nextui-org/button";
+import { Button } from "@heroui/button";
 
 export function SkeletonAccountHeader() {
   return (

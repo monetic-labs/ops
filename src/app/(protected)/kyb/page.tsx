@@ -4,7 +4,7 @@ import { useGetComplianceStatus } from "@/hooks/merchant/useGetComplianceStatus"
 import { StatusCard } from "@/components/kyb-status/status-card";
 import { DocumentTips } from "@/components/kyb-status/document-tips";
 import { AlertTriangle, FileText } from "lucide-react";
-import { Button } from "@nextui-org/button";
+import { Button } from "@heroui/button";
 import { useRef } from "react";
 
 export default function KYB() {

@@ -1,9 +1,9 @@
 "use client";
 
-import { Card, CardBody } from "@nextui-org/card";
-import { Select, SelectItem } from "@nextui-org/select";
+import { Card, CardBody } from "@heroui/card";
+import { Select, SelectItem } from "@heroui/select";
 import { LucideIcon } from "lucide-react";
-import { Chip } from "@nextui-org/chip";
+import { Chip } from "@heroui/chip";
 
 type TimeOption = {
   label: string;
@@ -64,7 +64,7 @@ export const TimeSettingCard = ({
             onChange={(e) => onValueChange(e.target.value)}
           >
             {options.map((option) => (
-              <SelectItem key={option.value} textValue={option.label} value={option.value}>
+              <SelectItem key={option.value} textValue={option.label}>
                 <div className="flex flex-col">
                   <div className="flex items-center gap-2">
                     <span>{option.label}</span>

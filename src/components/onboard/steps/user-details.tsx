@@ -1,12 +1,12 @@
 "use client";
 
 import { useFormContext, Controller } from "react-hook-form";
-import { Select, SelectItem } from "@nextui-org/select";
+import { Select, SelectItem } from "@heroui/select";
 import { ChangeEvent } from "react";
-import { Input } from "@nextui-org/input";
-import { SharedSelection } from "@nextui-org/system";
+import { Input } from "@heroui/input";
+import { SharedSelection } from "@heroui/system";
 import { ISO3166Alpha2Country, PersonRole } from "@backpack-fux/pylon-sdk";
-import { Checkbox } from "@nextui-org/checkbox";
+import { Checkbox } from "@heroui/checkbox";
 
 import postcodeMap from "@/data/postcodes-map.json";
 import { FormData } from "@/validations/onboard/schemas";
@@ -65,7 +65,7 @@ export const UserDetailsStep = () => {
             }}
           >
             {Object.values(ISO3166Alpha2Country).map((country) => (
-              <SelectItem key={country} value={country}>
+              <SelectItem key={country} textValue={country}>
                 {country}
               </SelectItem>
             ))}
@@ -239,7 +239,7 @@ export const UserDetailsStep = () => {
                       }}
                     >
                       {Object.values(PersonRole).map((role) => (
-                        <SelectItem key={role} value={role}>
+                        <SelectItem key={role} textValue={formatStringToTitleCase(role)}>
                           {formatStringToTitleCase(role)}
                         </SelectItem>
                       ))}

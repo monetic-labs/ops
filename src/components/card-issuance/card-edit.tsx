@@ -1,7 +1,7 @@
-import { Button } from "@nextui-org/button";
-import { Input } from "@nextui-org/input";
-import { Select, SelectItem } from "@nextui-org/select";
-import { ModalBody, ModalFooter } from "@nextui-org/modal";
+import { Button } from "@heroui/button";
+import { Input } from "@heroui/input";
+import { Select, SelectItem } from "@heroui/select";
+import { ModalBody, ModalFooter } from "@heroui/modal";
 import { XIcon, DollarSign, Calendar, CreditCard, Lock } from "lucide-react";
 import { Controller, UseFormReturn } from "react-hook-form";
 import { z } from "zod";
@@ -72,7 +72,7 @@ export default function CardEdit({ form, cardName, onCancel, onSubmit, isLoading
                 onChange={field.onChange}
               >
                 {limitCyclesObject.map((t) => (
-                  <SelectItem key={t.value} data-testid={t.value} value={t.value}>
+                  <SelectItem key={t.value} data-testid={t.value} textValue={t.label}>
                     {t.label}
                   </SelectItem>
                 ))}
@@ -98,7 +98,7 @@ export default function CardEdit({ form, cardName, onCancel, onSubmit, isLoading
                 onChange={field.onChange}
               >
                 {limitStatesObject.map((t) => (
-                  <SelectItem key={t.value} data-testid={t.value} value={t.value}>
+                  <SelectItem key={t.value} data-testid={t.value} textValue={t.label}>
                     {t.label}
                   </SelectItem>
                 ))}

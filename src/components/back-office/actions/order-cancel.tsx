@@ -1,7 +1,7 @@
 import React from "react";
-import { Modal, ModalContent, ModalHeader, ModalBody, ModalFooter } from "@nextui-org/modal";
-import { Button } from "@nextui-org/button";
-import { Divider } from "@nextui-org/divider";
+import { Modal, ModalContent, ModalHeader, ModalBody, ModalFooter } from "@heroui/modal";
+import { Button } from "@heroui/button";
+import { Divider } from "@heroui/divider";
 
 interface CancelConfirmationModalProps {
   isOpen: boolean;

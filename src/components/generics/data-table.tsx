@@ -1,8 +1,8 @@
 import React from "react";
-import { Table, TableHeader, TableColumn, TableBody, TableRow, TableCell } from "@nextui-org/table";
-import { Button } from "@nextui-org/button";
+import { Table, TableHeader, TableColumn, TableBody, TableRow, TableCell } from "@heroui/table";
+import { Button } from "@heroui/button";
 import { PlusIcon } from "lucide-react";
-import { Spinner } from "@nextui-org/spinner";
+import { Spinner } from "@heroui/spinner";
 
 export interface Column<T> {
   name: string;

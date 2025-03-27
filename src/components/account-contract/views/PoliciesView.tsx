@@ -1,6 +1,6 @@
-import { Button } from "@nextui-org/button";
+import { Button } from "@heroui/button";
 import { Shield, Info, Clock, Settings } from "lucide-react";
-import { Tooltip } from "@nextui-org/tooltip";
+import { Tooltip } from "@heroui/tooltip";
 
 import { Signer } from "@/types/account";
 

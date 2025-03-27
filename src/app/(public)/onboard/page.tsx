@@ -2,12 +2,12 @@
 
 import { useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Spinner } from "@nextui-org/spinner";
+import { Spinner } from "@heroui/spinner";
 import { useForm, FormProvider, SubmitHandler } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Accordion, AccordionItem } from "@nextui-org/accordion";
-import { Modal, ModalContent } from "@nextui-org/modal";
-import { Button } from "@nextui-org/button";
+import { Accordion, AccordionItem } from "@heroui/accordion";
+import { Modal, ModalContent } from "@heroui/modal";
+import { Button } from "@heroui/button";
 import { Sun, Moon, Fingerprint, Laptop, Shield } from "lucide-react";
 import { jwtDecode } from "jwt-decode";
 import { Address } from "viem";

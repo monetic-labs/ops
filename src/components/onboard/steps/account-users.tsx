@@ -1,10 +1,10 @@
 "use client";
 
-import { Button } from "@nextui-org/button";
-import { Checkbox } from "@nextui-org/checkbox";
+import { Button } from "@heroui/button";
+import { Checkbox } from "@heroui/checkbox";
 import { useFormContext, useFieldArray } from "react-hook-form";
 import { Controller } from "react-hook-form";
-import { Input } from "@nextui-org/input";
+import { Input } from "@heroui/input";
 
 import { UserRole } from "@/validations/onboard/schemas";
 import { capitalizeFirstChar, formatPhoneNumber } from "@/utils/helpers";
@@ -198,11 +198,9 @@ export const AccountUsers = () => {
           </div>
         );
       })}
-
       {hasError && !hasRepresentative && (
         <p className="text-red-500 text-sm">At least one Representative is required</p>
       )}
-
       <Button
         fullWidth
         className="bg-[#1C1C1C] hover:bg-[#2B2D3C] text-white rounded-xl h-14"

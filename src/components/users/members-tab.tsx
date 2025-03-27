@@ -1,10 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import { Chip } from "@nextui-org/chip";
-import { User } from "@nextui-org/user";
+import { Chip } from "@heroui/chip";
+import { User } from "@heroui/user";
 import { MerchantUserGetOutput, MerchantUserCreateInput } from "@backpack-fux/pylon-sdk";
-import { Tooltip } from "@nextui-org/tooltip";
+import { Tooltip } from "@heroui/tooltip";
 import { Fingerprint, Eye } from "lucide-react";
 
 import { DataTable, Column, EmptyContent } from "@/components/generics/data-table";

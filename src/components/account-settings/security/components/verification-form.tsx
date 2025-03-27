@@ -1,9 +1,9 @@
 "use client";
 
-import { Button } from "@nextui-org/button";
-import { Input } from "@nextui-org/input";
-import { InputOtp } from "@nextui-org/input-otp";
-import { Chip } from "@nextui-org/chip";
+import { Button } from "@heroui/button";
+import { Input } from "@heroui/input";
+import { InputOtp } from "@heroui/input-otp";
+import { Chip } from "@heroui/chip";
 import { LucideIcon, XIcon } from "lucide-react";
 
 type VerificationItem = {

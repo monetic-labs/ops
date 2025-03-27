@@ -7,7 +7,7 @@ import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm"; // For tables, strikethrough, etc.
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import { vscDarkPlus } from "react-syntax-highlighter/dist/esm/styles/prism";
-import { Avatar } from "@nextui-org/avatar";
+import { Avatar } from "@heroui/avatar";
 import { User, Image as ImageIcon } from "lucide-react";
 
 // Define CodeProps interface if needed
@@ -67,26 +67,24 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({ message, contentTe
     const sanitized = sanitizeContent(content);
 
     // Format different sections
-    return (
-      sanitized
-        // Format headers with bold
-        .replace(/\*\*(.*?)\*\*/g, "**$1**")
-        // Add spacing after sections
-        .split("\n")
-        .map((line) => {
-          // Handle bullet points
-          if (line.trim().startsWith("-")) {
-            return `\n${line}`;
-          }
-          // Handle section headers
-          if (line.includes("**") && line.trim().endsWith("**:")) {
-            return `\n${line}\n`;
-          }
+    return (sanitized
+      // Format headers with bold
+      .replace(/\*\*(.*?)\*\*/g, "**$1**")
+      // Add spacing after sections
+      .split("\n")
+      .map((line) => {
+        // Handle bullet points
+        if (line.trim().startsWith("-")) {
+          return `\n${line}`;
+        }
+        // Handle section headers
+        if (line.includes("**") && line.trim().endsWith("**:")) {
+          return `\n${line}\n`;
+        }
 
-          return line;
-        })
-        .join("\n")
-    );
+        return line;
+      })
+      .join("\n"));
   };
 
   const getMessageContent = () => {

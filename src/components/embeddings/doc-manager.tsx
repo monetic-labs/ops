@@ -1,12 +1,12 @@
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
-import { Card, CardBody, CardHeader } from "@nextui-org/card";
-import { Select, SelectItem } from "@nextui-org/select";
-import { Spinner } from "@nextui-org/spinner";
-import { Accordion, AccordionItem } from "@nextui-org/accordion";
-import { Chip } from "@nextui-org/chip";
-import { Divider } from "@nextui-org/divider";
+import { Card, CardBody, CardHeader } from "@heroui/card";
+import { Select, SelectItem } from "@heroui/select";
+import { Spinner } from "@heroui/spinner";
+import { Accordion, AccordionItem } from "@heroui/accordion";
+import { Chip } from "@heroui/chip";
+import { Divider } from "@heroui/divider";
 
 import { useDocumentManager } from "@/hooks/embeddings/useDocumentManager";
 import CardFooterWithActions from "@/components/generics/card-footer-actions";
@@ -223,7 +223,7 @@ const DocumentManager = () => {
               <SelectItem
                 key={option.value}
                 className="text-notpurple-500 data-[hover=true]:bg-charyo-600/60"
-                value={option.value}
+                textValue={`${option.label} (${option.description})`}
               >
                 {option.label} ({option.description})
               </SelectItem>

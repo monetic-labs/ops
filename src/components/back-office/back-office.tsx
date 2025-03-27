@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { Tab, Tabs } from "@nextui-org/tabs";
+import { Tab, Tabs } from "@heroui/tabs";
 import { PlusIcon, SaveIcon } from "lucide-react";
 import { Network, StableCurrency, MerchantAccountGetOutput } from "@backpack-fux/pylon-sdk";
 

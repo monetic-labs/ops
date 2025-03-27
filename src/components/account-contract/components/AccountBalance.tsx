@@ -1,6 +1,6 @@
 import type { Account } from "@/types/account";
 
-import { Button } from "@nextui-org/button";
+import { Button } from "@heroui/button";
 import { ArrowUpRight, ArrowDownLeft } from "lucide-react";
 import { PersonRole } from "@backpack-fux/pylon-sdk";
 

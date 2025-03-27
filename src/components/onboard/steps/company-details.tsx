@@ -2,7 +2,7 @@
 
 import { useFormContext, Controller } from "react-hook-form";
 import { ChangeEvent, useCallback, useEffect } from "react";
-import { Input } from "@nextui-org/input";
+import { Input } from "@heroui/input";
 import { Globe } from "lucide-react";
 
 import postcodeMap from "@/data/postcodes-map.json";

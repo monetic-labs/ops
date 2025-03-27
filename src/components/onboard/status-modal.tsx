@@ -1,4 +1,4 @@
-import { Modal, ModalContent } from "@nextui-org/modal";
+import { Modal, ModalContent } from "@heroui/modal";
 import { Check } from "lucide-react";
 
 export interface StatusStep {

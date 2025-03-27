@@ -1,6 +1,6 @@
 "use client";
 
-import { Card, CardBody } from "@nextui-org/card";
+import { Card, CardBody } from "@heroui/card";
 import { AlertTriangle, CheckCircle2 } from "lucide-react";
 
 type RecoveryWarningProps = {

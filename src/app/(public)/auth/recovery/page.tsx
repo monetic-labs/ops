@@ -1,9 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import { Card, CardBody, CardHeader } from "@nextui-org/card";
-import { Button } from "@nextui-org/button";
-import { Input } from "@nextui-org/input";
+import { Card, CardBody, CardHeader } from "@heroui/card";
+import { Button } from "@heroui/button";
+import { Input } from "@heroui/input";
 import { ArrowLeft, Mail, Phone, Key, Shield, ArrowRight } from "lucide-react";
 import { useRouter } from "next/navigation";
 
@@ -159,7 +159,7 @@ export default function RecoveryPage() {
 
           {!isVerifying ? (
             // Email Input Step
-            <div className="space-y-6">
+            (<div className="space-y-6">
               <div className="space-y-2">
                 <h2 className="text-white text-lg font-medium">Account Email</h2>
                 <p className="text-white/60 text-sm">Enter your account email to start the recovery process.</p>
@@ -183,10 +183,10 @@ export default function RecoveryPage() {
               >
                 Continue
               </Button>
-            </div>
+            </div>)
           ) : !recoveryOptions ? (
             // OTP Verification Step
-            <div className="space-y-6">
+            (<div className="space-y-6">
               <div className="space-y-2">
                 <h2 className="text-white text-lg font-medium">Verify Your Email</h2>
                 <p className="text-white/60 text-sm">We&apos;ve sent a verification code to {email}</p>
@@ -211,10 +211,10 @@ export default function RecoveryPage() {
               >
                 Verify Email
               </Button>
-            </div>
+            </div>)
           ) : (
             // Recovery Options Step
-            <div className="space-y-6">
+            (<div className="space-y-6">
               <div className="space-y-2">
                 <h2 className="text-white text-lg font-medium">Recovery Options</h2>
                 <p className="text-white/60 text-sm">Select a method to recover your account</p>
@@ -249,7 +249,7 @@ export default function RecoveryPage() {
                   title="Backpack Support"
                 />
               </div>
-            </div>
+            </div>)
           )}
 
           {error && <div className="mt-4 p-3 rounded-lg bg-red-500/10 text-red-400 text-sm text-center">{error}</div>}

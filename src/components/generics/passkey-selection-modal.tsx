@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from "react";
-import { Modal, ModalContent, ModalHeader, ModalBody, ModalFooter } from "@nextui-org/modal";
+import { Modal, ModalContent, ModalHeader, ModalBody, ModalFooter } from "@heroui/modal";
 import { KeyRound } from "lucide-react";
-import { Radio, RadioGroup } from "@nextui-org/radio";
-import { Button } from "@nextui-org/button";
+import { Radio, RadioGroup } from "@heroui/radio";
+import { Button } from "@heroui/button";
 
 import { WebAuthnCredentials } from "@/types/webauthn";
 import { useUser } from "@/contexts/UserContext";

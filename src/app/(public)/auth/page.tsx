@@ -3,10 +3,10 @@
 import type { Passkey as PasskeyCredential } from "@backpack-fux/pylon-sdk";
 
 import { useEffect, useState } from "react";
-import { Card, CardBody } from "@nextui-org/card";
-import { Button } from "@nextui-org/button";
-import { Input } from "@nextui-org/input";
-import { Link } from "@nextui-org/link";
+import { Card, CardBody } from "@heroui/card";
+import { Button } from "@heroui/button";
+import { Input } from "@heroui/input";
+import { Link } from "@heroui/link";
 import { Backpack, Mail, Sun, Moon, ArrowLeft } from "lucide-react";
 import { useRouter } from "next/navigation";
 
@@ -15,18 +15,6 @@ import { useUser } from "@/contexts/UserContext";
 import { useTheme } from "@/hooks/generics/useTheme";
 import pylon from "@/libs/pylon-sdk";
 import { LocalStorage } from "@/utils/localstorage";
-
-interface PasskeyOptions {
-  challenge: string;
-  allowCredentials: Array<{
-    id: string;
-    transports: string[];
-    type: string;
-  }>;
-  timeout: number;
-  userVerification: string;
-  rpId: string;
-}
 
 const AuthPage = () => {
   const { toggleTheme, isDark } = useTheme();
@@ -197,6 +185,11 @@ const AuthPage = () => {
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) && !isLoading) {
+                      checkAuthOptions(email);
+                    }
+                  }}
                 />
 
                 <p className="text-sm text-foreground/60 text-center">

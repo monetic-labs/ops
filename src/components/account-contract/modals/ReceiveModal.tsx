@@ -1,10 +1,10 @@
 import type { Account } from "@/types/account";
 
-import { Button } from "@nextui-org/button";
+import { Button } from "@heroui/button";
 import { Copy, Info, Share2, X, Check } from "lucide-react";
-import { Modal, ModalContent, ModalHeader, ModalBody } from "@nextui-org/modal";
+import { Modal, ModalContent, ModalHeader, ModalBody } from "@heroui/modal";
 import { useState } from "react";
-import { Spinner } from "@nextui-org/spinner";
+import { Spinner } from "@heroui/spinner";
 
 import { useAccounts } from "@/contexts/AccountContext";
 

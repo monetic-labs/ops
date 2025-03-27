@@ -1,7 +1,7 @@
 import { CardLimitFrequency } from "@backpack-fux/pylon-sdk";
 import { Controller, UseFormReturn } from "react-hook-form";
-import { Input } from "@nextui-org/input";
-import { Select, SelectItem } from "@nextui-org/select";
+import { Input } from "@heroui/input";
+import { Select, SelectItem } from "@heroui/select";
 import { DollarSign, Clock } from "lucide-react";
 import { z } from "zod";
 
@@ -56,7 +56,7 @@ export function CardLimitsStep({ form }: CardLimitsStepProps) {
               onChange={field.onChange}
             >
               {LIMIT_FREQUENCIES.map((frequency) => (
-                <SelectItem key={frequency.value} value={frequency.value}>
+                <SelectItem key={frequency.value} textValue={frequency.label}>
                   {frequency.label}
                 </SelectItem>
               ))}

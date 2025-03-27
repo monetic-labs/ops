@@ -1,7 +1,7 @@
-import { Button } from "@nextui-org/button";
-import { Chip } from "@nextui-org/chip";
-import { Modal, ModalBody, ModalContent } from "@nextui-org/modal";
-import { Divider } from "@nextui-org/divider";
+import { Button } from "@heroui/button";
+import { Chip } from "@heroui/chip";
+import { Modal, ModalBody, ModalContent } from "@heroui/modal";
+import { Divider } from "@heroui/divider";
 import { useState, useEffect } from "react";
 import {
   CardLimitFrequency,
