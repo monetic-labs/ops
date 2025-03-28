@@ -22,14 +22,17 @@ export enum PasskeyStatus {
   UNKNOWN = "UNKNOWN", // Status couldn't be determined
 }
 
-export interface PasskeyWithStatus {
+export type PasskeyWithStatus = {
   credentialId: string;
   publicKey: string;
   displayName: string;
   status: PasskeyStatus;
-  ownerAddress?: Address;
   lastUsedAt: string;
-}
+  id?: string;
+  createdAt?: string;
+  counter?: number;
+  ownerAddress?: Address;
+};
 
 /**
  * Creates a new passkey and returns the credentials

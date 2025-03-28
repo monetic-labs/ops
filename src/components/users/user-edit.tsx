@@ -6,14 +6,14 @@ import { Select, SelectItem } from "@heroui/select";
 import { Divider } from "@heroui/divider";
 import { User } from "@heroui/user";
 import { useState, useEffect } from "react";
-import { Eye, EyeOff, Fingerprint, Plus, Trash2, Info } from "lucide-react";
+import { Eye, EyeOff, Fingerprint, Plus, Trash2, Info, Clock } from "lucide-react";
 import { ScrollShadow } from "@heroui/scroll-shadow";
 import { Tooltip } from "@heroui/tooltip";
 import { Address, Hex } from "viem";
 import { PublicKey } from "ox";
 import { SafeAccountV0_3_0 as SafeAccount } from "abstractionkit";
 
-import { formatPhoneNumber, formatStringToTitleCase, getFullName, getOpepenAvatar } from "@/utils/helpers";
+import { formatPhoneNumber, formatStringToTitleCase, getFullName, getOpepenAvatar, getTimeAgo } from "@/utils/helpers";
 import { PasskeyStatus, syncPasskeysWithSafe, PasskeyWithStatus } from "@/utils/safe/features/passkey";
 import { WebAuthnHelper } from "@/utils/webauthn";
 import { createAddOwnerTemplate } from "@/utils/safe/templates";
@@ -22,6 +22,8 @@ import { deployIndividualSafe } from "@/utils/safe/features/deploy";
 import { useToast } from "@/hooks/generics/useToast";
 import { usePasskeySelection } from "@/contexts/PasskeySelectionContext";
 import PasskeyStatusComponent from "./passkey-status";
+import pylon from "@/libs/pylon-sdk";
+import { randomUUID } from "crypto";
 
 interface UserEditModalProps {
   isOpen: boolean;
@@ -40,54 +42,97 @@ const PasskeyItem = ({
   isSelf,
   onRename,
   onActivate,
+  renamingPasskeyId,
 }: {
   passkey: PasskeyWithStatus;
   isSelf: boolean;
   onRename: (id: string, name: string) => void;
   onActivate: (passkey: PasskeyWithStatus) => void;
-}) => (
-  <div
-    key={passkey.credentialId}
-    className="flex items-start justify-between p-3 rounded-lg bg-content2 hover:bg-content3 transition-colors"
-  >
-    <div className="flex items-start gap-3 flex-1">
-      <div className="p-2 rounded-lg bg-primary/10 flex-shrink-0 mt-1">
-        <Fingerprint className="w-4 h-4 text-primary" />
-      </div>
-      <div className="min-w-0 flex-1">
-        <div className="flex flex-col gap-1">
-          <Input
-            classNames={{
-              base: "w-full max-w-[calc(100%-8px)]",
-              input: "text-sm font-medium",
-              inputWrapper:
-                "border-transparent bg-transparent hover:bg-content3/50 data-[hover=true]:bg-content3/50 group-data-[focus=true]:bg-content3/50 min-h-unit-8 h-8 shadow-none",
-              innerWrapper: "h-8",
-            }}
-            isDisabled={!isSelf}
-            placeholder="Unnamed Device"
-            size="sm"
-            value={passkey.displayName || ""}
-            variant="bordered"
-            onChange={(e) => onRename(passkey.credentialId, e.target.value)}
-          />
+  renamingPasskeyId: string | null;
+}) => {
+  const [localDisplayName, setLocalDisplayName] = useState(passkey.displayName || "");
 
-          <div className="flex items-center gap-2 ml-1">
+  const handleRename = () => {
+    if (localDisplayName !== passkey.displayName) {
+      onRename(passkey.credentialId, localDisplayName);
+    }
+  };
+
+  // Update local state when passkey display name changes from parent
+  useEffect(() => {
+    setLocalDisplayName(passkey.displayName || "");
+  }, [passkey.displayName]);
+
+  return (
+    <div
+      key={passkey.credentialId}
+      className="flex items-center gap-3 p-3 rounded-lg bg-content2 hover:bg-content3 transition-colors group relative"
+    >
+      {/* Left section - Icon and main info */}
+      <div className="flex items-center gap-3 flex-1 min-w-0">
+        <div className="p-2 rounded-lg bg-primary/10 flex-shrink-0">
+          <Fingerprint className="w-4 h-4 text-primary" />
+        </div>
+
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2">
+            <Input
+              classNames={{
+                base: "w-full max-w-[240px]",
+                input: "text-sm font-medium",
+                inputWrapper:
+                  "border-transparent bg-transparent hover:bg-transparent data-[hover=true]:bg-transparent group-data-[focus=true]:bg-transparent min-h-unit-6 h-6 px-0 shadow-none",
+                innerWrapper: "h-6",
+              }}
+              isDisabled={!isSelf || renamingPasskeyId === passkey.credentialId}
+              placeholder="Unnamed Device"
+              size="sm"
+              value={localDisplayName}
+              variant="flat"
+              onBlur={handleRename}
+              onChange={(e) => setLocalDisplayName(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  e.currentTarget.blur();
+                }
+              }}
+            />
             <PasskeyStatusComponent passkey={passkey} isSelf={isSelf} onActivate={onActivate} />
+          </div>
+          <div className="flex items-center gap-2 mt-0.5">
+            <div className="flex items-center gap-1.5 text-xs text-foreground/50">
+              <Clock className="w-3 h-3" />
+              <span>Last used: {getTimeAgo(passkey.lastUsedAt)}</span>
+            </div>
+            {passkey.createdAt && (
+              <>
+                <div className="w-1 h-1 rounded-full bg-foreground/20" />
+                <div className="text-xs text-foreground/50">Created {getTimeAgo(passkey.createdAt)}</div>
+              </>
+            )}
           </div>
         </div>
       </div>
-    </div>
 
-    <div className="flex items-center ml-2 mt-1">
-      <Tooltip content="Remove passkey (Coming soon)">
-        <Button isDisabled isIconOnly className="bg-transparent" size="sm" variant="light">
-          <Trash2 className="w-4 h-4 text-danger/70" />
-        </Button>
-      </Tooltip>
+      {/* Right section - Actions */}
+      <div className="flex items-center gap-2">
+        {isSelf && (
+          <Tooltip content="Remove passkey (Coming soon)">
+            <Button
+              isDisabled
+              isIconOnly
+              className="opacity-0 group-hover:opacity-100 transition-opacity bg-transparent"
+              size="sm"
+              variant="light"
+            >
+              <Trash2 className="w-4 h-4 text-danger/70" />
+            </Button>
+          </Tooltip>
+        )}
+      </div>
     </div>
-  </div>
-);
+  );
+};
 
 // Main component
 export default function UserEditModal({
@@ -108,6 +153,8 @@ export default function UserEditModal({
   const [isAddingPasskey, setIsAddingPasskey] = useState(false);
   const [passkeysWithStatus, setPasskeysWithStatus] = useState<PasskeyWithStatus[]>([]);
   const [skipNextSync, setSkipNextSync] = useState(false);
+  const [renamingPasskeyId, setRenamingPasskeyId] = useState<string | null>(null);
+  const [pendingPasskeyUpdates, setPendingPasskeyUpdates] = useState<Record<string, string>>({});
 
   // Hooks
   const { toast } = useToast();
@@ -205,10 +252,36 @@ export default function UserEditModal({
         delete userToSave.walletAddress;
       }
 
+      // First save the user data
       const success = await onSave(userToSave);
-      if (success) {
-        onClose();
+      if (!success) return;
+
+      // Then update any pending passkey names
+      const pendingUpdates = Object.entries(pendingPasskeyUpdates);
+      if (pendingUpdates.length > 0) {
+        try {
+          // Find the passkeys that need updating
+          for (const [credentialId, displayName] of pendingUpdates) {
+            const passkey = editedUser.registeredPasskeys?.find((p) => p.credentialId === credentialId);
+            if (passkey?.id) {
+              await pylon.updatePasskeyDisplayName(passkey.id, { displayName });
+            }
+          }
+
+          // Clear pending updates after successful save
+          setPendingPasskeyUpdates({});
+        } catch (error) {
+          console.error("Error updating passkey names:", error);
+          toast({
+            title: "Partial update",
+            description: "User information saved, but some passkey names could not be updated",
+            variant: "destructive",
+          });
+          return;
+        }
       }
+
+      onClose();
     } catch (error) {
       console.error("Error saving user:", error);
       // Toast is handled by the parent component
@@ -235,14 +308,21 @@ export default function UserEditModal({
   };
 
   const handlePasskeyRename = (credentialId: string, displayName: string) => {
+    // Store the pending update
+    setPendingPasskeyUpdates((prev) => ({
+      ...prev,
+      [credentialId]: displayName,
+    }));
+
+    // Update the local UI state
     const updatedPasskeys = editedUser.registeredPasskeys?.map((p) =>
       p.credentialId === credentialId ? { ...p, displayName } : p
     );
 
-    setEditedUser({
-      ...editedUser,
+    setEditedUser((prev) => ({
+      ...prev,
       registeredPasskeys: updatedPasskeys,
-    });
+    }));
   };
 
   // Create first passkey and account
@@ -331,9 +411,10 @@ export default function UserEditModal({
 
       // Optimistically update the UI with the new wallet address and passkey
       const newPasskey = {
+        id: randomUUID(), // TODO
         credentialId: credentials.credentialId,
         publicKey: PublicKey.toHex({ ...credentials.publicKey, prefix: 4 }),
-        displayName: "My Passkey",
+        displayName: "Unnamed Device",
         createdAt: new Date().toISOString(),
         lastUsedAt: new Date().toISOString(),
         counter: 0,
@@ -447,6 +528,7 @@ export default function UserEditModal({
         if (result && result.credentialId) {
           // Optimistically update the UI with the new passkey
           const newPasskey = {
+            id: result.passkeyId,
             credentialId: result.credentialId,
             publicKey: result.publicKeyCoordinates
               ? PublicKey.toHex({ ...result.publicKeyCoordinates, prefix: 4 })
@@ -617,6 +699,7 @@ export default function UserEditModal({
               isSelf={isSelf}
               onRename={handlePasskeyRename}
               onActivate={handleActivatePasskey}
+              renamingPasskeyId={renamingPasskeyId}
             />
           ))
         ) : (

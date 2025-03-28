@@ -17,7 +17,7 @@
   },
   "dependencies": {
     "@ai-sdk/openai": "^0.0.70",
-    "@backpack-fux/pylon-sdk": "0.2.982",
+    "@backpack-fux/pylon-sdk": "0.2.984",
     "@emoji-mart/data": "^1.2.1",
     "@emoji-mart/react": "^1.1.1",
     "@heroui/accordion": "2.2.13",
