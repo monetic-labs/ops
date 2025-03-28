@@ -8,19 +8,21 @@ export function useGetComplianceStatus() {
     (GetComplianceStatusResponse & MerchantRainCompanyStatusOutput) | null
   >(null);
 
-  useEffect(() => {
-    async function checkCompliance() {
-      const [bridgeComplianceStatus, rainComplianceStatus] = await Promise.all([
-        pylon.getComplianceStatus(),
-        pylon.getCardCompanyStatus(),
-      ]);
-      const complianceStatus = { ...bridgeComplianceStatus, ...rainComplianceStatus };
+  const checkCompliance = async () => {
+    const [bridgeComplianceStatus, rainComplianceStatus] = await Promise.all([
+      pylon.getComplianceStatus(),
+      pylon.getCardCompanyStatus(),
+    ]);
+    const complianceStatus = { ...bridgeComplianceStatus, ...rainComplianceStatus };
 
-      // console.log("complianceStatus", complianceStatus);
-      setComplianceStatus(complianceStatus);
-    }
+    // console.log("complianceStatus", complianceStatus);
+    setComplianceStatus(complianceStatus);
+    return complianceStatus;
+  };
+
+  useEffect(() => {
     checkCompliance();
   }, []);
 
-  return { complianceStatus };
+  return { complianceStatus, refetch: checkCompliance };
 }
