@@ -3,11 +3,13 @@ import type { Account } from "@/types/account";
 import { Button } from "@heroui/button";
 import { ArrowUpRight, ArrowDownLeft } from "lucide-react";
 import { PersonRole } from "@backpack-fux/pylon-sdk";
+import { useState } from "react";
 
 import { useUser } from "@/contexts/UserContext";
 import { formatAmountUSD, isProduction } from "@/utils/helpers";
 import { useSigners } from "@/contexts/SignersContext";
 import { MAIN_ACCOUNT } from "@/utils/constants";
+import { FaucetModal } from "../modals/FaucetModal";
 
 interface AccountBalanceProps {
   account: Account;
@@ -19,6 +21,7 @@ interface AccountBalanceProps {
 export function AccountBalance({ account, onSend, onReceive, isLoading = false }: AccountBalanceProps) {
   const { user } = useUser();
   const { signers } = useSigners();
+  const [showFaucetModal, setShowFaucetModal] = useState(false);
 
   const isMember = user?.role === PersonRole.MEMBER;
   const isSigner =
@@ -30,13 +33,9 @@ export function AccountBalance({ account, onSend, onReceive, isLoading = false }
   // Only show the Request Funds button for the operating account in non-production environments
   const showRequestFundsButton = !isProduction && isOperatingAccount && account.isDeployed;
 
-  const requestFunds = () => {
+  const handleRequestFunds = () => {
     if (!account.isDeployed) return;
-
-    // Redirect to Circle's faucet website
-    // The Circle faucet doesn't support URL parameters for pre-filling the address,
-    // so we'll just redirect to the main page
-    window.open("https://faucet.circle.com", "_blank");
+    setShowFaucetModal(true);
   };
 
   if (isLoading) {
@@ -92,39 +91,47 @@ export function AccountBalance({ account, onSend, onReceive, isLoading = false }
   }
 
   return (
-    <div className="bg-content2 p-4 md:p-6 rounded-xl mb-6">
-      <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4">
-        <div>
-          <p className="text-sm text-foreground/60">Available Balance</p>
-          <p className="text-3xl md:text-4xl font-semibold mt-1">{formatAmountUSD(account.balance)}</p>
-          <p className="text-sm text-foreground/40 mt-1">{account.currency}</p>
-        </div>
-        <div className="flex flex-wrap gap-2 w-full md:w-auto">
-          {showRequestFundsButton && (
+    <>
+      <div className="bg-content2 p-4 md:p-6 rounded-xl mb-6">
+        <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4">
+          <div>
+            <p className="text-sm text-foreground/60">Available Balance</p>
+            <p className="text-3xl md:text-4xl font-semibold mt-1">{formatAmountUSD(account.balance)}</p>
+            <p className="text-sm text-foreground/40 mt-1">{account.currency}</p>
+          </div>
+          <div className="flex flex-wrap gap-2 w-full md:w-auto">
+            {showRequestFundsButton && (
+              <Button
+                className="flex-1 md:flex-none h-11 bg-primary text-primary-foreground hover:bg-primary/90 px-6"
+                startContent={<ArrowUpRight className="w-4 h-4" />}
+                onPress={handleRequestFunds}
+              >
+                Faucet
+              </Button>
+            )}
             <Button
-              className="flex-1 md:flex-none h-11 bg-primary text-primary-foreground hover:bg-primary/90 px-6"
+              className="flex-1 md:flex-none h-11 bg-primary/10 text-primary hover:bg-primary/20 px-6"
               startContent={<ArrowUpRight className="w-4 h-4" />}
-              onPress={requestFunds}
+              onPress={onSend}
             >
-              Faucet
+              Send
             </Button>
-          )}
-          <Button
-            className="flex-1 md:flex-none h-11 bg-primary/10 text-primary hover:bg-primary/20 px-6"
-            startContent={<ArrowUpRight className="w-4 h-4" />}
-            onPress={onSend}
-          >
-            Send
-          </Button>
-          <Button
-            className="flex-1 md:flex-none h-11 bg-primary/10 text-primary hover:bg-primary/20 px-6"
-            startContent={<ArrowDownLeft className="w-4 h-4" />}
-            onPress={onReceive}
-          >
-            Receive
-          </Button>
+            <Button
+              className="flex-1 md:flex-none h-11 bg-primary/10 text-primary hover:bg-primary/20 px-6"
+              startContent={<ArrowDownLeft className="w-4 h-4" />}
+              onPress={onReceive}
+            >
+              Receive
+            </Button>
+          </div>
         </div>
       </div>
-    </div>
+
+      <FaucetModal
+        isOpen={showFaucetModal}
+        onClose={() => setShowFaucetModal(false)}
+        accountAddress={account.address}
+      />
+    </>
   );
 }
