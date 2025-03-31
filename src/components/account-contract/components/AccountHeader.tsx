@@ -2,6 +2,7 @@ import type { Account } from "@/types/account";
 
 import { Button } from "@heroui/button";
 import { Dropdown, DropdownTrigger, DropdownMenu, DropdownItem } from "@heroui/dropdown";
+import { useMemo } from "react";
 
 import { formatAmountUSD } from "@/utils/helpers";
 
@@ -31,16 +32,17 @@ export function AccountHeader({
   };
 
   // Sort accounts to put enabled accounts first
-  const sortedAccounts = [...accounts].sort((a, b) => {
-    if (a.isDisabled === b.isDisabled) return 0;
-
-    return a.isDisabled ? 1 : -1;
-  });
+  const sortedAccounts = useMemo(() => {
+    return [...accounts].sort((a, b) => {
+      if (a.isDisabled === b.isDisabled) return 0;
+      return a.isDisabled ? 1 : -1;
+    });
+  }, [accounts]);
 
   // Calculate total balance only from enabled accounts
-  const enabledTotalBalance = accounts
-    .filter((acc) => acc.isDeployed)
-    .reduce((sum, acc) => sum + (acc.balance || 0), 0);
+  const enabledTotalBalance = useMemo(() => {
+    return accounts.filter((acc) => acc.isDeployed).reduce((sum, acc) => sum + (acc.balance || 0), 0);
+  }, [accounts]);
 
   // Check if settlement account is enabled
   const settlementAccount = accounts.find((acc) => acc.isSettlement);
@@ -50,7 +52,6 @@ export function AccountHeader({
   const canSelectAccount = (account: Account) => {
     if (account.isDeployed) return true;
     if (account.isComingSoon || account.isDisabled) return false;
-
     return isSettlementEnabled;
   };
 

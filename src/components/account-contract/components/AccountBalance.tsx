@@ -3,7 +3,7 @@ import type { Account } from "@/types/account";
 import { Button } from "@heroui/button";
 import { ArrowUpRight, ArrowDownLeft } from "lucide-react";
 import { PersonRole } from "@backpack-fux/pylon-sdk";
-import { useState } from "react";
+import { useState, useMemo } from "react";
 
 import { useUser } from "@/contexts/UserContext";
 import { formatAmountUSD, isProduction } from "@/utils/helpers";
@@ -32,6 +32,9 @@ export function AccountBalance({ account, onSend, onReceive, isLoading = false }
 
   // Only show the Request Funds button for the operating account in non-production environments
   const showRequestFundsButton = !isProduction && isOperatingAccount && account.isDeployed;
+
+  // Memoize the formatted balance to ensure it updates with account changes
+  const formattedBalance = useMemo(() => formatAmountUSD(account.balance), [account.balance]);
 
   const handleRequestFunds = () => {
     if (!account.isDeployed) return;
@@ -96,7 +99,7 @@ export function AccountBalance({ account, onSend, onReceive, isLoading = false }
         <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4">
           <div>
             <p className="text-sm text-foreground/60">Available Balance</p>
-            <p className="text-3xl md:text-4xl font-semibold mt-1">{formatAmountUSD(account.balance)}</p>
+            <p className="text-3xl md:text-4xl font-semibold mt-1">{formattedBalance}</p>
             <p className="text-sm text-foreground/40 mt-1">{account.currency}</p>
           </div>
           <div className="flex flex-wrap gap-2 w-full md:w-auto">

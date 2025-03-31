@@ -108,23 +108,16 @@ export default function AccountMeta() {
     setIsSendModalOpen(false);
 
     try {
-      // Log transaction start
-      console.log("Starting transfer transaction...");
-      console.log(`From: ${selectedAccount.name} (${selectedAccount.address})`);
-      console.log(`To: ${toAccount.name} (${toAccount.address})`);
-      console.log(`Amount: ${amount} USDC`);
-
-      // Call the updateAccountBalancesAfterTransfer function to update account balances
-      // This will optimistically update the UI without waiting for network confirmation
-      updateAccountBalancesAfterTransfer(selectedAccount.address, toAccount.address, amount);
-
-      // Reset transfer state
-      setAmount("");
-      setToAccount(null);
+      // Refresh accounts to get the latest balances
+      await refreshAccounts(true);
     } catch (error) {
-      console.error("Error in transfer transaction:", error);
-      toast.error("Transfer failed. Please try again.");
+      console.error("Error refreshing accounts after transfer:", error);
+      toast.error("Failed to refresh account balances. Please reload the page.");
     }
+
+    // Reset transfer state
+    setAmount("");
+    setToAccount(null);
   };
 
   const handleDeploy = async (): Promise<void> => {

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Spinner } from "@heroui/spinner";
 
@@ -13,13 +13,25 @@ export default function VerifyPage() {
   const [status, setStatus] = useState<"initial" | "exchanging" | "completing" | "error">("initial");
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const { forceAuthCheck } = useUser();
+  const hasAttemptedRef = useRef(false);
+  const redirectTimeoutRef = useRef<NodeJS.Timeout>();
 
   useEffect(() => {
     const verifyToken = async () => {
       const token = searchParams?.get("token");
 
+      // Prevent multiple verification attempts of the same token
+      if (hasAttemptedRef.current) {
+        return;
+      }
+      hasAttemptedRef.current = true;
+
       if (!token) {
-        router.replace("/auth");
+        setStatus("error");
+        setErrorMessage("No verification token found. Please try logging in again.");
+        redirectTimeoutRef.current = setTimeout(() => {
+          router.replace("/auth");
+        }, 3000);
         return;
       }
 
@@ -34,7 +46,11 @@ export default function VerifyPage() {
 
         // Step 2: Establish session
         setStatus("completing");
-        await forceAuthCheck();
+        const isAuthenticated = await forceAuthCheck();
+
+        if (!isAuthenticated) {
+          throw new Error("Failed to establish session");
+        }
 
         // Step 3: Redirect to home
         router.replace("/");
@@ -44,13 +60,20 @@ export default function VerifyPage() {
         setErrorMessage("Failed to verify your login link. Please try again.");
 
         // Redirect after error delay
-        setTimeout(() => {
+        redirectTimeoutRef.current = setTimeout(() => {
           router.replace("/auth");
         }, 3000);
       }
     };
 
     verifyToken();
+
+    return () => {
+      // Clean up any pending redirects
+      if (redirectTimeoutRef.current) {
+        clearTimeout(redirectTimeoutRef.current);
+      }
+    };
   }, [searchParams, router, forceAuthCheck]);
 
   // Status messages
