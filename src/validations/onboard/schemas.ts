@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { Address, isAddress } from "viem";
-import { CardCompanyType, ISO3166Alpha2Country, PersonRole } from "@backpack-fux/pylon-sdk";
+import { CardCompanyType, ISO3166Alpha2Country, PersonRole, NAICS_CODES } from "@backpack-fux/pylon-sdk";
 
 import postcodeMap from "@/data/postcodes-map.json";
 
@@ -63,7 +63,13 @@ export const companyAccountSchema = z.object({
     .transform((val) => val.replace(/\D/g, ""))
     .refine((val) => /^\d{9}$/.test(val), "Please enter a valid Tax ID (XX-XXXXXXX)"),
   companyType: z.enum(Object.values(CardCompanyType) as [CardCompanyType, ...CardCompanyType[]]),
-  companyDescription: z.string().max(100, "Description cannot exceed 100 characters").optional(),
+  companyIndustry: z.string().refine((code) => Object.keys(NAICS_CODES).includes(code), {
+    message: "Please select a valid industry code",
+  }),
+  companyDescription: z
+    .string()
+    .min(5, "Company description must be at least 5 characters")
+    .max(100, "Company description cannot exceed 100 characters"),
 });
 
 export const userBasicSchema = z.object({

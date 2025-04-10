@@ -9,6 +9,7 @@ import {
   capitalizeFirstChar,
   formatCompanyType,
   formatEIN,
+  formatIndustryCode,
   formatStringToTitleCase,
   formatPhoneNumber,
 } from "@/utils/helpers";
@@ -79,6 +80,12 @@ export const ReviewStep = ({ onStepChange }: { onStepChange: (step: number) => v
             <p className="text-sm text-default-500">Company Type</p>
             <p className="break-words">{formatCompanyType(formData.companyType)}</p>
           </div>
+          {formData.companyIndustry && (
+            <div>
+              <p className="text-sm text-default-500">Industry (NAICS Code)</p>
+              <p className="break-words">{formatIndustryCode(formData.companyIndustry)}</p>
+            </div>
+          )}
           {formData.companyDescription && (
             <div className="col-span-1 md:col-span-2">
               <p className="text-sm text-default-500">Company Description</p>

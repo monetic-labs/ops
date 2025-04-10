@@ -2,6 +2,7 @@ import type { Address } from "viem";
 
 import dayjs from "dayjs";
 import { createIcon } from "opepen-standard";
+import { NAICS_CODES } from "@backpack-fux/pylon-sdk";
 
 // Environment Constants
 export const isLocal = process.env.NEXT_PUBLIC_NODE_ENV === "development";
@@ -299,4 +300,16 @@ export const preciseCurrencyCalculation = (a: number, b: number, operation: "add
 // Round to 2 decimal places for display
 export const roundToCurrency = (amount: number): number => {
   return Math.round(amount * 100) / 100;
+};
+
+/**
+ * Format an industry code with its description
+ * @param code The NAICS code
+ * @returns Formatted string with code and description
+ */
+export const formatIndustryCode = (code: string): string => {
+  if (!code) return "";
+
+  const description = NAICS_CODES[code as keyof typeof NAICS_CODES];
+  return description ? `${code} - ${description}` : code;
 };

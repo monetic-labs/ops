@@ -11,13 +11,13 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint . --ext .ts,.tsx -c .eslintrc.json --fix",
-    "unfuck": "rm -rf .next && rm -rf node_modules && rm -rf package-lock.json rm -rf bun.lockb && bun i",
+    "unfuck": "rm -rf .next && rm -rf node_modules && rm -rf package-lock.json && rm -rf bun.lockb && rm -rf bun.lock && bun i",
     "postcode:process": "node scripts/process-postcodes.ts",
     "upload-docs": "bun run scripts/upload-docs.ts"
   },
   "dependencies": {
     "@ai-sdk/openai": "^0.0.70",
-    "@backpack-fux/pylon-sdk": "0.2.985",
+    "@backpack-fux/pylon-sdk": "0.2.986",
     "@emoji-mart/data": "^1.2.1",
     "@emoji-mart/react": "^1.1.1",
     "@heroui/accordion": "2.2.13",

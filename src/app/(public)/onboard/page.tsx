@@ -11,7 +11,7 @@ import { Button } from "@heroui/button";
 import { Sun, Moon, Fingerprint, Laptop, Shield } from "lucide-react";
 import { jwtDecode } from "jwt-decode";
 import { Address } from "viem";
-import { ISO3166Alpha2Country, ISO3166Alpha3Country, PersonRole } from "@backpack-fux/pylon-sdk";
+import { ISO3166Alpha2Country, ISO3166Alpha3Country, MerchantCreateInput, PersonRole } from "@backpack-fux/pylon-sdk";
 import { SafeAccountV0_3_0 as SafeAccount, DEFAULT_SECP256R1_PRECOMPILE_ADDRESS } from "abstractionkit";
 
 import { WebAuthnHelper } from "@/utils/webauthn";
@@ -212,8 +212,7 @@ export default function OnboardPage() {
       // Update status to show merchant account creation is in progress
       updateStatusStep(1, false);
 
-      // Create the merchant account
-      const merchantResponse = await pylon.createMerchant(token, {
+      const merchantData: MerchantCreateInput = {
         settlementAddress: settlementAddress,
         isTermsOfServiceAccepted: formData.acceptedTerms,
         company: {
@@ -223,7 +222,8 @@ export default function OnboardPage() {
           type: formData.companyType,
           registrationNumber: formData.companyRegistrationNumber,
           taxId: formData.companyTaxId,
-          description: formData.companyDescription || undefined,
+          description: formData.companyDescription,
+          industry: formData.companyIndustry,
           registeredAddress: {
             street1: formData.streetAddress1,
             street2: formData.streetAddress2 || undefined,
@@ -323,7 +323,10 @@ export default function OnboardPage() {
               },
             };
           }),
-      });
+      };
+
+      // Create the merchant account
+      const merchantResponse = await pylon.createMerchant(token, merchantData);
 
       // Mark merchant creation as complete
       updateStatusStep(1, true);
@@ -363,6 +366,42 @@ export default function OnboardPage() {
 
   const handleNext = async () => {
     switch (currentStep) {
+      case 2: {
+        // Special validation for company account step
+        const companyType = watch("companyType");
+        const companyIndustry = watch("companyIndustry");
+        const companyDescription = watch("companyDescription");
+
+        // Check for required fields
+        if (!companyType) {
+          setError("companyType", {
+            type: "required",
+            message: "Company type is required",
+          });
+          return;
+        }
+
+        if (!companyIndustry) {
+          setError("companyIndustry", {
+            type: "required",
+            message: "Industry code is required",
+          });
+          return;
+        }
+
+        if (!companyDescription || companyDescription.trim() === "") {
+          setError("companyDescription", {
+            type: "required",
+            message: "Company description is required",
+          });
+          return;
+        }
+
+        // If all validations pass, clear errors and go to next step
+        clearErrors(["companyType", "companyIndustry", "companyDescription"]);
+        setCurrentStep(Math.min(currentStep + 1, 6));
+        return;
+      }
       case 3: {
         const users = watch("users");
         const person1 = users[0];
