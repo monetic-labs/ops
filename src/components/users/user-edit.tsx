@@ -23,7 +23,7 @@ import { useToast } from "@/hooks/generics/useToast";
 import { usePasskeySelection } from "@/contexts/PasskeySelectionContext";
 import PasskeyStatusComponent from "./passkey-status";
 import pylon from "@/libs/pylon-sdk";
-import { randomUUID } from "crypto";
+import { v4 as uuidv4 } from "uuid";
 
 interface UserEditModalProps {
   isOpen: boolean;
@@ -411,7 +411,7 @@ export default function UserEditModal({
 
       // Optimistically update the UI with the new wallet address and passkey
       const newPasskey = {
-        id: randomUUID(), // TODO
+        id: uuidv4(), // TODO
         credentialId: credentials.credentialId,
         publicKey: PublicKey.toHex({ ...credentials.publicKey, prefix: 4 }),
         displayName: "Unnamed Device",
