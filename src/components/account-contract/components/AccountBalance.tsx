@@ -1,7 +1,7 @@
 import type { Account } from "@/types/account";
 
 import { Button } from "@heroui/button";
-import { ArrowUpRight, ArrowDownLeft } from "lucide-react";
+import { ArrowUpRight, ArrowDownLeft, RefreshCw } from "lucide-react";
 import { PersonRole } from "@backpack-fux/pylon-sdk";
 import { useState, useMemo } from "react";
 
@@ -10,6 +10,8 @@ import { formatAmountUSD, isProduction } from "@/utils/helpers";
 import { useSigners } from "@/contexts/SignersContext";
 import { MAIN_ACCOUNT } from "@/utils/constants";
 import { FaucetModal } from "../modals/FaucetModal";
+import { useAccounts } from "@/contexts/AccountContext";
+import { Tooltip } from "@heroui/tooltip";
 
 interface AccountBalanceProps {
   account: Account;
@@ -22,6 +24,7 @@ export function AccountBalance({ account, onSend, onReceive, isLoading = false }
   const { user } = useUser();
   const { signers } = useSigners();
   const [showFaucetModal, setShowFaucetModal] = useState(false);
+  const { refreshAccounts, isLoadingAccounts } = useAccounts();
 
   const isMember = user?.role === PersonRole.MEMBER;
   const isSigner =
@@ -39,6 +42,10 @@ export function AccountBalance({ account, onSend, onReceive, isLoading = false }
   const handleRequestFunds = () => {
     if (!account.isDeployed) return;
     setShowFaucetModal(true);
+  };
+
+  const handleRefresh = () => {
+    refreshAccounts(true);
   };
 
   if (isLoading) {
@@ -98,7 +105,22 @@ export function AccountBalance({ account, onSend, onReceive, isLoading = false }
       <div className="bg-content2 p-4 md:p-6 rounded-xl mb-6">
         <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4">
           <div>
-            <p className="text-sm text-foreground/60">Available Balance</p>
+            <div className="flex items-center gap-2">
+              <span className="text-sm text-foreground/60">Available Balance</span>
+              <Tooltip content="Refresh balance" placement="right">
+                <Button
+                  isIconOnly
+                  size="sm"
+                  variant="light"
+                  className="text-foreground/40 data-[hover=true]:text-foreground/80 -ml-1"
+                  onPress={handleRefresh}
+                  isLoading={isLoadingAccounts}
+                  aria-label="Refresh balance"
+                >
+                  <RefreshCw size={14} />
+                </Button>
+              </Tooltip>
+            </div>
             <p className="text-3xl md:text-4xl font-semibold mt-1">{formattedBalance}</p>
             <p className="text-sm text-foreground/40 mt-1">{account.currency}</p>
           </div>
