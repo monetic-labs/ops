@@ -9,6 +9,7 @@ import { DataTable, Column, EmptyContent } from "@/components/generics/data-tabl
 import { formatStringToTitleCase, getOpepenAvatar } from "@/utils/helpers";
 import { useGetContacts } from "@/hooks/bill-pay/useGetContacts";
 
+// Define columns directly in the page component or move to ./components later
 const contactColumns: Column<MerchantDisbursementCreateOutput>[] = [
   {
     name: "NAME",
@@ -55,22 +56,30 @@ const contactColumns: Column<MerchantDisbursementCreateOutput>[] = [
   },
 ];
 
-export default function Contacts() {
+export default function BillPayContactsPage() {
   const { contacts, isLoading, error, fetchContacts } = useGetContacts();
 
+  // Fetch contacts when component mounts
   useEffect(() => {
     fetchContacts({});
-  }, []);
+  }, [fetchContacts]); // Added fetchContacts to dependency array
 
   return (
-    <DataTable
-      aria-label="Contacts table"
-      columns={contactColumns}
-      emptyContent={<EmptyContent message="No contacts found" />}
-      errorMessage="Failed to load contacts"
-      isError={!!error}
-      isLoading={isLoading}
-      items={contacts}
-    />
+    <div className="space-y-4">
+      <div className="flex justify-between items-center">
+        <h2 className="text-xl font-semibold">Contacts</h2>
+        {/* Add Create Contact Button/Modal logic here if needed */}
+      </div>
+      <DataTable
+        aria-label="Contacts table"
+        columns={contactColumns}
+        emptyContent={<EmptyContent message="No contacts found" />}
+        errorMessage="Failed to load contacts"
+        isError={!!error}
+        isLoading={isLoading}
+        items={contacts}
+        // Add onRowAction here if needed for viewing/editing contacts
+      />
+    </div>
   );
 }

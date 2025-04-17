@@ -3,12 +3,14 @@
 import React, { useState } from "react";
 import { Chip } from "@heroui/chip";
 import { User } from "@heroui/user";
-import { MerchantDisbursementEventGetOutput } from "@backpack-fux/pylon-sdk";
+import { Button } from "@heroui/button";
 import { Address } from "viem";
+import { PlusIcon } from "lucide-react";
+import { MerchantDisbursementEventGetOutput } from "@backpack-fux/pylon-sdk";
 
 import { DataTable, Column, EmptyContent } from "@/components/generics/data-table";
-import BillPayDetailsModal from "@/components/bill-pay/bill-actions/details";
-import CreateBillPayModal from "@/components/bill-pay/bill-actions/create";
+import BillPayDetailsModal from "../_components/details";
+import CreateBillPayModal from "../_components/create";
 import { statusColorMap } from "@/data";
 import { getOpepenAvatar, formatAmountUSD, isTesting, formatStringToTitleCase } from "@/utils/helpers";
 import { useGetTransfers } from "@/hooks/bill-pay/useGetTransfers";
@@ -16,6 +18,7 @@ import { DEFAULT_NEW_BILL_PAY } from "@/types/bill-pay";
 import { MOCK_SETTLEMENT_ADDRESS } from "@/utils/constants";
 import { useUser, AuthStatus } from "@/contexts/UserContext";
 
+// Define columns directly in the page component or move to ./components later
 const transferColumns: Column<MerchantDisbursementEventGetOutput>[] = [
   {
     name: "ACCOUNT OWNER",
@@ -86,7 +89,7 @@ const transferColumns: Column<MerchantDisbursementEventGetOutput>[] = [
   },
 ];
 
-export default function Transfers() {
+export default function BillPayTransfersPage() {
   const { transfers, isLoading, error } = useGetTransfers({});
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
   const [selectedTransfer, setSelectedTransfer] = useState<MerchantDisbursementEventGetOutput | null>(null);
@@ -95,30 +98,48 @@ export default function Transfers() {
   const { user, authStatus, isLoading: isAuthLoading } = useUser();
   const isFullyAuthenticated = !isAuthLoading && authStatus === AuthStatus.AUTHENTICATED;
 
-  const settlementAccount = user?.merchant.accounts.find((account) => account.isSettlement)?.ledgerAddress as Address;
-  const settlementAddress = isTesting ? MOCK_SETTLEMENT_ADDRESS : settlementAccount;
+  // Safely derive settlementAddress
+  const settlementAccount = user?.merchant.accounts.find((account) => account.isSettlement)?.ledgerAddress as
+    | Address
+    | undefined;
+  const settlementAddress = settlementAccount && !isTesting ? settlementAccount : MOCK_SETTLEMENT_ADDRESS;
 
   return (
     <>
-      <DataTable
-        aria-label="Transfers table"
-        columns={transferColumns}
-        emptyContent={
-          <EmptyContent
-            message="Create your first transfer"
-            type="primary"
-            onAction={() => setIsCreateModalOpen(true)}
-          />
-        }
-        errorMessage="Failed to load transfers"
-        isError={!!error}
-        isLoading={isLoading}
-        items={transfers}
-        onRowAction={(transfer) => {
-          setSelectedTransfer(transfer);
-          setIsDetailsModalOpen(true);
-        }}
-      />
+      <div className="space-y-4">
+        <div className="flex justify-between items-center">
+          <h2 className="text-xl font-semibold">Transfers</h2>
+          <Button
+            color="primary"
+            startContent={<PlusIcon className="w-4 h-4" />}
+            onPress={() => setIsCreateModalOpen(true)}
+            // Disable button if not fully authenticated or settlement address is unavailable
+            isDisabled={!isFullyAuthenticated || !settlementAddress}
+          >
+            Create Transfer
+          </Button>
+        </div>
+        <DataTable
+          aria-label="Transfers table"
+          columns={transferColumns}
+          emptyContent={
+            <EmptyContent
+              message="Create your first transfer"
+              type="primary"
+              // Only pass onAction if the button should be enabled
+              onAction={isFullyAuthenticated && settlementAddress ? () => setIsCreateModalOpen(true) : undefined}
+            />
+          }
+          errorMessage="Failed to load transfers"
+          isError={!!error}
+          isLoading={isLoading}
+          items={transfers}
+          onRowAction={(transfer) => {
+            setSelectedTransfer(transfer);
+            setIsDetailsModalOpen(true);
+          }}
+        />
+      </div>
 
       {selectedTransfer && (
         <BillPayDetailsModal
@@ -128,15 +149,18 @@ export default function Transfers() {
         />
       )}
 
-      {isFullyAuthenticated && (
+      {/* Ensure settlementAddress is defined before rendering Create Modal */}
+      {isFullyAuthenticated && settlementAddress && (
         <CreateBillPayModal
           billPay={DEFAULT_NEW_BILL_PAY}
           isOpen={isCreateModalOpen}
-          setBillPay={() => {}}
+          setBillPay={() => {}} // Adjust if state needs to be managed differently
           settlementAddress={settlementAddress}
           onClose={() => setIsCreateModalOpen(false)}
           onSave={(newBillPay) => {
             console.log("Creating transfer:", newBillPay);
+            // TODO: Add mutation logic here to actually create the transfer
+            // and potentially refetch the transfers list
             setIsCreateModalOpen(false);
           }}
         />

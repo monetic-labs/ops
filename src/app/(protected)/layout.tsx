@@ -9,7 +9,8 @@
 import { redirect } from "next/navigation";
 import { cookies } from "next/headers";
 
-import { Navbar } from "@/components/navbar";
+import { Sidebar } from "@/components/layout/Sidebar";
+import { MobileBottomNav } from "@/components/layout/MobileBottomNav";
 import { MERCHANT_COOKIE_NAME } from "@/utils/constants";
 
 export default function ProtectedLayout({ children }: { children: React.ReactNode }) {
@@ -20,17 +21,14 @@ export default function ProtectedLayout({ children }: { children: React.ReactNod
   }
 
   return (
-    <div className="min-h-screen flex flex-col bg-gradient-to-br from-background via-background/90 to-background/80 transition-colors">
-      <div className="fixed top-0 left-0 right-0 z-50">
-        <div className="w-[95%] max-w-screen-xl mx-auto px-4 sm:px-6 py-4">
-          <Navbar />
-        </div>
+    <div className="min-h-screen flex bg-gradient-to-br from-background via-background/90 to-background/80 transition-colors">
+      <Sidebar />
+
+      <div className="flex flex-col flex-1 w-full lg:ml-64">
+        <main className="flex-1 w-full max-w-screen-xl mx-auto px-4 pt-8 pb-20 sm:px-6 lg:pb-8">{children}</main>
       </div>
-      <div className="flex-1 w-[95%] max-w-screen-xl mx-auto px-4 pt-2 sm:px-6">
-        <div className="pt-[92px] pb-4 space-y-6">
-          <div className="w-full mx-auto space-y-6">{children}</div>
-        </div>
-      </div>
+
+      <MobileBottomNav />
     </div>
   );
 }

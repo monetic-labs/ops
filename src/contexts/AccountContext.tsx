@@ -10,7 +10,14 @@ import {
   PersonRole,
   MerchantAccountCreateInput,
 } from "@backpack-fux/pylon-sdk";
-import { Building2, CreditCard, PiggyBank, PlusCircle, type LucideIcon } from "lucide-react";
+import {
+  Building2,
+  CreditCard,
+  PiggyBank,
+  PlusCircle,
+  CircleDollarSign,
+  type LucideIcon,
+} from "lucide-react";
 
 import { Account, Signer } from "@/types/account";
 import pylon from "@/libs/pylon-sdk";
@@ -43,24 +50,6 @@ const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes in milliseconds
 
 // Predefined accounts that are always shown
 const PREDEFINED_ACCOUNTS: Account[] = [
-  {
-    id: "predefined-savings",
-    name: "Savings",
-    address: "0x0000000000000000000000000000000000000000",
-    currency: StableCurrency.USDC,
-    balance: 0,
-    icon: PiggyBank,
-    isDeployed: false,
-    threshold: 0,
-    signers: [],
-    recentActivity: [],
-    pendingActivity: [],
-    isDisabled: true,
-    isComingSoon: true,
-    isCreateAccount: false,
-    isSettlement: false,
-    isCard: false,
-  },
   {
     id: "predefined-new-account",
     name: "New Account",
@@ -193,8 +182,8 @@ export function AccountProvider({ children }: { children: ReactNode }) {
 
   const getAccountIcon = (name: string): LucideIcon => {
     const iconMap: Record<string, LucideIcon> = {
-      MAIN_ACCOUNT: Building2,
-      CARD_ACCOUNT: CreditCard,
+      [MAIN_ACCOUNT]: CircleDollarSign,
+      [CARD_ACCOUNT]: CircleDollarSign,
       savings: PiggyBank,
       "new account": PlusCircle,
     };
