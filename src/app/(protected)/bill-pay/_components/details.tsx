@@ -7,8 +7,8 @@ import { DisbursementState, MerchantDisbursementEventGetOutput } from "@backpack
 import { Input } from "@heroui/input";
 import { Eye, EyeOff } from "lucide-react";
 
-import ModalFooterWithSupport from "../../generics/footer-modal-support";
-import IDSnippet from "../../generics/snippet-id";
+import ModalFooterWithSupport from "@/components/generics/footer-modal-support";
+import IDSnippet from "@/components/generics/snippet-id";
 
 import BillPayCloneModal from "./clone";
 

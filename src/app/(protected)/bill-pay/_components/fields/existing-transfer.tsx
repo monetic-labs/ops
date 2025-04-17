@@ -5,7 +5,7 @@ import { Autocomplete, AutocompleteItem } from "@heroui/autocomplete";
 import { Input } from "@heroui/input";
 import { Eye, EyeOff } from "lucide-react";
 
-import { useGetContacts } from "@/hooks/bill-pay/useGetContacts";
+import { useGetContacts } from "@/app/(protected)/bill-pay/_hooks/useGetContacts";
 import { DEFAULT_EXISTING_BILL_PAY, DEFAULT_NEW_BILL_PAY, ExistingBillPay, NewBillPay } from "@/types/bill-pay";
 import { FieldLabel, getValidationProps } from "@/validations/bill-pay";
 

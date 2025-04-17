@@ -7,7 +7,7 @@ import { MerchantDisbursementCreateOutput } from "@backpack-fux/pylon-sdk";
 
 import { DataTable, Column, EmptyContent } from "@/components/generics/data-table";
 import { formatStringToTitleCase, getOpepenAvatar } from "@/utils/helpers";
-import { useGetContacts } from "@/hooks/bill-pay/useGetContacts";
+import { useGetContacts } from "@/app/(protected)/bill-pay/_hooks/useGetContacts";
 
 // Define columns directly in the page component or move to ./components later
 const contactColumns: Column<MerchantDisbursementCreateOutput>[] = [
@@ -59,10 +59,9 @@ const contactColumns: Column<MerchantDisbursementCreateOutput>[] = [
 export default function BillPayContactsPage() {
   const { contacts, isLoading, error, fetchContacts } = useGetContacts();
 
-  // Fetch contacts when component mounts
   useEffect(() => {
     fetchContacts({});
-  }, [fetchContacts]); // Added fetchContacts to dependency array
+  }, [fetchContacts]);
 
   return (
     <div className="space-y-4">
@@ -73,12 +72,13 @@ export default function BillPayContactsPage() {
       <DataTable
         aria-label="Contacts table"
         columns={contactColumns}
-        emptyContent={<EmptyContent message="No contacts found" />}
-        errorMessage="Failed to load contacts"
-        isError={!!error}
-        isLoading={isLoading}
         items={contacts}
-        // Add onRowAction here if needed for viewing/editing contacts
+        isLoading={isLoading}
+        isError={!!error}
+        errorMessage="Failed to load contacts"
+        emptyContent={<EmptyContent message="No contacts found" />}
+        isStriped={true}
+        isHeaderSticky={true}
       />
     </div>
   );

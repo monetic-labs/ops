@@ -7,13 +7,12 @@ import { Button } from "@heroui/button";
 import { Address } from "viem";
 import { PlusIcon } from "lucide-react";
 import { MerchantDisbursementEventGetOutput } from "@backpack-fux/pylon-sdk";
-
 import { DataTable, Column, EmptyContent } from "@/components/generics/data-table";
 import BillPayDetailsModal from "../_components/details";
 import CreateBillPayModal from "../_components/create";
 import { statusColorMap } from "@/data";
 import { getOpepenAvatar, formatAmountUSD, isTesting, formatStringToTitleCase } from "@/utils/helpers";
-import { useGetTransfers } from "@/hooks/bill-pay/useGetTransfers";
+import { useGetTransfers } from "@/app/(protected)/bill-pay/_hooks/useGetTransfers";
 import { DEFAULT_NEW_BILL_PAY } from "@/types/bill-pay";
 import { MOCK_SETTLEMENT_ADDRESS } from "@/utils/constants";
 import { useUser, AuthStatus } from "@/contexts/UserContext";
@@ -24,6 +23,8 @@ const transferColumns: Column<MerchantDisbursementEventGetOutput>[] = [
     name: "ACCOUNT OWNER",
     uid: "contact.accountOwnerName",
     align: "start",
+    allowsSorting: true,
+    sortingKey: "contact.accountOwnerName",
     render: (transfer: MerchantDisbursementEventGetOutput) => (
       <User
         avatarProps={{
@@ -43,6 +44,8 @@ const transferColumns: Column<MerchantDisbursementEventGetOutput>[] = [
     name: "AMOUNT",
     uid: "contact.amount",
     align: "start",
+    allowsSorting: true,
+    sortingKey: "amountOut",
     render: (transfer: MerchantDisbursementEventGetOutput) => (
       <span className="text-sm truncate">
         {formatAmountUSD(Number(transfer.amountOut))} {transfer.currencyOut}
@@ -53,6 +56,8 @@ const transferColumns: Column<MerchantDisbursementEventGetOutput>[] = [
     name: "STATUS",
     uid: "contact.status",
     align: "center",
+    allowsSorting: true,
+    sortingKey: "state",
     render: (transfer: MerchantDisbursementEventGetOutput) => (
       <Chip className="capitalize truncate" color={statusColorMap[transfer.state]} size="sm" variant="flat">
         {formatStringToTitleCase(transfer.state)}
@@ -106,7 +111,7 @@ export default function BillPayTransfersPage() {
 
   return (
     <>
-      <div className="space-y-4">
+      <div className="space-y-6">
         <div className="flex justify-between items-center">
           <h2 className="text-xl font-semibold">Transfers</h2>
           <Button
@@ -138,6 +143,8 @@ export default function BillPayTransfersPage() {
             setSelectedTransfer(transfer);
             setIsDetailsModalOpen(true);
           }}
+          isStriped={true}
+          isHeaderSticky={true}
         />
       </div>
 

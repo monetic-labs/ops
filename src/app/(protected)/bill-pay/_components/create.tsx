@@ -13,7 +13,9 @@ import {
 import { Address } from "viem";
 import { toast } from "sonner";
 
-import { useExistingDisbursement } from "@/hooks/bill-pay/useExistingDisbursement";
+import { useExistingDisbursement } from "@/app/(protected)/bill-pay/_hooks/useExistingDisbursement";
+import { useNewDisbursement } from "@/app/(protected)/bill-pay/_hooks/useNewDisbursement";
+
 import { TransferStatus, TransferStatusOverlay } from "@/components/generics/transfer-status";
 import { executeNestedTransaction } from "@/utils/safe/flows/nested";
 import { useBalance } from "@/hooks/account-contracts/useBalance";
@@ -25,14 +27,13 @@ import {
   isExistingBillPay,
   NewBillPay,
 } from "@/types/bill-pay";
-import { useNewDisbursement } from "@/hooks/bill-pay/useNewDisbursement";
+
 import { useUser, AuthStatus } from "@/contexts/UserContext";
 import { usePasskeySelection } from "@/contexts/PasskeySelectionContext";
 import { BASE_USDC } from "@/utils/constants";
 import { createERC20TransferTemplate } from "@/utils/safe/templates";
-import { LocalStorage } from "@/utils/localstorage";
 
-import ModalFooterWithSupport from "../../generics/footer-modal-support";
+import ModalFooterWithSupport from "@/components/generics/footer-modal-support";
 
 import ExistingTransferFields from "./fields/existing-transfer";
 import NewTransferFields from "./fields/new-transfer";

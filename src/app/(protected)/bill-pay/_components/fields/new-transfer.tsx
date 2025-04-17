@@ -10,9 +10,8 @@ import { Avatar } from "@heroui/avatar";
 import { getRegion } from "iso3166-helper";
 
 import { NewBillPay } from "@/types/bill-pay";
-import { getValidationProps } from "@/validations/bill-pay";
-import { FieldLabel } from "@/validations/bill-pay";
-import { useCountries } from "@/hooks/bill-pay/useCountries";
+import { getValidationProps, FieldLabel } from "@/validations/bill-pay";
+import { useCountries } from "@/app/(protected)/bill-pay/_hooks/useCountries";
 
 type NewTransferFieldsProps = {
   billPay: NewBillPay;
