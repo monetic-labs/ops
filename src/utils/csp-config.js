@@ -81,9 +81,9 @@ const INTERNAL_SERVICES = {
     "https://ops.monetic.xyz",
     "https://api.staging.monetic.xyz/v1/*",
     "https://api.monetic.xyz/v1/*",
-    // Allow Cloudflare R2 storage for file uploads/downloads
-    "https://*.cloudflarestorage.com",
-    "https://*.r2.cloudflarestorage.com",
+    // S3 Storage
+    "https://s3.monetic.xyz",
+    "https://s3.staging.monetic.xyz",
   ],
   frame: [],
   form: [
@@ -100,9 +100,9 @@ const MEDIA_SERVICES = {
   img: [
     "https://i.pravatar.cc",
     "https://explorer-api.walletconnect.com",
-    // Allow Cloudflare R2 storage for image loading
-    "https://*.cloudflarestorage.com",
-    "https://*.r2.cloudflarestorage.com",
+    // S3 Storage
+    "https://s3.monetic.xyz",
+    "https://s3.staging.monetic.xyz",
   ],
 };
 
