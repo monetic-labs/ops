@@ -291,7 +291,7 @@ export class LocalStorage {
   // Save the selected credential ID
   static saveSelectedCredentialId(credentialId: string): void {
     try {
-      localStorage.setItem("@backpack/state:passkey", credentialId);
+      localStorage.setItem("@monetic/state:passkey", credentialId);
     } catch (error) {
       console.error("Error saving to localStorage:", error);
     }
@@ -300,7 +300,7 @@ export class LocalStorage {
   // Get the stored credential ID if available
   static getSelectedCredentialId(): string | null {
     try {
-      return localStorage.getItem("@backpack/state:passkey");
+      return localStorage.getItem("@monetic/state:passkey");
     } catch (error) {
       console.error("Error reading from localStorage:", error);
       return null;
@@ -310,7 +310,7 @@ export class LocalStorage {
   // Clear the stored credential ID (used during logout)
   static clearSelectedCredentialId(): void {
     try {
-      localStorage.removeItem("@backpack/state:passkey");
+      localStorage.removeItem("@monetic/state:passkey");
     } catch (error) {
       console.error("Error clearing localStorage:", error);
     }

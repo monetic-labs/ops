@@ -7,7 +7,7 @@ import { Badge } from "@heroui/badge";
 import { useRouter, usePathname } from "next/navigation";
 import NextLink from "next/link";
 import { Backpack } from "lucide-react";
-import { MerchantUserGetByIdOutput as MerchantUser } from "@backpack-fux/pylon-sdk";
+import { MerchantUserGetByIdOutput as MerchantUser } from "@monetic-labs/sdk";
 
 import { useUser, AuthStatus } from "@/contexts/UserContext";
 import { getDisplayName } from "@/utils/helpers";

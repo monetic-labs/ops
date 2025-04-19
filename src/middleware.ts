@@ -1,7 +1,7 @@
 import type { NextRequest } from "next/server";
 
 import { NextResponse } from "next/server";
-import { BridgeComplianceKycStatus, RainComplianceKybStatus } from "@backpack-fux/pylon-sdk";
+import { BridgeComplianceKycStatus, RainComplianceKybStatus } from "@monetic-labs/sdk";
 
 import { MERCHANT_COOKIE_NAME } from "./utils/constants";
 

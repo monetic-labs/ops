@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { GetComplianceStatusResponse, MerchantRainCompanyStatusOutput } from "@backpack-fux/pylon-sdk";
+import { GetComplianceStatusResponse, MerchantRainCompanyStatusOutput } from "@monetic-labs/sdk";
 
 import pylon from "@/libs/pylon-sdk";
 

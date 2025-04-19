@@ -27,9 +27,9 @@ export interface OnboardingProgress {
 }
 
 export class LocalStorage {
-  private static readonly STATE_KEY = "@backpack/state";
-  private static readonly PASSKEY_KEY = "@backpack/state:passkey";
-  private static readonly SESSION_KEY = "@backpack/session";
+  private static readonly STATE_KEY = "@monetic/ops:state";
+  private static readonly PASSKEY_KEY = "@monetic/ops:state:passkey";
+  private static readonly SESSION_KEY = "@monetic/ops:session";
   private static readonly ONBOARDING_EXPIRY = 7 * 24 * 60 * 60 * 1000; // 7 days in milliseconds
 
   /**

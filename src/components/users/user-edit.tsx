@@ -1,4 +1,4 @@
-import { MerchantUserGetOutput, PersonRole } from "@backpack-fux/pylon-sdk";
+import { MerchantUserGetOutput, PersonRole } from "@monetic-labs/sdk";
 import { Button } from "@heroui/button";
 import { Input } from "@heroui/input";
 import { Modal, ModalBody, ModalContent, ModalFooter, ModalHeader } from "@heroui/modal";

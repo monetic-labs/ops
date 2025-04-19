@@ -4,7 +4,7 @@ import { useFormContext, Controller } from "react-hook-form";
 import { useMemo, useState, useEffect } from "react";
 import { Select, SelectItem } from "@heroui/select";
 import { Autocomplete, AutocompleteItem } from "@heroui/autocomplete";
-import { CardCompanyType, NAICS_SECTORS, NAICS_CODES, getNAICSSector } from "@backpack-fux/pylon-sdk";
+import { CardCompanyType, NAICS_SECTORS, NAICS_CODES, getNAICSSector } from "@monetic-labs/sdk";
 import { Input } from "@heroui/input";
 import { Building2, Hash, Receipt, Briefcase, ChevronRight } from "lucide-react";
 

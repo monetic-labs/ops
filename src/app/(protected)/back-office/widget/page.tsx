@@ -3,7 +3,7 @@
 // Import the component previously used for the 'Widget' tab in Back Office
 import WidgetTab from "@/components/back-office/widget-tab";
 import { useAccounts } from "@/contexts/AccountContext"; // Import context to get account details
-import { Network, StableCurrency } from "@backpack-fux/pylon-sdk"; // Import necessary types
+import { Network, StableCurrency } from "@monetic-labs/sdk"; // Import necessary types
 import { Address } from "viem";
 import { useState } from "react"; // Import useState if needed for handlers
 

@@ -11,7 +11,7 @@ import { Button } from "@heroui/button";
 import { Sun, Moon, Fingerprint, Laptop, Shield } from "lucide-react";
 import { jwtDecode } from "jwt-decode";
 import { Address } from "viem";
-import { ISO3166Alpha2Country, ISO3166Alpha3Country, MerchantCreateInput, PersonRole } from "@backpack-fux/pylon-sdk";
+import { ISO3166Alpha2Country, ISO3166Alpha3Country, MerchantCreateInput, PersonRole } from "@monetic-labs/sdk";
 import { SafeAccountV0_3_0 as SafeAccount, DEFAULT_SECP256R1_PRECOMPILE_ADDRESS } from "abstractionkit";
 
 import { WebAuthnHelper } from "@/utils/webauthn";

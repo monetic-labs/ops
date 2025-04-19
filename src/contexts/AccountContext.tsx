@@ -9,15 +9,8 @@ import {
   GetVirtualAccountResponse,
   PersonRole,
   MerchantAccountCreateInput,
-} from "@backpack-fux/pylon-sdk";
-import {
-  Building2,
-  CreditCard,
-  PiggyBank,
-  PlusCircle,
-  CircleDollarSign,
-  type LucideIcon,
-} from "lucide-react";
+} from "@monetic-labs/sdk";
+import { Building2, CreditCard, PiggyBank, PlusCircle, CircleDollarSign, type LucideIcon } from "lucide-react";
 
 import { Account, Signer } from "@/types/account";
 import pylon from "@/libs/pylon-sdk";

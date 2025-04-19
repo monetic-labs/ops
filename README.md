@@ -14,9 +14,9 @@
 
 ### Install dependencies
 
-First copy the .env file and enter your BACKPACK_GITHUB_TOKEN
+First copy the .env file and enter your MONETIC_GITHUB_TOKEN
 In a terminal export the file to your global variables:
-`export BACKPACK_GITHUB_TOKEN=your_token`
+`export MONETIC_GITHUB_TOKEN=your_token`
 
 Then proceed to install the dependencies
 
@@ -30,14 +30,14 @@ pnpm install
 pnpm run dev
 ```
 
-### Run together with local pylon-sdk
+### Run together with local sdk
 
-If you want to develop this project together with the Pylon SDK and make changes to both, you can add a symlink to your local SDK. Make sure your local Pylon-SDK is built and has a 'dist' folder.
+If you want to develop this project together with the Monetic SDK and make changes to both, you can add a symlink to your local Monetic SDK. Make sure your local Monetic SDK is built and has a 'dist' folder.
 
 Add the following to package.json
 
 ```bash
-    "@backpack-fux/pylon-sdk": "file:../pylon-sdk-your-path",
+    "@monetic-labs/sdk": "file:../sdk-your-path",
 ```
 
 You might need to clear NextJS cache

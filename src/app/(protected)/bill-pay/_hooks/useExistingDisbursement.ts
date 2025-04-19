@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { DisbursementMethod, MerchantDisbursementUpdateOutput } from "@backpack-fux/pylon-sdk";
+import { DisbursementMethod, MerchantDisbursementUpdateOutput } from "@monetic-labs/sdk";
 
 import pylon from "@/libs/pylon-sdk";
 

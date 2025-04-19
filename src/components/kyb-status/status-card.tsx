@@ -1,9 +1,6 @@
 import React from "react";
 import { ExternalLink, CheckCircle } from "lucide-react";
-import {
-  BridgeComplianceKycStatus as BridgeKybStatus,
-  CardCompanyStatus as RainKybStatus,
-} from "@backpack-fux/pylon-sdk";
+import { BridgeComplianceKycStatus as BridgeKybStatus, CardCompanyStatus as RainKybStatus } from "@monetic-labs/sdk";
 import { Card, CardBody } from "@heroui/card";
 import { Button } from "@heroui/button";
 

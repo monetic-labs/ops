@@ -9,7 +9,7 @@ import {
   DisbursementMethod,
   MerchantDisbursementUpdateOutput,
   MerchantDisbursementCreateOutput,
-} from "@backpack-fux/pylon-sdk";
+} from "@monetic-labs/sdk";
 import { Address } from "viem";
 import { toast } from "sonner";
 

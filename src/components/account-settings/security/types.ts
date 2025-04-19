@@ -1,11 +1,11 @@
-import { RecoveryWalletMethod } from "@backpack-fux/pylon-sdk";
+import { RecoveryWalletMethod } from "@monetic-labs/sdk";
 
 export type SecuritySettingsModalProps = {
   isOpen: boolean;
   onClose: () => void;
 };
 
-export type RecoveryMethod = "PHONE" | "EMAIL" | "BACKPACK" | "TEAM" | "HARDWARE";
+export type RecoveryMethod = "PHONE" | "EMAIL" | "MONETIC" | "TEAM" | "HARDWARE";
 
 export type RecoveryWallet = {
   id: string;
@@ -82,5 +82,5 @@ export interface PendingChanges {
     method: RecoveryWalletMethod;
   }>;
   toDelete: string[];
-  toggleBackpack: boolean;
+  toggleMonetic: boolean;
 }

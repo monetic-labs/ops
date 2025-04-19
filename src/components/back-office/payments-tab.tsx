@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Chip } from "@heroui/chip";
-import { TransactionListItem } from "@backpack-fux/pylon-sdk";
+import { TransactionListItem } from "@monetic-labs/sdk";
 
 import { DataTable, EmptyContent, Column } from "@/components/generics/data-table";
 import pylon from "@/libs/pylon-sdk";

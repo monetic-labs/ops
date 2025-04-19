@@ -17,7 +17,7 @@ export class XMTPService {
   private client: Client | null = null;
   private readonly walletAddress: string;
   private readonly credentials: WebAuthnCredentials | undefined;
-  private readonly BACKPACK_GROUP_PREFIX = "backpack:merchant:";
+  private readonly MONETIC_GROUP_PREFIX = "monetic:merchant:";
   private readonly XMTP_ENV: "local" | "dev" | "production" | undefined;
   private readonly SUPPORT_ADDRESS: string;
   private initialized: Promise<void>;
@@ -30,10 +30,10 @@ export class XMTPService {
     // Environment-specific XMTP configurations
     this.XMTP_ENV = process.env.NEXT_PUBLIC_XMTP_ENV === "production" ? "production" : "dev";
 
-    const supportAddress = process.env.NEXT_PUBLIC_BACKPACK_SUPPORT_ADDRESS;
+    const supportAddress = 'TODO'
 
     if (!supportAddress) {
-      throw new Error("NEXT_PUBLIC_BACKPACK_SUPPORT_ADDRESS is not set");
+      throw new Error("NEXT_PUBLIC_MONETIC_SUPPORT_ADDRESS is not set");
     }
     this.SUPPORT_ADDRESS = supportAddress;
 
@@ -65,7 +65,7 @@ export class XMTPService {
   }
 
   private getMerchantGroupId(merchantId: string): string {
-    return `${this.BACKPACK_GROUP_PREFIX}${merchantId}`;
+    return `${this.MONETIC_GROUP_PREFIX}${merchantId}`;
   }
 
   private async initializeClient(): Promise<void> {

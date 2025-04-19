@@ -1,6 +1,6 @@
 // REFAC THIS LATER
 
-import { MerchantCardTransactionGetOutput } from "@backpack-fux/pylon-sdk";
+import { MerchantCardTransactionGetOutput } from "@monetic-labs/sdk";
 import { Button } from "@heroui/button";
 import { Divider } from "@heroui/divider";
 import { Modal, ModalBody, ModalContent, ModalFooter, ModalHeader } from "@heroui/modal";

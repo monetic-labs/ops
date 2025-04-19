@@ -29,7 +29,6 @@ import {
   ChevronDown,
   Moon,
   Sun,
-  Backpack,
   User,
   Shield,
   MessageCircle,
@@ -44,7 +43,7 @@ import { Dropdown, DropdownItem, DropdownMenu, DropdownTrigger } from "@heroui/d
 import { useTheme } from "@/hooks/generics/useTheme"; // Import useTheme
 import { ProfileSettingsModal } from "@/components/account-settings/profile-modal";
 import { SecuritySettingsModal } from "@/components/account-settings/security-modal";
-import { MerchantUserGetByIdOutput as MerchantUser } from "@backpack-fux/pylon-sdk";
+import { MerchantUserGetByIdOutput as MerchantUser } from "@monetic-labs/sdk";
 import { useMessagingState, useMessagingActions } from "@/libs/messaging/store";
 import { Badge as HeroBadge } from "@heroui/badge";
 

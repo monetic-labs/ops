@@ -1,7 +1,7 @@
 import React, { forwardRef, useState } from "react";
 import { Button } from "@heroui/button";
 import { Snippet } from "@heroui/snippet";
-import { GetOrderLinksOutput } from "@backpack-fux/pylon-sdk";
+import { GetOrderLinksOutput } from "@monetic-labs/sdk";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { DataTable, Column, EmptyContent } from "@/components/generics/data-table";

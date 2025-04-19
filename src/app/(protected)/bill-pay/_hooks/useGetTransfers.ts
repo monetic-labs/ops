@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { MerchantDisbursementEventGetOutput, Pagination } from "@backpack-fux/pylon-sdk";
+import { MerchantDisbursementEventGetOutput, Pagination } from "@monetic-labs/sdk";
 
 import pylon from "@/libs/pylon-sdk";
 

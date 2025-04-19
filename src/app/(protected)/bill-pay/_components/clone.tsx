@@ -3,7 +3,7 @@ import { Input } from "@heroui/input";
 import { Modal, ModalBody, ModalContent, ModalFooter, ModalHeader } from "@heroui/modal";
 import { Select, SelectItem } from "@heroui/select";
 import { useState } from "react";
-import { DisbursementMethod, MerchantDisbursementEventGetOutput, StableCurrency } from "@backpack-fux/pylon-sdk";
+import { DisbursementMethod, MerchantDisbursementEventGetOutput, StableCurrency } from "@monetic-labs/sdk";
 
 interface BillPayCloneModalProps {
   isOpen: boolean;

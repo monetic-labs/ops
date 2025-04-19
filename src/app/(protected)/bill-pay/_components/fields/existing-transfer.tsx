@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useInfiniteScroll } from "@heroui/use-infinite-scroll";
-import { DisbursementMethod, FiatCurrency } from "@backpack-fux/pylon-sdk";
+import { DisbursementMethod, FiatCurrency } from "@monetic-labs/sdk";
 import { Autocomplete, AutocompleteItem } from "@heroui/autocomplete";
 import { Input } from "@heroui/input";
 import { Eye, EyeOff } from "lucide-react";

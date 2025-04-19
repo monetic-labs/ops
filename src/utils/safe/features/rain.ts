@@ -1,5 +1,5 @@
 import { Address, Hex } from "viem";
-import { RainWithdrawalSignatureReady } from "@backpack-fux/pylon-sdk";
+import { RainWithdrawalSignatureReady } from "@monetic-labs/sdk";
 
 import pylon from "@/libs/pylon-sdk";
 import { WebAuthnCredentials } from "@/types/webauthn";

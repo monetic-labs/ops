@@ -3,12 +3,7 @@ import { Chip } from "@heroui/chip";
 import { Modal, ModalBody, ModalContent } from "@heroui/modal";
 import { Divider } from "@heroui/divider";
 import { useState, useEffect } from "react";
-import {
-  CardLimitFrequency,
-  CardStatus,
-  MerchantCardGetOutput,
-  UpdateMerchantCardDataInput,
-} from "@backpack-fux/pylon-sdk";
+import { CardLimitFrequency, CardStatus, MerchantCardGetOutput, UpdateMerchantCardDataInput } from "@monetic-labs/sdk";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";

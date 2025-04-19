@@ -6,7 +6,7 @@ import { Button } from "@heroui/button";
 import { Input } from "@heroui/input";
 import { Avatar } from "@heroui/avatar";
 import { XIcon, Upload, Trash2 } from "lucide-react";
-import { MerchantUserGetByIdOutput as MerchantUser } from "@backpack-fux/pylon-sdk";
+import { MerchantUserGetByIdOutput as MerchantUser } from "@monetic-labs/sdk";
 
 import { useToast } from "@/hooks/generics/useToast";
 import { formatPhoneNumber } from "@/utils/helpers";

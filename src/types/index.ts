@@ -6,7 +6,7 @@ import {
   BridgeComplianceKycStatus,
   BridgeComplianceTosStatus,
   CardCompanyStatus,
-} from "@backpack-fux/pylon-sdk";
+} from "@monetic-labs/sdk";
 
 import { MessagingStore } from "@/libs/messaging/store";
 import { Graph } from "@/knowledge-base/v0/graph/graph";

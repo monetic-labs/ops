@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { Chip } from "@heroui/chip";
 import { User } from "@heroui/user";
-import { MerchantUserGetOutput, MerchantUserCreateInput } from "@backpack-fux/pylon-sdk";
+import { MerchantUserGetOutput, MerchantUserCreateInput } from "@monetic-labs/sdk";
 import { Tooltip } from "@heroui/tooltip";
 import { Fingerprint, Eye } from "lucide-react";
 

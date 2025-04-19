@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { DisbursementMethod, ISO3166Alpha2State, ISO3166Alpha3Country } from "@backpack-fux/pylon-sdk";
+import { DisbursementMethod, ISO3166Alpha2State, ISO3166Alpha3Country } from "@monetic-labs/sdk";
 
 import { BASE_USDC } from "@/utils/constants";
 import { isLocal } from "@/utils/helpers";

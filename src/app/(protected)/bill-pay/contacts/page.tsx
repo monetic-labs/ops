@@ -3,7 +3,7 @@
 import React, { useEffect } from "react";
 import { Chip } from "@heroui/chip";
 import { User } from "@heroui/user";
-import { MerchantDisbursementCreateOutput } from "@backpack-fux/pylon-sdk";
+import { MerchantDisbursementCreateOutput } from "@monetic-labs/sdk";
 
 import { DataTable, Column, EmptyContent } from "@/components/generics/data-table";
 import { formatStringToTitleCase, getOpepenAvatar } from "@/utils/helpers";

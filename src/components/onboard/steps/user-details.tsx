@@ -5,7 +5,7 @@ import { Select, SelectItem } from "@heroui/select";
 import { ChangeEvent } from "react";
 import { Input } from "@heroui/input";
 import { SharedSelection } from "@heroui/system";
-import { ISO3166Alpha2Country, PersonRole } from "@backpack-fux/pylon-sdk";
+import { ISO3166Alpha2Country, PersonRole } from "@monetic-labs/sdk";
 import { Checkbox } from "@heroui/checkbox";
 
 import postcodeMap from "@/data/postcodes-map.json";

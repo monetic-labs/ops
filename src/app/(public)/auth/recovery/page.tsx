@@ -13,7 +13,7 @@ interface RecoveryOptions {
   email: boolean;
   phone: boolean;
   recoveryCode: boolean;
-  backpack: boolean;
+  monetic: boolean;
 }
 
 export default function RecoveryPage() {
@@ -55,7 +55,7 @@ export default function RecoveryPage() {
         email: true,
         phone: true,
         recoveryCode: false, // Example of a disabled option
-        backpack: true,
+        monetic: true,
       });
     } catch (error) {
       console.error("OTP verification error:", error);
@@ -79,8 +79,8 @@ export default function RecoveryPage() {
         case "recoveryCode":
           // TODO: Implement recovery code
           break;
-        case "backpack":
-          // TODO: Implement backpack support
+        case "monetic":
+          // TODO: Implement monetic support
           break;
       }
     } catch (error) {
@@ -242,11 +242,11 @@ export default function RecoveryPage() {
                   title="Recovery Codes"
                 />
                 <RecoveryOption
-                  description="Contact Backpack support for assistance"
+                  description="Contact Monetic support for assistance"
                   icon={Shield}
-                  isEnabled={recoveryOptions.backpack}
-                  method="backpack"
-                  title="Backpack Support"
+                  isEnabled={recoveryOptions.monetic}
+                  method="monetic"
+                  title="Monetic Support"
                 />
               </div>
             </div>)

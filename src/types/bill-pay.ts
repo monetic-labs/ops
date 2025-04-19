@@ -1,4 +1,4 @@
-import { BridgeAddress, DisbursementMethod, FiatCurrency, ISO3166Alpha3Country } from "@backpack-fux/pylon-sdk";
+import { BridgeAddress, DisbursementMethod, FiatCurrency, ISO3166Alpha3Country } from "@monetic-labs/sdk";
 
 // Base interface with common fields
 interface BaseBillPayFields {

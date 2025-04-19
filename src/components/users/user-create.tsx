@@ -5,7 +5,7 @@ import { Modal, ModalContent, ModalHeader, ModalBody, ModalFooter } from "@herou
 import { Input } from "@heroui/input";
 import { Button } from "@heroui/button";
 import { Select, SelectItem } from "@heroui/select";
-import { PersonRole, MerchantUserCreateInput } from "@backpack-fux/pylon-sdk";
+import { PersonRole, MerchantUserCreateInput } from "@monetic-labs/sdk";
 
 import { capitalizeFirstChar, formatStringToTitleCase } from "@/utils/helpers";
 

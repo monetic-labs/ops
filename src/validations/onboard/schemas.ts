@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { Address, isAddress } from "viem";
-import { CardCompanyType, ISO3166Alpha2Country, PersonRole, NAICS_CODES } from "@backpack-fux/pylon-sdk";
+import { CardCompanyType, ISO3166Alpha2Country, PersonRole, NAICS_CODES } from "@monetic-labs/sdk";
 
 import postcodeMap from "@/data/postcodes-map.json";
 

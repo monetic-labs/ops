@@ -6,7 +6,7 @@ import { Button } from "@heroui/button";
 import { XIcon, AlertTriangle, Clock, ShieldAlert } from "lucide-react";
 import { Address } from "viem";
 import { MetaTransaction } from "abstractionkit";
-import { RecoveryWalletMethod } from "@backpack-fux/pylon-sdk";
+import { RecoveryWalletMethod } from "@monetic-labs/sdk";
 
 import pylon from "@/libs/pylon-sdk";
 import { useRecoveryWallets } from "@/hooks/security/useRecoveryWallets";
@@ -16,24 +16,19 @@ import {
   createEnableModuleTransaction,
   defaultSocialRecoveryModule,
   setupSocialRecovery,
-  toggleBackpackRecovery,
+  toggleMoneticRecovery,
   addRecoveryMethod,
   removeRecoveryMethod,
-  isBackpackGuardian,
+  isMoneticGuardian,
 } from "@/utils/safe/features/recovery";
 import { executeDirectTransaction } from "@/utils/safe/flows/direct";
-import { BACKPACK_GUARDIAN_ADDRESS } from "@/utils/constants";
+import { MONETIC_GUARDIAN_ADDRESS } from "@/utils/constants";
 
 import { TransferStatus } from "../generics/transfer-status";
 
 import { RECOVERY_OPTIONS, GRACE_PERIOD_OPTIONS, DEAD_SWITCH_OPTIONS } from "./security/constants";
 import { PendingChanges, RecoveryMethod } from "./security/types";
-import {
-  RecoverySection,
-  EmailRecovery,
-  PhoneRecovery,
-  BackpackRecovery,
-} from "./security/components/recovery-options";
+import { RecoverySection, EmailRecovery, PhoneRecovery, MoneticRecovery } from "./security/components/recovery-options";
 import { RecoveryHeader } from "./security/components/recovery-header";
 import { RecoveryWarning } from "./security/components/recovery-warning";
 import { TimeSettingCard } from "./security/components/time-setting-card";
@@ -61,44 +56,44 @@ export const SecuritySettingsModal = ({ isOpen, onClose }: { isOpen: boolean; on
     recoveryWallets,
     configuredEmails,
     configuredPhone,
-    isBackpackRecoveryEnabled,
+    isMoneticRecoveryEnabled,
     isModuleInstalled,
     currentThreshold,
     setConfiguredEmails,
     setConfiguredPhone,
-    setIsBackpackRecoveryEnabled,
+    setIsMoneticRecoveryEnabled,
     fetchRecoveryWallets,
   } = useRecoveryWallets(isOpen);
 
   // Display a debug message when we have a status mismatch
   useEffect(() => {
-    const checkBackpackStatus = async () => {
+    const checkMoneticStatus = async () => {
       if (user?.walletAddress && isOpen) {
         try {
           // Direct check against blockchain
-          const directStatus = await isBackpackGuardian(user.walletAddress as Address);
+          const directStatus = await isMoneticGuardian(user.walletAddress as Address);
 
           // Log only when there's a mismatch
-          if (directStatus !== isBackpackRecoveryEnabled) {
+          if (directStatus !== isMoneticRecoveryEnabled) {
             console.warn("🚨 Guardian status mismatch:", {
-              ui: isBackpackRecoveryEnabled,
+              ui: isMoneticRecoveryEnabled,
               blockchain: directStatus,
             });
           }
         } catch (error) {
           console.error("❌ Error checking guardian status:", error);
-        }
+        } 
       }
     };
 
-    checkBackpackStatus();
-  }, [user?.walletAddress, isBackpackRecoveryEnabled, isOpen]);
+    checkMoneticStatus();
+  }, [user?.walletAddress, isMoneticRecoveryEnabled, isOpen]);
 
   // Integrated pendingChanges state (previously in usePendingChanges hook)
   const [pendingChanges, setPendingChanges] = useState<PendingChanges>({
     toAdd: [],
     toDelete: [],
-    toggleBackpack: false,
+    toggleMonetic: false,
   });
 
   // Helper functions for pending changes
@@ -107,7 +102,7 @@ export const SecuritySettingsModal = ({ isOpen, onClose }: { isOpen: boolean; on
       ...prev,
       toAdd: [...(prev.toAdd || []), ...(change.toAdd || [])],
       toDelete: [...(prev.toDelete || []), ...(change.toDelete || [])],
-      toggleBackpack: change.toggleBackpack !== undefined ? change.toggleBackpack : prev.toggleBackpack,
+      toggleMonetic: change.toggleMonetic !== undefined ? change.toggleMonetic : prev.toggleMonetic,
     }));
   };
 
@@ -115,22 +110,22 @@ export const SecuritySettingsModal = ({ isOpen, onClose }: { isOpen: boolean; on
     setPendingChanges({
       toAdd: [],
       toDelete: [],
-      toggleBackpack: false,
+      toggleMonetic: false,
     });
   };
 
   const hasPendingChanges =
-    pendingChanges.toAdd.length > 0 || pendingChanges.toDelete.length > 0 || pendingChanges.toggleBackpack;
+    pendingChanges.toAdd.length > 0 || pendingChanges.toDelete.length > 0 || pendingChanges.toggleMonetic;
 
   // Calculate configured count - current guardians plus pending changes
-  const configuredCount = configuredEmails.length + (configuredPhone ? 1 : 0) + (isBackpackRecoveryEnabled ? 1 : 0);
+  const configuredCount = configuredEmails.length + (configuredPhone ? 1 : 0) + (isMoneticRecoveryEnabled ? 1 : 0);
 
   // Updated calculation to prevent double counting
   const pendingConfiguredCount =
     configuredCount -
     pendingChanges.toDelete.length +
-    // Only count Backpack if it's being enabled and not already enabled
-    (!isBackpackRecoveryEnabled && pendingChanges.toggleBackpack ? 1 : 0);
+    // Only count Monetic if it's being enabled and not already enabled
+    (!isMoneticRecoveryEnabled && pendingChanges.toggleMonetic ? 1 : 0);
 
   // Set threshold based on currentThreshold from the module or proper defaults
   useEffect(() => {
@@ -139,7 +134,7 @@ export const SecuritySettingsModal = ({ isOpen, onClose }: { isOpen: boolean; on
       setThreshold(currentThreshold);
     } else {
       // Otherwise, set defaults based on configured count
-      const totalGuardians = recoveryWallets.length + (isBackpackRecoveryEnabled ? 1 : 0);
+      const totalGuardians = recoveryWallets.length + (isMoneticRecoveryEnabled ? 1 : 0);
 
       if (totalGuardians >= 3) {
         // With 3+ guardians, default to 2
@@ -155,7 +150,7 @@ export const SecuritySettingsModal = ({ isOpen, onClose }: { isOpen: boolean; on
         setThreshold(2);
       }
     }
-  }, [currentThreshold, recoveryWallets.length, isBackpackRecoveryEnabled]);
+  }, [currentThreshold, recoveryWallets.length, isMoneticRecoveryEnabled]);
 
   // Validate settings
   useEffect(() => {
@@ -167,7 +162,7 @@ export const SecuritySettingsModal = ({ isOpen, onClose }: { isOpen: boolean; on
     if (threshold > pendingConfiguredCount && pendingConfiguredCount > 0) {
       setThreshold(pendingConfiguredCount);
     }
-  }, [configuredEmails, configuredPhone, isBackpackRecoveryEnabled, pendingChanges, threshold, pendingConfiguredCount]);
+  }, [configuredEmails, configuredPhone, isMoneticRecoveryEnabled, pendingChanges, threshold, pendingConfiguredCount]);
 
   // Toggle section expansion
   const toggleSection = (section: string) => {
@@ -289,20 +284,20 @@ export const SecuritySettingsModal = ({ isOpen, onClose }: { isOpen: boolean; on
     }
   };
 
-  // SIMPLIFIED: Toggle Backpack guardian without immediate transaction
-  const handleToggleBackpack = async () => {
+  // SIMPLIFIED: Toggle Monetic guardian without immediate transaction
+  const handleToggleMonetic = async () => {
     // First do a direct check with the blockchain to get the real status
-    const realBackpackStatus = await isBackpackGuardian(user?.walletAddress as Address);
+    const realMoneticStatus = await isMoneticGuardian(user?.walletAddress as Address);
 
     // Only log critical mismatch information
-    if (realBackpackStatus !== isBackpackRecoveryEnabled) {
-      console.warn("⚠️ Backpack guardian status mismatch:", {
-        uiState: isBackpackRecoveryEnabled,
-        blockchainState: realBackpackStatus,
+    if (realMoneticStatus !== isMoneticRecoveryEnabled) {
+      console.warn("⚠️ Monetic guardian status mismatch:", {
+        uiState: isMoneticRecoveryEnabled,
+        blockchainState: realMoneticStatus,
       });
 
       // If there's a mismatch between UI and blockchain state, correct it first
-      setIsBackpackRecoveryEnabled(realBackpackStatus);
+      setIsMoneticRecoveryEnabled(realMoneticStatus);
 
       // Wait a moment for state to update before continuing
       await new Promise((resolve) => setTimeout(resolve, 100));
@@ -315,32 +310,32 @@ export const SecuritySettingsModal = ({ isOpen, onClose }: { isOpen: boolean; on
       });
 
       // Now toggle based on the correct state
-      const newBackpackState = !isBackpackRecoveryEnabled;
+      const newMoneticState = !isMoneticRecoveryEnabled;
 
       // Update the UI state immediately
-      setIsBackpackRecoveryEnabled(newBackpackState);
+      setIsMoneticRecoveryEnabled(newMoneticState);
 
       // Add to pending changes for blockchain transaction
-      if (newBackpackState) {
-        // If enabling Backpack, set the toggleBackpack flag to true
+      if (newMoneticState) {
+        // If enabling Monetic, set the toggleMonetic flag to true
         addPendingChange({
-          toggleBackpack: true,
+          toggleMonetic: true,
         });
       } else {
-        // If disabling Backpack, check if we need to add a revoke transaction
-        const backpackGuardian = recoveryWallets.find(
-          (wallet) => wallet.publicAddress?.toLowerCase() === BACKPACK_GUARDIAN_ADDRESS.toLowerCase()
+        // If disabling Monetic, check if we need to add a revoke transaction
+        const moneticGuardian = recoveryWallets.find(
+          (wallet) => wallet.publicAddress?.toLowerCase() === MONETIC_GUARDIAN_ADDRESS.toLowerCase()
         );
 
-        if (backpackGuardian) {
+        if (moneticGuardian) {
           addPendingChange({
-            toDelete: [backpackGuardian.id],
-            toggleBackpack: false,
+            toDelete: [moneticGuardian.id],
+            toggleMonetic: false,
           });
         }
       }
     } catch (error) {
-      console.error("❌ Failed to toggle Backpack guardian:", error);
+      console.error("❌ Failed to toggle Monetic guardian:", error);
     }
   };
 
@@ -403,13 +398,13 @@ export const SecuritySettingsModal = ({ isOpen, onClose }: { isOpen: boolean; on
         // Create an array to hold all transactions
         const transactions: MetaTransaction[] = [];
 
-        // 1. Handle Backpack guardian toggling using the dedicated utility
-        if (pendingChanges.toggleBackpack) {
+        // 1. Handle Monetic guardian toggling using the dedicated utility
+        if (pendingChanges.toggleMonetic) {
           setStatus(TransferStatus.PREPARING);
-          console.log("🔄 Setting up Backpack as recovery guardian");
+          console.log("🔄 Setting up Monetic as recovery guardian");
 
-          // Use the dedicated utility for toggling Backpack recovery
-          await toggleBackpackRecovery({
+          // Use the dedicated utility for toggling Monetic recovery
+          await toggleMoneticRecovery({
             accountAddress: user.walletAddress as Address,
             credentials,
             enable: true,
@@ -428,11 +423,11 @@ export const SecuritySettingsModal = ({ isOpen, onClose }: { isOpen: boolean; on
                 setStatus(TransferStatus.CONFIRMING);
               },
               onSuccess: () => {
-                console.log("✅ Backpack guardian successfully enabled");
+                console.log("✅ Monetic guardian successfully enabled");
                 setStatus(TransferStatus.SENT);
               },
               onError: (err: Error) => {
-                console.error("❌ Failed to toggle Backpack recovery:", err);
+                console.error("❌ Failed to toggle Monetic recovery:", err);
                 setStatus(TransferStatus.ERROR);
               },
             },
@@ -609,21 +604,21 @@ export const SecuritySettingsModal = ({ isOpen, onClose }: { isOpen: boolean; on
 
       // Force a complete refresh of the recovery wallets state
       try {
-        // Force a direct check of Backpack guardian status first
-        const directBackpackStatus = await isBackpackGuardian(user.walletAddress as Address);
+        // Force a direct check of Monetic guardian status first
+        const directMoneticStatus = await isMoneticGuardian(user.walletAddress as Address);
 
         // Refresh all recovery wallets
         await fetchRecoveryWallets();
 
         // Compare UI state with the direct check result and fix any mismatch
-        if (directBackpackStatus !== isBackpackRecoveryEnabled) {
+        if (directMoneticStatus !== isMoneticRecoveryEnabled) {
           console.warn("⚠️ Guardian status mismatch after save:", {
-            ui: isBackpackRecoveryEnabled,
-            blockchain: directBackpackStatus,
+            ui: isMoneticRecoveryEnabled,
+            blockchain: directMoneticStatus,
           });
 
           // Force the correct state
-          setIsBackpackRecoveryEnabled(directBackpackStatus);
+          setIsMoneticRecoveryEnabled(directMoneticStatus);
         }
       } catch (refreshError) {
         console.error("❌ Error refreshing recovery wallets:", refreshError);
@@ -704,11 +699,11 @@ export const SecuritySettingsModal = ({ isOpen, onClose }: { isOpen: boolean; on
             setPhoneInput={setPhoneInput}
           />
         );
-      case "BACKPACK":
+      case "MONETIC":
         return (
-          <BackpackRecovery
-            handleToggleBackpack={handleToggleBackpack}
-            isBackpackRecoveryEnabled={isBackpackRecoveryEnabled}
+          <MoneticRecovery
+            handleToggleMonetic={handleToggleMonetic}
+            isMoneticRecoveryEnabled={isMoneticRecoveryEnabled}
           />
         );
       default:

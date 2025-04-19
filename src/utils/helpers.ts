@@ -2,7 +2,7 @@ import type { Address } from "viem";
 
 import dayjs from "dayjs";
 import { createIcon } from "opepen-standard";
-import { NAICS_CODES } from "@backpack-fux/pylon-sdk";
+import { NAICS_CODES } from "@monetic-labs/sdk";
 
 // Environment Constants
 export const isLocal = process.env.NEXT_PUBLIC_NODE_ENV === "development";

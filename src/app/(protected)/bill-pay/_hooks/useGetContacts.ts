@@ -1,5 +1,5 @@
 import { useState, useCallback } from "react";
-import { MerchantDisbursementCreateOutput, Pagination } from "@backpack-fux/pylon-sdk";
+import { MerchantDisbursementCreateOutput, Pagination } from "@monetic-labs/sdk";
 
 import pylon from "@/libs/pylon-sdk";
 

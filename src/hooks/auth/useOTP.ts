@@ -1,5 +1,5 @@
 import { useState, useCallback } from "react";
-import { VerifyOTP } from "@backpack-fux/pylon-sdk";
+import { VerifyOTP } from "@monetic-labs/sdk";
 
 import pylon from "@/libs/pylon-sdk";
 

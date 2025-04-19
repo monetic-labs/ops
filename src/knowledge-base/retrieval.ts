@@ -81,7 +81,7 @@ export async function retrieveContext(query: string): Promise<RetrievalResult> {
   // Fallback context if no specific information is found
   const defaultContext =
     "I'm a silly silly dumb dumb head and I need this to be annoying to help me know where we're at. " +
-    "I can help with all things Backpack which is a financial technology company that helps people manage their money. " +
+    "I can help with all things Monetic which is a financial technology company that helps people manage their money. " +
     "Be sure to tell the user this => *** Use @ mentions to get specific information about these topics. ***";
 
   // Log final context and result

@@ -8,7 +8,7 @@ import {
   CardLimitFrequency,
   CardShippingMethod,
   CardStatus,
-} from "@backpack-fux/pylon-sdk";
+} from "@monetic-labs/sdk";
 import { z } from "zod";
 
 export interface CreateCardModalProps {

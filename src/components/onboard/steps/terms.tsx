@@ -52,7 +52,7 @@ export const TermsStep = () => {
             <Link
               isExternal
               className="text-primary font-medium inline-flex items-center gap-1 hover:opacity-80 transition-opacity"
-              href="https://backpack.network/terms-of-service"
+              href="https://monetic.xyz/terms-of-service"
               onClick={(e) => e.stopPropagation()}
             >
               terms of service
@@ -62,14 +62,14 @@ export const TermsStep = () => {
             <Link
               isExternal
               className="text-primary font-medium inline-flex items-center gap-1 hover:opacity-80 transition-opacity"
-              href="https://backpack.network/privacy-policy"
+              href="https://monetic.xyz/privacy-policy"
               onClick={(e) => e.stopPropagation()}
             >
               privacy policy
               <ExternalLink className="w-3 h-3" />
             </Link>
             <span className="text-foreground/90">
-              for Backpack, including but not limited to, the Rain Card and Bill Pay services.
+              for Monetic, including but not limited to, the Rain Card and Bill Pay services.
             </span>
           </div>
         </div>

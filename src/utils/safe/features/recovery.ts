@@ -1,14 +1,10 @@
 import { Address } from "viem";
 import { SocialRecoveryModule, SocialRecoveryModuleGracePeriodSelector, MetaTransaction } from "abstractionkit";
-import {
-  RecoveryWalletMethod,
-  RecoveryWalletGenerateInput,
-  RecoveryWalletGenerateOutput,
-} from "@backpack-fux/pylon-sdk";
+import { RecoveryWalletMethod, RecoveryWalletGenerateInput, RecoveryWalletGenerateOutput } from "@monetic-labs/sdk";
 
 import { PUBLIC_RPC, publicClient } from "@/config/web3";
 import { isLocal, isProduction } from "@/utils/helpers";
-import { BACKPACK_GUARDIAN_ADDRESS } from "@/utils/constants";
+import { MONETIC_GUARDIAN_ADDRESS } from "@/utils/constants";
 import pylon from "@/libs/pylon-sdk";
 import { WebAuthnCredentials } from "@/types/webauthn";
 import { SAFE_ABI } from "@/utils/abi/safe";
@@ -61,7 +57,7 @@ export function createSocialRecoveryModule(
  * Generates recovery wallet addresses for the provided methods
  *
  * @param methods Recovery methods (email, phone)
- * @returns Array of guardian addresses including Backpack and recovery wallets
+ * @returns Array of guardian addresses including Monetic and recovery wallets
  */
 export async function generateRecoveryAddresses(methods: RecoveryMethods): Promise<Address[]> {
   const recoveryInputs: RecoveryWalletGenerateInput[] = [
@@ -71,9 +67,9 @@ export async function generateRecoveryAddresses(methods: RecoveryMethods): Promi
 
   const recoveryWallets = await pylon.generateRecoveryWallets(recoveryInputs);
 
-  // Return all guardian addresses including Backpack
+  // Return all guardian addresses including Monetic
   return [
-    BACKPACK_GUARDIAN_ADDRESS as Address,
+    MONETIC_GUARDIAN_ADDRESS as Address,
     ...recoveryWallets.map((wallet: RecoveryWalletGenerateOutput) => wallet.publicAddress as Address),
   ];
 }
@@ -95,19 +91,19 @@ export function createRecoveryTransactions(accountAddress: Address, guardianAddr
 }
 
 /**
- * Checks if Backpack is configured as a guardian for the given account
+ * Checks if Monetic is configured as a guardian for the given account
  *
  * @param accountAddress The account to check
  * @param module Optional SocialRecoveryModule instance
- * @returns Promise resolving to true if Backpack is a guardian
+ * @returns Promise resolving to true if Monetic is a guardian
  */
-export async function isBackpackGuardian(
+export async function isMoneticGuardian(
   accountAddress: Address,
   module: SocialRecoveryModule = defaultSocialRecoveryModule
 ): Promise<boolean> {
   if (isLocal) return true;
 
-  const backpackAddressLower = BACKPACK_GUARDIAN_ADDRESS.toLowerCase();
+  const moneticAddressLower = MONETIC_GUARDIAN_ADDRESS.toLowerCase();
 
   try {
     // Get all guardians and check manually for more robustness
@@ -116,7 +112,7 @@ export async function isBackpackGuardian(
     // Manual case-insensitive comparison for maximum reliability
     let isGuardian = false;
     for (const guardianAddress of guardians) {
-      if (guardianAddress.toLowerCase() === backpackAddressLower) {
+      if (guardianAddress.toLowerCase() === moneticAddressLower) {
         isGuardian = true;
         break;
       }
@@ -124,7 +120,7 @@ export async function isBackpackGuardian(
 
     return isGuardian;
   } catch (error) {
-    console.error("Error checking if Backpack is a guardian:", error);
+    console.error("Error checking if Monetic is a guardian:", error);
     return false;
   }
 }
@@ -280,16 +276,16 @@ export async function isModuleEnabled(
 }
 
 /**
- * Toggles Backpack as a guardian for account recovery (enables or disables)
+ * Toggles Monetic as a guardian for account recovery (enables or disables)
  *
  * @param accountAddress The account address
  * @param credentials WebAuthn credentials for signing
- * @param enable Whether to enable (true) or disable (false) Backpack as a guardian
+ * @param enable Whether to enable (true) or disable (false) Monetic as a guardian
  * @param threshold Threshold for guardian consensus (default: 2)
  * @param callbacks Optional callbacks for transaction tracking
  * @returns Promise resolving to success indicator
  */
-export async function toggleBackpackRecovery({
+export async function toggleMoneticRecovery({
   accountAddress,
   credentials,
   enable = true,
@@ -304,12 +300,12 @@ export async function toggleBackpackRecovery({
 }): Promise<{ success: boolean }> {
   try {
     // Check current guardian status with our improved robust check
-    const isGuardian = await isBackpackGuardian(accountAddress);
+    const isGuardian = await isMoneticGuardian(accountAddress);
     const moduleEnabled = await isModuleEnabled(accountAddress);
 
     // If already in desired state, return success
     if ((enable && isGuardian) || (!enable && !isGuardian)) {
-      console.log(`Backpack is already ${enable ? "enabled" : "disabled"} as a guardian`);
+      console.log(`Monetic is already ${enable ? "enabled" : "disabled"} as a guardian`);
       return { success: true };
     }
 
@@ -325,13 +321,13 @@ export async function toggleBackpackRecovery({
       }
 
       // Add the add guardian transaction
-      const addGuardianTx = createAddGuardianTransaction(BACKPACK_GUARDIAN_ADDRESS, threshold);
+      const addGuardianTx = createAddGuardianTransaction(MONETIC_GUARDIAN_ADDRESS, threshold);
       transactions.push(addGuardianTx);
     } else {
-      // Create transaction to revoke Backpack as guardian
+      // Create transaction to revoke Monetic as guardian
       const revokeGuardianTx = await createRevokeGuardianTransaction(
         accountAddress,
-        BACKPACK_GUARDIAN_ADDRESS,
+        MONETIC_GUARDIAN_ADDRESS,
         threshold
       );
       transactions.push(revokeGuardianTx);
@@ -345,7 +341,7 @@ export async function toggleBackpackRecovery({
       callbacks,
     });
   } catch (error) {
-    console.error("Error toggling Backpack recovery:", error);
+    console.error("Error toggling Monetic recovery:", error);
     return { success: false };
   }
 }

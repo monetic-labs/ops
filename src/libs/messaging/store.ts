@@ -104,7 +104,7 @@ export interface MessagingStore {
 
 // Constants for storage
 const MAX_MESSAGES_PER_MODE = 100;
-const STORAGE_KEY = "@backpack/service:support";
+const STORAGE_KEY = "@monetic/ops:support";
 
 // Default state values
 const DEFAULT_STATE = {

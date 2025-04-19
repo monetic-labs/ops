@@ -1,4 +1,4 @@
-import { PersonRole } from "@backpack-fux/pylon-sdk";
+import { PersonRole } from "@monetic-labs/sdk";
 import { Button } from "@heroui/button";
 import { Avatar } from "@heroui/avatar";
 import { ShieldCheck } from "lucide-react";

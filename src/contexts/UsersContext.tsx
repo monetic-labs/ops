@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useEffect, useCallback, ReactNode } from "react";
-import { MerchantUserGetOutput, PersonRole, MerchantUserCreateInput } from "@backpack-fux/pylon-sdk";
+import { MerchantUserGetOutput, PersonRole, MerchantUserCreateInput } from "@monetic-labs/sdk";
 
 import pylon from "@/libs/pylon-sdk";
 

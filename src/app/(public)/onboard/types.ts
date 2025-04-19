@@ -1,4 +1,4 @@
-import { ISO3166Alpha2Country, PersonRole } from "@backpack-fux/pylon-sdk";
+import { ISO3166Alpha2Country, PersonRole } from "@monetic-labs/sdk";
 
 import { UserRole } from "@/validations/onboard/schemas";
 import { FormData } from "@/validations/onboard/schemas";

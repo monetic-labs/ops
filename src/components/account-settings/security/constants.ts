@@ -39,13 +39,13 @@ export const RECOVERY_OPTIONS = [
     method: "PHONE" as RecoveryMethod,
   },
   {
-    id: "backpack",
-    title: "Backpack Recovery",
-    description: "Allow Backpack to help recover your account",
+    id: "monetic",
+    title: "Monetic Recovery",
+    description: "Allow Monetic to help recover your account",
     icon: Backpack,
     isConfigured: false,
     isComingSoon: false,
-    method: "BACKPACK" as RecoveryMethod,
+    method: "MONETIC" as RecoveryMethod,
   },
   {
     id: "team",

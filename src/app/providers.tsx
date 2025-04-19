@@ -8,7 +8,7 @@ import { HeroUIProvider } from "@heroui/system";
 import { PrivyProvider } from "@privy-io/react-auth";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "sonner";
-// import { PylonProvider } from "@backpack-fux/pylon-sdk";
+// import { PylonProvider } from "@monetic-labs/sdk";
 
 import { MessagingProvider } from "@/components/messaging/messaging-provider";
 import { ShortcutsProvider } from "@/components/generics/shortcuts-provider";

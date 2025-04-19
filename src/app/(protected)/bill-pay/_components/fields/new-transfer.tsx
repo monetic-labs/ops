@@ -1,9 +1,4 @@
-import {
-  DisbursementMethod,
-  FiatCurrency,
-  ISO3166Alpha2State as States,
-  ISO3166Alpha2State,
-} from "@backpack-fux/pylon-sdk";
+import { DisbursementMethod, FiatCurrency, ISO3166Alpha2State as States, ISO3166Alpha2State } from "@monetic-labs/sdk";
 import { Autocomplete, AutocompleteItem } from "@heroui/autocomplete";
 import { Input } from "@heroui/input";
 import { Avatar } from "@heroui/avatar";

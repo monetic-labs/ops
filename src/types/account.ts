@@ -1,7 +1,7 @@
 import type { LucideIcon } from "lucide-react";
 import type { Address, Hex } from "viem";
 
-import { PersonRole, StableCurrency } from "@backpack-fux/pylon-sdk";
+import { PersonRole, StableCurrency } from "@monetic-labs/sdk";
 
 export type PasskeyInfo = {
   credentialId: string;

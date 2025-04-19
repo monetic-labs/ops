@@ -1,4 +1,4 @@
-import { Pylon } from "@backpack-fux/pylon-sdk";
+import { Pylon } from "@monetic-labs/sdk";
 
 const baseUrl = process.env.NEXT_PUBLIC_PYLON_BASE_URL;
 

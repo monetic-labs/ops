@@ -1,6 +1,6 @@
 "use client";
 
-import type { Passkey as PasskeyCredential } from "@backpack-fux/pylon-sdk";
+import type { Passkey as PasskeyCredential } from "@monetic-labs/sdk";
 
 import { useEffect, useState } from "react";
 import { Card, CardBody } from "@heroui/card";
@@ -194,7 +194,7 @@ const AuthPage = () => {
 
                 <p className="text-sm text-foreground/60 text-center">
                   By continuing, you agree to our{" "}
-                  <Link className="text-sm text-primary" href="https://backpack.network/terms-of-service">
+                  <Link className="text-sm text-primary" href="https://monetic.xyz/terms-of-service">
                     Terms of Service
                   </Link>
                 </p>

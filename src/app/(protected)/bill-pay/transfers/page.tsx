@@ -6,7 +6,7 @@ import { User } from "@heroui/user";
 import { Button } from "@heroui/button";
 import { Address } from "viem";
 import { PlusIcon } from "lucide-react";
-import { MerchantDisbursementEventGetOutput } from "@backpack-fux/pylon-sdk";
+import { MerchantDisbursementEventGetOutput } from "@monetic-labs/sdk";
 import { DataTable, Column, EmptyContent } from "@/components/generics/data-table";
 import BillPayDetailsModal from "../_components/details";
 import CreateBillPayModal from "../_components/create";

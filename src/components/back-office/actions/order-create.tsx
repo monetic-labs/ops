@@ -3,7 +3,7 @@ import { Modal, ModalContent, ModalHeader, ModalBody, ModalFooter } from "@herou
 import { Button } from "@heroui/button";
 import { Input } from "@heroui/input";
 import { Mail, Phone, DollarSign } from "lucide-react";
-import { GetOrderLinksOutput, ISO4217Currency } from "@backpack-fux/pylon-sdk";
+import { GetOrderLinksOutput, ISO4217Currency } from "@monetic-labs/sdk";
 
 import { formatPhoneNumber, formatCurrencyInput } from "@/utils/helpers";
 import pylon from "@/libs/pylon-sdk";

@@ -2,7 +2,7 @@
 
 import { createContext, useContext, ReactNode, useState, useEffect, useMemo } from "react";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
-import { MerchantUserGetByIdOutput as MerchantUser } from "@backpack-fux/pylon-sdk";
+import { MerchantUserGetByIdOutput as MerchantUser } from "@monetic-labs/sdk";
 import { Hex } from "viem";
 import { PublicKey } from "ox";
 

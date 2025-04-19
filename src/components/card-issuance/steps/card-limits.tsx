@@ -1,4 +1,4 @@
-import { CardLimitFrequency } from "@backpack-fux/pylon-sdk";
+import { CardLimitFrequency } from "@monetic-labs/sdk";
 import { Controller, UseFormReturn } from "react-hook-form";
 import { Input } from "@heroui/input";
 import { Select, SelectItem } from "@heroui/select";

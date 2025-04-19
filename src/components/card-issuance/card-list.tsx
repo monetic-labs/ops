@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useInfiniteQuery } from "@tanstack/react-query";
-import { MerchantCardGetOutput, CardStatus, CardLimitFrequency, CardType } from "@backpack-fux/pylon-sdk";
+import { MerchantCardGetOutput, CardStatus, CardLimitFrequency, CardType } from "@monetic-labs/sdk";
 
 import { DataTable, EmptyContent } from "@/components/generics/data-table";
 import { formattedDate } from "@/utils/helpers";

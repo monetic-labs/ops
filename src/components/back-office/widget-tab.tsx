@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Select, SelectItem } from "@heroui/select";
-import { Network, StableCurrency } from "@backpack-fux/pylon-sdk";
+import { Network, StableCurrency } from "@monetic-labs/sdk";
 import { Autocomplete, AutocompleteItem } from "@heroui/autocomplete";
 
 import { capitalizeFirstChar } from "@/utils/helpers";

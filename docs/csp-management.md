@@ -28,7 +28,7 @@ Our CSP configuration includes the following service categories:
 5. **Analytics & Monitoring**: (Reserved for future use)
 6. **Development & Debugging**: (Reserved for development-only services)
 7. **Internal Services**:
-   - Backpack API endpoints (including staging environments) for HTTP and SSE connections
+   - Monetic API endpoints (including staging environments) for HTTP and SSE connections
    - Cloudflare R2 storage for file uploads and downloads
 8. **Media & Content**:
    - Avatar services

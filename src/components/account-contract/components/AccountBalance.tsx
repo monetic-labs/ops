@@ -2,7 +2,7 @@ import type { Account } from "@/types/account";
 
 import { Button } from "@heroui/button";
 import { ArrowUpRight, ArrowDownLeft, RefreshCw } from "lucide-react";
-import { PersonRole } from "@backpack-fux/pylon-sdk";
+import { PersonRole } from "@monetic-labs/sdk";
 import { useState, useMemo } from "react";
 
 import { useUser } from "@/contexts/UserContext";

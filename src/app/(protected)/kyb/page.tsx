@@ -8,7 +8,7 @@ import { Button } from "@heroui/button";
 import { useRef, useState } from "react";
 import { useToast } from "@/hooks/generics/useToast";
 import { useRouter } from "next/navigation";
-import { BridgeComplianceKycStatus, CardCompanyStatus } from "@backpack-fux/pylon-sdk";
+import { BridgeComplianceKycStatus, CardCompanyStatus } from "@monetic-labs/sdk";
 
 export default function KYB() {
   const { complianceStatus, refetch } = useGetComplianceStatus();

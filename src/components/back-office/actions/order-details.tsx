@@ -1,7 +1,7 @@
 import React from "react";
 import { Modal, ModalContent, ModalHeader, ModalBody } from "@heroui/modal";
 import { Divider } from "@heroui/divider";
-import { BillingAddress, ShippingAddress } from "@backpack-fux/pylon-sdk";
+import { BillingAddress, ShippingAddress } from "@monetic-labs/sdk";
 
 import { formattedDate, mapCurrencyToSymbol } from "@/utils/helpers";
 import ModalFooterWithSupport from "@/components/generics/footer-modal-support";

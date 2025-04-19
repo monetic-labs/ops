@@ -1,5 +1,5 @@
 import { useState, useCallback } from "react";
-import { ApiKeyGetOutput } from "@backpack-fux/pylon-sdk";
+import { ApiKeyGetOutput } from "@monetic-labs/sdk";
 
 import pylon from "@/libs/pylon-sdk";
 

@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { Tab, Tabs } from "@heroui/tabs";
 import { PlusIcon, SaveIcon } from "lucide-react";
-import { Network, StableCurrency, MerchantAccountGetOutput } from "@backpack-fux/pylon-sdk";
+import { Network, StableCurrency, MerchantAccountGetOutput } from "@monetic-labs/sdk";
 
 import { backOfficeConfig } from "@/config/tabs";
 import { ResponsiveButton } from "@/components/generics/responsive-button";

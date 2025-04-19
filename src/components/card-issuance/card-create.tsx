@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { CardType, CardStatus, ISO3166Alpha2Country } from "@backpack-fux/pylon-sdk";
+import { CardType, CardStatus, ISO3166Alpha2Country } from "@monetic-labs/sdk";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";

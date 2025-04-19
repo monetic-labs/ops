@@ -2,7 +2,7 @@
 
 import { createContext, useContext, useState, useCallback, useEffect, ReactNode } from "react";
 import { Address, getAddress } from "viem";
-import { MerchantUserGetOutput, PersonRole } from "@backpack-fux/pylon-sdk";
+import { MerchantUserGetOutput, PersonRole } from "@monetic-labs/sdk";
 
 import { Signer } from "@/types/account";
 import { getFullName } from "@/utils/helpers";

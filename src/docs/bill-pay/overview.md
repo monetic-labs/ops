@@ -7,7 +7,7 @@ type: guide
 
 # Bill Pay System Overview
 
-The Backpack Bill Pay system is a comprehensive payment management solution that seamlessly integrates traditional banking rails with blockchain technology through our pylon-sdk abstraction layer. It enables users to schedule and manage payments to vendors and service providers while leveraging the efficiency of digital assets behind the scenes.
+The Monetic Bill Pay system is a comprehensive payment management solution that seamlessly integrates traditional banking rails with blockchain technology through our pylon-sdk abstraction layer. It enables users to schedule and manage payments to vendors and service providers while leveraging the efficiency of digital assets behind the scenes.
 
 ## Core Features
 

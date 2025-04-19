@@ -1,11 +1,11 @@
 import { useState, useEffect } from "react";
-import { RecoveryWalletMethod } from "@backpack-fux/pylon-sdk";
+import { RecoveryWalletMethod } from "@monetic-labs/sdk";
 import { Address } from "viem";
 
 import { RecoveryWallet, ConfiguredEmail, ConfiguredPhone } from "@/components/account-settings/security/types";
 import { useUser } from "@/contexts/UserContext";
 import { defaultSocialRecoveryModule, isModuleEnabled, getGuardianThreshold } from "@/utils/safe/features/recovery";
-import { BACKPACK_GUARDIAN_ADDRESS } from "@/utils/constants";
+import { MONETIC_GUARDIAN_ADDRESS } from "@/utils/constants";
 import { PUBLIC_RPC } from "@/config/web3";
 import pylon from "@/libs/pylon-sdk";
 
@@ -13,7 +13,7 @@ export const useRecoveryWallets = (isOpen: boolean) => {
   const [recoveryWallets, setRecoveryWallets] = useState<RecoveryWallet[]>([]);
   const [configuredEmails, setConfiguredEmails] = useState<ConfiguredEmail[]>([]);
   const [configuredPhone, setConfiguredPhone] = useState<ConfiguredPhone | null>(null);
-  const [isBackpackRecoveryEnabled, setIsBackpackRecoveryEnabled] = useState(false);
+  const [isMoneticRecoveryEnabled, setIsMoneticRecoveryEnabled] = useState(false);
   const [isModuleInstalled, setIsModuleInstalled] = useState(false);
   const [currentThreshold, setCurrentThreshold] = useState(0);
   const { user } = useUser();
@@ -31,7 +31,7 @@ export const useRecoveryWallets = (isOpen: boolean) => {
         setRecoveryWallets([]);
         setConfiguredEmails([]);
         setConfiguredPhone(null);
-        setIsBackpackRecoveryEnabled(false);
+        setIsMoneticRecoveryEnabled(false);
         setCurrentThreshold(0);
         return;
       }
@@ -49,31 +49,31 @@ export const useRecoveryWallets = (isOpen: boolean) => {
       // 2. Get all recovery wallets from Pylon (for user-friendly identifiers)
       const pylonWallets = await pylon.getRecoveryWallets();
 
-      // 3. Check if Backpack is a guardian
-      const backpackAddressLower = BACKPACK_GUARDIAN_ADDRESS.toLowerCase();
-      let isBackpackGuardian = false;
+      // 3. Check if Monetic is a guardian
+      const moneticAddressLower = MONETIC_GUARDIAN_ADDRESS.toLowerCase();
+      let isMoneticGuardian = false;
 
       // Manually check each guardian address with case-insensitive comparison
       for (let i = 0; i < onChainGuardians.length; i++) {
         const guardianAddress = onChainGuardians[i].toLowerCase();
-        if (guardianAddress === backpackAddressLower) {
-          isBackpackGuardian = true;
+        if (guardianAddress === moneticAddressLower) {
+          isMoneticGuardian = true;
           break;
         }
       }
 
       // Only log critical status info
-      console.log("🎒 Backpack guardian status:", isBackpackGuardian ? "Enabled" : "Disabled");
+      console.log("🎒 Monetic guardian status:", isMoneticGuardian ? "Enabled" : "Disabled");
 
-      setIsBackpackRecoveryEnabled(isBackpackGuardian);
+      setIsMoneticRecoveryEnabled(isMoneticGuardian);
 
       // 4. Map on-chain guardians to Pylon wallets
       const matchedWallets: RecoveryWallet[] = [];
 
       // Process each on-chain guardian address
       for (const guardianAddress of onChainGuardians) {
-        if (guardianAddress.toLowerCase() === BACKPACK_GUARDIAN_ADDRESS.toLowerCase()) {
-          // Skip Backpack guardian as it's handled separately
+        if (guardianAddress.toLowerCase() === MONETIC_GUARDIAN_ADDRESS.toLowerCase()) {
+          // Skip Monetic guardian as it's handled separately
           continue;
         }
 
@@ -137,12 +137,12 @@ export const useRecoveryWallets = (isOpen: boolean) => {
     recoveryWallets,
     configuredEmails,
     configuredPhone,
-    isBackpackRecoveryEnabled,
+    isMoneticRecoveryEnabled,
     isModuleInstalled,
     currentThreshold,
     setConfiguredEmails,
     setConfiguredPhone,
-    setIsBackpackRecoveryEnabled,
+    setIsMoneticRecoveryEnabled,
     fetchRecoveryWallets,
   };
 };

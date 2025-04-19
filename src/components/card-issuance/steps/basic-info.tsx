@@ -1,6 +1,6 @@
 import { Input } from "@heroui/input";
 import { Select, SelectItem } from "@heroui/select";
-import { CardType } from "@backpack-fux/pylon-sdk";
+import { CardType } from "@monetic-labs/sdk";
 import { CreditCard, Mail, User } from "lucide-react";
 import { Controller, UseFormReturn } from "react-hook-form";
 import { z } from "zod";

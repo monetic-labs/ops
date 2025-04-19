@@ -6,7 +6,7 @@ import {
   MerchantDisbursementCreateOutput,
   Network,
   StableCurrency,
-} from "@backpack-fux/pylon-sdk";
+} from "@monetic-labs/sdk";
 
 import pylon from "@/libs/pylon-sdk";
 

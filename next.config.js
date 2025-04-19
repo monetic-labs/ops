@@ -27,7 +27,7 @@ const nextConfig = {
     config.externals.push("pino-pretty", "lokijs", "encoding");
     return config;
   },
-  transpilePackages: ["@backpack-fux/pylon-sdk"],
+  transpilePackages: ["@monetic-labs/sdk"],
   reactStrictMode: true,
   swcMinify: true,
 
