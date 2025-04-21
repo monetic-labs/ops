@@ -21,35 +21,33 @@ import { BASE_USDC } from "@/utils/constants";
 import { usePasskeySelection } from "@/contexts/PasskeySelectionContext";
 
 interface SendModalProps {
-  isOpen: boolean;
-  onClose: () => void;
-  selectedAccount: Account;
-  setSelectedAccount: (account: Account) => void;
-  toAccount: Account | null;
-  setToAccount: (account: Account | null) => void;
   amount: string;
-  setAmount: (amount: string) => void;
-  onSelectToAccount: () => void;
-  isAmountValid: () => boolean;
-  onTransfer: () => void;
   availableAccounts: Account[];
+  isAmountValid: () => boolean;
+  isOpen: boolean;
+  selectedAccount: Account;
+  setAmount: (amount: string) => void;
+  setToAccount: (account: Account | null) => void;
+  toAccount: Account | null;
   onCancel: () => void;
+  onClose: () => void;
+  onSelectToAccount: () => void;
+  onTransfer: () => Promise<void>;
 }
 
 export function SendModal({
-  isOpen,
-  onClose,
-  selectedAccount,
-  setSelectedAccount,
-  toAccount,
-  setToAccount,
   amount,
-  setAmount,
-  onSelectToAccount,
-  isAmountValid,
-  onTransfer,
   availableAccounts,
+  isAmountValid,
+  isOpen,
+  selectedAccount,
+  setAmount,
+  setToAccount,
+  toAccount,
   onCancel,
+  onClose,
+  onSelectToAccount,
+  onTransfer,
 }: SendModalProps) {
   const [isAccountSelectionOpen, setIsAccountSelectionOpen] = useState(false);
   const [transferStatus, setTransferStatus] = useState<TransferStatus>(TransferStatus.IDLE);
@@ -376,7 +374,6 @@ export function SendModal({
                             if (toAccount) {
                               const temp = selectedAccount;
 
-                              setSelectedAccount(toAccount);
                               setToAccount(temp);
                             }
                           }}

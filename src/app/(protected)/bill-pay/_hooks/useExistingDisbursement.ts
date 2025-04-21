@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { DisbursementMethod, MerchantDisbursementUpdateOutput } from "@monetic-labs/sdk";
 
-import pylon from "@/libs/pylon-sdk";
+import pylon from "@/libs/monetic-sdk";
 
 export const useExistingDisbursement = () => {
   const [disbursement, setDisbursement] = useState<MerchantDisbursementUpdateOutput | null>(null);

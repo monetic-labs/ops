@@ -4,7 +4,7 @@ import { useEffect, useState, useRef } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Spinner } from "@heroui/spinner";
 
-import pylon from "@/libs/pylon-sdk";
+import pylon from "@/libs/monetic-sdk";
 import { useUser } from "@/contexts/UserContext";
 
 export default function VerifyPage() {

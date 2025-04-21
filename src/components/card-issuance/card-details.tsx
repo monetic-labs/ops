@@ -9,7 +9,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { XIcon, DollarSign, Calendar, CreditCard, Mail, MapPin, Lock, User, Eye, EyeOff } from "lucide-react";
 
-import pylon from "@/libs/pylon-sdk";
+import pylon from "@/libs/monetic-sdk";
 import { formatAmountUSD } from "@/utils/helpers";
 import { UpateCardSchema } from "@/data";
 import { useCardSensitiveInfo } from "@/hooks/card-issuance/useCardSensitiveInfo";

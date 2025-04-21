@@ -6,9 +6,11 @@ import { MerchantUserGetByIdOutput as MerchantUser } from "@monetic-labs/sdk";
 import { Hex } from "viem";
 import { PublicKey } from "ox";
 
-import pylon from "@/libs/pylon-sdk";
+import pylon from "@/libs/monetic-sdk";
 import { WebAuthnCredentials } from "@/types/webauthn";
 import { LocalStorage } from "@/utils/localstorage";
+import { CookieManager } from "@/utils/cookie-manager";
+import { BridgeComplianceKycStatus, RainComplianceKybStatus } from "@monetic-labs/sdk";
 
 // Define authentication status enum
 export enum AuthStatus {
@@ -33,6 +35,7 @@ interface UserState {
   profile?: {
     profileImage: string | null;
   };
+  isFullyApproved: boolean;
 }
 
 interface UserContextType extends UserState {
@@ -51,6 +54,7 @@ const defaultState: UserContextType = {
   authStatus: AuthStatus.INITIALIZING,
   isLoading: true,
   isAuthenticated: false,
+  isFullyApproved: false,
   logout: async () => {},
   getCredentials: () => undefined,
   addCredential: () => {},
@@ -78,6 +82,7 @@ export function UserProvider({ children, token }: UserProviderProps) {
   const [authStatus, setAuthStatus] = useState<AuthStatus>(AuthStatus.INITIALIZING);
   const [profile, setProfile] = useState<UserState["profile"]>();
   const [session, setSession] = useState<Session | null>(null);
+  const [isFullyApproved, setIsFullyApproved] = useState<boolean>(false);
 
   // Derived states
   const isLoading = authStatus === AuthStatus.INITIALIZING || authStatus === AuthStatus.CHECKING;
@@ -122,10 +127,17 @@ export function UserProvider({ children, token }: UserProviderProps) {
 
       const userData = await pylon.getUserById();
 
+      // Fetch compliance status concurrently
+      const compliancePromise = fetch("/api/check-compliance");
+
       if (!userData) {
         // No user found
         setUser(undefined);
         setCredentials(undefined);
+        setIsFullyApproved(false);
+
+        // Clear compliance cookie
+        CookieManager.clearComplianceStatus();
 
         const newSession: Session = {
           isAuthenticated: false,
@@ -157,6 +169,36 @@ export function UserProvider({ children, token }: UserProviderProps) {
         }
       }
 
+      // Process compliance status concurrently
+      try {
+        const complianceRes = await compliancePromise;
+        if (complianceRes.ok) {
+          const status = await complianceRes.json();
+          const approved =
+            status?.kycStatus?.toUpperCase() === BridgeComplianceKycStatus.APPROVED.toUpperCase() &&
+            status?.rainKybStatus?.toUpperCase() === RainComplianceKybStatus.APPROVED.toUpperCase() &&
+            (!status?.rainKycStatus ||
+              status.rainKycStatus.toUpperCase() === RainComplianceKybStatus.APPROVED.toUpperCase());
+
+          setIsFullyApproved(approved);
+          CookieManager.setComplianceStatus(status);
+        } else {
+          console.error("Failed to fetch compliance status:", complianceRes.statusText);
+          setIsFullyApproved(false);
+          CookieManager.setComplianceStatus({
+            kycStatus: "",
+            rainKybStatus: "",
+          });
+        }
+      } catch (error) {
+        console.error("Error fetching or processing compliance status:", error);
+        setIsFullyApproved(false);
+        CookieManager.setComplianceStatus({
+          kycStatus: "",
+          rainKybStatus: "",
+        });
+      }
+
       // Update session
       const newSession: Session = {
         isAuthenticated: true,
@@ -180,6 +222,11 @@ export function UserProvider({ children, token }: UserProviderProps) {
       setSession(newSession);
 
       setAuthStatus(AuthStatus.UNAUTHENTICATED);
+      setIsFullyApproved(false);
+      CookieManager.setComplianceStatus({
+        kycStatus: "",
+        rainKybStatus: "",
+      });
       return false;
     }
   };
@@ -226,6 +273,8 @@ export function UserProvider({ children, token }: UserProviderProps) {
       setUser(undefined);
       setCredentials(undefined);
       setAuthStatus(AuthStatus.UNAUTHENTICATED);
+      setIsFullyApproved(false);
+      CookieManager.clearComplianceStatus();
 
       // Redirect after logout
       router.replace("/auth");
@@ -238,6 +287,7 @@ export function UserProvider({ children, token }: UserProviderProps) {
       setUser(undefined);
       setCredentials(undefined);
       setAuthStatus(AuthStatus.UNAUTHENTICATED);
+      setIsFullyApproved(false);
     }
   };
 
@@ -296,6 +346,7 @@ export function UserProvider({ children, token }: UserProviderProps) {
       authStatus,
       isLoading,
       isAuthenticated,
+      isFullyApproved,
       profile,
       logout: handleLogout,
       getCredentials: () => credentials,
@@ -320,7 +371,7 @@ export function UserProvider({ children, token }: UserProviderProps) {
         }
       },
     }),
-    [user, credentials, authStatus, isLoading, isAuthenticated, profile, forceAuthCheck]
+    [user, credentials, authStatus, isLoading, isAuthenticated, isFullyApproved, profile, forceAuthCheck]
   );
 
   return <UserContext.Provider value={contextValue}>{children}</UserContext.Provider>;

@@ -13,7 +13,7 @@ import { useRouter } from "next/navigation";
 import { WebAuthnHelper } from "@/utils/webauthn";
 import { useUser } from "@/contexts/UserContext";
 import { useTheme } from "@/hooks/generics/useTheme";
-import pylon from "@/libs/pylon-sdk";
+import pylon from "@/libs/monetic-sdk";
 import { LocalStorage } from "@/utils/localstorage";
 
 const AuthPage = () => {

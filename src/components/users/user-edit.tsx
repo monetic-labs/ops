@@ -22,7 +22,7 @@ import { deployIndividualSafe } from "@/utils/safe/features/deploy";
 import { useToast } from "@/hooks/generics/useToast";
 import { usePasskeySelection } from "@/contexts/PasskeySelectionContext";
 import PasskeyStatusComponent from "./passkey-status";
-import pylon from "@/libs/pylon-sdk";
+import pylon from "@/libs/monetic-sdk";
 import { v4 as uuidv4 } from "uuid";
 
 interface UserEditModalProps {

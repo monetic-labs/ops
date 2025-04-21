@@ -1,7 +1,7 @@
 import { Address, Hex } from "viem";
 import { RainWithdrawalSignatureReady } from "@monetic-labs/sdk";
 
-import pylon from "@/libs/pylon-sdk";
+import pylon from "@/libs/monetic-sdk";
 import { WebAuthnCredentials } from "@/types/webauthn";
 
 import { createRainWithdrawalTemplate } from "../templates";

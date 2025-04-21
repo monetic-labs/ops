@@ -6,7 +6,7 @@ import { MerchantCardTransactionGetOutput } from "@monetic-labs/sdk";
 
 import { DataTable, EmptyContent } from "@/components/generics/data-table";
 import { formatAmountUSD, formattedDate } from "@/utils/helpers";
-import pylon from "@/libs/pylon-sdk";
+import pylon from "@/libs/monetic-sdk";
 
 import TransactionDetailsModal from "./card-txns";
 

@@ -4,7 +4,7 @@ import html2canvas from "html2canvas";
 
 import { useMessagingStore, useMessagingActions } from "@/libs/messaging/store";
 import { SupportMessageService } from "@/types/messaging";
-import pylon from "@/libs/pylon-sdk";
+import pylon from "@/libs/monetic-sdk";
 
 const baseUrl = process.env.NEXT_PUBLIC_PYLON_BASE_URL;
 

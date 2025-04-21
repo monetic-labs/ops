@@ -25,9 +25,10 @@ export interface StatusCardProps {
   status?: BridgeKybStatus | RainKybStatus;
   onVerify: () => void;
   type: "KYB" | "KYC";
+  isLoading?: boolean;
 }
 
-export function StatusCard({ provider, status, onVerify, type }: StatusCardProps) {
+export function StatusCard({ provider, status, onVerify, type, isLoading }: StatusCardProps) {
   const getStatusColor = () => {
     if (!status) return "default";
     switch (status) {
@@ -99,7 +100,7 @@ export function StatusCard({ provider, status, onVerify, type }: StatusCardProps
 
     switch (color) {
       case "success":
-        return "text-success";
+        return "text-success-600";
       case "warning":
         return "text-warning";
       case "danger":
@@ -123,7 +124,7 @@ export function StatusCard({ provider, status, onVerify, type }: StatusCardProps
           <Button
             className={
               status === BridgeKybStatus.APPROVED || status === RainKybStatus.APPROVED
-                ? "bg-success/10 text-success hover:bg-success/20"
+                ? "bg-success-600/10 text-success-600 hover:bg-success/20"
                 : "bg-default-100 text-default-foreground hover:bg-default-200"
             }
             endContent={
@@ -134,7 +135,8 @@ export function StatusCard({ provider, status, onVerify, type }: StatusCardProps
               )
             }
             isDisabled={status === BridgeKybStatus.APPROVED || status === RainKybStatus.APPROVED}
-            size="lg"
+            isLoading={isLoading}
+            size="md"
             variant="flat"
             onPress={onVerify}
           >

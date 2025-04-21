@@ -6,7 +6,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@heroui/button";
 
 import { CreateCardSchema } from "@/validations/card";
-import pylon from "@/libs/pylon-sdk";
+import pylon from "@/libs/monetic-sdk";
 import { FormModal } from "@/components/generics/form-modal";
 
 import { BasicInfoStep } from "./steps/basic-info";

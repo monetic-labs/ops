@@ -13,7 +13,7 @@ import { createAddOwnerTemplate } from "../templates";
 import { executeDirectTransaction } from "../flows/direct";
 import { publicClient } from "@/config/web3";
 import { PublicKey } from "ox";
-import pylon from "@/libs/pylon-sdk";
+import pylon from "@/libs/monetic-sdk";
 
 // Define passkey sync status for UI display
 export enum PasskeyStatus {

@@ -8,6 +8,8 @@
 
 import { redirect } from "next/navigation";
 import { cookies } from "next/headers";
+import { Suspense } from "react";
+import { Spinner } from "@heroui/spinner";
 
 import { Sidebar } from "@/components/layout/Sidebar";
 import { MobileBottomNav } from "@/components/layout/MobileBottomNav";
@@ -25,7 +27,17 @@ export default function ProtectedLayout({ children }: { children: React.ReactNod
       <Sidebar />
 
       <div className="flex flex-col flex-1 w-full lg:ml-64">
-        <main className="flex-1 w-full max-w-screen-xl mx-auto px-4 pt-8 pb-20 sm:px-6 lg:pb-8">{children}</main>
+        <main className="flex-1 w-full max-w-screen-xl mx-auto px-4 pt-8 pb-20 sm:px-6 lg:pb-8">
+          <Suspense
+            fallback={
+              <div className="flex items-center justify-center h-screen w-full">
+                <Spinner size="lg" color="primary" />
+              </div>
+            }
+          >
+            {children}
+          </Suspense>
+        </main>
       </div>
 
       <MobileBottomNav />

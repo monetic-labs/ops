@@ -8,6 +8,18 @@ export interface AuthState {
   isLoggedIn: boolean;
 }
 
+export interface Session {
+  isAuthenticated: boolean;
+  lastVerified: number;
+  userId?: string;
+}
+
+export interface State {
+  profileImage?: string;
+  selectedCredentialId?: string;
+  onboarding?: OnboardingProgress;
+}
+
 export interface OnboardingState {
   credentials: WebAuthnCredentials;
   walletAddress: Address;
@@ -27,9 +39,13 @@ export interface OnboardingProgress {
 }
 
 export class LocalStorage {
+  /** @description Persists data that should survive across sessions (logout/login cycles) */
   private static readonly STATE_KEY = "@monetic/ops:state";
-  private static readonly PASSKEY_KEY = "@monetic/ops:state:passkey";
+
+  /** @description Temporary data that should be cleared on logout */
   private static readonly SESSION_KEY = "@monetic/ops:session";
+
+  /** @description The expiry time for the onboarding progress in milliseconds */
   private static readonly ONBOARDING_EXPIRY = 7 * 24 * 60 * 60 * 1000; // 7 days in milliseconds
 
   /**
@@ -37,13 +53,13 @@ export class LocalStorage {
    */
 
   // Define the session interface
-  private static readonly DEFAULT_SESSION = {
+  private static readonly DEFAULT_SESSION: Session = {
     isAuthenticated: false,
     lastVerified: 0,
   };
 
   // Save the session
-  static saveSession(session: { isAuthenticated: boolean; lastVerified: number; userId?: string }): void {
+  static saveSession(session: Session): void {
     try {
       localStorage.setItem(this.SESSION_KEY, JSON.stringify(session));
     } catch (error) {
@@ -52,7 +68,7 @@ export class LocalStorage {
   }
 
   // Get the session
-  static getSession(): { isAuthenticated: boolean; lastVerified: number; userId?: string } | null {
+  static getSession(): Session | null {
     try {
       const session = localStorage.getItem(this.SESSION_KEY);
       return session ? JSON.parse(session) : null;
@@ -72,13 +88,36 @@ export class LocalStorage {
   }
 
   /**
-   * Passkey Management
+   * State Management
+   */
+
+  private static getState(): State {
+    try {
+      const state = localStorage.getItem(this.STATE_KEY);
+      return state ? JSON.parse(state) : {};
+    } catch (error) {
+      console.error("Error getting state:", error);
+      return {};
+    }
+  }
+
+  private static setState(state: State): void {
+    try {
+      localStorage.setItem(this.STATE_KEY, JSON.stringify(state));
+    } catch (error) {
+      console.error("Error setting state:", error);
+    }
+  }
+
+  /**
+   * Passkey Management (stored in state)
    */
 
   // Save the selected credential ID
   static saveSelectedCredentialId(credentialId: string): void {
     try {
-      localStorage.setItem(this.PASSKEY_KEY, credentialId);
+      const state = this.getState();
+      this.setState({ ...state, selectedCredentialId: credentialId });
     } catch (error) {
       console.error("Error saving selected credential ID:", error);
     }
@@ -87,7 +126,8 @@ export class LocalStorage {
   // Get the selected credential ID
   static getSelectedCredentialId(): string | null {
     try {
-      return localStorage.getItem(this.PASSKEY_KEY);
+      const state = this.getState();
+      return state.selectedCredentialId || null;
     } catch (error) {
       console.error("Error getting selected credential ID:", error);
       return null;
@@ -97,7 +137,9 @@ export class LocalStorage {
   // Clear the selected credential ID
   static clearSelectedCredentialId(): void {
     try {
-      localStorage.removeItem(this.PASSKEY_KEY);
+      const state = this.getState();
+      const { selectedCredentialId, ...rest } = state;
+      this.setState(rest);
     } catch (error) {
       console.error("Error clearing selected credential ID:", error);
     }
@@ -110,15 +152,8 @@ export class LocalStorage {
   // Get the profile from localStorage
   static getProfile(): { profileImage: string | null } | null {
     try {
-      const state = localStorage.getItem(this.STATE_KEY);
-
-      if (!state) {
-        return null;
-      }
-
-      const parsedState = JSON.parse(state);
-
-      return { profileImage: parsedState.profileImage || null };
+      const state = this.getState();
+      return { profileImage: state.profileImage || null };
     } catch (error) {
       console.error("Error getting profile:", error);
       return null;
@@ -128,12 +163,8 @@ export class LocalStorage {
   // Set the profile image in localStorage
   static setProfileImage(image: string): void {
     try {
-      const state = localStorage.getItem(this.STATE_KEY);
-      const parsedState = state ? JSON.parse(state) : {};
-
-      parsedState.profileImage = image;
-
-      localStorage.setItem(this.STATE_KEY, JSON.stringify(parsedState));
+      const state = this.getState();
+      this.setState({ ...state, profileImage: image });
     } catch (error) {
       console.error("Error setting profile image:", error);
     }
@@ -142,17 +173,9 @@ export class LocalStorage {
   // Remove the profile image from localStorage
   static removeProfileImage(): void {
     try {
-      const state = localStorage.getItem(this.STATE_KEY);
-
-      if (!state) {
-        return;
-      }
-
-      const parsedState = JSON.parse(state);
-
-      delete parsedState.profileImage;
-
-      localStorage.setItem(this.STATE_KEY, JSON.stringify(parsedState));
+      const state = this.getState();
+      const { profileImage, ...rest } = state;
+      this.setState(rest);
     } catch (error) {
       console.error("Error removing profile image:", error);
     }
@@ -165,14 +188,18 @@ export class LocalStorage {
   // Save onboarding progress
   static saveOnboardingProgress(data: Partial<OnboardingProgress>) {
     try {
-      const existing = this.getOnboardingProgress();
+      const state = this.getState();
+      const existingProgress = state.onboarding || {
+        currentStep: 0,
+        formData: {},
+        lastUpdated: Date.now(),
+      };
       const progress = {
-        ...existing,
+        ...existingProgress,
         ...data,
         lastUpdated: Date.now(),
       };
-
-      this.set("onboarding", progress);
+      this.setState({ ...state, onboarding: progress });
     } catch (error) {
       console.error("Error saving onboarding progress:", error);
     }
@@ -181,7 +208,8 @@ export class LocalStorage {
   // Get onboarding progress
   static getOnboardingProgress(): OnboardingProgress | null {
     try {
-      const progress = this.get("onboarding");
+      const state = this.getState();
+      const progress = state.onboarding;
 
       if (!progress) return null;
 
@@ -201,47 +229,11 @@ export class LocalStorage {
   // Clear onboarding progress
   static clearOnboardingProgress() {
     try {
-      const data = localStorage.getItem(this.STATE_KEY);
-
-      if (!data) return;
-
-      const parsed = JSON.parse(data);
-
-      delete parsed.onboarding;
-
-      localStorage.setItem(this.STATE_KEY, JSON.stringify(parsed));
+      const state = this.getState();
+      const { onboarding, ...rest } = state;
+      this.setState(rest);
     } catch (error) {
       console.error("Error clearing onboarding progress:", error);
-    }
-  }
-
-  /**
-   * Private Helper Methods
-   */
-
-  private static set(key: string, value: any) {
-    try {
-      const existingData = localStorage.getItem(this.STATE_KEY);
-      const data = existingData ? JSON.parse(existingData) : {};
-
-      data[key] = value;
-      localStorage.setItem(this.STATE_KEY, JSON.stringify(data));
-    } catch (error) {
-      console.error(`Error setting ${key}:`, error);
-    }
-  }
-
-  private static get(key: string): any {
-    try {
-      const data = localStorage.getItem(this.STATE_KEY);
-
-      if (!data) return null;
-      const parsed = JSON.parse(data);
-
-      return parsed[key] || null;
-    } catch (error) {
-      console.error(`Error getting ${key}:`, error);
-      return null;
     }
   }
 }

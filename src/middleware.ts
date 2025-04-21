@@ -1,15 +1,16 @@
 import type { NextRequest } from "next/server";
 
 import { NextResponse } from "next/server";
-import { BridgeComplianceKycStatus, RainComplianceKybStatus } from "@monetic-labs/sdk";
 
 import { MERCHANT_COOKIE_NAME } from "./utils/constants";
+import { CookieManager } from "./utils/cookie-manager";
 
 // Route configurations
 const ROUTE_CONFIG = {
   onboard: "/onboard",
   auth: "/auth",
   kyb: "/kyb",
+  root: "/",
   bypass: ["/api", "/_next", "/favicon.ico"] as string[],
 };
 
@@ -17,40 +18,6 @@ const ROUTE_CONFIG = {
 const isPathMatch = (path: string, routes: string[]) => routes.some((route) => path.startsWith(route));
 
 const redirectTo = (url: string, request: NextRequest) => NextResponse.redirect(new URL(url, request.url));
-
-const checkComplianceStatus = async (
-  origin: string,
-  authToken: string
-): Promise<{ isFullyApproved: boolean } | null> => {
-  try {
-    // Make sure we're using the same protocol (http or https) as the origin
-    const apiUrl = new URL("/api/check-compliance", origin);
-
-    const response = await fetch(apiUrl.toString(), {
-      headers: { Cookie: `${MERCHANT_COOKIE_NAME}=${authToken}` },
-    });
-
-    if (!response.ok) {
-      console.error("Failed to fetch compliance status");
-
-      return null;
-    }
-
-    const status = await response.json();
-
-    return {
-      isFullyApproved:
-        status?.kycStatus.toUpperCase() === BridgeComplianceKycStatus.APPROVED.toUpperCase() &&
-        status?.rainKybStatus.toUpperCase() === RainComplianceKybStatus.APPROVED.toUpperCase() &&
-        (!status?.rainKycStatus ||
-          status.rainKycStatus.toUpperCase() === RainComplianceKybStatus.APPROVED.toUpperCase()),
-    };
-  } catch (error) {
-    console.error("Compliance check error:", error);
-
-    return null;
-  }
-};
 
 export async function middleware(request: NextRequest) {
   const { pathname, searchParams } = request.nextUrl;
@@ -76,21 +43,25 @@ export async function middleware(request: NextRequest) {
     return redirectTo(ROUTE_CONFIG.auth, request);
   }
 
-  // Check compliance for authenticated routes
-  const complianceStatus = await checkComplianceStatus(request.nextUrl.origin, authToken.value);
+  // Get compliance status directly from cookie
+  const complianceCookieValue = request.cookies.get(CookieManager.COMPLIANCE_COOKIE)?.value;
+  const isApproved = complianceCookieValue === "approved";
 
-  if (!complianceStatus) {
-    return redirectTo(ROUTE_CONFIG.auth, request);
-  }
-
-  // Handle KYB routing
-  const isKybRoute = pathname.startsWith(ROUTE_CONFIG.kyb);
-
-  if (!complianceStatus.isFullyApproved && !isKybRoute) {
+  // Handle root path and compliance-based redirects
+  if (pathname === ROUTE_CONFIG.root && !isApproved) {
     return redirectTo(ROUTE_CONFIG.kyb, request);
   }
-  if (complianceStatus.isFullyApproved && isKybRoute) {
-    return redirectTo("/", request);
+
+  // If trying to access KYB page while already approved, redirect to root
+  if (pathname === ROUTE_CONFIG.kyb && isApproved) {
+    return redirectTo(ROUTE_CONFIG.root, request);
+  }
+
+  // For all other routes, if not approved, redirect to KYB
+  if (!isApproved && pathname !== ROUTE_CONFIG.kyb) {
+    const kybUrl = new URL(ROUTE_CONFIG.kyb, request.url);
+    kybUrl.searchParams.set("redirect", pathname + request.nextUrl.search);
+    return NextResponse.redirect(kybUrl);
   }
 
   return NextResponse.next();

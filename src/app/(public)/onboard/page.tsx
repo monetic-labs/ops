@@ -16,7 +16,7 @@ import { SafeAccountV0_3_0 as SafeAccount, DEFAULT_SECP256R1_PRECOMPILE_ADDRESS 
 
 import { WebAuthnHelper } from "@/utils/webauthn";
 import { deployIndividualSafe } from "@/utils/safe/features/deploy";
-import pylon from "@/libs/pylon-sdk";
+import pylon from "@/libs/monetic-sdk";
 import { schema, FormData, UserRole } from "@/validations/onboard/schemas";
 import { StatusModal, StatusStep } from "@/components/onboard/status-modal";
 import { RequirementsModal } from "@/components/onboard/requirements-modal";

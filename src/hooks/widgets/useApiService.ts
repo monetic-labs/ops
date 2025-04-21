@@ -1,7 +1,7 @@
 import { useState, useCallback } from "react";
 import { ApiKeyGetOutput } from "@monetic-labs/sdk";
 
-import pylon from "@/libs/pylon-sdk";
+import pylon from "@/libs/monetic-sdk";
 
 export function useApiService() {
   const [apiKeys, setApiKeys] = useState<ApiKeyGetOutput[]>([]);

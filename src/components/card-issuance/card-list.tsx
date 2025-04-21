@@ -6,7 +6,7 @@ import { MerchantCardGetOutput, CardStatus, CardLimitFrequency, CardType } from 
 
 import { DataTable, EmptyContent } from "@/components/generics/data-table";
 import { formattedDate } from "@/utils/helpers";
-import pylon from "@/libs/pylon-sdk";
+import pylon from "@/libs/monetic-sdk";
 
 import CardDetailsModal from "./card-details";
 import CreateCardModal from "./card-create";

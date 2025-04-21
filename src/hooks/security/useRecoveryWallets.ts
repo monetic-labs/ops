@@ -7,7 +7,7 @@ import { useUser } from "@/contexts/UserContext";
 import { defaultSocialRecoveryModule, isModuleEnabled, getGuardianThreshold } from "@/utils/safe/features/recovery";
 import { MONETIC_GUARDIAN_ADDRESS } from "@/utils/constants";
 import { PUBLIC_RPC } from "@/config/web3";
-import pylon from "@/libs/pylon-sdk";
+import pylon from "@/libs/monetic-sdk";
 
 export const useRecoveryWallets = (isOpen: boolean) => {
   const [recoveryWallets, setRecoveryWallets] = useState<RecoveryWallet[]>([]);

@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 import { Tooltip } from "@heroui/tooltip";
 import { Button } from "@heroui/button";
 import { Avatar } from "@heroui/avatar";
@@ -34,7 +34,8 @@ import {
   MessageCircle,
   PlusCircle,
 } from "lucide-react";
-import { useState, useMemo } from "react"; // Import useMemo
+import { useState, useMemo, useEffect } from "react"; // Import useMemo and useEffect
+import { Spinner } from "@heroui/spinner"; // Import Spinner
 
 import { useAccounts } from "@/contexts/AccountContext";
 import { useUser } from "@/contexts/UserContext";
@@ -174,12 +175,19 @@ const staticNavigationItems: NavItem[] = [
   },
 ];
 
+// IDs of sections/items always enabled regardless of approval status - Removed as disabling logic is now global when not approved
+// const ALWAYS_ENABLED_IDS = new Set(["users", "users-members", "users-developer"]);
+
+// IDs of sections that should be visible but disabled during KYB
+const VISIBLE_DURING_KYB = new Set(["users", "accounts-section"]);
+
 export function Sidebar() {
   const pathname = usePathname();
-  const { user, logout } = useUser();
+  const searchParams = useSearchParams();
+  const { user, logout, isFullyApproved, isLoading: isUserLoadingGlobal } = useUser();
   const { accounts, selectedAccount, setSelectedAccount, isLoadingAccounts } = useAccounts();
-  const { toggleTheme, isDark } = useTheme(); // Use the theme hook
-  const { profile } = useUser(); // Get profile for avatar src
+  const { toggleTheme, isDark } = useTheme();
+  const { profile } = useUser();
   const { unreadCount } = useMessagingState();
   const {
     ui: { togglePane },
@@ -190,8 +198,12 @@ export function Sidebar() {
     const initialOpenState: Record<string, boolean> = {};
     staticNavigationItems.forEach((item) => {
       if (item.children) {
+        // Initial check based on href for non-account sections
         const isActive = item.children.some((child) => pathname?.startsWith(child.href || ""));
-        if (isActive) {
+        // Initial check for accounts section based on path
+        const isAccountActive = item.id === "accounts-section" && pathname?.startsWith("/account/");
+
+        if (isActive || isAccountActive) {
           initialOpenState[item.id] = true;
         }
       }
@@ -201,14 +213,38 @@ export function Sidebar() {
     return initialOpenState;
   });
 
+  // State for loading indicator
+  const [loadingItemId, setLoadingItemId] = useState<string | null>(null);
+
+  // Effect to open sections based on path AND clear loading state
+  useEffect(() => {
+    setLoadingItemId(null); // Clear loading state on path change
+
+    if (!pathname) return;
+
+    setOpenSections((prev) => {
+      const newState = { ...prev };
+      staticNavigationItems.forEach((item) => {
+        if (item.children) {
+          const isAccountActive = item.id === "accounts-section" && pathname.startsWith("/account/");
+          const isChildActive = item.children.some((child) => pathname.startsWith(child.href || "___NEVER_MATCH___"));
+          if (isAccountActive || isChildActive) {
+            newState[item.id] = true;
+          }
+        }
+      });
+      return newState;
+    });
+  }, [pathname]);
+
   const toggleSection = (id: string) => {
     setOpenSections((prev) => ({ ...prev, [id]: !prev[id] }));
   };
 
-  // --- Generate dynamic navigation items using useMemo ---
+  // Generate dynamic navigation items
   const navigationItems = useMemo((): NavItem[] => {
-    // Function to generate account children (moved inside useMemo scope)
     const generateAccountChildren = (): NavItem[] => {
+      // Generate skeleton or actual accounts
       if (isLoadingAccounts) {
         return Array.from({ length: 2 }).map((_, index) => ({
           id: `skel-${index}`,
@@ -226,69 +262,97 @@ export function Sidebar() {
           label: acc.name,
           icon: <acc.icon className="w-4 h-4" />,
           tooltip: `Select ${acc.name} account`,
-          href: "#",
-          isDisabled: acc.isDisabled || acc.isComingSoon || acc.isCreateAccount,
+          href: `/account/${acc.id}`,
+          // Disable individual accounts if not approved OR if account itself is disabled/coming soon
+          isDisabled: !isFullyApproved || acc.isDisabled || acc.isComingSoon || acc.isCreateAccount,
           isComingSoon: acc.isComingSoon,
           isCreateAccount: acc.isCreateAccount,
-          onClick: (e) => {
-            e.preventDefault();
-            if (!acc.isDisabled && !acc.isComingSoon && !acc.isCreateAccount) setSelectedAccount(acc);
-          },
         })
       );
     };
 
-    // Map over static structure, replacing children for accounts section
+    // Map over static structure, populating account children
     return staticNavigationItems.map((item) => {
       if (item.id === "accounts-section") {
-        return { ...item, children: generateAccountChildren() };
+        return {
+          ...item,
+          children: generateAccountChildren(),
+          // Disable the main accounts section header if not approved
+          isDisabled: !isFullyApproved,
+          tooltip: isFullyApproved ? item.tooltip : "Complete verification to view accounts",
+        };
       }
       return item;
     });
-  }, [accounts, isLoadingAccounts, setSelectedAccount]); // Dependencies for regeneration
+  }, [accounts, isLoadingAccounts, isFullyApproved]);
 
   // Recursive function to render navigation items
-  const renderNavItems = (items: NavItem[], isSubmenu = false) => {
+  const renderNavItems = (items: NavItem[], isSubmenu = false, parentIsDisabled = false) => {
     return items.map((item) => {
-      // --- Minimal checks for this debug step ---
-      const isSelectedAccountItem = item.id === selectedAccount?.id;
+      // Determine if item should be disabled
+      // Base disabled state: Checks approval, item's own flag, and parent's disabled status.
+      const baseIsDisabled = !isFullyApproved || item.isDisabled || parentIsDisabled;
+
+      const isLoading = loadingItemId === item.id;
+      // Final disabled state for enabling/disabling interaction and visuals.
+      const finalIsDisabled = baseIsDisabled || isLoading;
+      const cursorClass = isLoading ? "cursor-wait" : baseIsDisabled ? "cursor-not-allowed" : "";
+
+      // Selection checks remain the same
+      const isCurrentPath = item.href && item.href !== "#" && pathname === item.href;
+      const isAccountRoute = pathname?.startsWith("/account/");
+      const isSelectedAccountItem = isAccountRoute && item.href === pathname;
+
       const isOpen = openSections[item.id] || false;
       const hasChildren = item.children && item.children.length > 0;
 
-      // --- Basic content structure ---
       const itemContent = (
         <>
-          {/* Ensure item.icon exists before rendering */}
           {item.icon && (
             <span className="mr-3 flex-shrink-0 w-5 h-5 flex items-center justify-center text-foreground/60 group-hover:text-foreground/80">
-              {/* Render the actual icon */}
               {item.icon}
             </span>
           )}
-          {/* Use a simple span for the label */}
           <span className="flex-1 truncate">{item.label}</span>
-          {/* Indicators */}
-          {item.isComingSoon && <span className="ml-auto text-xs text-foreground/40">Coming Soon</span>}
-          {isSelectedAccountItem && !isSubmenu && (
-            <CheckCircle className="w-4 h-4 text-primary ml-auto flex-shrink-0" />
-          )}
-          {hasChildren && (
-            <ChevronRight
-              className={`w-4 h-4 text-foreground/60 transition-transform ml-auto flex-shrink-0 ${isOpen ? "rotate-90" : ""}`}
-            />
-          )}
+          <div className="ml-auto flex-shrink-0 w-4 h-4 flex items-center justify-center">
+            {isLoading ? (
+              <Spinner size="sm" color="primary" />
+            ) : (
+              <>
+                {item.isComingSoon && <span className="text-xs text-foreground/40">Soon</span>}
+                {isSelectedAccountItem && !isSubmenu && <CheckCircle className="w-4 h-4 text-primary" />}
+                {hasChildren && (
+                  <ChevronRight
+                    className={`w-4 h-4 text-foreground/60 transition-transform ${isOpen ? "rotate-90" : ""}`}
+                  />
+                )}
+              </>
+            )}
+          </div>
         </>
       );
 
-      // --- Basic Styling ---
       const commonClasses = `
-        flex items-center p-2 rounded-lg group w-full text-left
+        flex items-center p-2 rounded-lg group w-full text-left transition-opacity
         ${isSubmenu ? "pl-5" : ""}
-        ${item.isDisabled ? "opacity-50 cursor-not-allowed" : "hover:bg-content2 text-foreground/80"}
-        ${(isSelectedAccountItem && !isSubmenu) || (item.href && item.href !== "#" && pathname === item.href) ? "bg-content2 text-foreground font-semibold" : ""}
+        ${finalIsDisabled ? `opacity-50 ${cursorClass}` : "hover:bg-content2 text-foreground/80"} 
+        ${isSelectedAccountItem && !isSubmenu && !isLoading ? "bg-content2 text-foreground font-semibold" : ""} 
+        ${isCurrentPath && !baseIsDisabled && !isLoading ? "bg-content2 text-foreground font-semibold" : ""}
       `;
 
-      // --- Simplified Conditional Rendering ---
+      const handleItemClick = (e: React.MouseEvent<HTMLButtonElement | HTMLAnchorElement>) => {
+        // Always check the final disabled state first
+        if (finalIsDisabled) {
+          e.preventDefault();
+          return;
+        }
+        // Only set loading state if it's a clickable link with a valid destination
+        if (!hasChildren && item.href && item.href !== "#") {
+          setLoadingItemId(item.id);
+        }
+        // We don't need item.onClick here as section toggles use their own onClick
+      };
+
       if (item.isSkeleton) {
         return (
           <li key={item.id} className="flex items-center p-2 space-x-3">
@@ -298,12 +362,12 @@ export function Sidebar() {
         );
       }
 
+      // Render collapsible section or individual item
       if (hasChildren) {
-        // Collapsible Section Trigger (Button)
         return (
           <li key={item.id}>
             <Tooltip
-              isDisabled={item.isDisabled || !item.tooltip}
+              isDisabled={finalIsDisabled || !item.tooltip} // Use final disabled state
               classNames={{ content: "bg-content2/90 text-foreground text-xs px-2 py-1 ml-2" }}
               closeDelay={0}
               content={item.tooltip}
@@ -313,49 +377,39 @@ export function Sidebar() {
               <button
                 type="button"
                 className={commonClasses}
+                // Use direct toggleSection, disabled state handles prevention
                 onClick={() => toggleSection(item.id)}
                 aria-expanded={isOpen}
-                disabled={item.isDisabled} // Disable button if item is disabled
+                disabled={finalIsDisabled} // Use final disabled state
               >
                 {itemContent}
               </button>
             </Tooltip>
-            {isOpen && <ul className="pt-1 pl-4 space-y-1">{renderNavItems(item.children!, true)}</ul>}
+            {/* Pass the base disabled state down */}
+            {isOpen && <ul className="pt-1 pl-4 space-y-1">{renderNavItems(item.children!, true, baseIsDisabled)}</ul>}
           </li>
         );
       } else {
-        // Render link or button (account item)
+        // Render link item
         return (
           <li key={item.id}>
             <Tooltip
-              isDisabled={item.isDisabled || !item.tooltip}
+              isDisabled={finalIsDisabled || !item.tooltip} // Use final disabled state
               classNames={{ content: "bg-content2/90 text-foreground text-xs px-2 py-1 ml-2" }}
               closeDelay={0}
               content={item.tooltip}
               delay={500}
               placement="right"
             >
-              {item.onClick ? (
-                <button type="button" onClick={item.onClick} className={commonClasses} disabled={item.isDisabled}>
-                  {itemContent}
-                </button>
-              ) : (
-                <Link
-                  href={item.href || "#"}
-                  className={commonClasses}
-                  onClick={(e: React.MouseEvent<HTMLAnchorElement>) => {
-                    // ONLY prevent default for placeholder links or disabled items
-                    if (item.href === "#" || item.isDisabled) {
-                      e.preventDefault();
-                    }
-                    // Allow navigation for all other valid links
-                  }}
-                  aria-disabled={item.isDisabled}
-                  tabIndex={item.isDisabled ? -1 : undefined}
-                >
-                  {itemContent}
-                </Link>
-              )}
+              <Link
+                href={finalIsDisabled ? "#" : item.href || "#"} // Prevent navigation by changing href
+                className={commonClasses}
+                onClick={handleItemClick}
+                aria-disabled={finalIsDisabled}
+                tabIndex={finalIsDisabled ? -1 : undefined}
+              >
+                {itemContent}
+              </Link>
             </Tooltip>
           </li>
         );
@@ -371,12 +425,14 @@ export function Sidebar() {
 
   // Simple logout handler
   const handleLogout = async () => {
+    setLoadingItemId("logout"); // Show loading on logout button
     try {
       await logout();
-      // Redirect handled by context or layout effect
     } catch (error) {
       console.error("Error during logout:", error);
+      setLoadingItemId(null); // Clear loading on error
     }
+    // Redirect handled by context, loading state cleared by path change
   };
 
   const initials = // Calculate initials for bottom avatar
@@ -456,16 +512,26 @@ export function Sidebar() {
           </Tooltip>
         </div>
 
-        {/* Middle Section */}
-        <div className="flex-grow h-full px-3 py-4 overflow-y-auto">
-          <ul className="space-y-2 font-medium">{renderNavItems(navigationItems)}</ul>
+        {/* Middle Section - Navigation or Loading Spinner */}
+        <div className="flex-grow h-full px-3 py-4 overflow-y-auto relative">
+          {isUserLoadingGlobal ? (
+            <div className="absolute inset-0 flex items-center justify-center bg-content1/80 z-10">
+              <Spinner label="Loading..." color="primary" labelColor="primary" />
+            </div>
+          ) : (
+            <ul className="space-y-2 font-medium">{renderNavItems(navigationItems)}</ul>
+          )}
         </div>
 
         {/* Bottom Section - User Info / Settings Dropdown */}
         <div className="px-3 py-4 border-t border-divider">
           <Dropdown placement="top-start">
             <DropdownTrigger>
-              <Button variant="light" className="w-full justify-start px-2 text-foreground/80 hover:bg-content2">
+              <Button
+                variant="light"
+                className="w-full justify-start px-2 text-foreground/80 hover:bg-content2 disabled:opacity-50 disabled:cursor-wait"
+                disabled={loadingItemId === "logout"}
+              >
                 <Avatar
                   isBordered
                   className="transition-transform flex-shrink-0"
@@ -479,33 +545,37 @@ export function Sidebar() {
                   <span className="truncate">{user?.firstName || "User"}</span>
                   <span className="truncate text-xs text-foreground/60">{user?.email}</span>
                 </div>
-                <ChevronDown className="w-4 h-4 text-foreground/60 ml-1 flex-shrink-0" />
+                {loadingItemId === "logout" ? (
+                  <Spinner size="sm" color="current" className="ml-1 flex-shrink-0" />
+                ) : (
+                  <ChevronDown className="w-4 h-4 text-foreground/60 ml-1 flex-shrink-0" />
+                )}
               </Button>
             </DropdownTrigger>
-            <DropdownMenu aria-label="User actions">
-              {/* Add Profile Action */}
+            <DropdownMenu
+              aria-label="User actions"
+              disabledKeys={loadingItemId === "logout" ? ["profile", "security", "logout"] : []}
+            >
               <DropdownItem
                 key="profile"
                 startContent={<User className="w-4 h-4" />}
-                onPress={() => setIsProfileOpen(true)} // Open profile modal
+                onPress={() => setIsProfileOpen(true)}
               >
                 Profile
               </DropdownItem>
-              {/* Add Security Action */}
               <DropdownItem
                 key="security"
                 startContent={<Shield className="w-4 h-4" />}
-                onPress={() => setIsSecurityOpen(true)} // Open security modal
+                onPress={() => setIsSecurityOpen(true)}
               >
                 Security
               </DropdownItem>
-              {/* Add Logout Action */}
               <DropdownItem
                 key="logout"
                 className="text-danger"
                 color="danger"
                 startContent={<LogOut className="w-4 h-4" />}
-                onPress={handleLogout} // Call logout handler
+                onPress={handleLogout}
               >
                 Sign Out
               </DropdownItem>
@@ -523,11 +593,11 @@ export function Sidebar() {
       </aside>
 
       {/* Render Modals needed by Sidebar actions */}
-      {user && ( // Ensure user exists before rendering modals that need it
+      {user && (
         <>
           <ProfileSettingsModal
             isOpen={isProfileOpen}
-            user={user as MerchantUser} // Cast user if needed
+            user={user as MerchantUser}
             onClose={() => setIsProfileOpen(false)}
           />
           <SecuritySettingsModal isOpen={isSecurityOpen} onClose={() => setIsSecurityOpen(false)} />

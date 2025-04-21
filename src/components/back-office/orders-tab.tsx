@@ -8,7 +8,7 @@ import { DataTable, Column, EmptyContent } from "@/components/generics/data-tabl
 import { formatPhoneNumber, formatAmountUSD } from "@/utils/helpers";
 import Countdown from "@/components/generics/countdown";
 import CreateOrderModal from "@/components/back-office/actions/order-create";
-import pylon from "@/libs/pylon-sdk";
+import pylon from "@/libs/monetic-sdk";
 
 export interface OrdersTabRef {
   refresh: () => Promise<void>;

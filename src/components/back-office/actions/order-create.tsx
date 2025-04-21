@@ -6,7 +6,7 @@ import { Mail, Phone, DollarSign } from "lucide-react";
 import { GetOrderLinksOutput, ISO4217Currency } from "@monetic-labs/sdk";
 
 import { formatPhoneNumber, formatCurrencyInput } from "@/utils/helpers";
-import pylon from "@/libs/pylon-sdk";
+import pylon from "@/libs/monetic-sdk";
 
 interface CreateOrderModalProps {
   isOpen: boolean;

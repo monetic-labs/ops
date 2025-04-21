@@ -18,6 +18,9 @@ import { SignersProvider } from "@/contexts/SignersContext";
 import { PasskeySelectionProvider } from "@/contexts/PasskeySelectionContext";
 import { PasskeySelectionModal } from "@/components/generics/passkey-selection-modal";
 import { isProduction } from "@/utils/helpers";
+import { useState } from "react";
+import { useTheme } from "@/hooks/generics/useTheme";
+import { useMediaQuery } from "@/hooks/onboard/useMediaQuery";
 
 export interface ProvidersProps {
   children: React.ReactNode;
@@ -27,7 +30,9 @@ export interface ProvidersProps {
 
 export function Providers({ children, themeProps, userId }: ProvidersProps) {
   const router = useRouter();
-  const [queryClient] = React.useState(() => new QueryClient());
+  const isMobile = useMediaQuery("(max-width: 870px)");
+  const { isDark } = useTheme();
+  const [queryClient] = useState(() => new QueryClient());
 
   const shortcutsInitialValue = {
     isChatOpen: false,
@@ -42,7 +47,12 @@ export function Providers({ children, themeProps, userId }: ProvidersProps) {
     <QueryClientProvider client={queryClient}>
       <HeroUIProvider navigate={router.push}>
         <NextThemesProvider {...themeProps}>
-          <Toaster position="top-center" closeButton richColors />
+          <Toaster
+            position={isMobile ? "top-center" : "bottom-right"}
+            theme={isDark ? "dark" : "light"}
+            closeButton
+            richColors
+          />
           <MessagingProvider>
             <ShortcutsProvider initialValue={shortcutsInitialValue}>
               <PrivyProvider

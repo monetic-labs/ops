@@ -5,7 +5,7 @@ import { Network, StableCurrency, MerchantAccountGetOutput } from "@monetic-labs
 
 import { backOfficeConfig } from "@/config/tabs";
 import { ResponsiveButton } from "@/components/generics/responsive-button";
-import pylon from "@/libs/pylon-sdk";
+import pylon from "@/libs/monetic-sdk";
 
 import CreateOrderModal from "./actions/order-create";
 import PaymentsTab from "./payments-tab";

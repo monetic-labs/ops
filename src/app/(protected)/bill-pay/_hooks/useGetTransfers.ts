@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { MerchantDisbursementEventGetOutput, Pagination } from "@monetic-labs/sdk";
 
-import pylon from "@/libs/pylon-sdk";
+import pylon from "@/libs/monetic-sdk";
 
 export const useGetTransfers = ({ before, after }: { before?: string; after?: string }) => {
   const [transfers, setTransfers] = useState<MerchantDisbursementEventGetOutput[]>([]);

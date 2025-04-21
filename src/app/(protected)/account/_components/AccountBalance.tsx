@@ -9,7 +9,7 @@ import { useUser } from "@/contexts/UserContext";
 import { formatAmountUSD, isProduction } from "@/utils/helpers";
 import { useSigners } from "@/contexts/SignersContext";
 import { MAIN_ACCOUNT } from "@/utils/constants";
-import { FaucetModal } from "../modals/FaucetModal";
+import { FaucetModal } from "@/app/(protected)/account/_modals/FaucetModal";
 import { useAccounts } from "@/contexts/AccountContext";
 import { Tooltip } from "@heroui/tooltip";
 

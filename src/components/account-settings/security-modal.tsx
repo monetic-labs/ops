@@ -8,7 +8,7 @@ import { Address } from "viem";
 import { MetaTransaction } from "abstractionkit";
 import { RecoveryWalletMethod } from "@monetic-labs/sdk";
 
-import pylon from "@/libs/pylon-sdk";
+import pylon from "@/libs/monetic-sdk";
 import { useRecoveryWallets } from "@/hooks/security/useRecoveryWallets";
 import { useUser } from "@/contexts/UserContext";
 import { usePasskeySelection } from "@/contexts/PasskeySelectionContext";
@@ -82,7 +82,7 @@ export const SecuritySettingsModal = ({ isOpen, onClose }: { isOpen: boolean; on
           }
         } catch (error) {
           console.error("❌ Error checking guardian status:", error);
-        } 
+        }
       }
     };
 

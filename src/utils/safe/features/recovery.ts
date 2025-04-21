@@ -5,7 +5,7 @@ import { RecoveryWalletMethod, RecoveryWalletGenerateInput, RecoveryWalletGenera
 import { PUBLIC_RPC, publicClient } from "@/config/web3";
 import { isLocal, isProduction } from "@/utils/helpers";
 import { MONETIC_GUARDIAN_ADDRESS } from "@/utils/constants";
-import pylon from "@/libs/pylon-sdk";
+import pylon from "@/libs/monetic-sdk";
 import { WebAuthnCredentials } from "@/types/webauthn";
 import { SAFE_ABI } from "@/utils/abi/safe";
 

@@ -2,7 +2,7 @@ import { useEffect, useCallback } from "react";
 
 import { Message, SupportMessage } from "@/types/messaging";
 import { useUser, AuthStatus } from "@/contexts/UserContext";
-import pylon from "@/libs/pylon-sdk";
+import pylon from "@/libs/monetic-sdk";
 
 // Use the types already defined in the Pylon SDK
 // This is just for reference, we'll use the SDK's actual types

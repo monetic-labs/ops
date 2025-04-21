@@ -10,7 +10,7 @@ import {
 } from "abstractionkit";
 import { Hex } from "viem";
 
-import pylon from "@/libs/pylon-sdk";
+import pylon from "@/libs/monetic-sdk";
 
 export interface PasskeyCredentials {
   publicKey: WebauthnPublicKey;

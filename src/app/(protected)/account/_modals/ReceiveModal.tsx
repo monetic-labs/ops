@@ -5,28 +5,29 @@ import { Copy, Info, Share2, X, Check } from "lucide-react";
 import { Modal, ModalContent, ModalHeader, ModalBody } from "@heroui/modal";
 import { useState } from "react";
 import { Spinner } from "@heroui/spinner";
+import { useRouter } from "next/navigation";
+import { Select } from "@heroui/select";
 
 import { useAccounts } from "@/contexts/AccountContext";
 
 import { AccountSelectionModal } from "./AccountSelectionModal";
 
 interface ReceiveModalProps {
+  availableAccounts: Account[];
   isOpen: boolean;
-  onClose: () => void;
   selectedAccount: Account;
   selectedSettlementAccount: Account;
-  onChangeSettlementAccount: (account: Account) => void;
-  availableAccounts: Account[];
+  onClose: () => void;
 }
 
 export function ReceiveModal({
+  availableAccounts,
   isOpen,
-  onClose,
   selectedAccount,
   selectedSettlementAccount,
-  onChangeSettlementAccount,
-  availableAccounts,
+  onClose,
 }: ReceiveModalProps) {
+  const router = useRouter();
   const [isShared, setIsShared] = useState(false);
   const [copiedField, setCopiedField] = useState<string | null>(null);
   const [isAccountSelectionOpen, setIsAccountSelectionOpen] = useState(false);
@@ -74,15 +75,8 @@ export function ReceiveModal({
     }
   };
 
-  const handleChangeSettlementAccount = async (account: Account) => {
-    try {
-      await updateVirtualAccountDestination(account.address);
-      onChangeSettlementAccount(account);
-      setIsAccountSelectionOpen(false);
-    } catch (error) {
-      console.error("Failed to update settlement account:", error);
-      // TODO: Show error toast
-    }
+  const handleAccountChange = (account: Account) => {
+    router.push(`/account/${account.id}`);
   };
 
   // Show loading state while virtual account is being fetched
@@ -312,7 +306,7 @@ export function ReceiveModal({
         selectedAccountId={actualSettlementAccount?.id}
         title="Select Settlement Account"
         onClose={() => setIsAccountSelectionOpen(false)}
-        onSelect={handleChangeSettlementAccount}
+        onSelect={handleAccountChange}
       />
     </>
   );

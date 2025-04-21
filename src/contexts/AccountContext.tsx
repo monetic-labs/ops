@@ -13,7 +13,7 @@ import {
 import { Building2, CreditCard, PiggyBank, PlusCircle, CircleDollarSign, type LucideIcon } from "lucide-react";
 
 import { Account, Signer } from "@/types/account";
-import pylon from "@/libs/pylon-sdk";
+import pylon from "@/libs/monetic-sdk";
 import { useSigners } from "@/contexts/SignersContext";
 import { useUser } from "@/contexts/UserContext";
 import { deploySubAccount } from "@/utils/safe/features/subaccount";

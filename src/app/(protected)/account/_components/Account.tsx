@@ -1,41 +1,48 @@
 "use client";
 
-import type { Account, Signer } from "@/types/account";
-
 import { useState } from "react";
-import { Card, CardBody } from "@heroui/card";
 import { toast } from "sonner";
+import { Card, CardBody } from "@heroui/card";
 import { CreditCard, MessageCircle } from "lucide-react";
+import { useRouter } from "next/navigation";
+
+import type { Account as AccountType, Signer } from "@/types/account";
 
 import { useAccounts } from "@/contexts/AccountContext";
 import { useShortcuts } from "@/components/generics/shortcuts-provider";
 import { useSupportService } from "@/hooks/messaging/useSupportService";
 
-import { SkeletonAccountCard } from "./components/SkeletonLoaders";
-import { AccountHeader } from "./components/AccountHeader";
-import { AccountBalance } from "./components/AccountBalance";
-import { AccountNavigation } from "./components/AccountNavigation";
-import { DeployAccountModal } from "./modals/DeployAccountModal";
-import { ActivityView } from "./views/ActivityView";
-import { SignersView } from "./views/SignersView";
-import { PoliciesView } from "./views/PoliciesView";
-import { SendModal } from "./modals/SendModal";
-import { ReceiveModal } from "./modals/ReceiveModal";
-import { AccountSelectionModal } from "./modals/AccountSelectionModal";
+import { SkeletonAccountCard } from "./SkeletonLoaders";
+import { AccountHeader } from "./AccountHeader";
+import { AccountBalance } from "./AccountBalance";
+import { AccountNavigation } from "./AccountNavigation";
 
-export default function AccountMeta() {
+import { ActivityView } from "../_views/ActivityView";
+import { SignersView } from "../_views/SignersView";
+import { PoliciesView } from "../_views/PoliciesView";
+
+import { SendModal } from "../_modals/SendModal";
+import { ReceiveModal } from "../_modals/ReceiveModal";
+import { DeployAccountModal } from "../_modals/DeployAccountModal";
+import { AccountSelectionModal } from "../_modals/AccountSelectionModal";
+
+interface AccountProps {
+  account: AccountType;
+  isLoading: boolean;
+}
+
+export function Account({ account: selectedAccount, isLoading }: AccountProps) {
+  const router = useRouter();
   const {
     accounts,
-    selectedAccount,
-    isLoadingAccounts,
     totalBalance,
     getEnabledAccounts,
-    setSelectedAccount,
     registerSubAccount,
     refreshAccounts,
     updateAccountBalancesAfterTransfer,
     deployAccount,
   } = useAccounts();
+
   const { openChat } = useShortcuts();
   const { sendMessage } = useSupportService();
 
@@ -43,7 +50,7 @@ export default function AccountMeta() {
   const [isSendModalOpen, setIsSendModalOpen] = useState(false);
   const [isReceiveModalOpen, setIsReceiveModalOpen] = useState(false);
   const [amount, setAmount] = useState("");
-  const [toAccount, setToAccount] = useState<Account | null>(null);
+  const [toAccount, setToAccount] = useState<AccountType | null>(null);
   const [isExpanded, setIsExpanded] = useState(true);
   const [isDeployModalOpen, setIsDeployModalOpen] = useState(false);
   const [selectedSigners, setSelectedSigners] = useState<Signer[]>([]);
@@ -51,7 +58,7 @@ export default function AccountMeta() {
   const [isAccountSelectionOpen, setIsAccountSelectionOpen] = useState(false);
 
   // If we're loading accounts but don't have any yet, show the full skeleton
-  if (isLoadingAccounts && accounts.length === 0) {
+  if (isLoading && accounts.length === 0) {
     return (
       <Card className="w-full bg-content1/90 border border-border backdrop-blur-sm relative">
         <CardBody className="p-0">
@@ -59,11 +66,6 @@ export default function AccountMeta() {
         </CardBody>
       </Card>
     );
-  }
-
-  // If we don't have a selected account yet, show nothing
-  if (!selectedAccount) {
-    return null;
   }
 
   const enabledAccounts = getEnabledAccounts();
@@ -76,8 +78,8 @@ export default function AccountMeta() {
     setIsReceiveModalOpen(true);
   };
 
-  const handleAccountSelect = (account: Account) => {
-    setSelectedAccount(account);
+  const handleAccountSelect = (account: AccountType) => {
+    router.push(`/account/${account.id}`);
     setIsExpanded(true);
     setIsAccountSelectionOpen(false);
   };
@@ -85,12 +87,10 @@ export default function AccountMeta() {
   const isAmountValid = () => {
     if (!amount || !selectedAccount) return false;
     const amountValue = parseFloat(amount);
-
     return amountValue > 0 && amountValue <= (selectedAccount.balance || 0);
   };
 
   const handleSelectToAccount = () => {
-    // Find the first eligible account that's not the selected account
     const eligibleAccount = accounts.find(
       (account) => account.address !== selectedAccount?.address && !account.isDisabled
     );
@@ -108,14 +108,12 @@ export default function AccountMeta() {
     setIsSendModalOpen(false);
 
     try {
-      // Refresh accounts to get the latest balances
       await refreshAccounts(true);
     } catch (error) {
       console.error("Error refreshing accounts after transfer:", error);
       toast.error("Failed to refresh account balances. Please reload the page.");
     }
 
-    // Reset transfer state
     setAmount("");
     setToAccount(null);
   };
@@ -138,7 +136,6 @@ export default function AccountMeta() {
 
   return (
     <>
-      {/* Send Modal */}
       <SendModal
         amount={amount}
         availableAccounts={accounts.filter((account) => account.address !== selectedAccount?.address)}
@@ -146,7 +143,6 @@ export default function AccountMeta() {
         isOpen={isSendModalOpen}
         selectedAccount={selectedAccount}
         setAmount={setAmount}
-        setSelectedAccount={setSelectedAccount}
         setToAccount={setToAccount}
         toAccount={toAccount}
         onCancel={() => {
@@ -163,13 +159,11 @@ export default function AccountMeta() {
         onTransfer={handleTransfer}
       />
 
-      {/* Receive Modal */}
       <ReceiveModal
         availableAccounts={enabledAccounts}
         isOpen={isReceiveModalOpen}
         selectedAccount={selectedAccount}
         selectedSettlementAccount={accounts[0]}
-        onChangeSettlementAccount={setSelectedAccount}
         onClose={() => setIsReceiveModalOpen(false)}
       />
 
@@ -214,7 +208,7 @@ export default function AccountMeta() {
             <AccountHeader
               accounts={accounts}
               isExpanded={isExpanded}
-              isLoading={isLoadingAccounts}
+              isLoading={isLoading}
               selectedAccount={selectedAccount}
               totalBalance={totalBalance}
               onAccountSelect={handleAccountSelect}
@@ -234,7 +228,7 @@ export default function AccountMeta() {
               <div className="p-6 space-y-6 border-t border-border">
                 <AccountBalance
                   account={selectedAccount}
-                  isLoading={isLoadingAccounts}
+                  isLoading={isLoading}
                   onReceive={handleReceive}
                   onSend={handleSend}
                 />
@@ -243,18 +237,12 @@ export default function AccountMeta() {
 
                 <div>
                   {activeTab === "activity" && (
-                    <ActivityView activities={selectedAccount.recentActivity} isLoading={isLoadingAccounts} />
+                    <ActivityView activities={selectedAccount.recentActivity} isLoading={isLoading} />
                   )}
                   {activeTab === "signers" && (
-                    <SignersView
-                      account={selectedAccount}
-                      isLoading={isLoadingAccounts}
-                      signers={selectedAccount.signers}
-                    />
+                    <SignersView account={selectedAccount} isLoading={isLoading} signers={selectedAccount.signers} />
                   )}
-                  {activeTab === "policies" && (
-                    <PoliciesView isLoading={isLoadingAccounts} signers={selectedAccount.signers} />
-                  )}
+                  {activeTab === "policies" && <PoliciesView isLoading={isLoading} signers={selectedAccount.signers} />}
                 </div>
               </div>
             </div>

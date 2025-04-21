@@ -1,6 +1,6 @@
 import { useState } from "react";
 
-import pylon from "@/libs/pylon-sdk";
+import pylon from "@/libs/monetic-sdk";
 
 interface SensitiveInfo {
   cvv?: string;

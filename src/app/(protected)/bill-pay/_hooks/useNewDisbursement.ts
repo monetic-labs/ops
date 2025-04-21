@@ -8,7 +8,7 @@ import {
   StableCurrency,
 } from "@monetic-labs/sdk";
 
-import pylon from "@/libs/pylon-sdk";
+import pylon from "@/libs/monetic-sdk";
 
 export const useNewDisbursement = () => {
   const [disbursement, setDisbursement] = useState<MerchantDisbursementCreateOutput | null>(null);

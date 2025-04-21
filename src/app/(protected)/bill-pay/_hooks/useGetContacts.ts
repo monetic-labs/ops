@@ -1,7 +1,7 @@
 import { useState, useCallback } from "react";
 import { MerchantDisbursementCreateOutput, Pagination } from "@monetic-labs/sdk";
 
-import pylon from "@/libs/pylon-sdk";
+import pylon from "@/libs/monetic-sdk";
 
 export const useGetContacts = () => {
   const [contacts, setContacts] = useState<MerchantDisbursementCreateOutput[]>([]);

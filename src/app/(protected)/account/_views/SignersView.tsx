@@ -8,7 +8,7 @@ import { useUser } from "@/contexts/UserContext";
 import { formatStringToTitleCase } from "@/utils/helpers";
 import { Signer, Account } from "@/types/account";
 
-import { AddSignerModal } from "../modals/AddSignerModal";
+import { AddSignerModal } from "@/app/(protected)/account/_modals/AddSignerModal";
 
 interface SignersViewProps {
   signers: Signer[];
