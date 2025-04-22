@@ -6,27 +6,32 @@
  * For example, /src/app/(protected)/page.tsx will still be accessible at '/'
  */
 
+"use client";
+
 import { redirect } from "next/navigation";
 import { cookies } from "next/headers";
-import { Suspense } from "react";
+import { Suspense, useState } from "react";
 import { Spinner } from "@heroui/spinner";
 
 import { Sidebar } from "@/components/layout/Sidebar";
 import { MobileBottomNav } from "@/components/layout/MobileBottomNav";
-import { MERCHANT_COOKIE_NAME } from "@/utils/constants";
 
 export default function ProtectedLayout({ children }: { children: React.ReactNode }) {
-  const authToken = cookies().get(MERCHANT_COOKIE_NAME);
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
 
-  if (!authToken) {
-    redirect("/auth");
-  }
+  const toggleSidebar = () => {
+    setIsSidebarCollapsed(!isSidebarCollapsed);
+  };
 
   return (
     <div className="min-h-screen flex bg-gradient-to-br from-background via-background/90 to-background/80 transition-colors">
-      <Sidebar />
+      <Sidebar isCollapsed={isSidebarCollapsed} toggleSidebar={toggleSidebar} />
 
-      <div className="flex flex-col flex-1 w-full lg:ml-64">
+      <div
+        className={`flex flex-col flex-1 w-full transition-all duration-300 ease-in-out ${
+          isSidebarCollapsed ? "lg:ml-20" : "lg:ml-64"
+        }`}
+      >
         <main className="flex-1 w-full max-w-screen-xl mx-auto px-4 pt-8 pb-20 sm:px-6 lg:pb-8">
           <Suspense
             fallback={

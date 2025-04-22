@@ -33,6 +33,8 @@ import {
   Shield,
   MessageCircle,
   PlusCircle,
+  PanelLeftClose,
+  PanelRightClose,
 } from "lucide-react";
 import { useState, useMemo, useEffect } from "react"; // Import useMemo and useEffect
 import { Spinner } from "@heroui/spinner"; // Import Spinner
@@ -40,7 +42,7 @@ import { Spinner } from "@heroui/spinner"; // Import Spinner
 import { useAccounts } from "@/contexts/AccountContext";
 import { useUser } from "@/contexts/UserContext";
 import { Account } from "@/types/account";
-import { Dropdown, DropdownItem, DropdownMenu, DropdownTrigger } from "@heroui/dropdown";
+import { Dropdown, DropdownItem, DropdownMenu, DropdownTrigger, DropdownSection } from "@heroui/dropdown";
 import { useTheme } from "@/hooks/generics/useTheme"; // Import useTheme
 import { ProfileSettingsModal } from "@/components/account-settings/profile-modal";
 import { SecuritySettingsModal } from "@/components/account-settings/security-modal";
@@ -118,29 +120,6 @@ const staticNavigationItems: NavItem[] = [
     tooltip: "Issue and manage corporate cards",
     href: "/card-issuance",
   },
-  {
-    id: "users",
-    label: "Users",
-    icon: <Users className="w-5 h-5" />,
-    tooltip: "Manage team members and permissions",
-    href: "/users",
-    children: [
-      {
-        id: "users-members",
-        label: "Members",
-        icon: <Users2 className="w-4 h-4" />,
-        tooltip: "Manage members",
-        href: "/users/members",
-      },
-      {
-        id: "users-developer",
-        label: "Developer",
-        icon: <KeyRound className="w-4 h-4" />,
-        tooltip: "Manage developer access",
-        href: "/users/developer",
-      },
-    ],
-  },
 ];
 
 // IDs of sections/items always enabled regardless of approval status - Removed as disabling logic is now global when not approved
@@ -149,7 +128,14 @@ const staticNavigationItems: NavItem[] = [
 // IDs of sections that should be visible but disabled during KYB
 const VISIBLE_DURING_KYB = new Set(["users", "accounts-section"]);
 
-export function Sidebar() {
+// Define props for Sidebar
+interface SidebarProps {
+  isCollapsed: boolean;
+  toggleSidebar: () => void;
+}
+
+// Accept props in the component function
+export function Sidebar({ isCollapsed, toggleSidebar }: SidebarProps) {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const { user, logout, isFullyApproved, isLoading: isUserLoadingGlobal } = useUser();
@@ -166,18 +152,13 @@ export function Sidebar() {
     const initialOpenState: Record<string, boolean> = {};
     staticNavigationItems.forEach((item) => {
       if (item.children) {
-        // Initial check based on href for non-account sections
         const isActive = item.children.some((child) => pathname?.startsWith(child.href || ""));
-        // Initial check for accounts section based on path
         const isAccountActive = item.id === "accounts-section" && pathname?.startsWith("/account/");
-
         if (isActive || isAccountActive) {
           initialOpenState[item.id] = true;
         }
       }
     });
-    // Optionally keep accounts open by default:
-    // initialOpenState["accounts-section"] = true;
     return initialOpenState;
   });
 
@@ -187,9 +168,7 @@ export function Sidebar() {
   // Effect to open sections based on path AND clear loading state
   useEffect(() => {
     setLoadingItemId(null); // Clear loading state on path change
-
     if (!pathname) return;
-
     setOpenSections((prev) => {
       const newState = { ...prev };
       staticNavigationItems.forEach((item) => {
@@ -274,103 +253,171 @@ export function Sidebar() {
       const isOpen = openSections[item.id] || false;
       const hasChildren = item.children && item.children.length > 0;
 
-      const itemContent = (
-        <>
-          {item.icon && (
-            <span className="mr-3 flex-shrink-0 w-5 h-5 flex items-center justify-center text-foreground/60 group-hover:text-foreground/80">
-              {item.icon}
-            </span>
-          )}
-          <span className="flex-1 truncate">{item.label}</span>
-          <div className="ml-auto flex-shrink-0 w-4 h-4 flex items-center justify-center">
-            {isLoading ? (
-              <Spinner size="sm" color="primary" />
-            ) : (
-              <>
-                {item.isComingSoon && <span className="text-xs text-foreground/40">Soon</span>}
-                {isSelectedAccountItem && !isSubmenu && <CheckCircle className="w-4 h-4 text-primary" />}
-                {hasChildren && (
-                  <ChevronRight
-                    className={`w-4 h-4 text-foreground/60 transition-transform ${isOpen ? "rotate-90" : ""}`}
-                  />
-                )}
-              </>
-            )}
-          </div>
-        </>
-      );
+      // --- Collapsed State with Children: Render Dropdown ---
+      if (isCollapsed && hasChildren) {
+        // Ensure children exist before mapping for disabledKeys and passing to items
+        const childItems = item.children || [];
+        const disabledChildKeys = childItems
+          .filter((child) => !isFullyApproved || child.isDisabled || finalIsDisabled)
+          .map((child) => child.id);
 
-      const commonClasses = `
-        flex items-center p-2 rounded-lg group w-full text-left transition-opacity
-        ${isSubmenu ? "pl-5" : ""}
-        ${finalIsDisabled ? `opacity-50 ${cursorClass}` : "hover:bg-content2 text-foreground/80"} 
-        ${isSelectedAccountItem && !isSubmenu && !isLoading ? "bg-content2 text-foreground font-semibold" : ""} 
-        ${isCurrentPath && !baseIsDisabled && !isLoading ? "bg-content2 text-foreground font-semibold" : ""}
-      `;
-
-      const handleItemClick = (e: React.MouseEvent<HTMLButtonElement | HTMLAnchorElement>) => {
-        // Always check the final disabled state first
-        if (finalIsDisabled) {
-          e.preventDefault();
-          return;
-        }
-        // Only set loading state if it's a clickable link with a valid destination
-        if (!hasChildren && item.href && item.href !== "#") {
-          setLoadingItemId(item.id);
-        }
-        // We don't need item.onClick here as section toggles use their own onClick
-      };
-
-      if (item.isSkeleton) {
         return (
-          <li key={item.id} className="flex items-center p-2 space-x-3">
-            <Skeleton className="w-5 h-5 rounded-full" />
-            <Skeleton className="w-24 h-4 rounded-md" />
+          <li key={item.id}>
+            <Dropdown placement="right-start">
+              <Tooltip content={item.tooltip} isDisabled={finalIsDisabled} placement="right">
+                <DropdownTrigger>
+                  <Button
+                    isIconOnly
+                    variant="light"
+                    className={`p-2 rounded-lg group w-full text-left transition-opacity justify-center ${
+                      finalIsDisabled ? "opacity-50 cursor-not-allowed" : "hover:bg-content2 text-foreground/80"
+                    }`}
+                    aria-label={item.label}
+                    isDisabled={finalIsDisabled}
+                  >
+                    {item.icon && (
+                      <span className="flex-shrink-0 w-5 h-5 flex items-center justify-center text-foreground/60 group-hover:text-foreground/80 mx-auto">
+                        {item.icon}
+                      </span>
+                    )}
+                  </Button>
+                </DropdownTrigger>
+              </Tooltip>
+              <DropdownMenu aria-label={`${item.label} submenu`} items={childItems} disabledKeys={disabledChildKeys}>
+                {(child) => (
+                  <DropdownItem key={child.id} href={child.href} startContent={child.icon}>
+                    {child.label}
+                  </DropdownItem>
+                )}
+              </DropdownMenu>
+            </Dropdown>
           </li>
         );
       }
-
-      // Render collapsible section or individual item
-      if (hasChildren) {
+      // --- Expanded State with Children: Render Collapsible Button ---
+      else if (!isCollapsed && hasChildren) {
+        const itemContent = (
+          <>
+            {item.icon && (
+              <span className="mr-3 flex-shrink-0 w-5 h-5 flex items-center justify-center text-foreground/60 group-hover:text-foreground/80">
+                {item.icon}
+              </span>
+            )}
+            <span className="flex-1 truncate">{item.label}</span>
+            <div className="ml-auto flex-shrink-0 w-4 h-4 flex items-center justify-center">
+              {isLoading ? (
+                <Spinner size="sm" color="primary" />
+              ) : (
+                <>
+                  {item.isComingSoon && <span className="text-xs text-foreground/40">Soon</span>}
+                  {isSelectedAccountItem && !isSubmenu && <CheckCircle className="w-4 h-4 text-primary" />}
+                  <ChevronRight
+                    className={`w-4 h-4 text-foreground/60 transition-transform ${isOpen ? "rotate-90" : ""}`}
+                  />
+                </>
+              )}
+            </div>
+          </>
+        );
         return (
           <li key={item.id}>
             <Tooltip
-              isDisabled={finalIsDisabled || !item.tooltip} // Use final disabled state
+              isDisabled={finalIsDisabled || !item.tooltip}
               classNames={{ content: "bg-content2/90 text-foreground text-xs px-2 py-1 ml-2" }}
-              closeDelay={0}
               content={item.tooltip}
-              delay={500}
               placement="right"
             >
               <button
                 type="button"
-                className={commonClasses}
-                // Use direct toggleSection, disabled state handles prevention
+                className={`flex items-center p-2 rounded-lg group w-full text-left transition-opacity ${
+                  isSubmenu ? "pl-5" : ""
+                } ${finalIsDisabled ? `opacity-50 ${cursorClass}` : "hover:bg-content2 text-foreground/80"}`}
                 onClick={() => toggleSection(item.id)}
                 aria-expanded={isOpen}
-                disabled={finalIsDisabled} // Use final disabled state
+                disabled={finalIsDisabled}
               >
                 {itemContent}
               </button>
             </Tooltip>
-            {/* Pass the base disabled state down */}
             {isOpen && <ul className="pt-1 pl-4 space-y-1">{renderNavItems(item.children!, true, baseIsDisabled)}</ul>}
           </li>
         );
-      } else {
-        // Render link item
+      }
+      // --- Item without Children (Collapsed or Expanded) ---
+      else {
+        const itemContent = (
+          <>
+            {item.icon && (
+              <span
+                className={`flex-shrink-0 w-5 h-5 flex items-center justify-center text-foreground/60 group-hover:text-foreground/80 ${
+                  isCollapsed ? "mx-auto" : "mr-3"
+                }`}
+              >
+                {item.icon}
+              </span>
+            )}
+            {!isCollapsed && <span className="flex-1 truncate">{item.label}</span>}
+            {!isCollapsed && (
+              <div className="ml-auto flex-shrink-0 w-4 h-4 flex items-center justify-center">
+                {isLoading ? (
+                  <Spinner size="sm" color="primary" />
+                ) : (
+                  <>
+                    {item.isComingSoon && <span className="text-xs text-foreground/40">Soon</span>}
+                    {isSelectedAccountItem && !isSubmenu && <CheckCircle className="w-4 h-4 text-primary" />}
+                    {/* No ChevronRight needed here */}
+                  </>
+                )}
+              </div>
+            )}
+          </>
+        );
+        const commonClasses = `
+          flex items-center p-2 rounded-lg group w-full text-left transition-opacity
+          ${isSubmenu ? "pl-5" : ""}
+          ${finalIsDisabled ? `opacity-50 ${cursorClass}` : "hover:bg-content2 text-foreground/80"} 
+          ${isSelectedAccountItem && !isSubmenu && !isLoading ? "bg-content2 text-foreground font-semibold" : ""} 
+          ${isCurrentPath && !baseIsDisabled && !isLoading ? "bg-content2 text-foreground font-semibold" : ""}
+          ${isCollapsed ? "justify-center" : ""}
+      `;
+        `;
+
+        `;
+
+        const handleItemClick = (e: React.MouseEvent<HTMLButtonElement | HTMLAnchorElement>) => {
+          const handleItemClick = (e: React.MouseEvent<HTMLButtonElement | HTMLAnchorElement>) => {
+            // Always check the final disabled state first
+            const handleItemClick = (e: React.MouseEvent<HTMLButtonElement | HTMLAnchorElement>) => {
+              // Always check the final disabled state first
+              if (finalIsDisabled) {
+                e.preventDefault();
+                return;
+              }
+              if (item.href && item.href !== "#") {
+                setLoadingItemId(item.id);
+              }
+            };
+          };
+        };
+
+        if (item.isSkeleton) {
+          return (
+            <li key={item.id} className={`flex items-center p-2 space-x-3 ${isCollapsed ? "justify-center" : ""}`}>
+              <Skeleton className={`w-5 h-5 rounded-${isCollapsed ? "full" : "md"}`} />
+              {!isCollapsed && <Skeleton className="w-24 h-4 rounded-md" />}
+            </li>
+          );
+        }
         return (
           <li key={item.id}>
             <Tooltip
-              isDisabled={finalIsDisabled || !item.tooltip} // Use final disabled state
+              isDisabled={finalIsDisabled || !item.tooltip || !isCollapsed} // Only enable tooltip when collapsed
               classNames={{ content: "bg-content2/90 text-foreground text-xs px-2 py-1 ml-2" }}
-              closeDelay={0}
               content={item.tooltip}
-              delay={500}
               placement="right"
             >
               <Link
-                href={finalIsDisabled ? "#" : item.href || "#"} // Prevent navigation by changing href
+                href={finalIsDisabled ? "#" : item.href || "#"}
                 className={commonClasses}
                 onClick={handleItemClick}
                 aria-disabled={finalIsDisabled}
@@ -407,7 +454,7 @@ export function Sidebar() {
     user?.firstName && user?.lastName ? `${user.firstName[0]}${user.lastName[0]}`.toUpperCase() : undefined;
 
   const ChatButton = () => (
-    <Tooltip content="Messages" placement="bottom">
+    <Tooltip content="Customer Support" placement={isCollapsed ? "right" : "bottom"}>
       <Button
         isIconOnly
         size="sm"
@@ -432,85 +479,180 @@ export function Sidebar() {
 
   // --- Skeleton Item Component (or inline JSX) ---
   const SkeletonNavItem = () => (
-    <li className="flex items-center p-2 space-x-3">
-      <Skeleton className="w-5 h-5 rounded-md" />
-      <Skeleton className="w-32 h-4 rounded-md" />
-      <Skeleton className="w-4 h-4 rounded-md ml-auto" /> {/* Placeholder for chevron */}
+    <li className={`flex items-center p-2 space-x-3 ${isCollapsed ? "justify-center" : ""}`}>
+      <Skeleton className={`w-5 h-5 rounded-${isCollapsed ? "full" : "md"}`} />
+      {!isCollapsed && <Skeleton className="w-32 h-4 rounded-md" />}
+      {!isCollapsed && <Skeleton className="w-4 h-4 rounded-md ml-auto" />}
     </li>
   );
 
+  const currentOrgName = user?.merchant?.company?.name || "My Organization";
+
   return (
     <>
-      <aside className="fixed top-0 left-0 z-40 w-64 h-screen bg-content1 border-r border-divider hidden lg:flex flex-col">
-        {/* Top Section */}
-        <div className="px-3 py-4 border-b border-divider flex items-center justify-between gap-1">
-          {/* Company Dropdown */}
-          <Dropdown placement="bottom-start">
-            <DropdownTrigger>
-              <Button
-                variant="light"
-                className="flex-grow justify-start px-1 text-foreground/80 hover:bg-content2 text-left mr-1"
-                endContent={<ChevronDown className="w-4 h-4 text-foreground/60 flex-shrink-0" />}
+      <aside
+        className={`fixed top-0 left-0 z-40 h-screen bg-content1 border-r border-divider hidden lg:flex flex-col transition-all duration-300 ease-in-out ${
+          isCollapsed ? "w-20" : "w-64"
+        }`}
+      >
+        {/* Top Section - Only Company Info/Dropdown */}
+        <div className="px-3 py-4 border-b border-divider">
+          {!isCollapsed ? (
+            // Expanded State: Dropdown with Org Name Trigger
+            <Dropdown placement="bottom-start">
+              <DropdownTrigger>
+                <Button
+                  variant="light"
+                  className="flex-grow justify-start px-1 text-foreground/80 hover:bg-content2 text-left mr-1 w-full"
+                  endContent={<ChevronDown className="w-4 h-4 text-foreground/60 flex-shrink-0" />}
+                >
+                  <span className="truncate font-semibold">{currentOrgName}</span>
+                </Button>
+              </DropdownTrigger>
+              {/* Expanded Dropdown Menu Content */}
+              <DropdownMenu
+                aria-label={`Actions and settings for ${currentOrgName}`}
+                disabledKeys={!isFullyApproved ? ["api-keys-setting", "team-setting"] : []}
               >
-                <span className="truncate font-semibold">{user?.merchant?.company?.name || "Dashboard"}</span>
-              </Button>
-            </DropdownTrigger>
-            <DropdownMenu aria-label="Organization selector" selectedKeys={["current-org"]}>
-              <DropdownItem
-                key="current-org"
-                startContent={<Building className="w-4 h-4" />}
-                description="Current organization"
+                <DropdownItem
+                  key="current-org-display"
+                  isReadOnly
+                  startContent={<Building className="w-4 h-4 text-foreground/60" />}
+                  className="opacity-100 cursor-default"
+                >
+                  {currentOrgName}
+                </DropdownItem>
+                <DropdownItem
+                  key="api-keys-setting"
+                  href="/settings/api-keys"
+                  startContent={<KeyRound className="w-4 h-4" />}
+                  className="pl-8"
+                >
+                  API Keys
+                </DropdownItem>
+                <DropdownItem
+                  key="team-setting"
+                  href="/settings/team"
+                  startContent={<Users className="w-4 h-4" />}
+                  className="pl-8"
+                >
+                  Team Members
+                </DropdownItem>
+                <DropdownSection aria-label="Organization Actions">
+                  <DropdownItem
+                    key="add-org"
+                    startContent={<PlusCircle className="w-4 h-4" />}
+                    description="Coming Soon"
+                    isDisabled
+                  >
+                    Add Org
+                  </DropdownItem>
+                </DropdownSection>
+              </DropdownMenu>
+            </Dropdown>
+          ) : (
+            // Collapsed state: Dropdown with centered Building Icon Trigger
+            <Dropdown placement="right-start">
+              <Tooltip content={currentOrgName} placement="right">
+                <DropdownTrigger>
+                  <Button
+                    isIconOnly
+                    variant="light"
+                    className="flex items-center justify-center w-full h-[36px] p-1 rounded-lg hover:bg-content2"
+                    aria-label={currentOrgName}
+                  >
+                    <Building className="w-5 h-5 text-foreground/60" />
+                  </Button>
+                </DropdownTrigger>
+              </Tooltip>
+              {/* Collapsed Dropdown Menu Content (same as before) */}
+              <DropdownMenu
+                aria-label={`Actions and settings for ${currentOrgName}`}
+                disabledKeys={!isFullyApproved ? ["api-keys-setting", "team-setting"] : []}
               >
-                {user?.merchant?.company?.name || "Dashboard"}
-              </DropdownItem>
-              <DropdownItem
-                key="add-org"
-                startContent={<PlusCircle className="w-4 h-4" />}
-                description="Coming Soon"
-                isDisabled
-              >
-                Add Org
-              </DropdownItem>
-            </DropdownMenu>
-          </Dropdown>
-          {/* Chat Button */}
+                <DropdownItem
+                  key="api-keys-setting"
+                  href="/settings/api-keys"
+                  startContent={<KeyRound className="w-4 h-4" />}
+                >
+                  API Keys
+                </DropdownItem>
+                <DropdownItem key="team-setting" href="/users" startContent={<Users className="w-4 h-4" />}>
+                  Team Members
+                </DropdownItem>
+                <DropdownSection aria-label="Organization Actions">
+                  <DropdownItem
+                    key="add-org"
+                    startContent={<PlusCircle className="w-4 h-4" />}
+                    description="Coming Soon"
+                    isDisabled
+                  >
+                    Add Org
+                  </DropdownItem>
+                </DropdownSection>
+              </DropdownMenu>
+            </Dropdown>
+          )}
+        </div>
+
+        {/* Middle Section - Navigation or Skeletons */}
+        <div
+          className={`flex-grow h-full py-4 overflow-y-auto relative ${isCollapsed ? "overflow-x-hidden px-1" : "px-3"}`}
+        >
+          {isUserLoadingGlobal ? (
+            <ul className="space-y-2 font-medium">{/* ... Skeletons ... */}</ul>
+          ) : (
+            <ul className="space-y-2 font-medium">{renderNavItems(navigationItems)}</ul>
+          )}
+        </div>
+
+        {/* Bottom Actions Section - Updated Padding */}
+        <div
+          className={`flex items-center gap-2 py-2 border-t border-divider ${
+            isCollapsed ? "flex-col px-1" : "flex-row justify-center px-3"
+          }`}
+        >
           <ChatButton />
-          {/* Theme Toggle Button */}
-          <Tooltip content={isDark ? "Switch to Light Mode" : "Switch to Dark Mode"} placement="bottom">
+          <Tooltip
+            content={isDark ? "Switch to Light Mode" : "Switch to Dark Mode"}
+            placement={isCollapsed ? "right" : "bottom"}
+          >
             <Button
               isIconOnly
               size="sm"
-              className="flex-shrink-0 bg-transparent text-foreground/60 hover:text-foreground/90"
+              className="bg-transparent text-foreground/60 hover:text-foreground/90"
               variant="light"
               onPress={toggleTheme}
             >
               {isDark ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
             </Button>
           </Tooltip>
+          <Tooltip
+            content={isCollapsed ? "Expand Sidebar" : "Collapse Sidebar"}
+            placement={isCollapsed ? "right" : "bottom"}
+          >
+            <Button
+              isIconOnly
+              size="sm"
+              className="bg-transparent text-foreground/60 hover:text-foreground/90"
+              variant="light"
+              onPress={toggleSidebar}
+            >
+              {isCollapsed ? <PanelRightClose className="w-5 h-5" /> : <PanelLeftClose className="w-5 h-5" />}
+            </Button>
+          </Tooltip>
         </div>
 
-        {/* Middle Section - Navigation or Skeletons */}
-        <div className="flex-grow h-full px-3 py-4 overflow-y-auto relative">
-          {isUserLoadingGlobal ? (
-            // Show Skeletons during global load
-            <ul className="space-y-2 font-medium">
-              {staticNavigationItems.map((item) => (
-                <SkeletonNavItem key={`skel-${item.id}`} />
-              ))}
-            </ul>
-          ) : (
-            // Show actual navigation items once loaded
-            <ul className="space-y-2 font-medium">{renderNavItems(navigationItems)}</ul>
-          )}
-        </div>
-
-        {/* Bottom Section - User Info / Settings Dropdown */}
-        <div className="px-3 py-4 border-t border-divider">
-          <Dropdown placement="top-start">
+        {/* Bottom User Profile Section - Updated Padding */}
+        <div className={`py-4 border-t border-divider ${isCollapsed ? "px-1" : "px-3"}`}>
+          {/* ... User Dropdown (always visible now) ... */}
+          <Dropdown placement={isCollapsed ? "right-start" : "top-start"}>
             <DropdownTrigger>
               <Button
                 variant="light"
-                className="w-full justify-start px-2 text-foreground/80 hover:bg-content2 disabled:opacity-50 disabled:cursor-wait"
+                className={`w-full justify-start px-2 text-foreground/80 hover:bg-content2 disabled:opacity-50 disabled:cursor-wait ${
+                  isCollapsed ? "justify-center !px-0" : ""
+                }`}
                 disabled={loadingItemId === "logout"}
               >
                 <Avatar
@@ -522,15 +664,13 @@ export function Sidebar() {
                   size="sm"
                   src={profile?.profileImage || undefined}
                 />
-                <div className="flex flex-col flex-grow text-left ml-2 min-w-0">
-                  <span className="truncate">{user?.firstName || "User"}</span>
-                  <span className="truncate text-xs text-foreground/60">{user?.email}</span>
-                </div>
-                {loadingItemId === "logout" ? (
-                  <Spinner size="sm" color="current" className="ml-1 flex-shrink-0" />
-                ) : (
-                  <ChevronDown className="w-4 h-4 text-foreground/60 ml-1 flex-shrink-0" />
+                {!isCollapsed && (
+                  <div className="flex flex-col flex-grow text-left ml-2 min-w-0">
+                    <span className="truncate">{user?.firstName || "User"}</span>
+                    <span className="truncate text-xs text-foreground/60">{user?.email}</span>
+                  </div>
                 )}
+                {!isCollapsed && <>{/* ... chevron/spinner ... */}</>}
               </Button>
             </DropdownTrigger>
             <DropdownMenu
@@ -564,13 +704,15 @@ export function Sidebar() {
           </Dropdown>
         </div>
 
-        {/* Footer attribution */}
-        <div className="px-3 py-2 text-center text-xs text-foreground/30 border-t border-divider">
-          <span className="flex items-center justify-center gap-1">
-            <span>Powered by</span>
-            <span className="font-semibold">Monetic</span>
-          </span>
-        </div>
+        {/* Footer attribution - still hide when collapsed */}
+        {!isCollapsed && (
+          <div className="px-3 py-2 text-center text-xs text-foreground/30 border-t border-divider">
+            <span className="flex items-center justify-center gap-1">
+              <span>Powered by</span>
+              <span className="font-semibold">Monetic</span>
+            </span>
+          </div>
+        )}
       </aside>
 
       {/* Render Modals needed by Sidebar actions */}

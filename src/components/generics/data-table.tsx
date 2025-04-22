@@ -213,7 +213,7 @@ export function DataTable<T extends { id: string | number | bigint }>({
                 </h2>
               )}
               {subtitle && (
-                <p className="text-foreground-500 text-sm mt-1 {headerIcon ? 'pl-[calc(size_of_icon_+_gap)]' : ''}">
+                <p className={`text-foreground-500 text-sm mt-1 ${headerIcon ? "pl-[calc(size_of_icon_+_gap)]" : ""}`}>
                   {subtitle}
                 </p>
               )}
