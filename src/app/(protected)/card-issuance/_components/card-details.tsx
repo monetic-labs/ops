@@ -12,7 +12,7 @@ import { XIcon, DollarSign, Calendar, CreditCard, Mail, MapPin, Lock, User, Eye,
 import pylon from "@/libs/monetic-sdk";
 import { formatAmountUSD } from "@/utils/helpers";
 import { UpateCardSchema } from "@/data";
-import { useCardSensitiveInfo } from "@/hooks/card-issuance/useCardSensitiveInfo";
+import { useCardSensitiveInfo } from "../_hooks/useCardSensitiveInfo";
 
 import CardEdit from "./card-edit";
 

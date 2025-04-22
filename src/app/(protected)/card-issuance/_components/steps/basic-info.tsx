@@ -39,10 +39,18 @@ export function BasicInfoStep({ form }: BasicInfoStepProps) {
               label="Card Type"
               placeholder="Select a card type"
               startContent={<CreditCard className="text-foreground/50 w-4 h-4 pointer-events-none flex-shrink-0" />}
+              disabledKeys={[CardType.PHYSICAL]}
             >
               {CARD_TYPES.map((type) => (
                 <SelectItem key={type.value} textValue={type.label}>
-                  {type.label}
+                  {type.value === CardType.PHYSICAL ? (
+                    <div className="flex justify-between">
+                      {type.label}
+                      <span className="text-foreground/50">Coming Soon</span>
+                    </div>
+                  ) : (
+                    type.label
+                  )}
                 </SelectItem>
               ))}
             </Select>

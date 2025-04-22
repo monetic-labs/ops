@@ -117,22 +117,6 @@ const staticNavigationItems: NavItem[] = [
     icon: <CreditCard className="w-5 h-5" />,
     tooltip: "Issue and manage corporate cards",
     href: "/card-issuance",
-    children: [
-      {
-        id: "card-issuance-cards",
-        label: "Cards",
-        icon: <List className="w-4 h-4" />,
-        tooltip: "Manage cards",
-        href: "/card-issuance/cards",
-      },
-      {
-        id: "card-issuance-transactions",
-        label: "Transactions",
-        icon: <Activity className="w-4 h-4" />,
-        tooltip: "View transactions",
-        href: "/card-issuance/transactions",
-      },
-    ],
   },
   {
     id: "users",

@@ -8,7 +8,7 @@ import { z } from "zod";
 
 import { limitCyclesObject, limitStatesObject, UpateCardSchema } from "@/data";
 
-import { FormInput } from "../generics/form-input";
+import { FormInput } from "@/components/generics/form-input";
 
 interface CardEditProps {
   form: UseFormReturn<z.input<typeof UpateCardSchema>>;

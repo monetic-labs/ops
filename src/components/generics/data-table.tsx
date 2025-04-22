@@ -112,7 +112,7 @@ export function DataTable<T extends { id: string | number | bigint }>({
     ? "bg-transparent"
     : "bg-content1/90 border border-divider rounded-lg shadow-sm";
 
-  const defaultTrClass = `group ${isCompact ? "h-10" : "h-14"} hover:bg-content2 transition-colors`;
+  const defaultTrClass = `group ${isCompact ? "h-10" : "h-14"} hover:bg-content2 hover:rounded-lg transition-colors`;
 
   const tableElement = (
     <Table
@@ -173,6 +173,33 @@ export function DataTable<T extends { id: string | number | bigint }>({
     </Table>
   );
 
+  const paginationElement =
+    enablePagination && totalPages > 1 && onPageChange ? (
+      <div
+        className={`flex justify-center items-center p-4 ${shouldRenderCard ? "border-t border-divider" : "mt-4"} ${classNames?.paginationWrapper ?? ""}`}
+      >
+        <Pagination
+          showControls
+          loop
+          color="primary"
+          variant="bordered"
+          total={totalPages}
+          initialPage={1}
+          page={currentPage}
+          onChange={onPageChange}
+          classNames={{
+            base: classNames?.paginationBase,
+            wrapper: classNames?.paginationWrapper ?? "gap-1",
+            prev: classNames?.paginationPrev,
+            next: classNames?.paginationNext,
+            item: classNames?.paginationItem ?? "w-8 h-8 text-sm",
+            cursor: classNames?.paginationCursor ?? "bg-primary/80 text-primary-foreground",
+            ellipsis: classNames?.paginationEllipsis,
+          }}
+        />
+      </div>
+    ) : null;
+
   if (shouldRenderCard) {
     return (
       <Card className={cardClassName}>
@@ -194,11 +221,19 @@ export function DataTable<T extends { id: string | number | bigint }>({
             {actionButton && <div className="ml-auto pl-4">{actionButton}</div>}
           </div>
         </CardHeader>
-        <CardBody className="p-0">{tableElement}</CardBody>
+        <CardBody className="p-0">
+          {tableElement}
+          {paginationElement}
+        </CardBody>
       </Card>
     );
   } else {
-    return tableElement;
+    return (
+      <div className="flex flex-col gap-4">
+        {tableElement}
+        {paginationElement}
+      </div>
+    );
   }
 }
 

@@ -13,55 +13,21 @@ import {
   DisbursementState,
 } from "@monetic-labs/sdk";
 
-import { DataTable, Column, EmptyContent } from "@/components/generics/data-table";
 import BillPayDetailsModal from "./_components/details";
 import CreateBillPayModal from "./_components/create";
+
+import { useGetTransfers } from "./_hooks/useGetTransfers";
+import { useGetContacts } from "./_hooks/useGetContacts";
+
 import { statusColorMap } from "@/data";
+import { DataTable, Column, EmptyContent } from "@/components/generics/data-table";
 import { getOpepenAvatar, formatAmountUSD, isTesting, formatStringToTitleCase } from "@/utils/helpers";
-import { useGetTransfers } from "@/app/(protected)/bill-pay/_hooks/useGetTransfers";
-import { useGetContacts } from "@/app/(protected)/bill-pay/_hooks/useGetContacts";
 import { DEFAULT_NEW_BILL_PAY } from "@/types/bill-pay";
 import { MOCK_SETTLEMENT_ADDRESS } from "@/utils/constants";
 import { useUser, AuthStatus } from "@/contexts/UserContext";
-
-// Stat Card Component
-interface StatCardProps {
-  title: string;
-  value: string | number;
-  icon: React.ReactNode;
-  className?: string;
-}
-
-const StatCard = ({ title, value, icon, className = "" }: StatCardProps) => (
-  <Card className={`p-4 ${className} shadow-sm border border-default`}>
-    <div className="flex justify-between items-start">
-      <div>
-        <p className="text-sm text-foreground-500">{title}</p>
-        <h3 className="text-2xl font-bold mt-1 text-foreground">{value}</h3>
-      </div>
-      <div className="p-2 rounded-full bg-primary/10 text-primary">{icon}</div>
-    </div>
-  </Card>
-);
+import { StatCard } from "@/components/generics/stat-card";
 
 // --- Column Definitions ---
-
-// Helper to get status background color class
-const getStatusBgColorClass = (status: DisbursementState): string => {
-  const color = statusColorMap[status];
-  switch (color) {
-    case "primary":
-      return "bg-primary";
-    case "success":
-      return "bg-success";
-    case "warning":
-      return "bg-warning";
-    case "danger":
-      return "bg-danger";
-    default:
-      return "bg-gray-500";
-  }
-};
 
 // Transfer Columns (from transfers/page.tsx)
 const transferColumns: Column<MerchantDisbursementEventGetOutput>[] = [
