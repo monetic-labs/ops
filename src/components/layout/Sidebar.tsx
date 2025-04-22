@@ -80,22 +80,6 @@ const staticNavigationItems: NavItem[] = [
     icon: <Receipt className="w-5 h-5" />,
     tooltip: "Send payments and manage contacts",
     href: "/bill-pay",
-    children: [
-      {
-        id: "bill-pay-transfers",
-        label: "Transfers",
-        icon: <Send className="w-4 h-4" />,
-        tooltip: "View transfers",
-        href: "/bill-pay/transfers",
-      },
-      {
-        id: "bill-pay-contacts",
-        label: "Contacts",
-        icon: <Contact className="w-4 h-4" />,
-        tooltip: "Manage contacts",
-        href: "/bill-pay/contacts",
-      },
-    ],
   },
   {
     id: "back-office",
@@ -462,6 +446,15 @@ export function Sidebar() {
     </Tooltip>
   );
 
+  // --- Skeleton Item Component (or inline JSX) ---
+  const SkeletonNavItem = () => (
+    <li className="flex items-center p-2 space-x-3">
+      <Skeleton className="w-5 h-5 rounded-md" />
+      <Skeleton className="w-32 h-4 rounded-md" />
+      <Skeleton className="w-4 h-4 rounded-md ml-auto" /> {/* Placeholder for chevron */}
+    </li>
+  );
+
   return (
     <>
       <aside className="fixed top-0 left-0 z-40 w-64 h-screen bg-content1 border-r border-divider hidden lg:flex flex-col">
@@ -512,13 +505,17 @@ export function Sidebar() {
           </Tooltip>
         </div>
 
-        {/* Middle Section - Navigation or Loading Spinner */}
+        {/* Middle Section - Navigation or Skeletons */}
         <div className="flex-grow h-full px-3 py-4 overflow-y-auto relative">
           {isUserLoadingGlobal ? (
-            <div className="absolute inset-0 flex items-center justify-center bg-content1/80 z-10">
-              <Spinner label="Loading..." color="primary" labelColor="primary" />
-            </div>
+            // Show Skeletons during global load
+            <ul className="space-y-2 font-medium">
+              {staticNavigationItems.map((item) => (
+                <SkeletonNavItem key={`skel-${item.id}`} />
+              ))}
+            </ul>
           ) : (
+            // Show actual navigation items once loaded
             <ul className="space-y-2 font-medium">{renderNavItems(navigationItems)}</ul>
           )}
         </div>
