@@ -2,9 +2,9 @@
 
 import { useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { Spinner } from "@heroui/spinner";
 import { useAccounts } from "@/contexts/AccountContext";
 import { Account } from "../_components/Account";
+import { SkeletonAccountCard } from "../_components/SkeletonLoaders";
 
 export default function AccountPage() {
   const params = useParams();
@@ -31,11 +31,7 @@ export default function AccountPage() {
 
   // Show loading state while accounts are being fetched
   if (isLoadingAccounts || !currentAccount) {
-    return (
-      <div className="flex items-center justify-center h-[calc(100vh-150px)]">
-        <Spinner label="Loading Account..." color="primary" labelColor="primary" />
-      </div>
-    );
+    return <SkeletonAccountCard />;
   }
 
   // Render the Account component with the current account

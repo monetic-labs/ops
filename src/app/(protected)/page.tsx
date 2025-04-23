@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { Spinner } from "@heroui/spinner";
 import { useAccounts } from "@/contexts/AccountContext";
 import { useUser } from "@/contexts/UserContext";
+import { SkeletonAccountCard } from "./account/_components/SkeletonLoaders";
 
 export default function DashboardPage() {
   const router = useRouter();
@@ -30,26 +31,26 @@ export default function DashboardPage() {
 
   // Show loading state while accounts are being fetched
   if (isLoadingAccounts || isUserLoading) {
-    return (
-      <div className="flex items-center justify-center h-[calc(100vh-150px)]">
-        <Spinner label="Loading Accounts..." color="primary" labelColor="primary" />
-      </div>
-    );
+    return <SkeletonAccountCard />;
   }
 
-  // Show message if no accounts are available
-  if (!accounts.length) {
+  // Calculate if there are any redirectable accounts AFTER loading is complete
+  const hasEnabledAccounts = accounts.some((acc) => !acc.isDisabled && !acc.isComingSoon && !acc.isCreateAccount);
+
+  // Show message if no *enabled* accounts are available
+  if (!hasEnabledAccounts) {
     return (
       <div className="flex flex-col items-center justify-center h-[calc(100vh-150px)] text-center p-4">
-        <h2 className="text-2xl font-bold mb-2">No Accounts Available</h2>
+        <h2 className="text-2xl font-bold mb-2">No Active Accounts</h2>
         <p className="text-foreground/60">
-          You don&apos;t have any accounts set up yet. Please contact support if you believe this is an error.
+          You don&apos;t have any active accounts ready. Please complete onboarding or contact support.
         </p>
       </div>
     );
   }
 
-  // This should rarely be seen as we redirect to account page
+  // Only show redirecting spinner if loading is done AND we have enabled accounts
+  // (meaning the useEffect should be actively trying to redirect)
   return (
     <div className="flex items-center justify-center h-[calc(100vh-150px)]">
       <Spinner label="Redirecting to account..." color="primary" labelColor="primary" />

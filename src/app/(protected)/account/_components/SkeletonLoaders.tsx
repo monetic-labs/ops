@@ -22,7 +22,7 @@ export function SkeletonAccountHeader() {
       </div>
 
       <div className="flex flex-row md:flex-col items-center md:items-end justify-between md:justify-center gap-1">
-        <span className="text-sm text-foreground/60">Total Balance</span>
+        <div className="h-4 w-20 bg-content3 rounded-md animate-pulse mb-1 md:mb-0" />
         <div className="h-6 w-24 bg-content3 rounded-md animate-pulse" />
       </div>
     </div>
@@ -55,11 +55,25 @@ export function SkeletonActivityView() {
   return (
     <div className="space-y-4">
       <div className="flex justify-between items-center">
-        <div className="h-6 w-28 bg-content3 rounded-md animate-pulse" />
+        <div className="h-6 w-36 bg-content3 rounded-md animate-pulse" />
         <div className="flex gap-2">
           <div className="h-8 w-20 bg-content3 rounded-md animate-pulse" />
           <div className="h-8 w-20 bg-content3 rounded-md animate-pulse" />
         </div>
+      </div>
+
+      <div className="flex border-b border-border relative">
+        {[
+          { width: "w-16", icon: Activity },
+          { width: "w-14", icon: Users2 },
+          { width: "w-14", icon: Shield },
+        ].map((tab, i) => (
+          <div key={i} className="flex items-center gap-2 px-4 py-2.5 relative">
+            <tab.icon className="w-4 h-4 text-content4 animate-pulse" />
+            <div className={`h-4 ${tab.width} bg-content3 rounded-md animate-pulse`} />
+            {i === 0 && <div className="absolute bottom-[-1px] left-0 w-full h-0.5 bg-primary animate-pulse" />}
+          </div>
+        ))}
       </div>
 
       {/* Skeleton activity items */}
@@ -90,21 +104,6 @@ export function SkeletonAccountCard() {
       <SkeletonAccountHeader />
       <div className="p-4 space-y-4 border-t border-border">
         <SkeletonAccountBalance />
-
-        {/* Skeleton Navigation */}
-        <div className="flex border-b border-border">
-          {[
-            { name: "Activity", icon: Activity },
-            { name: "Signers", icon: Users2 },
-            { name: "Policies", icon: Shield },
-          ].map((tab, i) => (
-            <div key={i} className={`flex items-center gap-2 px-4 py-2 ${i === 0 ? "border-b-2 border-primary" : ""}`}>
-              <tab.icon className="w-4 h-4" />
-              {tab.name}
-            </div>
-          ))}
-        </div>
-
         <SkeletonActivityView />
       </div>
     </div>
