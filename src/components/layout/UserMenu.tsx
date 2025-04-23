@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useUser } from "@/contexts/UserContext";
 import { useTheme } from "@/hooks/generics/useTheme";
-import { useMessagingActions, useMessagingState } from "@/libs/messaging/store";
+import { useMessagingState } from "@/libs/messaging/store";
 import { Dropdown, DropdownTrigger, DropdownMenu, DropdownItem, DropdownSection } from "@heroui/dropdown";
 import type { Placement } from "@floating-ui/react";
 import { Button } from "@heroui/button";
@@ -14,6 +14,7 @@ import type { ProcessedUserMenuItem } from "@/hooks/useProcessedNavigation";
 import { ProfileSettingsModal } from "@/components/account-settings/profile-modal";
 import { SecuritySettingsModal } from "@/components/account-settings/security-modal";
 import type { MerchantUserGetByIdOutput as MerchantUser } from "@monetic-labs/sdk";
+import { useShortcuts } from "@/components/generics/shortcuts-provider";
 
 interface UserMenuProps {
   items: ProcessedUserMenuItem[];
@@ -36,9 +37,7 @@ export function UserMenu({
 }: UserMenuProps) {
   const { user, logout, profile } = useUser();
   const { toggleTheme, isDark } = useTheme();
-  const {
-    ui: { togglePane },
-  } = useMessagingActions();
+  const { toggleChat } = useShortcuts();
   const { unreadCount } = useMessagingState();
 
   const [isProfileOpen, setIsProfileOpen] = useState(false);
@@ -65,7 +64,7 @@ export function UserMenu({
         toggleTheme();
         break;
       case "toggleChat":
-        togglePane();
+        toggleChat();
         break;
       case "openProfileModal":
         openProfile();
@@ -197,20 +196,20 @@ export function UserMenu({
           <DropdownMenu
             aria-label="User actions and settings"
             disabledKeys={allDisabledKeys}
-            itemClasses={{ base: "pl-3 pr-3" }} // Consistent padding from MobileNav
+            itemClasses={{ base: "pl-3 pr-3" }}
           >
-            <DropdownSection title="Tools">
-              {toolItems.length > 0 ? toolItems.map(renderDropdownItem) : null}
-            </DropdownSection>
-            <DropdownSection title="Personal">
-              {personalItems.length > 0 ? personalItems.map(renderDropdownItem) : null}
-            </DropdownSection>
-            <DropdownSection title="Organization">
-              {orgItems.length > 0 ? orgItems.map(renderDropdownItem) : null}
-            </DropdownSection>
-            <DropdownSection title="Actions">
-              {actionItems.length > 0 ? actionItems.map(renderDropdownItem) : null}
-            </DropdownSection>
+            {toolItems.length > 0 ? (
+              <DropdownSection title="Tools">{toolItems.map(renderDropdownItem)}</DropdownSection>
+            ) : null}
+            {personalItems.length > 0 ? (
+              <DropdownSection title="Personal">{personalItems.map(renderDropdownItem)}</DropdownSection>
+            ) : null}
+            {orgItems.length > 0 ? (
+              <DropdownSection title="Organization">{orgItems.map(renderDropdownItem)}</DropdownSection>
+            ) : null}
+            {actionItems.length > 0 ? (
+              <DropdownSection title="Actions">{actionItems.map(renderDropdownItem)}</DropdownSection>
+            ) : null}
           </DropdownMenu>
         )}
       </Dropdown>

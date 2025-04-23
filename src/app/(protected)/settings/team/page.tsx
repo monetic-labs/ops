@@ -18,8 +18,8 @@ import { useUser } from "@/contexts/UserContext"; // Import useUser to get logge
 import { Button } from "@heroui/button";
 
 // Adjusted paths for modals
-import CreateUserModal from "../_components/user-create";
-import UserEditModal from "../_components/user-edit";
+import CreateUserModal from "./_components/user-create";
+import UserEditModal from "./_components/user-edit";
 
 // Helper functions (maskEmail, maskPhone)
 const maskEmail = (email: string) => {

@@ -84,39 +84,13 @@ export const mainNavigationItems: NavItem[] = [
     type: "link",
   },
   {
-    id: "back-office",
-    label: "Back Office",
+    id: "payment-processing",
+    label: "Payment Processing",
     icon: Building2,
-    tooltip: "Manage payments, orders, and settings",
-    href: "/back-office", // Top-level link can be optional if only children navigate
+    tooltip: "Manage payment requests and settings",
+    href: "/payment-processing",
     requiresApproval: true,
-    type: "section", // Has children
-    children: [
-      {
-        id: "back-office-payments",
-        label: "Payments",
-        icon: Receipt, // Consider smaller icons for submenus? Lucide defaults are okay.
-        href: "/back-office/payments",
-        requiresApproval: true,
-        type: "link",
-      },
-      {
-        id: "back-office-orders",
-        label: "Orders",
-        icon: ShoppingBag,
-        href: "/back-office/orders",
-        requiresApproval: true,
-        type: "link",
-      },
-      {
-        id: "back-office-widget",
-        label: "Widget",
-        icon: Terminal,
-        href: "/back-office/widget",
-        requiresApproval: true,
-        type: "link",
-      },
-    ],
+    type: "link",
   },
   {
     id: "card-issuance",

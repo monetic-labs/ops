@@ -51,9 +51,5 @@ export default function DashboardPage() {
 
   // Only show redirecting spinner if loading is done AND we have enabled accounts
   // (meaning the useEffect should be actively trying to redirect)
-  return (
-    <div className="flex items-center justify-center h-[calc(100vh-150px)]">
-      <Spinner label="Redirecting to account..." color="primary" labelColor="primary" />
-    </div>
-  );
+  return <SkeletonAccountCard />;
 }

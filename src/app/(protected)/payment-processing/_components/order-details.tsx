@@ -142,6 +142,23 @@ export function PaymentDetails({ isOpen, response, onClose }: PaymentDetailsResp
             <Divider />
             <ModalFooterWithSupport
               actions={[
+                // Add commented-out action buttons here
+                /* TODO: Implement Refund Action
+                {
+                  label: "Refund",
+                  onClick: () => console.log("Refund Clicked for", response.transactionId),
+                  // Add appropriate styling/variant, e.g., color="warning"
+                  className: "...", 
+                },
+                */
+                /* TODO: Implement Cancel Action (if applicable based on status)
+                {
+                  label: "Cancel",
+                  onClick: () => console.log("Cancel Clicked for", response.transactionId),
+                  // Add appropriate styling/variant, e.g., color="danger"
+                  className: "...", 
+                },
+                */
                 {
                   label: "Close",
                   onClick: onClose,

@@ -63,6 +63,8 @@ export interface DataTableProps<T> {
   headerIcon?: React.ReactNode;
   headerClassName?: string;
   cardClassName?: string;
+  renderBetweenHeaderAndBody?: React.ReactNode;
+  rowClassNameFn?: (item: T) => string;
 }
 
 export function DataTable<T extends { id: string | number | bigint }>({
@@ -95,6 +97,8 @@ export function DataTable<T extends { id: string | number | bigint }>({
   headerIcon,
   headerClassName = "bg-content2 p-6 border-b border-default",
   cardClassName = "shadow-sm border border-default overflow-hidden",
+  renderBetweenHeaderAndBody,
+  rowClassNameFn,
   "aria-label": ariaLabelProp,
 }: DataTableProps<T>) {
   const shouldRenderCard = !!(title || actionButton);
@@ -157,7 +161,11 @@ export function DataTable<T extends { id: string | number | bigint }>({
         }
       >
         {(item) => (
-          <TableRow key={String(item.id)} onClick={onRowAction ? () => onRowAction(item) : undefined}>
+          <TableRow
+            key={String(item.id)}
+            onClick={onRowAction ? () => onRowAction(item) : undefined}
+            className={`${defaultTrClass} ${rowClassNameFn ? rowClassNameFn(item) : ""}`.trim()}
+          >
             {columns.map((column) => (
               <TableCell key={column.uid}>
                 {column.render
@@ -212,15 +220,14 @@ export function DataTable<T extends { id: string | number | bigint }>({
                   <span>{title}</span>
                 </h2>
               )}
-              {subtitle && (
-                <p className={`text-foreground-500 text-sm mt-1 ${headerIcon ? "pl-[calc(size_of_icon_+_gap)]" : ""}`}>
-                  {subtitle}
-                </p>
-              )}
+              {subtitle && <p className={`text-foreground-500 text-sm mt-1`}>{subtitle}</p>}
             </div>
             {actionButton && <div className="ml-auto pl-4">{actionButton}</div>}
           </div>
         </CardHeader>
+
+        {renderBetweenHeaderAndBody}
+
         <CardBody className="p-0">
           {tableElement}
           {paginationElement}

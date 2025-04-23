@@ -6,7 +6,7 @@ import { Autocomplete, AutocompleteItem } from "@heroui/autocomplete";
 import { capitalizeFirstChar } from "@/utils/helpers";
 import { useAccounts } from "@/contexts/AccountContext";
 
-import GenerateApiKeysModal from "./actions/widgets/api-keys";
+import GenerateApiKeysModal from "../../api-keys/_components/create-api-keys";
 
 const networks = ["POLYGON", "SOLANA", "BASE", "OPTIMISM", "ARBITRUM"];
 const currencies = ["USDC", "USDT", "DAI"];

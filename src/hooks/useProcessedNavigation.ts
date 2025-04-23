@@ -16,6 +16,7 @@ export interface ProcessedNavItem extends NavItem {
   isActive: boolean;
   isDisabled: boolean;
   children?: ProcessedNavItem[];
+  isSkeleton?: boolean; // Add optional skeleton flag
 }
 
 export interface ProcessedUserMenuItem extends UserMenuItem {

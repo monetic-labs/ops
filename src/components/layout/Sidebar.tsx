@@ -24,10 +24,11 @@ import { useUser } from "@/contexts/UserContext";
 import { Account } from "@/types/account";
 import { Dropdown, DropdownItem, DropdownMenu, DropdownTrigger, DropdownSection } from "@heroui/dropdown";
 import { useTheme } from "@/hooks/generics/useTheme";
-import { useMessagingState, useMessagingActions } from "@/libs/messaging/store";
+import { useMessagingState } from "@/libs/messaging/store";
 import { Badge as HeroBadge } from "@heroui/badge";
 import { useProcessedNavigation, type ProcessedNavItem } from "@/hooks/useProcessedNavigation";
 import { UserMenu } from "./UserMenu";
+import { useShortcuts } from "@/components/generics/shortcuts-provider";
 
 // Define props for Sidebar
 interface SidebarProps {
@@ -51,9 +52,7 @@ export function Sidebar({ isCollapsed, toggleSidebar: originalToggleSidebar }: S
   const { accounts, isLoadingAccounts } = useAccounts();
   const { toggleTheme, isDark } = useTheme();
   const { unreadCount } = useMessagingState();
-  const {
-    ui: { togglePane },
-  } = useMessagingActions();
+  const { toggleChat } = useShortcuts();
 
   // Get processed navigation data from the hook
   const { processedMainNavItems, processedSidebarUserMenuItems, processedOrgMenuItems } = useProcessedNavigation();
@@ -102,14 +101,16 @@ export function Sidebar({ isCollapsed, toggleSidebar: originalToggleSidebar }: S
   // --- Dynamic Account Items ---
   const dynamicAccountItems = useMemo((): ProcessedNavItem[] => {
     if (isLoadingAccounts) {
+      // Return placeholder items identifiable as skeletons
       return Array.from({ length: 2 }).map((_, index) => ({
         id: `skel-acc-${index}`,
-        label: `Loading...`,
-        icon: Wallet,
-        tooltip: "Loading...",
+        label: "", // No label needed for skeleton
+        icon: Wallet, // Use Wallet icon as placeholder
+        tooltip: "",
         href: "#",
         isDisabled: true,
         isActive: false,
+        isSkeleton: true, // Add a flag to identify as skeleton
       }));
     }
     return accounts.map(
@@ -153,6 +154,28 @@ export function Sidebar({ isCollapsed, toggleSidebar: originalToggleSidebar }: S
   // --- Refactored Render Function (using ProcessedNavItem) ---
   const renderNavItems = (items: ProcessedNavItem[], isSubmenu = false) => {
     return items.map((item) => {
+      // --- Render Skeleton Account Item ---
+      if (item.isSkeleton) {
+        // Ensure icon exists, default if not (shouldn't happen with current logic but safe)
+        const SkelIcon = item.icon || Wallet;
+        return (
+          <li
+            key={item.id}
+            className={`flex items-center p-2 space-x-3 ${isSubmenu ? "pl-5" : ""} ${isCollapsed ? "justify-center" : ""}`}
+          >
+            <span
+              className={`flex-shrink-0 w-5 h-5 flex items-center justify-center text-foreground/30 ${
+                // Use dimmed color for skeleton icon
+                isCollapsed ? "mx-auto" : "mr-3"
+              }`}
+            >
+              <SkelIcon />
+            </span>
+            {!isCollapsed && <Skeleton className="w-24 h-4 rounded-md" />}
+          </li>
+        );
+      }
+
       const IconComponent = item.icon;
       const isLoading = loadingItemId === item.id;
       const finalIsDisabled = item.isDisabled || isLoading;
@@ -423,7 +446,7 @@ export function Sidebar({ isCollapsed, toggleSidebar: originalToggleSidebar }: S
         size="sm"
         className="flex-shrink-0 bg-transparent text-foreground/60 hover:text-foreground/90"
         variant="light"
-        onPress={togglePane}
+        onPress={toggleChat}
       >
         <div className="relative">
           {unreadCount > 0 && (
@@ -472,9 +495,7 @@ export function Sidebar({ isCollapsed, toggleSidebar: originalToggleSidebar }: S
 
         {/* Bottom Actions Section */}
         <div
-          className={`flex items-center gap-2 py-2 border-t border-divider ${
-            isCollapsed ? "flex-col px-1" : "flex-row justify-center px-3"
-          }`}
+          className={`flex items-center gap-2 py-2 border-t border-divider ${isCollapsed ? "flex-col px-1" : "flex-row justify-center px-3"}`}
         >
           <ChatButton />
           {/* Theme Toggle - Conditionally render Tooltip */}
