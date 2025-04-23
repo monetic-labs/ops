@@ -209,7 +209,7 @@ export default function BillPayPage() {
         title="Outgoing Transfers"
         subtitle="Manage your payment transfers"
         headerIcon={<Send size={20} />}
-        headerClassName="bg-primary text-primary-foreground p-6"
+        headerClassName={"bg-primary p-6 " + "[&_h2]:!text-white [&_h2>span]:!text-white [&_p]:!text-white/80"}
         actionButton={
           <Button
             color="primary"
