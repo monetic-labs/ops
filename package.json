@@ -17,7 +17,6 @@
   },
   "dependencies": {
     "@ai-sdk/openai": "^0.0.70",
-    "@monetic-labs/sdk": "0.3.010",
     "@emoji-mart/data": "^1.2.1",
     "@emoji-mart/react": "^1.1.1",
     "@heroui/accordion": "2.2.13",
@@ -58,6 +57,7 @@
     "@heroui/use-infinite-scroll": "2.2.7",
     "@heroui/user": "2.2.12",
     "@hookform/resolvers": "^3.10.0",
+    "@monetic-labs/sdk": "0.3.011",
     "@pinecone-database/pinecone": "^4.1.0",
     "@privy-io/react-auth": "2.2.0",
     "@react-aria/focus": "^3.20.1",
@@ -93,6 +93,7 @@
     "openai-edge": "^1.2.2",
     "opepen-standard": "^1.0.1",
     "ox": "^0.6.10",
+    "qrcode.react": "^4.2.0",
     "react": "18.3.1",
     "react-dom": "18.3.1",
     "react-hook-form": "^7.54.2",

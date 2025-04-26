@@ -1,181 +1,180 @@
 "use client";
 
-import { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Button } from "@heroui/button";
-import { PlusIcon, Trash2 } from "lucide-react";
-import { format } from "date-fns";
+import { TableColumn, TableCell, Table, TableBody, TableHeader, TableRow } from "@heroui/table";
+import { Input } from "@heroui/input";
+import { Snippet } from "@heroui/snippet";
+import { Spinner } from "@heroui/spinner";
+import { Card, CardHeader, CardBody } from "@heroui/card";
+import { Trash2, PlusIcon } from "lucide-react";
+import { useToast } from "@/hooks/generics/useToast";
 
-import { DataTable, Column, EmptyContent } from "@/components/generics/data-table";
-// TODO: Replace with actual API Key type and modal
-// import GenerateApiKeysModal from "@/components/back-office/actions/widgets/api-keys";
+// Assuming the hook exists and provides the necessary functions/state
+import { useApiService } from "./_hooks/useApiService";
+import { ApiKeyGetOutput } from "@monetic-labs/sdk";
 
-// TODO: Replace with real type from SDK or define here
-interface ApiKey {
-  id: string;
-  name: string;
-  prefix: string; // Display prefix, not the full key
-  createdAt: string | Date;
-  lastUsedAt: string | Date | null;
-  status: "Active" | "Inactive" | "Revoked"; // Example statuses
-}
+// Helper to format date nicely
+const formatDate = (dateString: string | null | undefined): string => {
+  if (!dateString) return "N/A";
+  try {
+    return new Date(dateString).toLocaleDateString(undefined, {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+    });
+  } catch (e) {
+    return "Invalid Date";
+  }
+};
 
-// Mock data - replace with actual data fetching hook (e.g., useApiKeys)
-const mockApiKeys: ApiKey[] = [
-  {
-    id: "key_1",
-    name: "Production Key",
-    prefix: "pk_live_abc...",
-    createdAt: new Date(2024, 1, 1), // Feb 1, 2024
-    lastUsedAt: new Date(2024, 1, 5), // Feb 5, 2024
-    status: "Active",
-  },
-  {
-    id: "key_2",
-    name: "Development Key",
-    prefix: "sk_test_xyz...",
-    createdAt: new Date(2024, 0, 15), // Jan 15, 2024
-    lastUsedAt: null,
-    status: "Active",
-  },
-  {
-    id: "key_3",
-    name: "Old Staging Key",
-    prefix: "sk_test_123...",
-    createdAt: new Date(2023, 10, 1), // Nov 1, 2023
-    lastUsedAt: new Date(2023, 11, 20), // Dec 20, 2023
-    status: "Revoked",
-  },
-];
+// Helper to truncate the key for display
+const truncateKey = (key: string): string => {
+  if (!key || key.length <= 10) return key || "";
+  return `${key.slice(0, 5)}...${key.slice(-4)}`;
+};
 
-export default function ApiKeysPage() {
-  // TODO: Replace useState with useApiKeys hook for data, loading, error, create, delete
-  const [apiKeys, setApiKeys] = useState<ApiKey[]>(mockApiKeys);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+export default function ApiKeysSettingsPage() {
+  const { apiKeys, isLoading, error, loadApiKeys, generateApiKey, deleteApiKey } = useApiService();
+  const [newKeyName, setNewKeyName] = useState("");
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [isDeleting, setIsDeleting] = useState<string | null>(null); // Track which key is being deleted
+  const { toast } = useToast();
 
-  const columns: Column<ApiKey>[] = [
-    {
-      name: "NAME",
-      uid: "name",
-      render: (key) => <span className="font-medium">{key.name}</span>,
-    },
-    {
-      name: "KEY PREFIX",
-      uid: "prefix",
-      render: (key) => <span className="font-mono text-xs text-foreground/70">{key.prefix}</span>,
-    },
-    {
-      name: "CREATED",
-      uid: "createdAt",
-      render: (key) => (
-        <span className="text-sm text-foreground/80">{format(new Date(key.createdAt), "MMM d, yyyy")}</span>
-      ),
-    },
-    {
-      name: "LAST USED",
-      uid: "lastUsedAt",
-      render: (key) => (
-        <span className="text-sm text-foreground/80">
-          {key.lastUsedAt ? format(new Date(key.lastUsedAt), "MMM d, yyyy") : "Never"}
-        </span>
-      ),
-    },
-    {
-      name: "STATUS",
-      uid: "status",
-      // TODO: Add color coding based on status
-      render: (key) => <span className="text-sm font-medium">{key.status}</span>,
-    },
-    {
-      name: "ACTIONS",
-      uid: "actions",
-      render: (key) => {
-        // TODO: Implement revoke/delete logic
-        const handleRevoke = () => {
-          console.log("Revoke key:", key.id);
-          // Call delete function from hook/context
-        };
-        return (
-          <div className="flex justify-end">
-            {key.status !== "Revoked" && (
-              <Button isIconOnly size="sm" variant="light" color="danger" onPress={handleRevoke}>
-                <Trash2 className="w-4 h-4" />
-              </Button>
-            )}
-          </div>
-        );
-      },
-    },
-  ];
+  useEffect(() => {
+    loadApiKeys();
+  }, [loadApiKeys]);
 
-  const handleCreateKey = () => {
-    setIsCreateModalOpen(true);
+  const handleGenerateKey = async () => {
+    if (!newKeyName.trim()) {
+      toast({ title: "Error", description: "Please enter a name for the API key.", variant: "destructive" });
+      return;
+    }
+    setIsGenerating(true);
+    try {
+      await generateApiKey(newKeyName.trim());
+      setNewKeyName(""); // Clear input on success
+      toast({ title: "Success", description: `API Key "${newKeyName.trim()}" generated.` });
+    } catch (err: any) {
+      console.error("Failed to generate API key:", err);
+      toast({
+        title: "Error Generating Key",
+        description: err.message || "Could not generate key.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsGenerating(false);
+    }
   };
 
-  const handleCloseCreateModal = () => {
-    setIsCreateModalOpen(false);
-    // TODO: Refetch keys after modal close if needed
-  };
-
-  // TODO: Implement actual create API key logic in the modal/hook
-  const handleSaveNewKey = (/* newKeyData */) => {
-    console.log("Save new key logic here");
-    // Call create function from hook/context
-    handleCloseCreateModal();
+  const handleDeleteKey = async (keyId: string, keyName: string) => {
+    // Basic confirmation, consider a more robust confirmation modal
+    if (!window.confirm(`Are you sure you want to delete the key "${keyName}"? This action cannot be undone.`)) {
+      return;
+    }
+    setIsDeleting(keyId);
+    try {
+      await deleteApiKey(keyId);
+      toast({ title: "Success", description: `API Key "${keyName}" deleted.` });
+    } catch (err: any) {
+      console.error("Failed to delete API key:", err);
+      toast({
+        title: "Error Deleting Key",
+        description: err.message || "Could not delete key.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsDeleting(null);
+    }
   };
 
   return (
     <div className="space-y-6">
-      <div>
-        <h2 className="text-xl font-semibold">API Keys</h2>
-        <p className="text-sm text-foreground/70 mt-1">
-          Manage your API keys below. Treat your keys like passwords and keep them secure.
-        </p>
-      </div>
-      <DataTable
-        aria-label="API Keys table"
-        items={apiKeys}
-        columns={columns}
-        isLoading={isLoading}
-        isError={!!error}
-        errorMessage={error || "Failed to load API keys"}
-        emptyContent={<EmptyContent message="No API keys created yet." type="primary" onAction={handleCreateKey} />}
-        actionButton={
-          <Button color="primary" onPress={handleCreateKey} startContent={<PlusIcon className="w-4 h-4" />}>
-            Create API Key
-          </Button>
-        }
-        selectionMode="none"
-        isStriped={true}
-        isHeaderSticky={true}
-      />
+      <h1 className="text-2xl font-semibold">API Keys</h1>
+      <p className="text-sm text-foreground-500">Manage API keys for accessing Monetic services.</p>
 
-      {/* TODO: Replace with the actual Create API Key modal */}
-      {/* <GenerateApiKeysModal 
-          isOpen={isCreateModalOpen} 
-          onClose={handleCloseCreateModal} 
-          onSave={handleSaveNewKey} // Pass a save handler 
-      /> */}
-      {isCreateModalOpen && (
-        <div
-          className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center"
-          onClick={handleCloseCreateModal}
-        >
-          <div className="bg-content1 p-6 rounded-lg shadow-lg w-96" onClick={(e) => e.stopPropagation()}>
-            <h3 className="text-lg font-medium mb-4">Create API Key (Placeholder)</h3>
-            <p className="text-sm text-foreground/80 mb-4">Actual modal implementation needed.</p>
-            <div className="flex justify-end gap-2">
-              <Button variant="bordered" onPress={handleCloseCreateModal}>
-                Cancel
-              </Button>
-              <Button color="primary" onPress={handleSaveNewKey}>
-                Create (Placeholder)
-              </Button>
-            </div>
+      <Card className="max-w-3xl">
+        <CardHeader>
+          <h2 className="text-lg font-medium">Generate New Key</h2>
+        </CardHeader>
+        <CardBody>
+          <div className="flex flex-col sm:flex-row gap-2">
+            <Input
+              placeholder="Enter key name (e.g., Production Server)"
+              value={newKeyName}
+              onChange={(e) => setNewKeyName(e.target.value)}
+              className="flex-grow"
+              aria-label="New API Key Name"
+            />
+            <Button
+              color="primary"
+              onPress={handleGenerateKey}
+              isLoading={isGenerating}
+              isDisabled={isGenerating}
+              startContent={!isGenerating ? <PlusIcon className="w-4 h-4" /> : null}
+            >
+              Generate Key
+            </Button>
           </div>
-        </div>
-      )}
+        </CardBody>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <h2 className="text-lg font-medium">Existing Keys</h2>
+        </CardHeader>
+        <CardBody className="overflow-x-auto pt-0">
+          {error && <p className="text-danger p-4">Error loading API keys: {error}</p>}
+          {isLoading ? (
+            <div className="flex justify-center items-center h-40">
+              <Spinner label="Loading keys..." />
+            </div>
+          ) : (
+            <Table removeWrapper aria-label="API Keys Table">
+              <TableHeader>
+                <TableColumn>NAME</TableColumn>
+                <TableColumn>KEY</TableColumn>
+                <TableColumn>CREATED</TableColumn>
+                <TableColumn>LAST USED</TableColumn>
+                <TableColumn>ACTIONS</TableColumn>
+              </TableHeader>
+              <TableBody emptyContent={apiKeys.length === 0 ? "No API keys generated yet." : ""}>
+                {apiKeys.map((key: ApiKeyGetOutput) => (
+                  <TableRow key={key.key}>
+                    <TableCell>{key.name || "N/A"}</TableCell>
+                    <TableCell>
+                      <Snippet
+                        codeString={key.key}
+                        size="sm"
+                        variant="flat"
+                        classNames={{ base: "bg-transparent p-0", copyButton: "text-foreground/60" }}
+                      >
+                        {truncateKey(key.key)}
+                      </Snippet>
+                    </TableCell>
+                    <TableCell>{formatDate(key.createdAt)}</TableCell>
+                    <TableCell>{formatDate(key.lastUsed)}</TableCell>
+                    <TableCell>
+                      <Button
+                        isIconOnly
+                        variant="light"
+                        color="danger"
+                        size="sm"
+                        onPress={() => handleDeleteKey(key.key, key.name || "Unnamed Key")}
+                        isLoading={isDeleting === key.key}
+                        isDisabled={isDeleting === key.key}
+                        aria-label={`Delete key ${key.name || "Unnamed Key"}`}
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          )}
+        </CardBody>
+      </Card>
     </div>
   );
 }

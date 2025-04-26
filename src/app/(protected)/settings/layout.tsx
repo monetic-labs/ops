@@ -3,31 +3,31 @@
 import { ReactNode } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { KeyRound, Shield, User, Users, CreditCard } from "lucide-react";
+import { KeyRound, Shield, User, Users, SquareArrowDownRight } from "lucide-react";
 import { Suspense } from "react";
 import { Spinner } from "@heroui/spinner";
-import { Tabs, Tab } from "@heroui/tabs";
 
-interface SettingsNavItem {
+// Export Types and Data for use in page.tsx
+export interface SettingsNavItem {
   id: string;
   label: string;
   href: string;
   icon?: React.ReactNode;
 }
 
-interface SettingsSection {
+export interface SettingsSection {
   title: string;
   items: SettingsNavItem[];
 }
 
-const settingsSections: SettingsSection[] = [
+export const settingsSections: SettingsSection[] = [
   {
     title: "Personal",
     items: [
       {
         id: "profile",
         label: "Profile",
-        href: "/settings",
+        href: "/settings/profile",
         icon: <User className="w-4 h-4" />,
       },
       {
@@ -57,7 +57,7 @@ const settingsSections: SettingsSection[] = [
         id: "card-settlement",
         label: "Card Settlement",
         href: "/settings/card-settlement",
-        icon: <CreditCard className="w-4 h-4" />,
+        icon: <SquareArrowDownRight className="w-4 h-4" />,
       },
     ],
   },
@@ -67,26 +67,8 @@ export default function SettingsLayout({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
 
-  const getActiveSectionKey = () => {
-    for (const section of settingsSections) {
-      if (section.items.some((item) => pathname === item.href || pathname?.startsWith(`${item.href}/`))) {
-        return section.title;
-      }
-    }
-    return settingsSections[0]?.title;
-  };
-
-  const activeSectionKey = getActiveSectionKey();
-
-  const handleTabSelection = (key: React.Key) => {
-    const selectedSection = settingsSections.find((section) => section.title === key);
-    if (selectedSection?.items[0]?.href) {
-      router.push(selectedSection.items[0].href);
-    }
-  };
-
   return (
-    <div className="h-full flex flex-col lg:grid lg:grid-cols-[180px_1fr] lg:gap-10">
+    <div className="h-full flex flex-col lg:grid lg:grid-cols-[180px_1fr] lg:gap-6">
       <aside className="hidden lg:block sticky top-0 h-fit">
         <nav className="space-y-4">
           {settingsSections.map((section) => (
@@ -115,37 +97,17 @@ export default function SettingsLayout({ children }: { children: ReactNode }) {
           ))}
         </nav>
       </aside>
-      <div className="flex flex-col min-w-0">
-        <div className="block lg:hidden mb-6 border-b border-divider">
-          <Tabs
-            aria-label="Settings sections"
-            selectedKey={activeSectionKey}
-            onSelectionChange={handleTabSelection}
-            variant="underlined"
-            className="justify-start"
-            classNames={{
-              tabList: "gap-6 w-full relative rounded-none p-0 border-divider",
-              cursor: "w-full bg-primary",
-              tab: "max-w-fit px-2 h-10",
-            }}
-          >
-            {settingsSections.map((section) => (
-              <Tab key={section.title} title={section.title} />
-            ))}
-          </Tabs>
-        </div>
-        <main className="flex-1 overflow-x-auto">
-          <Suspense
-            fallback={
-              <div className="flex items-center justify-center h-full w-full">
-                <Spinner size="lg" color="primary" />
-              </div>
-            }
-          >
-            {children}
-          </Suspense>
-        </main>
-      </div>
+      <main className="flex-1 w-full overflow-x-auto">
+        <Suspense
+          fallback={
+            <div className="flex items-center justify-center h-full w-full">
+              <Spinner size="lg" color="primary" />
+            </div>
+          }
+        >
+          {children}
+        </Suspense>
+      </main>
     </div>
   );
 }

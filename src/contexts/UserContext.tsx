@@ -2,7 +2,7 @@
 
 import { createContext, useContext, ReactNode, useState, useEffect, useMemo } from "react";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
-import { MerchantUserGetByIdOutput as MerchantUser } from "@monetic-labs/sdk";
+import { MerchantUserGetByIdOutput as MerchantUser, MerchantUserUpdateInput } from "@monetic-labs/sdk";
 import { Hex } from "viem";
 import { PublicKey } from "ox";
 
@@ -45,6 +45,7 @@ interface UserContextType extends UserState {
   getCredentials: () => WebAuthnCredentials[] | undefined;
   addCredential: (credential: WebAuthnCredentials) => void;
   updateProfileImage: (image: string | null) => Promise<void>;
+  updateUserDetails: (payload: MerchantUserUpdateInput) => Promise<void>;
   forceAuthCheck: () => Promise<boolean>;
 }
 
@@ -59,6 +60,7 @@ const defaultState: UserContextType = {
   getCredentials: () => undefined,
   addCredential: () => {},
   updateProfileImage: async () => {},
+  updateUserDetails: async () => {},
   forceAuthCheck: async () => false,
 };
 
@@ -368,6 +370,22 @@ export function UserProvider({ children, token }: UserProviderProps) {
         } catch (error) {
           console.error("Error updating profile image:", error);
           return Promise.reject(error);
+        }
+      },
+      updateUserDetails: async (payload: MerchantUserUpdateInput) => {
+        if (!user?.id) {
+          throw new Error("User ID is missing, cannot update details.");
+        }
+        try {
+          // Call the SDK function
+          await pylon.updateUser(user.id, payload);
+
+          // Update the user state by refetching the full user data
+          await checkAuthentication();
+        } catch (error) {
+          console.error("Error updating user details:", error);
+          // Re-throw the error to be caught by the calling component
+          throw error;
         }
       },
     }),

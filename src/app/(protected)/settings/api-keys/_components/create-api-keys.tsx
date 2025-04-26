@@ -5,7 +5,7 @@ import { TableColumn, TableCell, Table, TableBody, TableHeader, TableRow } from 
 import { Input } from "@heroui/input";
 import { Snippet } from "@heroui/snippet";
 
-import { useApiService } from "@/hooks/widgets/useApiService";
+import { useApiService } from "../_hooks/useApiService";
 import ModalFooterWithSupport from "@/components/generics/footer-modal-support";
 
 interface GenerateApiKeysModalProps {

@@ -3,10 +3,12 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { Chip } from "@heroui/chip";
 import { Button } from "@heroui/button";
-import { PlusIcon, Copy, Trash2 } from "lucide-react";
+import { PlusIcon, Copy, Trash2, QrCode } from "lucide-react";
 import { Snippet } from "@heroui/snippet";
 import { TransactionListItem, GetOrderLinksOutput, BillingAddress } from "@monetic-labs/sdk";
 import { useQueryClient, useQuery } from "@tanstack/react-query";
+import { QRCodeSVG } from "qrcode.react";
+import { Modal, ModalContent, ModalHeader, ModalBody } from "@heroui/modal";
 
 import { DataTable, Column, EmptyContent } from "@/components/generics/data-table";
 import { paymentsStatusColorMap } from "@/data";
@@ -20,7 +22,7 @@ import {
 } from "@/utils/helpers";
 import Countdown from "@/components/generics/countdown";
 import CreateOrderModal from "./_components/order-create";
-import { useOrderManagement } from "@/hooks/orders/useOrderManagement";
+import { useOrderManagement } from "./_hooks/useOrderManagement";
 import pylon from "@/libs/monetic-sdk";
 
 // Import Detail Modals
@@ -93,6 +95,9 @@ export default function PaymentProcessingPage() {
 
   // State for viewing payment details
   const [selectedPayment, setSelectedPayment] = useState<TransactionListItem | null>(null);
+  // State for QR Code Modal
+  const [isQrModalOpen, setIsQrModalOpen] = useState(false);
+  const [qrCodeUrl, setQrCodeUrl] = useState<string | null>(null);
 
   // Fetch Payment History
   const { transactions, isLoading: isLoadingHistory, error: errorHistory } = useOrderManagement();
@@ -192,6 +197,12 @@ export default function PaymentProcessingPage() {
     }
   };
 
+  // --- Handler for Showing QR Code ---
+  const handleShowQrCode = (url: string) => {
+    setQrCodeUrl(url);
+    setIsQrModalOpen(true);
+  };
+
   // --- Move requestColumns definition inside the component ---
   const requestColumns: Column<GetOrderLinksOutput>[] = [
     {
@@ -247,9 +258,13 @@ export default function PaymentProcessingPage() {
       name: "ACTIONS",
       uid: "actions",
       align: "end",
-      // Hide on mobile (screens smaller than sm breakpoint)
+      // Show actions on all screen sizes
       render: (order) => (
-        <div className="hidden sm:flex justify-end">
+        <div className="flex justify-end items-center gap-3">
+          <QrCode
+            className="w-4 h-4 text-foreground/70 hover:text-foreground hover:cursor-pointer"
+            onClick={() => handleShowQrCode(order.id)}
+          />
           <Trash2 className="w-4 h-4 text-danger hover:cursor-pointer" onClick={() => handleDeleteRequest(order.id)} />
         </div>
       ),
@@ -340,6 +355,24 @@ export default function PaymentProcessingPage() {
           onClose={handleCloseModal}
         />
       )}
+
+      {/* QR Code Modal */}
+      <Modal isOpen={isQrModalOpen} onOpenChange={setIsQrModalOpen}>
+        <ModalContent>
+          {(onClose) => (
+            <>
+              <ModalHeader className="flex flex-col gap-1">Payment Request QR Code</ModalHeader>
+              <ModalBody className="flex justify-center items-center py-6">
+                {qrCodeUrl ? (
+                  <QRCodeSVG value={qrCodeUrl} size={256} level="H" includeMargin={true} />
+                ) : (
+                  <p>Error: No URL provided for QR code.</p>
+                )}
+              </ModalBody>
+            </>
+          )}
+        </ModalContent>
+      </Modal>
     </div>
   );
 }

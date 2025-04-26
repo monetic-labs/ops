@@ -352,8 +352,8 @@ export function Sidebar({ isCollapsed, toggleSidebar: originalToggleSidebar }: S
     });
   };
 
-  // --- Render Org Dropdown using processedOrgMenuItems ---
-  const renderOrgDropdown = () => {
+  // --- Refactored Render Org Dropdown & Top Actions ---
+  const renderTopSection = () => {
     const currentOrgName = user?.merchant?.company?.name || "My Organization";
     const settingsItems = processedOrgMenuItems.filter((item) =>
       ["api-keys-setting", "team-setting"].includes(item.id)
@@ -361,111 +361,176 @@ export function Sidebar({ isCollapsed, toggleSidebar: originalToggleSidebar }: S
     const switchOrgItems = processedOrgMenuItems.filter((item) => item.id === "add-org");
     const disabledKeys = processedOrgMenuItems.filter((item) => item.isDisabled).map((item) => item.id);
 
-    // Placeholder Button for transition state (mimics collapsed style)
-    const placeholderTrigger = (
-      <Button
-        isIconOnly
-        variant="light"
-        className="flex items-center justify-center w-full h-[36px] p-1 rounded-lg opacity-50 cursor-wait"
-        aria-label={currentOrgName}
-        isDisabled={true}
-      >
-        <Building className="w-5 h-5 text-foreground/60" />
-      </Button>
-    );
-
-    // Normal Trigger Button (used when not transitioning)
+    // --- Dropdown Trigger Button (No Icon except when collapsed) ---
     const triggerButton = (
       <Button
         variant="light"
-        className={`flex items-center h-[36px] p-1 rounded-lg hover:bg-content2 text-foreground/80 w-full ${
-          isCollapsed ? "justify-center" : "justify-start px-1 text-left"
+        className={`flex items-center h-[36px] p-1 rounded-lg hover:bg-content2 text-foreground/80 ${
+          isCollapsed ? "justify-center w-full" : "justify-start px-1 text-left flex-grow min-w-0"
         }`}
         aria-label={currentOrgName}
       >
-        <Building className="w-5 h-5 text-foreground/60 flex-shrink-0" />
         {!isCollapsed && (
           <>
-            <span className="truncate font-semibold ml-2 mr-1 flex-grow">{currentOrgName}</span>
+            <span className="truncate font-semibold mr-1 flex-grow">{currentOrgName}</span>
             <ChevronDown className="w-4 h-4 text-foreground/60 flex-shrink-0" />
           </>
+        )}
+        {isCollapsed && <Building className="w-5 h-5 text-foreground/60" />}
+      </Button>
+    );
+
+    // Placeholder for transition
+    const placeholderTrigger = (
+      <Button
+        variant="light"
+        className={`flex items-center h-[36px] p-1 rounded-lg opacity-50 cursor-wait ${isCollapsed ? "justify-center w-full" : "justify-start px-1 flex-grow"}`}
+        aria-label={currentOrgName}
+        isDisabled={true}
+      >
+        {isCollapsed ? (
+          <Building className="w-5 h-5 text-foreground/60" />
+        ) : (
+          <Skeleton className="w-24 h-4 rounded-md" />
         )}
       </Button>
     );
 
-    // If transitioning, render only the placeholder
-    if (isTransitioning) {
-      return placeholderTrigger;
-    }
+    // --- Theme Toggle Button ---
+    const themeToggleButton = (
+      <Tooltip
+        isDisabled={isTransitioning}
+        content={isDark ? "Switch to Light Mode" : "Switch to Dark Mode"}
+        placement={isCollapsed ? "right" : "top"} // Adjusted placement for expanded
+      >
+        <Button
+          isIconOnly
+          size="sm"
+          className="bg-transparent text-foreground/60 hover:text-foreground/90 flex-shrink-0"
+          variant="light"
+          onPress={toggleTheme}
+        >
+          {isDark ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
+        </Button>
+      </Tooltip>
+    );
 
-    // If not transitioning, render the full Dropdown
+    // --- Collapse Toggle Button ---
+    const collapseToggleButton = (
+      <Tooltip
+        isDisabled={isTransitioning}
+        content={isCollapsed ? "Expand Sidebar" : "Collapse Sidebar"}
+        placement={isCollapsed ? "right" : "top"} // Adjusted placement for expanded
+      >
+        <Button
+          isIconOnly
+          size="sm"
+          className="bg-transparent text-foreground/60 hover:text-foreground/90 flex-shrink-0"
+          variant="light"
+          onPress={toggleSidebar}
+        >
+          {isCollapsed ? <PanelRightClose className="w-5 h-5" /> : <PanelLeftClose className="w-5 h-5" />}
+        </Button>
+      </Tooltip>
+    );
+
+    // Combine in Flex container - Adjusted padding and gap
     return (
-      <Dropdown placement={isCollapsed ? "right-start" : "bottom-start"}>
-        <DropdownTrigger>{triggerButton}</DropdownTrigger>
-        <DropdownMenu aria-label={`Actions and settings for ${currentOrgName}`} disabledKeys={disabledKeys}>
-          <DropdownSection title="Settings">
-            {settingsItems.map((item) => {
-              const OrgIcon = item.icon;
-              return (
-                <DropdownItem
-                  key={item.id}
-                  href={item.href}
-                  startContent={<OrgIcon className="w-4 h-4" />}
-                  className={item.className}
-                >
-                  {item.label}
-                </DropdownItem>
-              );
-            })}
-          </DropdownSection>
-          <DropdownSection title="Switch Org">
-            {switchOrgItems.map((item) => {
-              const OrgIcon = item.icon;
-              return (
-                <DropdownItem
-                  key={item.id}
-                  startContent={<OrgIcon className="w-4 h-4" />}
-                  description={item.description}
-                  isDisabled={item.isDisabled}
-                >
-                  {item.label}
-                </DropdownItem>
-              );
-            })}
-          </DropdownSection>
-        </DropdownMenu>
-      </Dropdown>
+      <div
+        className={`flex items-center border-b border-divider ${isCollapsed ? "py-4 px-2 flex-col gap-2" : "px-2 py-2 gap-1"}`}
+      >
+        {/* Dropdown or Placeholder - Ensure vertical centering in collapsed column */}
+        <div className={`${isCollapsed ? "w-full flex justify-center" : "flex-grow min-w-0"}`}>
+          {isTransitioning ? (
+            placeholderTrigger
+          ) : (
+            <Dropdown placement={isCollapsed ? "right-start" : "bottom-start"}>
+              <DropdownTrigger>{triggerButton}</DropdownTrigger>
+              <DropdownMenu aria-label={`Actions and settings for ${currentOrgName}`} disabledKeys={disabledKeys}>
+                <DropdownSection title="Settings">
+                  {settingsItems.map((item) => {
+                    const OrgIcon = item.icon;
+                    return (
+                      <DropdownItem
+                        key={item.id}
+                        href={item.href}
+                        startContent={<OrgIcon className="w-4 h-4" />}
+                        className={item.className}
+                      >
+                        {item.label}
+                      </DropdownItem>
+                    );
+                  })}
+                </DropdownSection>
+                <DropdownSection title="Switch Org">
+                  {switchOrgItems.map((item) => {
+                    const OrgIcon = item.icon;
+                    return (
+                      <DropdownItem
+                        key={item.id}
+                        startContent={<OrgIcon className="w-4 h-4" />}
+                        description={item.description}
+                        isDisabled={item.isDisabled}
+                      >
+                        {item.label}
+                      </DropdownItem>
+                    );
+                  })}
+                </DropdownSection>
+              </DropdownMenu>
+            </Dropdown>
+          )}
+        </div>
+        {/* Toggles Section */}
+        {!isTransitioning && (
+          <div
+            className={`flex items-center flex-shrink-0 ${isCollapsed ? "w-full justify-center flex-col gap-1" : "gap-0.5"}`}
+          >
+            {themeToggleButton}
+            {collapseToggleButton}
+          </div>
+        )}
+      </div>
     );
   };
 
-  // --- Chat Button Component ---
+  // --- Updated Chat Button Component ---
   const ChatButton = () => {
-    const button = (
-      <Button
-        isIconOnly
-        size="sm"
-        className="flex-shrink-0 bg-transparent text-foreground/60 hover:text-foreground/90"
-        variant="light"
-        onPress={toggleChat}
-      >
-        <div className="relative">
-          {unreadCount > 0 && (
-            <span className="absolute top-0 right-0 h-2 w-2 animate-ping rounded-full bg-primary opacity-75" />
-          )}
-          <HeroBadge color="primary" content={unreadCount} isInvisible={!unreadCount} shape="circle" size="sm">
-            <MessageCircle className="w-5 h-5" />
-          </HeroBadge>
-        </div>
-      </Button>
+    // Consistent height, text color like nav items on hover
+    const baseButtonClasses = "bg-transparent text-foreground/80 hover:text-foreground/90 h-8";
+    const icon = (
+      <div className="relative flex-shrink-0">
+        {unreadCount > 0 && (
+          <span className="absolute top-0 right-0 h-2 w-2 animate-ping rounded-full bg-primary opacity-75" />
+        )}
+        <HeroBadge color="primary" content={unreadCount} isInvisible={!unreadCount} shape="circle" size="sm">
+          <MessageCircle className="w-5 h-5" />
+        </HeroBadge>
+      </div>
     );
-    // Render only button during transition
-    return isTransitioning ? (
-      button
-    ) : (
-      <Tooltip content="Customer Support" placement={isCollapsed ? "right" : "bottom"}>
-        {button}
-      </Tooltip>
-    );
+
+    if (isCollapsed || isTransitioning) {
+      // Icon only with tooltip when collapsed or transitioning
+      return (
+        <Tooltip content="Get help now" placement="right">
+          <Button isIconOnly size="sm" className={`${baseButtonClasses} w-8`} variant="light" onPress={toggleChat}>
+            {icon}
+          </Button>
+        </Tooltip>
+      );
+    } else {
+      // Icon + Text when expanded
+      return (
+        <Button
+          className={`${baseButtonClasses} justify-start w-full px-2 gap-2 font-medium`}
+          variant="light"
+          onPress={toggleChat}
+          startContent={icon}
+        >
+          Get help now
+        </Button>
+      );
+    }
   };
 
   return (
@@ -475,8 +540,8 @@ export function Sidebar({ isCollapsed, toggleSidebar: originalToggleSidebar }: S
           isCollapsed ? "w-20" : "w-64"
         }`}
       >
-        {/* Top Section - Renders placeholder or full dropdown */}
-        <div className={`border-b border-divider ${isCollapsed ? "py-4" : "px-3 py-4"}`}>{renderOrgDropdown()}</div>
+        {/* Top Section - Renders dropdown and toggles */}
+        <div className={`${isCollapsed ? "py-1" : "px-2 py-4"}`}>{renderTopSection()}</div>
 
         {/* Middle Section - Navigation or Skeletons */}
         <div
@@ -493,65 +558,13 @@ export function Sidebar({ isCollapsed, toggleSidebar: originalToggleSidebar }: S
           )}
         </div>
 
-        {/* Bottom Actions Section */}
+        {/* Bottom Actions Section - Only Chat button remains here */}
         <div
-          className={`flex items-center gap-2 py-2 border-t border-divider ${isCollapsed ? "flex-col px-1" : "flex-row justify-center px-3"}`}
+          className={`flex items-center py-2 border-t border-divider ${isCollapsed ? "justify-center px-2" : "px-3"}`}
         >
+          {" "}
+          {/* Consistent padding */}
           <ChatButton />
-          {/* Theme Toggle - Conditionally render Tooltip */}
-          {isTransitioning ? (
-            <Button
-              isIconOnly
-              size="sm"
-              className="bg-transparent text-foreground/60 hover:text-foreground/90"
-              variant="light"
-              onPress={toggleTheme}
-            >
-              {isDark ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
-            </Button>
-          ) : (
-            <Tooltip
-              content={isDark ? "Switch to Light Mode" : "Switch to Dark Mode"}
-              placement={isCollapsed ? "right" : "bottom"}
-            >
-              <Button
-                isIconOnly
-                size="sm"
-                className="bg-transparent text-foreground/60 hover:text-foreground/90"
-                variant="light"
-                onPress={toggleTheme}
-              >
-                {isDark ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
-              </Button>
-            </Tooltip>
-          )}
-          {/* Collapse Toggle - Conditionally render Tooltip */}
-          {isTransitioning ? (
-            <Button
-              isIconOnly
-              size="sm"
-              className="bg-transparent text-foreground/60 hover:text-foreground/90"
-              variant="light"
-              onPress={toggleSidebar}
-            >
-              {isCollapsed ? <PanelRightClose className="w-5 h-5" /> : <PanelLeftClose className="w-5 h-5" />}
-            </Button>
-          ) : (
-            <Tooltip
-              content={isCollapsed ? "Expand Sidebar" : "Collapse Sidebar"}
-              placement={isCollapsed ? "right" : "bottom"}
-            >
-              <Button
-                isIconOnly
-                size="sm"
-                className="bg-transparent text-foreground/60 hover:text-foreground/90"
-                variant="light"
-                onPress={toggleSidebar}
-              >
-                {isCollapsed ? <PanelRightClose className="w-5 h-5" /> : <PanelLeftClose className="w-5 h-5" />}
-              </Button>
-            </Tooltip>
-          )}
         </div>
 
         {/* Bottom User Profile Section - UserMenu handles its own transition */}

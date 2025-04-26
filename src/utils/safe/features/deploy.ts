@@ -9,6 +9,7 @@ import { executeDirectTransaction, DirectTransactionCallbacks } from "../flows/d
 
 import { createPasskeyCredentials } from "./passkey";
 import { RecoveryMethods, generateRecoveryAddresses, createRecoveryTransactions } from "./recovery";
+import { MONETIC_GUARDIAN_ADDRESS } from "@/utils/constants";
 
 // Interface for deploy callbacks
 interface DeployCallbacks extends DirectTransactionCallbacks {
@@ -90,7 +91,12 @@ export const deployIndividualSafe = async ({
     }
 
     // Generate recovery wallet addresses
-    const guardianAddresses = await generateRecoveryAddresses(recoveryMethods || { email: email!, phone: phone! });
+    let guardianAddresses: Address[] = [];
+    if (recoveryMethods) {
+      guardianAddresses = await generateRecoveryAddresses(recoveryMethods);
+    } else {
+      guardianAddresses = [MONETIC_GUARDIAN_ADDRESS as Address];
+    }
 
     // Create all necessary transactions
     const allTransactions = [];

@@ -52,19 +52,32 @@ export function SignersProvider({ children }: { children: ReactNode }) {
     }
 
     if (user.registeredPasskeys && user.registeredPasskeys.length > 0) {
-      try {
-        const derivedAddress = getAddress(user.registeredPasskeys[0].publicKey);
-
-        return {
-          address: derivedAddress,
-          name: getFullName(user.firstName, user.lastName),
-          image: "",
-          role: user.role as PersonRole,
-          isAccount: false,
-        };
-      } catch (error) {
-        console.error("Error deriving address from public key:", error);
-
+      const firstPasskey = user.registeredPasskeys[0];
+      // Ensure the publicKey exists and is a string before attempting to use it
+      if (firstPasskey && typeof firstPasskey.publicKey === "string" && firstPasskey.publicKey) {
+        try {
+          const derivedAddress = getAddress(firstPasskey.publicKey);
+          return {
+            address: derivedAddress,
+            name: getFullName(user.firstName, user.lastName),
+            image: "",
+            role: user.role as PersonRole,
+            isAccount: false,
+          };
+        } catch (error) {
+          console.error(
+            "Error deriving address from public key:",
+            error,
+            "User ID:",
+            user.id,
+            "Public Key attempted:",
+            firstPasskey.publicKey
+          );
+          return null;
+        }
+      } else {
+        // Log a warning if a passkey object exists but lacks a valid publicKey string
+        console.warn(`User ${user.id} has registered passkey entry but missing valid publicKey string.`);
         return null;
       }
     }

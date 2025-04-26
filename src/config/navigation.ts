@@ -15,6 +15,7 @@ import {
   LogOut,
   Building,
   PlusCircle,
+  SquareArrowDownRight,
 } from "lucide-react";
 
 // Define general types for navigation items
@@ -112,16 +113,16 @@ const commonUserMenuItems: UserMenuItem[] = [
     id: "profile",
     label: "Profile",
     icon: User,
-    type: "action",
-    action: "openProfileModal",
+    type: "link",
+    href: "/settings/profile",
     requiresApproval: false,
   },
   {
     id: "security",
     label: "Security",
     icon: Shield,
-    type: "action",
-    action: "openSecurityModal",
+    type: "link",
+    href: "/settings/security",
     requiresApproval: false,
   },
   {
@@ -204,6 +205,14 @@ export const orgMenuItems: OrgMenuItem[] = [
     label: "Team Members",
     icon: UsersIcon,
     href: "/settings/team",
+    type: "link",
+    requiresApproval: true,
+  },
+  {
+    id: "card-settlement-setting",
+    label: "Card Settlement",
+    icon: SquareArrowDownRight,
+    href: "/settings/card-settlement",
     type: "link",
     requiresApproval: true,
   },

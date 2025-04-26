@@ -54,7 +54,8 @@ export function createSocialRecoveryModule(
 }
 
 /**
- * Generates recovery wallet addresses for the provided methods
+ * @deprecated This function will be removed in future versions. 
+ * Generates recovery wallet addresses for the provided methods.
  *
  * @param methods Recovery methods (email, phone)
  * @returns Array of guardian addresses including Monetic and recovery wallets

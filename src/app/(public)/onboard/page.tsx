@@ -336,10 +336,6 @@ export default function OnboardPage() {
         await deployIndividualSafe({
           credentials: { publicKey, credentialId },
           deploySettlement: true,
-          recoveryMethods: {
-            email: formData.users[0].email,
-            phone: formData.users[0].phoneNumber.number,
-          },
           callbacks: {
             onDeployment: () => updateStatusStep(2, true),
             onRecoverySetup: () => updateStatusStep(3, true),

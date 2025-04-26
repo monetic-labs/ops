@@ -11,9 +11,6 @@ import { Avatar } from "@heroui/avatar";
 import { Spinner } from "@heroui/spinner";
 import { Settings, Sun, Moon } from "lucide-react";
 import type { ProcessedUserMenuItem } from "@/hooks/useProcessedNavigation";
-import { ProfileSettingsModal } from "@/components/account-settings/profile-modal";
-import { SecuritySettingsModal } from "@/components/account-settings/security-modal";
-import type { MerchantUserGetByIdOutput as MerchantUser } from "@monetic-labs/sdk";
 import { useShortcuts } from "@/components/generics/shortcuts-provider";
 
 interface UserMenuProps {
@@ -40,9 +37,7 @@ export function UserMenu({
   const { toggleChat } = useShortcuts();
   const { unreadCount } = useMessagingState();
 
-  const [isProfileOpen, setIsProfileOpen] = useState(false);
-  const [isSecurityOpen, setIsSecurityOpen] = useState(false);
-  const [isLoadingAction, setIsLoadingAction] = useState<string | null>(null); // For logout spinner
+  const [isLoadingAction, setIsLoadingAction] = useState<string | null>(null);
 
   const handleLogout = async () => {
     setIsLoadingAction("logout");
@@ -55,9 +50,6 @@ export function UserMenu({
     // Redirect handled by context, loading state cleared by path change likely
   };
 
-  const openProfile = () => setIsProfileOpen(true);
-  const openSecurity = () => setIsSecurityOpen(true);
-
   const handleAction = (action: ProcessedUserMenuItem["action"]) => {
     switch (action) {
       case "toggleTheme":
@@ -65,12 +57,6 @@ export function UserMenu({
         break;
       case "toggleChat":
         toggleChat();
-        break;
-      case "openProfileModal":
-        openProfile();
-        break;
-      case "openSecurityModal":
-        openSecurity();
         break;
       case "logout":
         handleLogout();
@@ -165,7 +151,7 @@ export function UserMenu({
         icon
       );
 
-    if (item.type === "link" && item.href) {
+    if (item.href) {
       return (
         <DropdownItem key={item.id} href={item.href} startContent={startContent}>
           {content}
@@ -213,18 +199,6 @@ export function UserMenu({
           </DropdownMenu>
         )}
       </Dropdown>
-
-      {/* Render Modals needed by actions */}
-      {user && (
-        <>
-          <ProfileSettingsModal
-            isOpen={isProfileOpen}
-            user={user as MerchantUser} // Cast needed as user type from context might be broader
-            onClose={() => setIsProfileOpen(false)}
-          />
-          <SecuritySettingsModal isOpen={isSecurityOpen} onClose={() => setIsSecurityOpen(false)} />
-        </>
-      )}
     </>
   );
 }
