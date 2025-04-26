@@ -11,7 +11,7 @@ import { Address } from "viem";
 import { MoneyInput } from "@/components/generics/money-input";
 import { BalanceDisplay } from "@/components/generics/balance-display";
 import { executeNestedTransaction } from "@/utils/safe/flows/nested";
-import { executeNestedTransferFromRainCardAcccount } from "@/utils/safe/features/rain";
+import { executeNestedTransferFromRainCardAccount } from "@/utils/safe/features/rain";
 import { createERC20TransferTemplate } from "@/utils/safe/templates";
 import { getEstimatedTransferFee } from "@/utils/safe/features/fee-estimation";
 import { useUser } from "@/contexts/UserContext";
@@ -148,7 +148,7 @@ export function SendModal({
         setTransferStatus(TransferStatus.PREPARING);
 
         // Use the Rain Card withdrawal flow
-        await executeNestedTransferFromRainCardAcccount({
+        await executeNestedTransferFromRainCardAccount({
           fromSafeAddress: user.walletAddress as Address,
           throughSafeAddress: toAccount.address as Address,
           toAddress: toAccount.address as Address,

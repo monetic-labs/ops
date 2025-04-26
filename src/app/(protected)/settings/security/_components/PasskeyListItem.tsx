@@ -101,7 +101,6 @@ export const PasskeyListItem: React.FC<PasskeyListItemProps> = ({
                 if (e.key === "Enter") handleRenameCommit();
                 if (e.key === "Escape") handleRenameCancel();
               }}
-              autoFocus
               classNames={{ inputWrapper: "h-8" }}
             />
           ) : (

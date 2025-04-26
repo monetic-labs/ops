@@ -195,9 +195,9 @@ await setupSocialRecovery({
 To execute a Rain Card withdrawal:
 
 ```typescript
-import { executeNestedTransferFromRainCardAcccount } from "@/utils/safe/features/rain";
+import { executeNestedTransferFromRainCardAccount } from "@/utils/safe/features/rain";
 
-await executeNestedTransferFromRainCardAcccount({
+await executeNestedTransferFromRainCardAccount({
   fromSafeAddress: "0x...", // User's individual account
   throughSafeAddress: "0x...", // Destination account
   toAddress: "0x...", // Destination address

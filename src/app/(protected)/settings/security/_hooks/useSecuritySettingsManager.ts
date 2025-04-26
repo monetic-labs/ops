@@ -66,9 +66,10 @@ export function useSecuritySettingsManager({
       const callbacks: DirectTransactionCallbacks = {
         onPreparing: () => setStatus(TransferStatus.PREPARING),
         onSigning: () => setStatus(TransferStatus.SIGNING),
-        onSent: () => setStatus(TransferStatus.SENDING),
-        onSuccess: () => {
-          /* Handled after operation */
+        onSuccess: (receipt) => {
+          console.log("Direct transaction succeeded with receipt:", receipt);
+          console.log(`   ✅ Successfully changed threshold to ${threshold}`);
+          operationPerformed = true;
         },
         onError: (error) => {
           console.error("Transaction error callback:", error);
@@ -93,7 +94,7 @@ export function useSecuritySettingsManager({
           credentials: credential,
           callbacks,
         });
-        if (!result.success) throw new Error("Threshold change transaction failed.");
+        if (!result) throw new Error("Threshold change transaction failed.");
         console.log(`   ✅ Successfully changed threshold to ${threshold}`);
         operationPerformed = true;
       }

@@ -3,7 +3,7 @@
 // For now, let's just add a simple placeholder.
 
 import Link from "next/link";
-import { settingsSections, type SettingsSection, type SettingsNavItem } from "./layout";
+import { settingsSections, type SettingsSection, type SettingsNavItem } from "@/config/settingsNavigation";
 import { Accordion, AccordionItem } from "@heroui/accordion";
 
 export default function SettingsPage() {

@@ -54,7 +54,7 @@ export function createSocialRecoveryModule(
 }
 
 /**
- * @deprecated This function will be removed in future versions. 
+ * @deprecated This function will be removed in future versions.
  * Generates recovery wallet addresses for the provided methods.
  *
  * @param methods Recovery methods (email, phone)
@@ -219,15 +219,15 @@ export async function setupSocialRecovery({
     const recoveryTxs = createRecoveryTransactions(walletAddress, guardianAddresses);
 
     // Execute the transactions
-    await executeDirectTransaction({
+    const result = await executeDirectTransaction({
       safeAddress: walletAddress,
       transactions: recoveryTxs,
       credentials,
       callbacks: {
         ...callbacks,
-        onSuccess: () => {
+        onSuccess: (receipt) => {
           callbacks?.onRecoverySetup?.();
-          callbacks?.onSuccess?.();
+          callbacks?.onSuccess?.(receipt);
         },
       },
     });
@@ -335,12 +335,14 @@ export async function toggleMoneticRecovery({
     }
 
     // Execute the transactions
-    return await executeDirectTransaction({
+    const result = await executeDirectTransaction({
       safeAddress: accountAddress,
       transactions,
       credentials,
       callbacks,
     });
+
+    return { success: !!result };
   } catch (error) {
     console.error("Error toggling Monetic recovery:", error);
     return { success: false };
@@ -392,7 +394,7 @@ export async function addRecoveryMethod({
       callbacks,
     });
 
-    if (result.success) {
+    if (result) {
       return newWallets[0].id;
     } else {
       throw new Error("Failed to add recovery method");
@@ -441,12 +443,14 @@ export async function removeRecoveryMethod({
     const revokeGuardianTx = await createRevokeGuardianTransaction(accountAddress, guardianAddress, threshold);
 
     // Execute the transaction
-    return await executeDirectTransaction({
+    const result = await executeDirectTransaction({
       safeAddress: accountAddress,
       transactions: [revokeGuardianTx],
       credentials,
       callbacks,
     });
+
+    return { success: !!result };
   } catch (error) {
     console.error("Error removing recovery method:", error);
     callbacks?.onError?.(error as Error);

@@ -5,8 +5,7 @@ import pylon from "@/libs/monetic-sdk";
 import { WebAuthnCredentials } from "@/types/webauthn";
 
 import { createRainWithdrawalTemplate } from "../templates";
-import { executeNestedTransaction } from "../flows/nested";
-import { DirectTransactionCallbacks } from "../flows/direct";
+import { executeNestedTransaction, NestedTransactionCallbacks } from "../flows/nested";
 
 /**
  * Configuration for Rain Card transfer operations
@@ -21,7 +20,7 @@ interface RainCardTransferConfig {
   rainCollateralProxyAddress: Address;
   amount: string;
   credentials: WebAuthnCredentials;
-  callbacks?: DirectTransactionCallbacks;
+  callbacks?: NestedTransactionCallbacks;
 }
 
 /**
@@ -38,7 +37,7 @@ const getWithdrawalSignatureWithRetry = async (
   amount: string,
   adminAddress: Address,
   recipientAddress: Address,
-  callbacks?: DirectTransactionCallbacks
+  callbacks?: NestedTransactionCallbacks
 ): Promise<RainWithdrawalSignatureReady["signature"]> => {
   while (true) {
     const response = await pylon.requestWithdrawalSignatureForRainAccount({
@@ -73,7 +72,7 @@ const getWithdrawalSignatureWithRetry = async (
  * @param config Configuration for the Rain Card transfer
  * @returns Promise that resolves when the transfer completes successfully
  */
-export const executeNestedTransferFromRainCardAcccount = async ({
+export const executeNestedTransferFromRainCardAccount = async ({
   fromSafeAddress,
   throughSafeAddress,
   toAddress,

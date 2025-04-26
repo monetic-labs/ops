@@ -138,11 +138,10 @@ export const deployIndividualSafe = async ({
         onPreparing: callbacks?.onPreparing,
         onSigning: callbacks?.onDeployment || callbacks?.onSigning,
         onSigningComplete: callbacks?.onSigningComplete,
-        onSent: callbacks?.onSent,
         onError: callbacks?.onError,
-        onSuccess: () => {
+        onSuccess: (receipt) => {
           callbacks?.onRecoverySetup?.();
-          callbacks?.onSuccess?.();
+          callbacks?.onSuccess?.(receipt);
         },
       },
     });

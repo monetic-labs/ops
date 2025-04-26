@@ -363,7 +363,6 @@ export default function SecuritySettingsPage() {
                 if (e.key === "Enter") handleRenameCommit();
                 if (e.key === "Escape") handleRenameCancel();
               }}
-              autoFocus
               classNames={{ inputWrapper: "h-8" }}
             />
           ) : (
@@ -413,8 +412,8 @@ export default function SecuritySettingsPage() {
               </h3>
               <p className="text-xs text-warning-600 dark:text-warning-400 mt-1">
                 Your account currently uses older recovery methods (Email/Phone). These methods are being phased out.
-                Please review the "Legacy Recovery Methods" section below and save your changes to remove them. Ensure
-                Monetic Recovery is active before removing all legacy methods.
+                Please review the &quot;Legacy Recovery Methods&quot; section below and save your changes to remove
+                them. Ensure Monetic Recovery is active before removing all legacy methods.
               </p>
             </div>
           </div>
