@@ -20,6 +20,7 @@ const AuthPage = () => {
   const { toggleTheme, isDark } = useTheme();
   const [isLoading, setIsLoading] = useState(false);
   const [notification, setNotification] = useState<string | null>(null);
+  const [buttonStatusText, setButtonStatusText] = useState<string | null>(null);
   const [email, setEmail] = useState("");
   const [passkeyCredentials, setPasskeysCredentials] = useState<PasskeyCredential[]>([]);
   const router = useRouter();
@@ -52,7 +53,7 @@ const AuthPage = () => {
       if (passkeys && passkeys.length > 0) {
         // User has passkeys, immediately try passkey login
         setPasskeysCredentials(passkeys);
-        setNotification("Authenticating with passkey...");
+        setButtonStatusText("Authenticating...");
         await handlePasskeyAuth(passkeys);
       } else {
         // No passkeys, send email
@@ -61,6 +62,7 @@ const AuthPage = () => {
     } catch (error) {
       console.error("Error checking auth options:", error);
       setNotification("Failed to check authentication options");
+      setButtonStatusText(null);
       setIsLoading(false);
     }
   };
@@ -76,7 +78,7 @@ const AuthPage = () => {
 
       // Add the authenticated credential to our context
       addCredential({ publicKey, credentialId });
-      setNotification("Successfully authenticated. Redirecting...");
+      setButtonStatusText("Redirecting...");
 
       // Store the credential ID in localStorage for persistence
       try {
@@ -99,13 +101,14 @@ const AuthPage = () => {
       const errorMessage = error instanceof Error ? error.message : "An unknown error occurred";
 
       // For any passkey error, automatically fall back to email
-      setNotification("Sending you a login link via email...");
+      setButtonStatusText("Sending link...");
       // Short delay to show the message before sending email
       setTimeout(async () => {
         await handleEmailAuth();
       }, 1500);
     } finally {
       setIsLoading(false);
+      setButtonStatusText(null);
     }
   };
 
@@ -115,11 +118,12 @@ const AuthPage = () => {
       await pylon.issueMagicLink(email);
       setEmailSent(true);
       setResendCooldown(60); // Start 60 second cooldown
-      // Don't set notification for successful email send since we show it in the UI
       setNotification(null);
+      setButtonStatusText(null);
     } catch (error) {
       console.error("Email auth error:", error);
       setNotification("Failed to send login email");
+      setButtonStatusText(null);
     } finally {
       setIsLoading(false);
     }
@@ -128,6 +132,7 @@ const AuthPage = () => {
   const handleBack = () => {
     setEmailSent(false);
     setNotification(null);
+    setButtonStatusText(null);
     setEmail("");
     setResendCooldown(0);
   };
@@ -204,18 +209,22 @@ const AuthPage = () => {
                   isLoading={isLoading}
                   onPress={() => checkAuthOptions(email)}
                 >
-                  {isLoading ? "Please wait..." : "Continue"}
+                  {isLoading ? buttonStatusText || "Working..." : "Continue"}
                 </Button>
               </div>
             ) : (
               <div className="space-y-4">
                 <Button
                   className="w-full bg-primary text-primary-foreground hover:opacity-90 h-12 text-base"
-                  isDisabled={resendCooldown > 0}
+                  isDisabled={resendCooldown > 0 || isLoading}
                   isLoading={isLoading}
                   onPress={() => handleEmailAuth()}
                 >
-                  {resendCooldown > 0 ? `Resend in ${resendCooldown}s` : isLoading ? "Sending..." : "Resend Email"}
+                  {resendCooldown > 0
+                    ? `Resend in ${resendCooldown}s`
+                    : isLoading
+                      ? buttonStatusText || "Sending..."
+                      : "Resend Email"}
                 </Button>
 
                 {passkeyCredentials.length > 0 && (
@@ -231,21 +240,9 @@ const AuthPage = () => {
               </div>
             )}
 
-            {!emailSent && notification && (
+            {notification && (
               <div className="text-center mt-4">
-                <p
-                  className={`text-sm ${
-                    notification.includes("registered") ||
-                    notification.includes("Sending") ||
-                    notification.includes("Successfully") ||
-                    notification.includes("Authenticating") ||
-                    notification.includes("Redirecting")
-                      ? "text-success"
-                      : "text-danger"
-                  }`}
-                >
-                  {notification}
-                </p>
+                <p className="text-sm text-danger">{notification}</p>
               </div>
             )}
           </CardBody>

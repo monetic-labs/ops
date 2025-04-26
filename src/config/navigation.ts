@@ -174,6 +174,14 @@ export const mobileUserMenuItems: UserMenuItem[] = [
     type: "link",
     requiresApproval: true,
   },
+  {
+    id: "card-settlement",
+    label: "Card Settlement",
+    icon: SquareArrowDownRight,
+    href: "/settings/card-settlement",
+    type: "link",
+    requiresApproval: true,
+  },
   // Section: Actions
   ...commonUserMenuItems.filter((item) => item.id === "logout"),
 ];
