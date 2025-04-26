@@ -11,6 +11,8 @@ import { PUBLIC_RPC } from "@/config/web3";
 import { SAFE_ABI } from "../abi/safe";
 import { RAIN_CONTROLLER_ABI } from "../abi/rain";
 
+const logPrefix = "[Safe Templates]";
+
 export const createApproveHashTemplate = (safeAddress: Address, opHash: Hex): MetaTransaction => {
   return {
     to: safeAddress,
@@ -91,6 +93,11 @@ export const createAddOwnerTemplate = async (
   newOwner: WebauthnPublicKey | Address,
   newThreshold: number = 1
 ): Promise<MetaTransaction[]> => {
+  console.info(
+    `${logPrefix} Creating 'addOwnerWithThreshold' transaction template. Owner:`,
+    newOwner,
+    `Threshold: ${newThreshold}`
+  );
   return await safeAccount.createAddOwnerWithThresholdMetaTransactions(newOwner, newThreshold, {
     nodeRpcUrl: PUBLIC_RPC,
     eip7212WebAuthnPrecompileVerifier: DEFAULT_SECP256R1_PRECOMPILE_ADDRESS,
@@ -104,6 +111,9 @@ export const createRemoveOwnerTemplate = async (
   owner: WebauthnPublicKey | Address,
   newThreshold: number = 1
 ): Promise<MetaTransaction[]> => {
+  console.info(
+    `${logPrefix} Creating 'removeOwnerWithThreshold' transaction template. Removing: ${owner}, Prev: ${prevOwner}, New Threshold: ${newThreshold}`
+  );
   const tx = await safeAccount.createRemoveOwnerMetaTransaction(PUBLIC_RPC, owner, newThreshold, {
     prevOwner,
     eip7212WebAuthnPrecompileVerifier: DEFAULT_SECP256R1_PRECOMPILE_ADDRESS,

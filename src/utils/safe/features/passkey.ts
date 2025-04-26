@@ -15,6 +15,8 @@ import { publicClient } from "@/config/web3";
 import { PublicKey } from "ox";
 import pylon from "@/libs/monetic-sdk";
 
+const logPrefix = "[Passkey Sync]";
+
 // Define passkey sync status for UI display
 export enum PasskeyStatus {
   ACTIVE_ONCHAIN = "ACTIVE_ONCHAIN", // Registered on-chain and off-chain
@@ -72,8 +74,10 @@ export async function syncPasskeysWithSafe(
     createdAt?: string; // Add createdAt field from your database
   }> = []
 ): Promise<PasskeyWithStatus[]> {
+  console.info(`${logPrefix} Starting sync. Wallet: ${walletAddress}, Input Passkeys:`, registeredPasskeys);
   // If no wallet address or no passkeys, return empty array
   if (!walletAddress || !registeredPasskeys?.length) {
+    console.info(`${logPrefix} No wallet or passkeys provided, returning basic mapping.`);
     return (registeredPasskeys || []).map((passkey) => ({
       ...passkey,
       displayName: passkey?.displayName || "Unnamed Device",
@@ -85,6 +89,7 @@ export async function syncPasskeysWithSafe(
 
   try {
     // Get on-chain owners
+    console.info(`${logPrefix} Fetching on-chain owners for ${walletAddress}`);
     const owners = (await publicClient.readContract({
       address: walletAddress,
       abi: SAFE_ABI,
@@ -131,6 +136,7 @@ export async function syncPasskeysWithSafe(
           // Handle invalid passkey data
           console.error("Invalid passkey data (missing credentialId):", passkey);
           return {
+            id: passkey?.id,
             credentialId: passkey?.credentialId || "unknown",
             publicKey: passkey?.publicKey || "",
             displayName: passkey?.displayName || "Unnamed Device",
@@ -143,6 +149,7 @@ export async function syncPasskeysWithSafe(
           // If publicKey is missing, we need to handle the error properly, not hardcode
           if (!passkey.publicKey) {
             return {
+              id: passkey?.id,
               credentialId: passkey.credentialId,
               publicKey: "",
               displayName: passkey.displayName || "Unnamed Device",
@@ -183,6 +190,7 @@ export async function syncPasskeysWithSafe(
           const isOnChain = owners.some((owner) => owner.toLowerCase() === ownerAddress.toLowerCase());
 
           return {
+            id: passkey.id,
             credentialId: passkey.credentialId,
             publicKey: publicKeyHex,
             displayName: passkey.displayName || "Unnamed Device",
@@ -193,6 +201,7 @@ export async function syncPasskeysWithSafe(
         } catch (error) {
           console.error("Error processing passkey:", error);
           return {
+            id: passkey.id,
             credentialId: passkey.credentialId,
             publicKey: passkey.publicKey || "",
             displayName: passkey.displayName || "Unnamed Device",
@@ -203,9 +212,10 @@ export async function syncPasskeysWithSafe(
       })
     );
 
+    console.info(`${logPrefix} Sync completed. Synced Passkeys:`, passkeysWithStatus);
     return passkeysWithStatus;
   } catch (error) {
-    console.error("Error syncing passkeys with Safe:", error);
+    console.error(`${logPrefix} Error during sync:`, error);
     // Return passkeys with unknown status in case of error
     return (registeredPasskeys || []).map((passkey) => ({
       ...passkey,

@@ -1,18 +1,22 @@
 import { Address } from "viem";
-import { MetaTransaction } from "abstractionkit";
+import { MetaTransaction, UserOperationReceipt } from "abstractionkit";
 
 import { WebAuthnCredentials } from "@/types/webauthn";
 import { WebAuthnHelper } from "@/utils/webauthn";
 
 import { createAndSendSponsoredUserOp, sendUserOperation, OperationTrackingCallbacks } from "../core/operations";
 
+const logPrefix = "[Direct Transaction]";
+
 /**
  * Standard callback interface for direct transactions
  */
-export interface DirectTransactionCallbacks extends OperationTrackingCallbacks {
+export interface DirectTransactionCallbacks {
   onPreparing?: () => void;
   onSigning?: () => void;
   onSigningComplete?: () => void;
+  onSuccess?: (receipt: UserOperationReceipt) => void;
+  onError?: (error: any) => void;
 }
 
 /**
@@ -37,7 +41,10 @@ export const executeDirectTransaction = async ({
   transactions,
   credentials,
   callbacks,
-}: DirectTransactionConfig): Promise<{ success: boolean }> => {
+}: DirectTransactionConfig): Promise<UserOperationReceipt | void> => {
+  console.info(`${logPrefix} Executing ${transactions.length} transaction(s) for Safe: ${safeAddress}`, {
+    transactions,
+  });
   try {
     callbacks?.onPreparing?.();
 
@@ -65,21 +72,15 @@ export const executeDirectTransaction = async ({
       signature,
     });
 
-    callbacks?.onSent?.();
-
-    // Wait for the transaction to complete
     const receipt = await response.included();
 
-    if (!receipt.success) {
-      throw new Error("Transaction execution failed");
-    }
-
-    callbacks?.onSuccess?.();
-
-    return { success: true };
-  } catch (error) {
-    console.error("Error executing direct transaction:", error);
-    callbacks?.onError?.(error as Error);
+    // Pass the receipt to the success callback
+    console.info(`${logPrefix} Transaction successful for Safe: ${safeAddress}. Receipt:`, receipt);
+    callbacks?.onSuccess?.(receipt);
+    return receipt;
+  } catch (error: any) {
+    console.error(`${logPrefix} Transaction failed for Safe: ${safeAddress}:`, error);
+    callbacks?.onError?.(error);
     throw error;
   }
 };

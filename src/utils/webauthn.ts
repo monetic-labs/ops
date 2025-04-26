@@ -12,6 +12,8 @@ import { Hex } from "viem";
 
 import pylon from "@/libs/monetic-sdk";
 
+const logPrefix = "[WebAuthn Helper]";
+
 export interface PasskeyCredentials {
   publicKey: WebauthnPublicKey;
   credentialId: string;
@@ -55,8 +57,9 @@ export class WebAuthnHelper {
    * @returns The challenge string
    */
   private static async requestChallenge(): Promise<string> {
+    console.info(`${logPrefix} Requesting challenge from server.`);
     const response = await pylon.generatePasskeyChallenge();
-
+    console.info(`${logPrefix} Received challenge: ${response.challenge}`);
     return response.challenge;
   }
 
@@ -71,7 +74,9 @@ export class WebAuthnHelper {
     publicKeyCoordinates: WebauthnPublicKey;
     passkeyId: string;
   }> {
+    console.info(`${logPrefix} Starting 'createPasskey' for email: ${email}`);
     try {
+      console.info(`${logPrefix} Getting registration options...`);
       const rawOptions = await pylon.getPasskeyRegistrationOptions(email);
 
       if (!rawOptions) {
@@ -97,6 +102,10 @@ export class WebAuthnHelper {
       const rawCredential = credential.raw as PublicKeyCredential;
       const response = rawCredential.response as AuthenticatorAttestationResponse;
       const transports = response.getTransports();
+      console.info(`${logPrefix} Credential created locally. Registering with server...`, {
+        credentialId: credential.id,
+        transports,
+      });
 
       const { x, y } = PublicKey.from(credential.publicKey);
 
@@ -107,6 +116,7 @@ export class WebAuthnHelper {
         publicKey: PublicKey.toHex(credential.publicKey),
         transports,
       });
+      console.info(`${logPrefix} Server registration complete. Passkey DB ID: ${passkeyId}`);
 
       return {
         credentialId: credential.id,
@@ -115,7 +125,7 @@ export class WebAuthnHelper {
         passkeyId,
       };
     } catch (error) {
-      console.error("Passkey creation failed:", error);
+      console.error(`${logPrefix} 'createPasskey' failed:`, error);
       throw new Error("Failed to create passkey. Please try again.");
     }
   }
@@ -126,6 +136,7 @@ export class WebAuthnHelper {
    * @returns A new WebAuthnHelper instance with the credential that was used for authentication
    */
   static async login(credentialIds?: string[]): Promise<WebAuthnHelper> {
+    console.info(`${logPrefix} Starting 'login' with credential IDs:`, credentialIds);
     try {
       const challengeStr = await this.requestChallenge();
       const challenge = Bytes.fromString(challengeStr);
@@ -151,6 +162,7 @@ export class WebAuthnHelper {
         metadata,
         signature: serializedSignature,
       });
+      console.info(`${logPrefix} Login signature obtained locally. Authenticating with server...`);
 
       const { x, y } = PublicKey.fromHex(publicKey as Hex);
 
@@ -159,7 +171,7 @@ export class WebAuthnHelper {
         credentialId: credential.id,
       });
     } catch (error) {
-      console.error("Error logging in with passkey:", error);
+      console.error(`${logPrefix} 'login' failed:`, error);
       throw new Error("Failed to authenticate with passkey");
     }
   }

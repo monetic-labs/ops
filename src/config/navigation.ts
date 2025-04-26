@@ -67,7 +67,7 @@ export interface OrgMenuItem extends BaseNavItem {
 export const mainNavigationItems: NavItem[] = [
   {
     id: "accounts-section", // Special ID for dynamic account list
-    label: "Accounts",
+    label: "Monetic Accounts",
     icon: Wallet,
     tooltip: "Select an account",
     requiresApproval: true,

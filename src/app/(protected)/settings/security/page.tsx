@@ -195,15 +195,11 @@ export default function SecuritySettingsPage() {
     removePasskey,
   } = usePasskeyManager({ user });
 
-  // Map passkeys for ListTable
-  const listTableItems = passkeys.map((pk) => ({
-    ...pk,
-    id: pk.credentialId,
-    dbId: pk.id,
-  }));
+  // Filter passkeys to ensure 'id' is defined for ListTable compatibility
+  const listTableItems = passkeys.filter((pk): pk is PasskeyWithStatus & { id: string } => typeof pk.id === "string");
 
   // --- Renaming Handlers ---
-  const startEditing = (passkey: PasskeyWithStatus & { dbId?: string }) => {
+  const startEditing = (passkey: PasskeyWithStatus) => {
     setEditingPasskeyId(passkey.credentialId);
     setEditingPasskeyName(passkey.displayName || "");
   };
@@ -222,7 +218,7 @@ export default function SecuritySettingsPage() {
   // --- End Renaming Handlers ---
 
   // Loading State
-  if (isUserLoading || (isPasskeyLoading && listTableItems.length === 0)) {
+  if (isUserLoading || (isPasskeyLoading && passkeys.length === 0)) {
     return (
       <div className="flex justify-center items-center h-64">
         <Spinner size="lg" color="primary" label="Loading security settings..." />
@@ -290,13 +286,15 @@ export default function SecuritySettingsPage() {
         title="Authentication Methods"
         description="Passkeys allow you to log in and sign transactions using biometrics, a device password, or a PIN."
         icon={<Fingerprint className="text-primary" size={20} />}
-        items={listTableItems}
+        items={listTableItems as (PasskeyWithStatus & { id: string })[]}
         isLoading={isPasskeyLoading && listTableItems.length === 0}
         renderItem={(item) => {
-          const passkey = item as PasskeyWithStatus & { dbId?: string };
-          const isProcessing = isProcessingPasskey[passkey.dbId || passkey.credentialId];
+          const passkey = item as PasskeyWithStatus & { id: string };
+          const isProcessing = isProcessingPasskey[passkey.id];
           const isCurrentlyEditing = editingPasskeyId === passkey.credentialId;
-          const canRemove = passkeys.length > 1;
+          const canRemove =
+            passkeys.filter((p) => p.status === PasskeyStatus.ACTIVE_ONCHAIN).length > 1 ||
+            passkey.status !== PasskeyStatus.ACTIVE_ONCHAIN;
 
           const statusChip = () => {
             switch (passkey.status) {
@@ -335,7 +333,7 @@ export default function SecuritySettingsPage() {
                   {isProcessing ? "" : "Activate"}
                 </Button>
               )}
-              <Tooltip content={!canRemove ? "Cannot remove the last passkey" : "Remove Passkey (Coming Soon)"}>
+              <Tooltip content={!canRemove ? "Cannot remove the last passkey" : "Remove Passkey"}>
                 <div>
                   <Button
                     isIconOnly
@@ -395,7 +393,9 @@ export default function SecuritySettingsPage() {
         }}
         itemHasDivider={true}
         onAddItem={addPasskey}
-        addItemLabel={isAddingPasskey ? "Adding..." : "Add Passkey"}
+        addItemLabel={
+          isAddingPasskey ? (user?.walletAddress ? "Registering..." : "Creating Account...") : "Add Passkey"
+        }
         disableAddItem={isAddingPasskey}
         emptyContent="No passkeys registered yet."
         cardClassName="shadow-sm"
