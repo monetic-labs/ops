@@ -93,7 +93,7 @@ export default function ApiKeysSettingsPage() {
       <h1 className="text-2xl font-semibold">API Keys</h1>
       <p className="text-sm text-foreground-500">Manage API keys for accessing Monetic services.</p>
 
-      <Card className="max-w-3xl">
+      <Card className="max-w-3xl" shadow="none" classNames={{ base: "border border-divider" }}>
         <CardHeader>
           <h2 className="text-lg font-medium">Generate New Key</h2>
         </CardHeader>
@@ -119,7 +119,7 @@ export default function ApiKeysSettingsPage() {
         </CardBody>
       </Card>
 
-      <Card>
+      <Card shadow="none" classNames={{ base: "border border-divider" }}>
         <CardHeader>
           <h2 className="text-lg font-medium">Existing Keys</h2>
         </CardHeader>
@@ -140,7 +140,7 @@ export default function ApiKeysSettingsPage() {
               </TableHeader>
               <TableBody emptyContent={apiKeys.length === 0 ? "No API keys generated yet." : ""}>
                 {apiKeys.map((key: ApiKeyGetOutput) => (
-                  <TableRow key={key.key}>
+                  <TableRow key={key.key} className="border-b border-divider last:border-b-0">
                     <TableCell>{key.name || "N/A"}</TableCell>
                     <TableCell>
                       <Snippet
