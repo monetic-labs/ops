@@ -53,7 +53,11 @@ export function ListTable<T extends ListItem>({
   itemHasDivider = false,
   "aria-label": ariaLabel,
 }: ListTableProps<T>) {
-  const baseItemClass = cn(itemClassName, itemHasDivider && "border-b border-divider last:border-b-0", "px-3");
+  const baseItemClass = cn(
+    itemClassName,
+    itemHasDivider && "border-b border-divider last:border-b-0",
+    "px-6 pb-2 pt-1"
+  );
 
   const listContent = () => {
     if (isLoading) {

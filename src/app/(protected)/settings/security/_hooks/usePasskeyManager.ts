@@ -356,6 +356,9 @@ export function usePasskeyManager({ user }: UsePasskeyManagerProps) {
                   });
                   await pylon.deletePasskey(passkeyDbId);
                   toast({ title: "Removed", description: "Passkey removed successfully.", variant: "default" });
+                  // Refetch ONLY after successful backend deletion
+                  console.info(`${logPrefix} Refetching passkeys after successful on-chain and backend removal.`);
+                  await fetchPasskeys(false);
                 } catch (backendError: any) {
                   console.error("Backend deletion failed after on-chain removal:", backendError);
                   toast({
@@ -363,7 +366,7 @@ export function usePasskeyManager({ user }: UsePasskeyManagerProps) {
                     description: "Removed on-chain, but failed to remove backend record. Please contact support.",
                     variant: "destructive",
                   });
-                  // Still refetch, as on-chain state changed
+                  // Do NOT refetch here, state is inconsistent
                 }
               },
             },
@@ -371,10 +374,7 @@ export function usePasskeyManager({ user }: UsePasskeyManagerProps) {
           console.info(`${logPrefix} On-chain removal transaction initiated for passkey ID: ${passkeyDbId}.`);
         }
 
-        // Refetch list after any successful removal (on-chain or off-chain)
-        console.info(`${logPrefix} Refetching passkeys after removal action.`);
-        await fetchPasskeys(false);
-        console.info(`${logPrefix} 'removePasskey' completed for ID: ${passkeyDbId}.`);
+        console.info(`${logPrefix} 'removePasskey' processing completed for ID: ${passkeyDbId}.`);
       } catch (error: any) {
         console.error(`${logPrefix} Error during 'removePasskey' for ID ${passkeyDbId}:`, error);
         const errorMessage = error.message || "Could not remove passkey.";
