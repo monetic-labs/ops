@@ -333,7 +333,7 @@ export default function SecuritySettingsPage() {
                   {isProcessing ? "" : "Activate"}
                 </Button>
               )}
-              <Tooltip content={!canRemove ? "Cannot remove the last passkey" : "Remove Passkey"}>
+              <Tooltip content={!canRemove ? "Cannot remove the last active passkey" : "Remove Passkey"}>
                 <div>
                   <Button
                     isIconOnly
