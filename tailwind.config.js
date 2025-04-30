@@ -89,10 +89,9 @@ module.exports = {
               DEFAULT: "#134E4A",
               foreground: "#FFFFFF",
             },
-            warning: {
-              DEFAULT: "#B45309",
-              foreground: "#FFFFFF",
-            },
+            success: "#00FF84",
+            warning: "#B45309",
+            danger: "#DC2626",
             content1: {
               DEFAULT: "#FFFFFF",
               foreground: "#11181C",
@@ -118,14 +117,6 @@ module.exports = {
             border: {
               DEFAULT: "rgba(17, 24, 28, 0.15)",
             },
-            success: {
-              DEFAULT: "#00FF84",
-              foreground: "#11181C",
-            },
-            danger: {
-              DEFAULT: "#DC2626",
-              foreground: "#FFFFFF",
-            },
           },
           layout: {
             radius: {
@@ -144,14 +135,10 @@ module.exports = {
           colors: {
             background: "#000000",
             foreground: "#ECEDEE",
-            primary: {
-              DEFAULT: "#0D9488",
-              foreground: "#FFFFFF",
-            },
-            warning: {
-              DEFAULT: "#92400E",
-              foreground: "#FFFFFF",
-            },
+            primary: "#0D9488",
+            success: "#00FF84",
+            warning: "#92400E",
+            danger: "#DC2626",
             content1: {
               DEFAULT: "#1A1A1A",
               foreground: "#ECEDEE",
@@ -176,14 +163,6 @@ module.exports = {
             },
             border: {
               DEFAULT: "rgba(236, 237, 238, 0.1)",
-            },
-            success: {
-              DEFAULT: "#00FF84",
-              foreground: "#000000",
-            },
-            danger: {
-              DEFAULT: "#DC2626",
-              foreground: "#FFFFFF",
             },
           },
           layout: {

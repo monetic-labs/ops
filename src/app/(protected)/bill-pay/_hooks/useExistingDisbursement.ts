@@ -20,7 +20,7 @@ export const useExistingDisbursement = () => {
     setIsLoading(true);
     try {
       const response = await pylon.initiateExistingDisbursement(disbursementId, {
-        amount: parseFloat(amount),
+        // amount: parseFloat(amount),
         destination: {
           payment_rail: disbursementMethod,
           wire_message: wireMessage,

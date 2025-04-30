@@ -14,7 +14,7 @@ import {
 } from "@monetic-labs/sdk";
 
 import BillPayDetailsModal from "./_components/details";
-import CreateBillPayModal from "./_components/create";
+import CreateTransferFlow from "./_components/create-transfer-flow";
 
 import { useGetTransfers } from "./_hooks/useGetTransfers";
 import { useGetContacts } from "./_hooks/useGetContacts";
@@ -268,16 +268,14 @@ export default function BillPayPage() {
         />
       )}
       {canCreateTransfer && (
-        <CreateBillPayModal
-          billPay={DEFAULT_NEW_BILL_PAY}
+        <CreateTransferFlow
           isOpen={isCreateModalOpen}
-          setBillPay={() => {}} // Adjust if state needs to be managed differently
-          settlementAddress={settlementAddress} // Already checked for existence by canCreateTransfer
           onClose={() => setIsCreateModalOpen(false)}
-          onSave={(newBillPay) => {
-            console.log("Creating transfer:", newBillPay);
-            // TODO: Add mutation logic here
+          settlementAddress={settlementAddress}
+          onSuccess={() => {
             setIsCreateModalOpen(false);
+            // Refresh data
+            fetchContacts({});
           }}
         />
       )}

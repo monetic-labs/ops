@@ -1,10 +1,11 @@
 import { z } from "zod";
-import { DisbursementMethod, ISO3166Alpha2State, ISO3166Alpha3Country } from "@monetic-labs/sdk";
+import { DisbursementMethod, ISO3166Alpha2State, ISO3166Alpha3Country, FiatCurrency } from "@monetic-labs/sdk";
 
 import { BASE_USDC } from "@/utils/constants";
-import { isLocal } from "@/utils/helpers";
+import { isProduction } from "@/utils/helpers";
 import { NewBillPay } from "@/types/bill-pay";
 import { ExistingBillPay } from "@/types/bill-pay";
+import postcodeMap from "@/data/postcodes-map.json";
 
 export enum FieldLabel {
   ACCOUNT_HOLDER = "Account Holder",
@@ -23,8 +24,8 @@ export enum FieldLabel {
   MEMO = "Memo",
 }
 
-export const MINIMUM_DISBURSEMENT_WIRE_AMOUNT = isLocal ? 0.1 : 500; // USD denominated
-export const MINIMUM_DISBURSEMENT_ACH_AMOUNT = isLocal ? 0.1 : 100; // USD denominated
+export const MINIMUM_DISBURSEMENT_WIRE_AMOUNT = !isProduction ? 0.1 : 1000; // USD denominated
+export const MINIMUM_DISBURSEMENT_ACH_AMOUNT = !isProduction ? 0.1 : 500; // USD denominated
 
 type FieldValidationInput = {
   label: FieldLabel;
@@ -34,7 +35,7 @@ type FieldValidationInput = {
   method?: DisbursementMethod;
 };
 
-type FieldValidationOutput = {
+export type FieldValidationOutput = {
   min?: number;
   max?: number;
   step?: number;
@@ -69,11 +70,11 @@ export const existingBillPaySchema = z.object({
         const amount = parseFloat(val);
 
         if (isNaN(amount)) return false;
-        const minAmount = isLocal ? 0.1 : 1;
+        const minAmount = !isProduction ? 0.1 : 1;
 
         return amount >= minAmount;
       },
-      `Amount must be at least ${isLocal ? 0.1 : 1} ${BASE_USDC.SYMBOL}`
+      `Amount must be at least ${!isProduction ? 0.1 : 1} ${BASE_USDC.SYMBOL}`
     ),
   currency: z.string(),
   disbursementId: z.string().min(1, "Disbursement ID is required"),
@@ -116,13 +117,10 @@ export const newBillPaySchema = z.object({
     .length(9, "Routing number must be 9 digits")
     .regex(/^[0-9]+$/, "Routing number must contain only numbers")
     .refine((val) => {
-      // Add ABA routing number checksum validation
       let sum = 0;
-
       for (let i = 0; i < 9; i++) {
         sum += parseInt(val[i]) * [3, 7, 1, 3, 7, 1, 3, 7, 1][i];
       }
-
       return sum % 10 === 0;
     }, "Invalid routing number checksum"),
 
@@ -133,15 +131,13 @@ export const newBillPaySchema = z.object({
     .refine(
       (val) => {
         const amount = parseFloat(val || "0");
-        const minAmount = isLocal ? 0.1 : 1;
-
+        const minAmount = !isProduction ? 0.1 : 1;
         return amount >= minAmount;
       },
-      `Amount must be at least ${isLocal ? 0.1 : 1} ${BASE_USDC.SYMBOL}`
+      `Amount must be at least ${!isProduction ? 0.1 : 1} ${BASE_USDC.SYMBOL}`
     )
     .refine((val) => {
       const decimals = val.split(".")[1]?.length || 0;
-
       return decimals <= 2;
     }, "Amount cannot have more than 2 decimal places"),
 
@@ -157,18 +153,20 @@ export const newBillPaySchema = z.object({
     street1: z
       .string()
       .trim()
-      .min(1, "Street address is required")
-      .max(100, "Street address must be less than 100 characters")
-      .regex(
-        /^[A-Za-z0-9\s,.-]+$/,
-        "Street address can only contain letters, numbers, spaces, commas, periods, and hyphens"
-      ),
+      .min(3, "Street address must be at least 3 characters")
+      .max(35, "Street address cannot exceed 35 characters")
+      .refine((val) => !/^\s/.test(val), "Street address cannot start with a space")
+      .refine((val) => !/P(OST)?.?O(FFICE)?.?\s*BOX/i.test(val), "PO Boxes are not allowed")
+      .refine((val) => !/PMB/i.test(val), "PMBs are not allowed")
+      .refine((val) => /^\d+\s/.test(val), "US addresses must start with a street number (e.g., 123 Main St)"),
 
     street2: z
       .string()
       .trim()
       .regex(/^[A-Za-z0-9\s,.-]*$/, "Can only contain letters, numbers, spaces, commas, periods, and hyphens")
-      .max(100, "Street address line 2 must be less than 100 characters")
+      .max(35, "Street address line 2 cannot exceed 35 characters")
+      .refine((val) => !/P(OST)?.?O(FFICE)?.?\s*BOX/i.test(val), "PO Boxes are not allowed")
+      .refine((val) => !/PMB/i.test(val), "PMBs are not allowed")
       .optional(),
 
     city: z
@@ -185,10 +183,11 @@ export const newBillPaySchema = z.object({
     postcode: z
       .string()
       .trim()
-      .regex(/^\d{5}(-\d{4})?$/, "Please enter a valid ZIP code (e.g., 12345 or 12345-6789)"),
+      .regex(/^\d{5}$/, "Please enter a valid 5-digit US ZIP code")
+      .refine((val) => postcodeMap[val as keyof typeof postcodeMap] !== undefined, "Invalid US ZIP code"),
 
-    country: z.nativeEnum(ISO3166Alpha3Country, {
-      errorMap: () => ({ message: "Please select a valid country" }),
+    country: z.literal(ISO3166Alpha3Country.USA, {
+      errorMap: () => ({ message: "Only US addresses are currently supported" }),
     }),
   }),
 });
@@ -199,31 +198,31 @@ const getZodFieldValidation = (
   field?: FieldLabel,
   balance?: string
 ): FieldValidationOutput => {
-  if (!value) {
-    return {
-      isInvalid: false,
-      errorMessage: undefined,
-      ...(field === FieldLabel.AMOUNT && {
-        step: 0.01,
-        description: balance ? `Available balance: ${balance} ${BASE_USDC.SYMBOL}` : "Fetching balance...",
-      }),
-    };
-  }
-
   const result = schema.safeParse(value);
+
+  const description =
+    field === FieldLabel.AMOUNT
+      ? balance
+        ? `Available balance: ${parseFloat(balance).toFixed(2)} ${BASE_USDC.SYMBOL}`
+        : "Fetching balance..."
+      : undefined;
 
   return {
     isInvalid: !result.success,
     errorMessage: result.success ? undefined : result.error.errors[0]?.message,
-    ...(field === FieldLabel.AMOUNT && {
-      step: 0.01,
-      description: balance ? `Available balance: ${balance} ${BASE_USDC.SYMBOL}` : "Fetching balance...",
-    }),
+    ...(field === FieldLabel.AMOUNT && { step: 0.01 }),
+    description,
   };
 };
 
-export function getValidationProps({ label, value, currency, balance, method }: FieldValidationInput) {
-  let schema;
+export function getValidationProps({
+  label,
+  value,
+  currency,
+  balance,
+  method,
+}: FieldValidationInput): FieldValidationOutput {
+  let schema: z.ZodTypeAny | undefined;
 
   switch (label) {
     case FieldLabel.ACCOUNT_HOLDER:
@@ -237,15 +236,13 @@ export function getValidationProps({ label, value, currency, balance, method }: 
       break;
     case FieldLabel.ROUTING_NUMBER:
       schema = newBillPaySchema.shape.routingNumber;
-      // TODO: check routing number is unique against existing disbursement contacts
       break;
     case FieldLabel.PAYMENT_METHOD:
       schema = newBillPaySchema.shape.vendorMethod;
-      // TODO: check account number is unique against existing disbursement contacts
       break;
     case FieldLabel.AMOUNT:
-      const getMinimumAmount = (method?: DisbursementMethod) => {
-        switch (method) {
+      const getMinimumAmount = (m?: DisbursementMethod) => {
+        switch (m) {
           case DisbursementMethod.WIRE:
             return MINIMUM_DISBURSEMENT_WIRE_AMOUNT;
           case DisbursementMethod.ACH_SAME_DAY:
@@ -254,54 +251,33 @@ export function getValidationProps({ label, value, currency, balance, method }: 
             return MINIMUM_DISBURSEMENT_ACH_AMOUNT;
         }
       };
-
       schema = z
         .string()
         .min(1, "Amount is required")
+        .refine((val) => !isNaN(parseFloat(val)), "Amount must be a valid number")
         .refine(
           (val) => {
-            if (!val || val === "") return false;
-            const amount = parseFloat(val);
-
-            if (isNaN(amount)) return false;
+            const amount = parseFloat(val || "0");
             const minAmount = getMinimumAmount(method);
-
             return amount >= minAmount;
           },
           (val) => ({
-            message: `Amount must be at least ${getMinimumAmount(method)} ${BASE_USDC.SYMBOL}`,
+            message: `Amount must be at least ${getMinimumAmount(method).toFixed(2)} ${BASE_USDC.SYMBOL}`,
           })
         )
         .refine((val) => {
+          if (!balance) return true;
           const amount = parseFloat(val);
-          const maxAmount = balance ? parseFloat(balance) : 0;
-
+          const maxAmount = parseFloat(balance);
           return amount <= maxAmount;
-        }, `Amount must be less than ${balance} ${BASE_USDC.SYMBOL}`)
+        }, `Amount must not exceed available balance`)
         .refine((val) => {
           const decimals = val.split(".")[1]?.length || 0;
-
           return decimals <= 2;
         }, "Amount cannot have more than 2 decimal places");
       break;
     case FieldLabel.STREET_LINE_1:
-      const validateWireAddress = (val: string, method?: DisbursementMethod) => {
-        if (method === DisbursementMethod.WIRE && !/^\d+\s/.test(val)) {
-          return false;
-        }
-
-        return true;
-      };
-
-      schema = z
-        .string()
-        .min(1, "Street address is required")
-        .max(100, "Street address must be less than 100 characters")
-        .refine(
-          (val) => validateWireAddress(val, method),
-          "US wire transfers require a street number at the start of the address"
-        )
-        .refine((val) => !/^\s/.test(val), "Street address cannot start with a space");
+      schema = newBillPaySchema.shape.address.shape.street1;
       break;
     case FieldLabel.STREET_LINE_2:
       schema = newBillPaySchema.shape.address.shape.street2;
@@ -319,27 +295,17 @@ export function getValidationProps({ label, value, currency, balance, method }: 
       schema = newBillPaySchema.shape.address.shape.country;
       break;
     case FieldLabel.MEMO:
-      const getMaxLength = (method?: DisbursementMethod) => {
-        return method === DisbursementMethod.WIRE ? 35 : 10;
-      };
-
+      const getMaxLength = (m?: DisbursementMethod) => (m === DisbursementMethod.WIRE ? 35 : 10);
       schema = z
         .string()
         .trim()
         .regex(/^[A-Za-z0-9\s]*$/, "Cannot contain special characters")
-        .refine(
-          (val) => {
-            const maxLength = getMaxLength(method);
-
-            return val.length <= maxLength;
-          },
-          (val) => ({
-            message: `Must be less than ${getMaxLength(method)} characters`,
-          })
-        );
+        .max(getMaxLength(method), `Must be less than ${getMaxLength(method)} characters`)
+        .optional();
       break;
     default:
-      schema = z.string();
+      console.warn("No validation schema found for label:", label);
+      return { isInvalid: false };
   }
 
   return getZodFieldValidation(schema, value, label, balance);
@@ -357,11 +323,11 @@ export const validateBillPay = (billPay: NewBillPay | ExistingBillPay, balance?:
         const amount = parseFloat(val);
 
         if (isNaN(amount)) return false;
-        const minAmount = isLocal ? 0.1 : 1;
+        const minAmount = !isProduction ? 0.1 : 1;
 
         return amount >= minAmount;
       },
-      `Amount must be at least ${isLocal ? 0.1 : 1} ${BASE_USDC.SYMBOL}`
+      `Amount must be at least ${!isProduction ? 0.1 : 1} ${BASE_USDC.SYMBOL}`
     )
     .refine((val) => {
       const amount = parseFloat(val);

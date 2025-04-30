@@ -1,5 +1,5 @@
-import { useState, useEffect, useCallback } from "react";
-import { TransactionListOutput, TransactionListItem } from "@monetic-labs/sdk";
+import { useState, useEffect, useCallback, useRef } from "react";
+import { TransactionListOutput, TransactionListItem, TransactionSSEEventType } from "@monetic-labs/sdk";
 import { useRouter } from "next/navigation";
 
 import pylon from "@/libs/monetic-sdk";
@@ -14,6 +14,7 @@ export const useOrderManagement = () => {
     error: null,
     transactions: [],
   });
+  const effectRan = useRef(false);
 
   const router = useRouter();
 
@@ -65,13 +66,13 @@ export const useOrderManagement = () => {
   const handleTransactionUpdate = useCallback(
     (data: TransactionListOutput) => {
       switch (data.type) {
-        case "KEEP_ALIVE":
+        case TransactionSSEEventType.KEEP_ALIVE:
           // These are just to keep the connection alive, no need to update state
           break;
-        case "INITIAL_LIST":
+        case TransactionSSEEventType.INITIAL_LIST:
           handleInitialList(data.data.transactions);
           break;
-        case "TRANSACTION_UPDATED":
+        case TransactionSSEEventType.TRANSACTION_UPDATED:
           handleTransactionUpdated(data.data);
           break;
         default:
@@ -86,6 +87,11 @@ export const useOrderManagement = () => {
   );
 
   useEffect(() => {
+    if (effectRan.current === true) {
+      return;
+    }
+    effectRan.current = true;
+
     let closeConnection: (() => void) | undefined;
 
     const setupConnection = async () => {

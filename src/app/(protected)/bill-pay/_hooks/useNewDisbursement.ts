@@ -51,7 +51,7 @@ export const useNewDisbursement = () => {
         chain: Network.BASE, // TODO
         currency: StableCurrency.USDC, // TODO
         return_address: returnAddress,
-        amount,
+        // amount,
         destination: {
           payment_rail: paymentRail,
           currency: FiatCurrency.USD, // TODO: Make this dynamic
