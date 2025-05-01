@@ -122,7 +122,7 @@ export const CompanyAccountStep = () => {
               isInvalid={!!error}
               label="Company Type"
               placeholder="Select Company Type"
-              selectedKeys={companyType ? [companyType] : []}
+              selectedKeys={field.value ? [field.value] : []}
               startContent={<Building2 className="text-foreground/40 w-4 h-4 flex-shrink-0" />}
               onChange={(e) => field.onChange(e.target.value)}
             >
@@ -136,22 +136,34 @@ export const CompanyAccountStep = () => {
         />
 
         {/* Industry Sector Selection */}
-        <Select
-          isRequired
-          isInvalid={!selectedSector}
-          errorMessage={!selectedSector ? "Industry sector is required" : undefined}
-          label="Industry Sector"
-          placeholder="Select your industry sector first"
-          selectedKeys={selectedSector ? [selectedSector] : []}
-          startContent={<Briefcase className="text-foreground/40 w-4 h-4 flex-shrink-0" />}
-          onChange={(e) => handleSectorChange(e.target.value)}
-        >
-          {formattedSectors.map((sector) => (
-            <SelectItem key={sector.code} textValue={sector.display}>
-              {sector.display}
-            </SelectItem>
-          ))}
-        </Select>
+        <Controller
+          control={control}
+          name="companyIndustrySector"
+          rules={{ required: "Industry sector is required" }}
+          render={({ field, fieldState: { error } }) => (
+            <Autocomplete
+              isRequired
+              errorMessage={error?.message}
+              isInvalid={!!error}
+              label="Industry Sector"
+              placeholder="Select or type to search sectors..."
+              selectedKey={selectedSector}
+              startContent={<Briefcase className="text-foreground/40 w-4 h-4 flex-shrink-0" />}
+              onSelectionChange={(key) => {
+                const newSector = key as string;
+                field.onChange(newSector);
+                handleSectorChange(newSector);
+              }}
+              defaultItems={formattedSectors}
+            >
+              {(sector) => (
+                <AutocompleteItem key={sector.code} textValue={sector.display}>
+                  {sector.display}
+                </AutocompleteItem>
+              )}
+            </Autocomplete>
+          )}
+        />
 
         {/* NAICS Code Selection (only shown after sector is selected) */}
         {selectedSector && (
@@ -159,23 +171,23 @@ export const CompanyAccountStep = () => {
             control={control}
             name="companyIndustry"
             render={({ field, fieldState: { error } }) => (
-              <Select
-                {...field}
+              <Autocomplete
                 isRequired
                 errorMessage={error?.message}
                 isInvalid={!!error}
                 label="Industry (NAICS Code)"
-                placeholder="Select specific industry code"
-                selectedKeys={companyIndustry ? [companyIndustry] : []}
+                placeholder="Select or type to search codes..."
+                selectedKey={field.value}
                 startContent={<ChevronRight className="text-foreground/40 w-4 h-4 flex-shrink-0" />}
-                onChange={(e) => field.onChange(e.target.value)}
+                onSelectionChange={(key) => field.onChange(key as string)}
+                defaultItems={filteredNaicsCodes}
               >
-                {filteredNaicsCodes.map((item) => (
-                  <SelectItem key={item.code} textValue={item.display}>
+                {(item) => (
+                  <AutocompleteItem key={item.code} textValue={item.display}>
                     {item.display}
-                  </SelectItem>
-                ))}
-              </Select>
+                  </AutocompleteItem>
+                )}
+              </Autocomplete>
             )}
           />
         )}
