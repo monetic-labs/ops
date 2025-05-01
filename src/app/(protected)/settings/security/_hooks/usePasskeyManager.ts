@@ -128,6 +128,8 @@ export function usePasskeyManager({ user }: UsePasskeyManagerProps) {
         // Update user in backend with the new wallet address
         // (Rely on forceAuthCheck instead of manual pylon call if UserContext handles this)
         // await pylon.updateUser(user.id, { walletAddress: newWalletAddress });
+        // Assuming 'pylon' is your initialized API client
+        await pylon.updateUser(user.id, { walletAddress: newWalletAddress });
 
         // Force refresh of user context data, which should include the new walletAddress and passkey
         await forceAuthCheck();

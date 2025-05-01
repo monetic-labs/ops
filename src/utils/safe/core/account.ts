@@ -4,9 +4,10 @@ import {
   DEFAULT_SECP256R1_PRECOMPILE_ADDRESS,
   MetaTransaction,
 } from "abstractionkit";
-import { Address } from "viem";
-
-import { publicClient } from "@/config/web3";
+import { Address, PublicClient, defineChain, getContract, hexToBigInt, isAddress } from "viem";
+import { mainnet } from "viem/chains";
+import { SAFE_ABI } from "@/utils/abi/safe"; // Use alias path
+import { publicClient as configuredClient } from "@/config/web3"; // Import with alias
 
 import { createAddOwnerTemplate, createRemoveOwnerTemplate } from "../templates";
 
@@ -42,20 +43,52 @@ export const createSafeAccount = ({ signers, isWebAuthn = false, threshold = 1 }
 };
 
 /**
- * Checks if a contract is deployed at the given address
- *
- * @param address The address to check
- * @returns A promise that resolves to true if a contract is deployed at the address
+ * Checks if a contract is deployed at a given address.
+ * @param address The contract address.
+ * @param client Optional public client instance.
+ * @returns True if bytecode exists, false otherwise.
  */
-export const isContractDeployed = async (address: Address): Promise<boolean> => {
+export const isContractDeployed = async (
+  address: Address,
+  // Use the imported client, cast to viem's PublicClient type
+  client: PublicClient = configuredClient as PublicClient
+): Promise<boolean> => {
   try {
-    const code = await publicClient.getCode({ address });
-
-    return Boolean(code && code.length > 2);
+    const bytecode = await client.getBytecode({ address });
+    return !!bytecode && bytecode !== "0x";
   } catch (error) {
-    console.error("Error checking contract deployment:", error);
-
+    console.error(`Error checking deployment status for ${address}:`, error);
     return false;
+  }
+};
+
+/**
+ * Gets the current threshold of a Safe account.
+ * @param safeAddress The address of the Safe.
+ * @param client Optional public client instance.
+ * @returns The current threshold number.
+ * @throws If the address is not a contract or fetching fails.
+ */
+export const getSafeThreshold = async (
+  safeAddress: Address,
+  // Use the imported client, cast to viem's PublicClient type
+  client: PublicClient = configuredClient as PublicClient
+): Promise<number> => {
+  try {
+    const threshold = await client.readContract({
+      address: safeAddress,
+      abi: SAFE_ABI,
+      functionName: "getThreshold",
+    });
+    // Ensure the returned value is a bigint before converting
+    if (typeof threshold !== "bigint") {
+      throw new Error(`Invalid threshold value received: ${threshold}`);
+    }
+    return Number(threshold);
+  } catch (error) {
+    console.error(`Error fetching threshold for Safe ${safeAddress}:`, error);
+    // Re-throw a more specific error or handle as needed
+    throw new Error(`Failed to get threshold for ${safeAddress}: ${error instanceof Error ? error.message : error}`);
   }
 };
 

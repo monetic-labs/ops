@@ -240,7 +240,12 @@ export function Account({ account: selectedAccount, isLoading }: AccountProps) {
                     <ActivityView activities={selectedAccount.recentActivity} isLoading={isLoading} />
                   )}
                   {activeTab === "signers" && (
-                    <SignersView account={selectedAccount} isLoading={isLoading} signers={selectedAccount.signers} />
+                    <SignersView
+                      account={selectedAccount}
+                      isLoading={isLoading}
+                      signers={selectedAccount.signers}
+                      refreshAccountData={refreshAccounts}
+                    />
                   )}
                   {activeTab === "policies" && <PoliciesView isLoading={isLoading} signers={selectedAccount.signers} />}
                 </div>

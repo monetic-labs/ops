@@ -63,7 +63,10 @@ export default function SecuritySettingsPage() {
   const { user, isLoading: isUserLoading } = useUser();
   const { selectCredential } = usePasskeySelection();
 
-  // Recovery Wallets Hook
+  // --- Check for wallet address ---
+  const hasWalletAddress = !!user?.walletAddress;
+
+  // Recovery Wallets Hook (conditionally initialized)
   const {
     recoveryWallets,
     isMoneticRecoveryEnabled,
@@ -71,7 +74,8 @@ export default function SecuritySettingsPage() {
     currentThreshold,
     setIsMoneticRecoveryEnabled,
     fetchRecoveryWallets,
-  } = useRecoveryWallets(true);
+    // Conditionally provide initial values if no wallet
+  } = useRecoveryWallets(hasWalletAddress); // Pass hasWalletAddress
 
   // Pending Changes State
   const [pendingChanges, setPendingChanges] = useState<PendingChanges>({
@@ -105,32 +109,40 @@ export default function SecuritySettingsPage() {
     }));
   };
 
-  // Calculate if there are pending changes (including legacy removals)
-  const hasPendingChanges =
-    pendingChanges.toggleMonetic ||
-    pendingChanges.toDelete.length > 0 ||
-    (isModuleInstalled && threshold !== currentThreshold);
-
-  // Calculate current and pending configured counts (Monetic + Legacy pending removal doesn't count)
-  const currentTotalGuardians = (isMoneticRecoveryEnabled ? 1 : 0) + recoveryWallets.length;
+  // Calculate derived values (handle no wallet address case)
+  const currentTotalGuardians = hasWalletAddress ? (isMoneticRecoveryEnabled ? 1 : 0) + recoveryWallets.length : 0;
   const pendingGuardiansToRemoveCount = pendingChanges.toDelete.length;
   const pendingMoneticChange = pendingChanges.toggleMonetic ? (isMoneticRecoveryEnabled ? -1 : 1) : 0;
-  const pendingTotalGuardians = currentTotalGuardians - pendingGuardiansToRemoveCount + pendingMoneticChange;
+  const pendingTotalGuardians = hasWalletAddress
+    ? currentTotalGuardians - pendingGuardiansToRemoveCount + pendingMoneticChange
+    : 0;
 
-  // Effect to set initial/correct threshold
+  // --- Calculate hasPendingChanges (after other calculations) ---
+  const hasPendingChanges =
+    hasWalletAddress && // Can only have pending changes if a wallet exists
+    (pendingChanges.toggleMonetic ||
+      pendingChanges.toDelete.length > 0 ||
+      (isModuleInstalled && threshold !== currentThreshold));
+
+  // Effect to set initial/correct threshold (handle no wallet)
   useEffect(() => {
-    if (isModuleInstalled && currentThreshold > 0) {
+    if (hasWalletAddress && isModuleInstalled && currentThreshold > 0) {
       setThreshold(currentThreshold);
     } else {
       setThreshold(pendingTotalGuardians > 0 ? 1 : 0);
     }
-  }, [isModuleInstalled, currentThreshold, pendingTotalGuardians]);
+  }, [hasWalletAddress, isModuleInstalled, currentThreshold, pendingTotalGuardians]);
 
-  // Effect to validate settings based on PENDING state
+  // Effect to validate settings (handle no wallet)
   useEffect(() => {
+    if (!hasWalletAddress) {
+      setIsSettingsValid(false); // Cannot be valid without a wallet
+      return;
+    }
     const isValid = pendingTotalGuardians > 0 && threshold > 0 && threshold <= pendingTotalGuardians;
     setIsSettingsValid(isValid);
 
+    // Threshold adjustments...
     if (pendingTotalGuardians === 1 && threshold !== 1) {
       setThreshold(1);
     } else if (pendingTotalGuardians > 1 && threshold > pendingTotalGuardians) {
@@ -140,7 +152,7 @@ export default function SecuritySettingsPage() {
     } else if (pendingTotalGuardians === 0 && threshold !== 0) {
       setThreshold(0);
     }
-  }, [pendingTotalGuardians, threshold]);
+  }, [hasWalletAddress, pendingTotalGuardians, threshold]);
 
   // Effect to check for legacy wallets and show banner
   useEffect(() => {
@@ -152,8 +164,9 @@ export default function SecuritySettingsPage() {
     }
   }, [recoveryWallets, pendingChanges.toDelete]);
 
-  // Action Handler for Monetic Toggle
+  // Action Handler for Monetic Toggle (guard against no wallet)
   const handleToggleMonetic = async () => {
+    if (!hasWalletAddress) return;
     try {
       await selectCredential().catch((error) => {
         throw new Error("Passkey selection canceled by user.");
@@ -169,12 +182,12 @@ export default function SecuritySettingsPage() {
     }
   };
 
-  // Security Settings Manager Hook
+  // Security Settings Manager Hook (conditionally initialized)
   const { isSaving, status, saveSettings } = useSecuritySettingsManager({
     user,
     pendingChanges,
     threshold,
-    currentThreshold,
+    currentThreshold: hasWalletAddress ? currentThreshold : 0,
     isMoneticRecoveryEnabled:
       (isMoneticRecoveryEnabled && !pendingChanges.toggleMonetic) ||
       (!isMoneticRecoveryEnabled && pendingChanges.toggleMonetic),
@@ -218,7 +231,8 @@ export default function SecuritySettingsPage() {
   // --- End Renaming Handlers ---
 
   // Loading State
-  if (isUserLoading || (isPasskeyLoading && passkeys.length === 0)) {
+  if (isUserLoading || (isPasskeyLoading && passkeys.length === 0 && !hasWalletAddress)) {
+    // Adjust loading condition
     return (
       <div className="flex justify-center items-center h-64">
         <Spinner size="lg" color="primary" label="Loading security settings..." />
@@ -280,7 +294,25 @@ export default function SecuritySettingsPage() {
         <p className="text-foreground-500 mt-1">Manage authentication, recovery, and other security options.</p>
       </div>
 
-      {/* Passkeys Section */}
+      {/* --- Wallet Setup Prompt --- */}
+      {!hasWalletAddress && !isUserLoading && (
+        <div className="p-4 border border-primary/30 bg-primary-50 dark:bg-content2 rounded-lg">
+          <div className="flex items-start gap-3">
+            <Info className="w-5 h-5 text-primary mt-0.5 flex-shrink-0" />
+            <div className="flex-grow">
+              <h3 className="text-sm font-medium text-primary-700 dark:text-white">
+                Get Started with Secure Authentication
+              </h3>
+              <p className="text-xs text-primary-600 dark:text-white mt-1">
+                Add your first passkey below to create your secure wallet address and enable advanced security settings
+                like recovery options.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Passkeys Section (Always visible) */}
       <ListTable
         aria-label="Passkeys"
         title="Authentication Methods"
@@ -401,8 +433,8 @@ export default function SecuritySettingsPage() {
         bodyClassName="p-0"
       />
 
-      {/* Legacy Wallet Banner */}
-      {showLegacyBanner && (
+      {/* Legacy Wallet Banner (Conditional) */}
+      {hasWalletAddress && showLegacyBanner && (
         <div className="p-4 border border-warning/30 bg-warning-50 dark:bg-warning/10 rounded-lg">
           <div className="flex items-start gap-3">
             <Info className="w-5 h-5 text-warning mt-0.5 flex-shrink-0" />
@@ -420,8 +452,8 @@ export default function SecuritySettingsPage() {
         </div>
       )}
 
-      {/* Transaction Status/Warning Messages */}
-      {status !== TransferStatus.IDLE && (
+      {/* Transaction Status/Warning Messages (Conditional) */}
+      {hasWalletAddress && status !== TransferStatus.IDLE && (
         <div
           className={`p-4 border rounded-lg ${
             status === TransferStatus.ERROR
@@ -444,229 +476,235 @@ export default function SecuritySettingsPage() {
         </div>
       )}
 
-      {/* Recovery Options Card (Still using SecuritySettingCard) */}
-      <SecuritySettingCard
-        title="Recovery Options"
-        description="Configure methods to recover your account if you lose access"
-        icon={Shield}
-        headerClassName="pb-0"
-        bodyClassName="pt-4 space-y-4"
-      >
-        {/* Configuration Status Messages */}
-        {pendingTotalGuardians === 0 ? (
-          <StatusAlert type="warning" message="Enable Monetic Recovery below to protect your account." />
-        ) : pendingTotalGuardians === 1 ? (
-          <StatusAlert
-            type="success"
-            message="Account recovery is configured with Monetic. Consider adding more methods when available."
-          />
-        ) : threshold === 1 ? (
-          <StatusAlert
-            type="warning"
-            message={`Recovery requires any 1 of ${pendingTotalGuardians} methods. Consider increasing the threshold.`}
-          />
-        ) : (
-          <StatusAlert type="success" message={`Recovery requires ${threshold} of ${pendingTotalGuardians} methods.`} />
-        )}
+      {/* Recovery Options Card (Disabled if no wallet) */}
+      <div className={!hasWalletAddress ? "opacity-50 pointer-events-none" : ""}>
+        <SecuritySettingCard
+          title="Recovery Options"
+          description="Configure methods to recover your account if you lose access"
+          icon={Shield}
+          headerClassName="pb-0"
+          bodyClassName="pt-4 space-y-4"
+        >
+          {/* Configuration Status Messages */}
+          {pendingTotalGuardians === 0 ? (
+            <StatusAlert type="warning" message="Enable Monetic Recovery below to protect your account." />
+          ) : pendingTotalGuardians === 1 ? (
+            <StatusAlert
+              type="success"
+              message="Account recovery is configured with Monetic. Consider adding more methods when available."
+            />
+          ) : threshold === 1 ? (
+            <StatusAlert
+              type="warning"
+              message={`Recovery requires any 1 of ${pendingTotalGuardians} methods. Consider increasing the threshold.`}
+            />
+          ) : (
+            <StatusAlert
+              type="success"
+              message={`Recovery requires ${threshold} of ${pendingTotalGuardians} methods.`}
+            />
+          )}
 
-        {/* Moved Summary Status Items Here */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 my-4 py-4 border-y border-divider">
-          <SummaryStatusItem
-            label="Recovery Methods"
-            value={pendingTotalGuardians}
-            description={
-              pendingTotalGuardians === 0
-                ? "None configured"
-                : `${pendingTotalGuardians} method${pendingTotalGuardians > 1 ? "s" : ""} active`
-            }
-            chipColor={getStatusBadgeColor(pendingTotalGuardians)}
-          />
-          <SummaryStatusItem
-            label="Threshold Required"
-            value={pendingTotalGuardians === 0 ? "-" : `${threshold} of ${pendingTotalGuardians}`}
-            description={
-              pendingTotalGuardians === 0
-                ? "Configure recovery methods first"
-                : pendingTotalGuardians === 1
-                  ? "Single method required"
-                  : threshold === 1
-                    ? "Low security: Any method can recover"
-                    : threshold === pendingTotalGuardians
-                      ? "High security: All methods needed"
-                      : "Medium security"
-            }
-            chipColor={
-              pendingTotalGuardians === 0
-                ? "default"
-                : pendingTotalGuardians === 1
-                  ? "success"
-                  : threshold === 1
-                    ? "warning"
-                    : threshold === pendingTotalGuardians
-                      ? "success"
-                      : "primary"
-            }
-          />
-          <SummaryStatusItem
-            label="Module Status"
-            value={isModuleInstalled ? "Installed" : "Not Installed"}
-            description={isModuleInstalled ? "Recovery module is active" : "Will be installed on save"}
-            chipColor={isModuleInstalled ? "success" : "warning"}
-          />
-        </div>
+          {/* Moved Summary Status Items Here */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 my-4 py-4 border-y border-divider">
+            <SummaryStatusItem
+              label="Recovery Methods"
+              value={pendingTotalGuardians}
+              description={
+                pendingTotalGuardians === 0
+                  ? "None configured"
+                  : `${pendingTotalGuardians} method${pendingTotalGuardians > 1 ? "s" : ""} active`
+              }
+              chipColor={getStatusBadgeColor(pendingTotalGuardians)}
+            />
+            <SummaryStatusItem
+              label="Threshold Required"
+              value={pendingTotalGuardians === 0 ? "-" : `${threshold} of ${pendingTotalGuardians}`}
+              description={
+                pendingTotalGuardians === 0
+                  ? "Configure recovery methods first"
+                  : pendingTotalGuardians === 1
+                    ? "Single method required"
+                    : threshold === 1
+                      ? "Low security: Any method can recover"
+                      : threshold === pendingTotalGuardians
+                        ? "High security: All methods needed"
+                        : "Medium security"
+              }
+              chipColor={
+                pendingTotalGuardians === 0
+                  ? "default"
+                  : pendingTotalGuardians === 1
+                    ? "success"
+                    : threshold === 1
+                      ? "warning"
+                      : threshold === pendingTotalGuardians
+                        ? "success"
+                        : "primary"
+              }
+            />
+            <SummaryStatusItem
+              label="Module Status"
+              value={isModuleInstalled ? "Installed" : "Not Installed"}
+              description={isModuleInstalled ? "Recovery module is active" : "Will be installed on save"}
+              chipColor={isModuleInstalled ? "success" : "warning"}
+            />
+          </div>
 
-        {/* Monetic Recovery Section */}
-        <RecoveryMethodItem
-          title="Monetic Recovery"
-          description="Allow Monetic to help recover your account"
-          icon={Building}
-          isActive={isMoneticRecoveryEnabled}
-          statusLabel={isMoneticRecoveryEnabled ? "Active" : "Not Set"}
-          defaultOpen={true}
-          isMoneticRecovery={true}
-          isMoneticRecoveryEnabled={isMoneticRecoveryEnabled}
-          handleToggleMonetic={handleToggleMonetic}
-          isPendingToggle={pendingChanges.toggleMonetic}
-          disableToggle={true}
-        />
+          {/* Monetic Recovery Section */}
+          <RecoveryMethodItem
+            title="Monetic Recovery"
+            description="Allow Monetic to help recover your account"
+            icon={Building}
+            isActive={isMoneticRecoveryEnabled}
+            statusLabel={isMoneticRecoveryEnabled ? "Active" : "Not Set"}
+            defaultOpen={true}
+            isMoneticRecovery={true}
+            isMoneticRecoveryEnabled={isMoneticRecoveryEnabled}
+            handleToggleMonetic={handleToggleMonetic}
+            isPendingToggle={pendingChanges.toggleMonetic}
+            disableToggle={true}
+          />
 
-        {/* Legacy Recovery Methods Section */}
-        {recoveryWallets.length > 0 && (
-          <div className="pt-4 mt-4 border-t border-divider">
-            <h3 className="text-sm font-medium text-foreground-600 mb-3">Legacy Recovery Methods</h3>
-            {recoveryWallets.map((wallet) => {
-              const isPendingRemoval = pendingChanges.toDelete.includes(wallet.id);
-              const getIcon = (method: string | RecoveryWalletMethod) => {
-                switch (method) {
-                  case RecoveryWalletMethod.EMAIL:
-                    return Mail;
-                  case RecoveryWalletMethod.PHONE:
-                    return Smartphone;
-                  default:
-                    return AlertCircle;
-                }
-              };
-              return (
-                <RecoveryMethodItem
-                  key={wallet.id}
-                  title={
-                    wallet.recoveryMethod === ("UNKNOWN" as any)
-                      ? "Unknown Guardian"
-                      : `${wallet.recoveryMethod} Recovery`
+          {/* Legacy Recovery Methods Section */}
+          {recoveryWallets.length > 0 && (
+            <div className="pt-4 mt-4 border-t border-divider">
+              <h3 className="text-sm font-medium text-foreground-600 mb-3">Legacy Recovery Methods</h3>
+              {recoveryWallets.map((wallet) => {
+                const isPendingRemoval = pendingChanges.toDelete.includes(wallet.id);
+                const getIcon = (method: string | RecoveryWalletMethod) => {
+                  switch (method) {
+                    case RecoveryWalletMethod.EMAIL:
+                      return Mail;
+                    case RecoveryWalletMethod.PHONE:
+                      return Smartphone;
+                    default:
+                      return AlertCircle;
                   }
-                  description={wallet.identifier}
-                  icon={getIcon(wallet.recoveryMethod)}
-                  isActive={true}
-                  statusLabel={isPendingRemoval ? "Pending Removal" : "Active (Legacy)"}
-                  chipColor={isPendingRemoval ? "warning" : "default"}
-                  disableCollapse={true}
-                >
-                  <div className="mt-2">
-                    {!isPendingRemoval ? (
-                      <Button
-                        size="sm"
-                        variant="flat"
-                        color="danger"
-                        startContent={<Trash2 className="w-3.5 h-3.5" />}
-                        onPress={() => addLegacyWalletForRemoval(wallet.id)}
-                      >
-                        Mark for Removal
-                      </Button>
-                    ) : (
-                      <Button
-                        size="sm"
-                        variant="flat"
-                        color="default"
-                        onPress={() => cancelLegacyWalletRemoval(wallet.id)}
-                      >
-                        Cancel Removal
-                      </Button>
-                    )}
-                  </div>
-                </RecoveryMethodItem>
-              );
-            })}
-          </div>
-        )}
-
-        {/* Additional Recovery Methods (Coming Soon) */}
-        <RecoveryMethodItem
-          title="Email Recovery"
-          description="Use your email address to recover access"
-          icon={Mail}
-          isComingSoon={true}
-          disableCollapse={true}
-        />
-
-        <RecoveryMethodItem
-          title="Phone Recovery"
-          description="Use your phone number to recover access"
-          icon={Smartphone}
-          isComingSoon={true}
-          disableCollapse={true}
-        />
-
-        <RecoveryMethodItem
-          title="Trusted Contacts"
-          description="Designate friends or family to help recover access"
-          icon={Users}
-          isComingSoon={true}
-          disableCollapse={true}
-        />
-
-        <RecoveryMethodItem
-          title="Hardware Key"
-          description="Use a hardware security key for recovery"
-          icon={Key}
-          isComingSoon={true}
-          disableCollapse={true}
-        />
-
-        {/* Save Changes Section */}
-        {hasPendingChanges && (
-          <div className="mt-6 pt-4 border-t border-divider">
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-              <div className="flex-grow min-w-0">{renderStatusMessage()}</div>
-              <div className="flex gap-2 flex-shrink-0 w-full sm:w-auto">
-                <Button
-                  variant="bordered"
-                  color="danger"
-                  onPress={clearPendingChanges}
-                  size="sm"
-                  className="flex-grow sm:flex-grow-0"
-                >
-                  Discard Changes
-                </Button>
-                <Button
-                  color="primary"
-                  isDisabled={!isSettingsValid || isSaving}
-                  isLoading={isSaving}
-                  onPress={saveSettings}
-                  size="sm"
-                  startContent={<CheckCircle className="w-4 h-4" />}
-                  className="flex-grow sm:flex-grow-0"
-                >
-                  Save Changes
-                </Button>
-              </div>
+                };
+                return (
+                  <RecoveryMethodItem
+                    key={wallet.id}
+                    title={
+                      wallet.recoveryMethod === ("UNKNOWN" as any)
+                        ? "Unknown Guardian"
+                        : `${wallet.recoveryMethod} Recovery`
+                    }
+                    description={wallet.identifier}
+                    icon={getIcon(wallet.recoveryMethod)}
+                    isActive={true}
+                    statusLabel={isPendingRemoval ? "Pending Removal" : "Active (Legacy)"}
+                    chipColor={isPendingRemoval ? "warning" : "default"}
+                    disableCollapse={true}
+                  >
+                    <div className="mt-2">
+                      {!isPendingRemoval ? (
+                        <Button
+                          size="sm"
+                          variant="flat"
+                          color="danger"
+                          startContent={<Trash2 className="w-3.5 h-3.5" />}
+                          onPress={() => addLegacyWalletForRemoval(wallet.id)}
+                        >
+                          Mark for Removal
+                        </Button>
+                      ) : (
+                        <Button
+                          size="sm"
+                          variant="flat"
+                          color="default"
+                          onPress={() => cancelLegacyWalletRemoval(wallet.id)}
+                        >
+                          Cancel Removal
+                        </Button>
+                      )}
+                    </div>
+                  </RecoveryMethodItem>
+                );
+              })}
             </div>
-            {!isSettingsValid && pendingTotalGuardians > 0 && (
-              <p className="text-xs text-danger mt-2 text-center sm:text-right">
-                Cannot save: The selected threshold ({threshold}) is invalid for {pendingTotalGuardians} recovery
-                method(s).
-              </p>
-            )}
-            {!isSettingsValid && pendingTotalGuardians === 0 && hasPendingChanges && (
-              <p className="text-xs text-danger mt-2 text-center sm:text-right">
-                Cannot save: You must have at least one recovery method (Monetic Recovery) enabled.
-              </p>
-            )}
-          </div>
-        )}
-      </SecuritySettingCard>
+          )}
 
-      {/* Time Settings Section (Still using SecuritySettingCard) */}
-      <div className="space-y-6 mt-8">
+          {/* Additional Recovery Methods (Coming Soon) */}
+          <RecoveryMethodItem
+            title="Email Recovery"
+            description="Use your email address to recover access"
+            icon={Mail}
+            isComingSoon={true}
+            disableCollapse={true}
+          />
+
+          <RecoveryMethodItem
+            title="Phone Recovery"
+            description="Use your phone number to recover access"
+            icon={Smartphone}
+            isComingSoon={true}
+            disableCollapse={true}
+          />
+
+          <RecoveryMethodItem
+            title="Trusted Contacts"
+            description="Designate friends or family to help recover access"
+            icon={Users}
+            isComingSoon={true}
+            disableCollapse={true}
+          />
+
+          <RecoveryMethodItem
+            title="Hardware Key"
+            description="Use a hardware security key for recovery"
+            icon={Key}
+            isComingSoon={true}
+            disableCollapse={true}
+          />
+
+          {/* Save Changes Section (Conditionally render/disable) */}
+          {hasPendingChanges && (
+            <div className="mt-6 pt-4 border-t border-divider">
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                <div className="flex-grow min-w-0">{renderStatusMessage()}</div>
+                <div className="flex gap-2 flex-shrink-0 w-full sm:w-auto">
+                  <Button
+                    variant="bordered"
+                    color="danger"
+                    onPress={clearPendingChanges}
+                    size="sm"
+                    className="flex-grow sm:flex-grow-0"
+                    isDisabled={isSaving} // Disable discard when saving
+                  >
+                    Discard Changes
+                  </Button>
+                  <Button
+                    color="primary"
+                    isDisabled={!isSettingsValid || isSaving}
+                    isLoading={isSaving}
+                    onPress={saveSettings}
+                    size="sm"
+                    startContent={<CheckCircle className="w-4 h-4" />}
+                    className="flex-grow sm:flex-grow-0"
+                  >
+                    Save Changes
+                  </Button>
+                </div>
+              </div>
+              {!isSettingsValid && pendingTotalGuardians > 0 && (
+                <p className="text-xs text-danger mt-2 text-center sm:text-right">
+                  Cannot save: The selected threshold ({threshold}) is invalid for {pendingTotalGuardians} recovery
+                  method(s).
+                </p>
+              )}
+              {!isSettingsValid && pendingTotalGuardians === 0 && hasPendingChanges && (
+                <p className="text-xs text-danger mt-2 text-center sm:text-right">
+                  Cannot save: You must have at least one recovery method (Monetic Recovery) enabled.
+                </p>
+              )}
+            </div>
+          )}
+        </SecuritySettingCard>
+      </div>
+
+      {/* Time Settings Section (Disabled if no wallet) */}
+      <div className={`space-y-6 mt-8 ${!hasWalletAddress ? "opacity-50 pointer-events-none" : ""}`}>
         <SecuritySettingCard
           title="Recovery Grace Period"
           description="Set how long the recovery process will take. This gives you time to cancel if someone tries to recover your account without permission."
@@ -683,7 +721,7 @@ export default function SecuritySettingsPage() {
             options={GRACE_PERIOD_OPTIONS}
             selectedValue={recoveryDelay}
             onValueChange={setRecoveryDelay}
-            isDisabled={true}
+            isDisabled={true} // Keep inner component disabled
           />
         </SecuritySettingCard>
 
@@ -703,7 +741,7 @@ export default function SecuritySettingsPage() {
             options={DEAD_SWITCH_OPTIONS}
             selectedValue={transactionDelay}
             onValueChange={setTransactionDelay}
-            isDisabled={true}
+            isDisabled={true} // Keep inner component disabled
           />
         </SecuritySettingCard>
       </div>
