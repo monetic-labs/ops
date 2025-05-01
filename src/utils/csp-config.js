@@ -84,6 +84,8 @@ const INTERNAL_SERVICES = {
     // S3 Storage
     "https://s3.monetic.xyz",
     "https://s3.staging.monetic.xyz",
+    // Legacy domain
+    "https://*.backpack.network",
   ],
   frame: [],
   form: [
