@@ -9,6 +9,7 @@ import { TransactionListItem, GetOrderLinksOutput, BillingAddress } from "@monet
 import { useQueryClient, useQuery } from "@tanstack/react-query";
 import { QRCodeSVG } from "qrcode.react";
 import { Modal, ModalContent, ModalHeader, ModalBody } from "@heroui/modal";
+import { format } from "date-fns";
 
 import { DataTable, Column, EmptyContent } from "@/components/generics/data-table";
 import { paymentsStatusColorMap } from "@/data";
@@ -27,6 +28,7 @@ import pylon from "@/libs/monetic-sdk";
 
 // Import Detail Modals
 import { PaymentDetails } from "./_components/order-details";
+import { QRCodeModal } from "./_components/QRCodeModal";
 
 const paymentHistoryColumns: Column<TransactionListItem>[] = [
   {
@@ -357,22 +359,7 @@ export default function PaymentProcessingPage() {
       )}
 
       {/* QR Code Modal */}
-      <Modal isOpen={isQrModalOpen} onOpenChange={setIsQrModalOpen}>
-        <ModalContent>
-          {(onClose) => (
-            <>
-              <ModalHeader className="flex flex-col gap-1">Payment Request QR Code</ModalHeader>
-              <ModalBody className="flex justify-center items-center py-6">
-                {qrCodeUrl ? (
-                  <QRCodeSVG value={qrCodeUrl} size={256} level="H" includeMargin={true} />
-                ) : (
-                  <p>Error: No URL provided for QR code.</p>
-                )}
-              </ModalBody>
-            </>
-          )}
-        </ModalContent>
-      </Modal>
+      <QRCodeModal isOpen={isQrModalOpen} onOpenChange={setIsQrModalOpen} qrCodeUrl={qrCodeUrl} />
     </div>
   );
 }

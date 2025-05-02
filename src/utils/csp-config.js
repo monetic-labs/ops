@@ -105,6 +105,9 @@ const MEDIA_SERVICES = {
     // S3 Storage
     "https://s3.monetic.xyz",
     "https://s3.staging.monetic.xyz",
+    // Legacy S3 Storage
+    "https://s3.backpack.network",
+    "https://s3.staging.backpack.network",
   ],
 };
 
