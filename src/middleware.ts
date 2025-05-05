@@ -11,7 +11,7 @@ const ROUTE_CONFIG = {
   auth: "/auth",
   kyb: "/kyb",
   root: "/",
-  bypass: ["/api", "/_next", "/favicon.ico"] as string[],
+  bypass: ["/api", "/_next", "/favicon.ico", "/.well-known"] as string[],
 };
 
 // Helper functions
