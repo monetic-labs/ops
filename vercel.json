@@ -1,0 +1,8 @@
+{
+  "rewrites": [
+    {
+      "source": "/.well-known/webauthn",
+      "destination": "/api/.well-known/webauthn"
+    }
+  ]
+}
