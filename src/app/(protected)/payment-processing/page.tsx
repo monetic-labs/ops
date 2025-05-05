@@ -22,12 +22,13 @@ import {
   mapCurrencyToSymbol,
 } from "@/utils/helpers";
 import Countdown from "@/components/generics/countdown";
-import CreateOrderModal from "./_components/order-create";
+import CreateOnlineRequestModal from "./_components/CreateOnlineRequestModal";
 import { useOrderManagement } from "./_hooks/useOrderManagement";
 import pylon from "@/libs/monetic-sdk";
 
 // Import Detail Modals
 import { PaymentDetails } from "./_components/order-details";
+import CreateInStoreRequestModal from "./_components/CreateInStoreRequestModal";
 import { QRCodeModal } from "./_components/QRCodeModal";
 
 const paymentHistoryColumns: Column<TransactionListItem>[] = [
@@ -90,8 +91,11 @@ const paymentHistoryColumns: Column<TransactionListItem>[] = [
   },
 ];
 
+// Type definition for the creation modal (can be expanded if needed)
+type ModalType = "online" | "instore" | null;
+
 export default function PaymentProcessingPage() {
-  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [activeModal, setActiveModal] = useState<ModalType>(null);
   const [temporaryRequests, setTemporaryRequests] = useState<GetOrderLinksOutput[]>([]);
   const queryClient = useQueryClient();
 
@@ -161,7 +165,7 @@ export default function PaymentProcessingPage() {
   const handleOrderCreated = async (newOrder: GetOrderLinksOutput) => {
     // Add to top for visibility
     setTemporaryRequests((prev) => [newOrder, ...prev]);
-    setIsCreateModalOpen(false);
+    setActiveModal(null); // Close whichever modal was open
   };
 
   // --- Handlers for Payment History Details ---
@@ -279,14 +283,27 @@ export default function PaymentProcessingPage() {
         title="Payment Activity"
         subtitle="View your processed payments and active payment requests"
         actionButton={
-          <Button
-            color="primary"
-            variant="solid"
-            startContent={<PlusIcon className="w-4 h-4" />}
-            onPress={() => setIsCreateModalOpen(true)}
-          >
-            Create Payment Request
-          </Button>
+          // Container for buttons with responsive layout
+          <div className="flex flex-col sm:flex-row gap-2">
+            <Button
+              color="primary"
+              variant="ghost"
+              startContent={<QrCode className="w-4 h-4" />}
+              onPress={() => setActiveModal("instore")}
+              className="w-full sm:w-auto" // Full width on mobile
+            >
+              In-Store Request
+            </Button>
+            <Button
+              color="primary"
+              variant="solid"
+              startContent={<PlusIcon className="w-4 h-4" />}
+              onPress={() => setActiveModal("online")}
+              className="w-full sm:w-auto" // Full width on mobile
+            >
+              Online Request
+            </Button>
+          </div>
         }
         aria-label="Payment History Table"
         columns={paymentHistoryColumns}
@@ -327,9 +344,16 @@ export default function PaymentProcessingPage() {
       )}
 
       {/* Modals */}
-      <CreateOrderModal
-        isOpen={isCreateModalOpen}
-        onClose={() => setIsCreateModalOpen(false)}
+      <CreateOnlineRequestModal
+        isOpen={activeModal === "online"}
+        onClose={() => setActiveModal(null)}
+        onCreate={handleOrderCreated}
+      />
+
+      {/* In-Store Request Modal */}
+      <CreateInStoreRequestModal
+        isOpen={activeModal === "instore"}
+        onClose={() => setActiveModal(null)}
         onCreate={handleOrderCreated}
       />
 

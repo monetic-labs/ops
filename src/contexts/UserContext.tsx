@@ -36,6 +36,7 @@ interface UserState {
     profileImage: string | null;
   };
   isFullyApproved: boolean;
+  isMigrationRequired: boolean;
 }
 
 interface UserContextType extends UserState {
@@ -47,6 +48,7 @@ interface UserContextType extends UserState {
   updateProfileImage: (image: string | null) => Promise<void>;
   updateUserDetails: (payload: MerchantUserUpdateInput) => Promise<void>;
   forceAuthCheck: () => Promise<boolean>;
+  dismissMigrationPrompt: () => void;
 }
 
 const defaultState: UserContextType = {
@@ -56,12 +58,14 @@ const defaultState: UserContextType = {
   isLoading: true,
   isAuthenticated: false,
   isFullyApproved: false,
+  isMigrationRequired: false,
   logout: async () => {},
   getCredentials: () => undefined,
   addCredential: () => {},
   updateProfileImage: async () => {},
   updateUserDetails: async () => {},
   forceAuthCheck: async () => false,
+  dismissMigrationPrompt: () => {},
 };
 
 const UserContext = createContext<UserContextType>(defaultState);
@@ -85,6 +89,7 @@ export function UserProvider({ children, token }: UserProviderProps) {
   const [profile, setProfile] = useState<UserState["profile"]>();
   const [session, setSession] = useState<Session | null>(null);
   const [isFullyApproved, setIsFullyApproved] = useState<boolean>(false);
+  const [isMigrationRequired, setIsMigrationRequired] = useState<boolean>(false);
 
   // Derived states
   const isLoading = authStatus === AuthStatus.INITIALIZING || authStatus === AuthStatus.CHECKING;
@@ -137,6 +142,7 @@ export function UserProvider({ children, token }: UserProviderProps) {
         setUser(undefined);
         setCredentials(undefined);
         setIsFullyApproved(false);
+        setIsMigrationRequired(false);
 
         // Clear compliance cookie
         CookieManager.clearComplianceStatus();
@@ -154,6 +160,10 @@ export function UserProvider({ children, token }: UserProviderProps) {
 
       // User found
       setUser(userData);
+
+      // Check for Passkey Migration Need
+      const needsMigration = userData?.hasMigratedPasskey === false;
+      setIsMigrationRequired(needsMigration);
 
       // Process credentials if needed
       if (!credentials && userData?.registeredPasskeys?.length > 0) {
@@ -225,6 +235,7 @@ export function UserProvider({ children, token }: UserProviderProps) {
 
       setAuthStatus(AuthStatus.UNAUTHENTICATED);
       setIsFullyApproved(false);
+      setIsMigrationRequired(false);
       CookieManager.setComplianceStatus({
         kycStatus: "",
         rainKybStatus: "",
@@ -276,6 +287,7 @@ export function UserProvider({ children, token }: UserProviderProps) {
       setCredentials(undefined);
       setAuthStatus(AuthStatus.UNAUTHENTICATED);
       setIsFullyApproved(false);
+      setIsMigrationRequired(false);
       CookieManager.clearComplianceStatus();
 
       // Redirect after logout
@@ -290,6 +302,7 @@ export function UserProvider({ children, token }: UserProviderProps) {
       setCredentials(undefined);
       setAuthStatus(AuthStatus.UNAUTHENTICATED);
       setIsFullyApproved(false);
+      setIsMigrationRequired(false);
     }
   };
 
@@ -313,6 +326,11 @@ export function UserProvider({ children, token }: UserProviderProps) {
 
     // Force auth check as credentials changed
     checkAuthentication();
+  };
+
+  // Function to dismiss the migration prompt
+  const dismissMigrationPrompt = () => {
+    setIsMigrationRequired(false);
   };
 
   // Handle routing based on auth state
@@ -349,11 +367,13 @@ export function UserProvider({ children, token }: UserProviderProps) {
       isLoading,
       isAuthenticated,
       isFullyApproved,
+      isMigrationRequired,
       profile,
       logout: handleLogout,
       getCredentials: () => credentials,
       addCredential: handleAddCredential,
       forceAuthCheck,
+      dismissMigrationPrompt,
       updateProfileImage: async (image: string | null) => {
         try {
           // Update localStorage first
@@ -389,7 +409,17 @@ export function UserProvider({ children, token }: UserProviderProps) {
         }
       },
     }),
-    [user, credentials, authStatus, isLoading, isAuthenticated, isFullyApproved, profile, forceAuthCheck]
+    [
+      user,
+      credentials,
+      authStatus,
+      isLoading,
+      isAuthenticated,
+      isFullyApproved,
+      isMigrationRequired,
+      profile,
+      forceAuthCheck,
+    ]
   );
 
   return <UserContext.Provider value={contextValue}>{children}</UserContext.Provider>;

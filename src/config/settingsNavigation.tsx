@@ -47,9 +47,9 @@ export const settingsSections: SettingsSection[] = [
         icon: <Users className="w-4 h-4" />,
       },
       {
-        id: "card-settlement",
-        label: "Card Settlement",
-        href: "/settings/card-settlement",
+        id: "settlement",
+        label: "Settlement",
+        href: "/settings/settlement",
         icon: <SquareArrowDownRight className="w-4 h-4" />,
       },
     ],

@@ -15,6 +15,7 @@ import { Spinner } from "@heroui/spinner";
 
 import { Sidebar } from "@/components/layout/Sidebar";
 import { MobileBottomNav } from "@/components/layout/MobileBottomNav";
+import { PasskeyMigrationModal } from "@/components/modals/PasskeyMigrationModal";
 
 export default function ProtectedLayout({ children }: { children: React.ReactNode }) {
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
@@ -43,6 +44,8 @@ export default function ProtectedLayout({ children }: { children: React.ReactNod
             {children}
           </Suspense>
         </main>
+
+        <PasskeyMigrationModal />
       </div>
 
       <MobileBottomNav />

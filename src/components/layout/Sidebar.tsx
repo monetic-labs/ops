@@ -356,7 +356,7 @@ export function Sidebar({ isCollapsed, toggleSidebar: originalToggleSidebar }: S
   const renderTopSection = () => {
     const currentOrgName = user?.merchant?.company?.name || "My Organization";
     const settingsItems = processedOrgMenuItems.filter((item) =>
-      ["api-keys-setting", "team-setting", "card-settlement-setting"].includes(item.id)
+      ["api-keys-setting", "team-setting", "settlement-setting"].includes(item.id)
     );
     const switchOrgItems = processedOrgMenuItems.filter((item) => item.id === "add-org");
     const disabledKeys = processedOrgMenuItems.filter((item) => item.isDisabled).map((item) => item.id);

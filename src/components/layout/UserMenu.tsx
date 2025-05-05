@@ -73,7 +73,7 @@ export function UserMenu({
   // This could also be done in the hook later if preferred
   const toolItems = items.filter((i) => ["chat", "theme"].includes(i.id));
   const personalItems = items.filter((i) => ["profile", "security"].includes(i.id));
-  const orgItems = items.filter((i) => ["team-members", "api-keys", "card-settlement"].includes(i.id));
+  const orgItems = items.filter((i) => ["team-members", "api-keys", "settlement"].includes(i.id));
   const actionItems = items.filter((i) => ["logout"].includes(i.id));
 
   // Combine external and internal disabled keys
