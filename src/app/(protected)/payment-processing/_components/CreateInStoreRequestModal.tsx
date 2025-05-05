@@ -116,7 +116,6 @@ export default function CreateInStoreRequestModal({ isOpen, onClose, onCreate }:
               </p>
               <Input
                 isRequired
-                autoFocus
                 labelPlacement="outside"
                 label="Enter Amount"
                 placeholder="0.00"

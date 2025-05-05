@@ -58,7 +58,7 @@ export function PasskeyMigrationModal() {
         </ModalHeader>
         <ModalBody>
           <p className="text-sm text-foreground-600">
-            We've migrated to a new platform for improved security and features. To ensure seamless access, please
+            We&apos;ve migrated to a new platform for improved security and features. To ensure seamless access, please
             register a new passkey for your account on this site. This is a required step to secure your account.
           </p>
         </ModalBody>
