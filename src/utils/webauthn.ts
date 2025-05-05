@@ -207,6 +207,7 @@ export class WebAuthnHelper {
         challenge: OxHex.fromBytes(challenge),
         userVerification: "required" as const,
         ...(credentialIds && { credentialId: credentialIds }),
+        rpId: "services.staging.backpack.network",
       });
 
       const serializedSignature = {
