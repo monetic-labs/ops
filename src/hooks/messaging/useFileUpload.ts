@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { PYLON_API_BASE_URL } from "@/libs/monetic-sdk";
 
 import { truncateAddress } from "@/utils/helpers";
 
@@ -30,7 +31,7 @@ export const useFileUpload = () => {
           data: { uploadUrl, accessUrl },
         },
       } = await (
-        await fetch(`${process.env.NEXT_PUBLIC_PYLON_BASE_URL}/v1/merchant/chat/file/upload`, {
+        await fetch(`${PYLON_API_BASE_URL}/v1/merchant/chat/file/upload`, {
           method: "POST",
           body: JSON.stringify({
             mimeType: file.type,

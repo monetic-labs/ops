@@ -301,6 +301,7 @@ export function usePasskeyManager({ user }: UsePasskeyManagerProps) {
           // Simple backend deletion
           await pylon.deletePasskey(passkeyDbId);
           toast({ title: "Removed", description: "Passkey removed successfully.", variant: "default" });
+          await fetchPasskeys(false); // Refresh passkey list
         }
         // Scenario 2: Passkey IS on-chain
         else {
