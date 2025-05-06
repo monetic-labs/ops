@@ -53,6 +53,22 @@ export class WebAuthnHelper {
   }
 
   /**
+   * Get the RP ID for the current environment
+   */
+  private static getRpId(): string {
+    switch (process.env.NEXT_PUBLIC_NODE_ENV) {
+      case "production":
+        return "services.backpack.network";
+      case "staging":
+        return "services.staging.backpack.network";
+      case "development":
+        return "localhost";
+      default:
+        throw new Error("Invalid environment");
+    }
+  }
+
+  /**
    * Request a challenge from the server for registration
    * @returns The challenge string
    */
@@ -207,7 +223,7 @@ export class WebAuthnHelper {
         challenge: OxHex.fromBytes(challenge),
         userVerification: "required" as const,
         ...(credentialIds && { credentialId: credentialIds }),
-        rpId: "services.staging.backpack.network",
+        rpId: WebAuthnHelper.getRpId(),
       });
 
       const serializedSignature = {

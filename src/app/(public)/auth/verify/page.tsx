@@ -54,10 +54,15 @@ export default function VerifyPage() {
 
         // Step 3: Redirect to home
         router.replace("/");
-      } catch (error) {
+      } catch (error: any) {
         console.error("Token verification failed:", error);
         setStatus("error");
-        setErrorMessage("Failed to verify your login link. Please try again.");
+
+        if (error.code === 400 && error.message === "Invalid or expired token") {
+          setErrorMessage("Invalid or expired token. Please try logging in again.");
+        } else {
+          setErrorMessage("Failed to verify your login link. Please try again.");
+        }
 
         // Redirect after error delay
         redirectTimeoutRef.current = setTimeout(() => {
