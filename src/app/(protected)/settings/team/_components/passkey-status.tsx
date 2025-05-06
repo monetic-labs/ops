@@ -1,12 +1,12 @@
 import { Button } from "@heroui/button";
 import { Chip } from "@heroui/chip";
 import { CheckCircle, AlertCircle, Clock, HelpCircle } from "lucide-react";
-import { PasskeyStatus, PasskeyWithStatus } from "@/utils/safe/features/passkey";
+import { PasskeyStatus, Passkey } from "@/utils/safe/features/passkey";
 
 interface PasskeyStatusProps {
-  passkey: PasskeyWithStatus;
+  passkey: Passkey;
   isSelf?: boolean;
-  onActivate?: (passkey: PasskeyWithStatus) => void;
+  onActivate?: (passkey: Passkey) => void;
   showDetails?: boolean;
 }
 

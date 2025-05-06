@@ -6,24 +6,9 @@ import { Select, SelectItem } from "@heroui/select";
 import { Divider } from "@heroui/divider";
 import { User as HeroUser } from "@heroui/user";
 import { useState, useEffect } from "react";
-import { Eye, EyeOff, Fingerprint, Trash2, Info, Clock } from "lucide-react";
-import { ScrollShadow } from "@heroui/scroll-shadow";
-import { Tooltip } from "@heroui/tooltip";
-import { Address, Hex } from "viem";
-import { PublicKey } from "ox";
-import { SafeAccountV0_3_0 as SafeAccount } from "abstractionkit";
-
-import { formatPhoneNumber, formatStringToTitleCase, getFullName, getOpepenAvatar, getTimeAgo } from "@/utils/helpers";
-import { PasskeyStatus, syncPasskeysWithSafe, PasskeyWithStatus } from "@/utils/safe/features/passkey";
-import { WebAuthnHelper } from "@/utils/webauthn";
-import { createAddOwnerTemplate } from "@/utils/safe/templates";
-import { executeDirectTransaction } from "@/utils/safe/flows/direct";
-import { deployIndividualSafe } from "@/utils/safe/features/deploy";
+import { formatPhoneNumber, formatStringToTitleCase, getFullName, getOpepenAvatar } from "@/utils/helpers";
 import { useToast } from "@/hooks/generics/useToast";
 import { usePasskeySelection } from "@/contexts/PasskeySelectionContext";
-import PasskeyStatusComponent from "./passkey-status";
-import pylon from "@/libs/monetic-sdk";
-import { v4 as uuidv4 } from "uuid";
 
 interface UserEditModalProps {
   isOpen: boolean;

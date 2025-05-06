@@ -27,7 +27,7 @@ export enum PasskeyStatus {
 Passkeys are represented with the following structure:
 
 ```typescript
-export interface PasskeyWithStatus {
+export interface Passkey {
   credentialId: string; // Unique identifier for the passkey
   publicKey: string; // The public key in hex format
   displayName: string; // User-friendly name of the passkey
@@ -164,7 +164,7 @@ export async function syncPasskeysWithSafe(
     publicKey?: string;
     // ... other properties
   }> = []
-): Promise<PasskeyWithStatus[]> {
+): Promise<Passkey[]> {
   // Get on-chain owners
   const owners = (await publicClient.readContract({
     address: walletAddress,

@@ -9,8 +9,6 @@ import { PasskeyCredentials, WebAuthnHelper } from "@/utils/webauthn";
 import { WebAuthnCredentials } from "@/types/webauthn";
 import { SAFE_ABI } from "@/utils/abi/safe";
 
-import { createAddOwnerTemplate } from "../templates";
-import { executeDirectTransaction } from "../flows/direct";
 import { publicClient } from "@/config/web3";
 import { PublicKey } from "ox";
 import pylon from "@/libs/monetic-sdk";
@@ -24,13 +22,14 @@ export enum PasskeyStatus {
   UNKNOWN = "UNKNOWN", // Status couldn't be determined
 }
 
-export type PasskeyWithStatus = {
+export type Passkey = {
   credentialId: string;
   publicKey: string;
   displayName: string;
-  status: PasskeyStatus;
   lastUsedAt: string;
+  status: PasskeyStatus;
   id?: string;
+  rpId?: string;
   createdAt?: string;
   counter?: number;
   ownerAddress?: Address;
@@ -67,13 +66,13 @@ export async function syncPasskeysWithSafe(
   walletAddress: Address | undefined,
   registeredPasskeys: Array<{
     credentialId: string;
-    publicKey?: string; // Make this optional since it might be missing
+    publicKey?: string;
     displayName?: string;
-    lastUsedAt?: string; // Make this optional too
-    id?: string; // Add id field from your database
-    createdAt?: string; // Add createdAt field from your database
+    lastUsedAt?: string;
+    id?: string;
+    createdAt?: string;
   }> = []
-): Promise<PasskeyWithStatus[]> {
+): Promise<Passkey[]> {
   console.info(`${logPrefix} Starting sync. Wallet: ${walletAddress}, Input Passkeys:`, registeredPasskeys);
   // If no wallet address or no passkeys, return empty array
   if (!walletAddress || !registeredPasskeys?.length) {

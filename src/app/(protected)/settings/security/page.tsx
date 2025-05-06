@@ -45,9 +45,10 @@ import StatusAlert from "./_components/StatusAlert";
 import SummaryStatusItem from "./_components/SummaryStatusItem";
 import { ListTable } from "@/components/generics/list-table";
 import { getTimeAgo } from "@/utils/helpers";
-import { PasskeyStatus, PasskeyWithStatus } from "@/utils/safe/features/passkey";
+import { PasskeyStatus, Passkey } from "@/utils/safe/features/passkey";
 import { Input } from "@heroui/input";
 import { Tooltip } from "@heroui/tooltip";
+import { LEGACY_API_BASE_URL } from "@/libs/monetic-sdk";
 
 export default function SecuritySettingsPage() {
   // Component State
@@ -209,10 +210,10 @@ export default function SecuritySettingsPage() {
   } = usePasskeyManager({ user });
 
   // Filter passkeys to ensure 'id' is defined for ListTable compatibility
-  const listTableItems = passkeys.filter((pk): pk is PasskeyWithStatus & { id: string } => typeof pk.id === "string");
+  const listTableItems = passkeys.filter((pk): pk is Passkey & { id: string } => typeof pk.id === "string");
 
   // --- Renaming Handlers ---
-  const startEditing = (passkey: PasskeyWithStatus) => {
+  const startEditing = (passkey: Passkey) => {
     setEditingPasskeyId(passkey.credentialId);
     setEditingPasskeyName(passkey.displayName || "");
   };
@@ -318,10 +319,10 @@ export default function SecuritySettingsPage() {
         title="Authentication Methods"
         description="Passkeys allow you to log in and sign transactions using biometrics, a device password, or a PIN."
         icon={<Fingerprint className="text-primary" size={20} />}
-        items={listTableItems as (PasskeyWithStatus & { id: string })[]}
+        items={listTableItems as (Passkey & { id: string })[]}
         isLoading={isPasskeyLoading && listTableItems.length === 0}
         renderItem={(item) => {
-          const passkey = item as PasskeyWithStatus & { id: string };
+          const passkey = item as Passkey & { id: string };
           const isProcessing = isProcessingPasskey[passkey.id];
           const isCurrentlyEditing = editingPasskeyId === passkey.credentialId;
           const canRemove =
@@ -410,7 +411,21 @@ export default function SecuritySettingsPage() {
 
           return {
             startContent: <Laptop2 className="text-foreground/60 w-5 h-5" />,
-            primaryText: primaryTextContent,
+            primaryText: (
+              <div className="flex items-center gap-2">
+                {primaryTextContent}
+                {LEGACY_API_BASE_URL && passkey.rpId === new URL(LEGACY_API_BASE_URL).hostname && (
+                  <Chip
+                    startContent={<AlertTriangle className="w-3 h-3" />}
+                    color="warning"
+                    size="sm"
+                    variant="bordered"
+                  >
+                    Deprecated
+                  </Chip>
+                )}
+              </div>
+            ),
             secondaryText: (
               <div className="flex items-center gap-2 mt-1">
                 {statusChip()}

@@ -6,17 +6,17 @@ import { Chip } from "@heroui/chip";
 import { Input } from "@heroui/input";
 import { Tooltip } from "@heroui/tooltip";
 import { Spinner } from "@heroui/spinner";
-import { PasskeyStatus, PasskeyWithStatus } from "@/utils/safe/features/passkey";
+import { PasskeyStatus, Passkey } from "@/utils/safe/features/passkey";
 import { getTimeAgo } from "@/utils/helpers";
-import { CheckCircle, Clock, AlertCircle, Trash2, Laptop2 } from "lucide-react";
+import { CheckCircle, Clock, AlertCircle, Trash2, Laptop2, AlertTriangle } from "lucide-react";
 import { cn } from "@/utils/cn";
 
 interface PasskeyListItemProps {
-  passkey: PasskeyWithStatus & { dbId?: string }; // Include original dbId if available
+  passkey: Passkey & { dbId?: string }; // Include original dbId if available
   isProcessing?: boolean;
-  onActivate: (passkey: PasskeyWithStatus) => void;
+  onActivate: (passkey: Passkey) => void;
   onRename: (passkeyDbId: string, newName: string) => void; // Expect DB ID for rename
-  onRemove: (passkey: PasskeyWithStatus) => void;
+  onRemove: (passkey: Passkey) => void;
   passkeyCount: number; // Needed to disable delete if only one
 }
 

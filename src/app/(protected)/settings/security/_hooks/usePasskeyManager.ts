@@ -5,7 +5,7 @@ import { WebAuthnHelper } from "@/utils/webauthn";
 import { isAxiosError } from "axios";
 import { MerchantUserGetByIdOutput } from "@monetic-labs/sdk";
 
-import { PasskeyStatus, syncPasskeysWithSafe, PasskeyWithStatus } from "@/utils/safe/features/passkey";
+import { PasskeyStatus, syncPasskeysWithSafe, Passkey } from "@/utils/safe/features/passkey";
 import { usePasskeySelection } from "@/contexts/PasskeySelectionContext";
 import { executeDirectTransaction } from "@/utils/safe/flows/direct";
 import { createAddOwnerTemplate, createRemoveOwnerTemplate } from "@/utils/safe/templates";
@@ -24,8 +24,7 @@ interface UsePasskeyManagerProps {
 }
 
 export function usePasskeyManager({ user }: UsePasskeyManagerProps) {
-  // State now holds PasskeyWithStatus
-  const [passkeys, setPasskeys] = useState<PasskeyWithStatus[]>([]);
+  const [passkeys, setPasskeys] = useState<Passkey[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isAdding, setIsAdding] = useState(false);
   const [isProcessing, setIsProcessing] = useState<Record<string, boolean>>({}); // Track processing state per passkey
@@ -183,7 +182,7 @@ export function usePasskeyManager({ user }: UsePasskeyManagerProps) {
 
   // Activate a pending passkey on-chain
   const activatePasskey = useCallback(
-    async (passkey: PasskeyWithStatus) => {
+    async (passkey: Passkey) => {
       console.info(`${logPrefix} Starting 'activatePasskey' for credential: ${passkey.credentialId}`);
       if (passkey.status !== PasskeyStatus.PENDING_ONCHAIN || !user?.walletAddress || !passkey.publicKey) {
         toast({ title: "Error", description: "Passkey cannot be activated.", variant: "destructive" });
@@ -260,8 +259,7 @@ export function usePasskeyManager({ user }: UsePasskeyManagerProps) {
 
   // Placeholder for remove passkey logic
   const removePasskey = useCallback(
-    // Expect the original PasskeyWithStatus object (id should be defined by now)
-    async (passkeyToRemove: PasskeyWithStatus) => {
+    async (passkeyToRemove: Passkey) => {
       console.info(
         `${logPrefix} Starting 'removePasskey' for ID: ${passkeyToRemove.id}, CredentialID: ${passkeyToRemove.credentialId}`
       );
@@ -401,7 +399,7 @@ export function usePasskeyManager({ user }: UsePasskeyManagerProps) {
   }, [user?.id]); // Removed fetchPasskeys from deps
 
   return {
-    passkeys, // Now PasskeyWithStatus[]
+    passkeys, // Now Passkey[]
     isLoading: isLoading,
     isAddingPasskey: isAdding,
     isProcessingPasskey: isProcessing, // Expose processing state
