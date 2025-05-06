@@ -71,7 +71,7 @@ const AuthPage = () => {
     setIsLoading(true);
     try {
       // Authenticate with WebAuthn
-      const webauthn = await WebAuthnHelper.login(credentials.map((cred) => cred.credentialId));
+      const webauthn = await WebAuthnHelper.login(credentials);
 
       // Get credentials from the instance
       const { publicKey, credentialId } = webauthn.getCredentials();

@@ -11,6 +11,7 @@ import {
 import { Hex } from "viem";
 
 import pylon from "@/libs/monetic-sdk";
+import { Passkey } from "@monetic-labs/sdk";
 
 const logPrefix = "[WebAuthn Helper]";
 
@@ -53,29 +54,11 @@ export class WebAuthnHelper {
   }
 
   /**
-   * Get the RP ID for the current environment
-   */
-  private static getRpId(): string {
-    switch (process.env.NEXT_PUBLIC_NODE_ENV) {
-      case "production":
-        return "services.backpack.network";
-      case "staging":
-        return "services.staging.backpack.network";
-      case "development":
-        return "localhost";
-      default:
-        throw new Error("Invalid environment");
-    }
-  }
-
-  /**
    * Request a challenge from the server for registration
    * @returns The challenge string
    */
   private static async requestChallenge(): Promise<string> {
-    console.info(`${logPrefix} Requesting challenge from server.`);
     const response = await pylon.generatePasskeyChallenge();
-    console.info(`${logPrefix} Received challenge: ${response.challenge}`);
     return response.challenge;
   }
 
@@ -209,11 +192,31 @@ export class WebAuthnHelper {
    * @param credentialIds - Array of credential IDs to use for authentication
    * @returns A new WebAuthnHelper instance with the credential that was used for authentication
    */
-  static async login(credentialIds?: string[]): Promise<WebAuthnHelper> {
-    console.info(`${logPrefix} Starting 'login' with credential IDs:`, credentialIds);
+  static async login(passedCredentials?: Passkey[]): Promise<WebAuthnHelper> {
     try {
       const challengeStr = await this.requestChallenge();
       const challenge = Bytes.fromString(challengeStr);
+      const currentRpId = window.location.hostname;
+      let credentialIdsToTry: string[] | undefined = undefined;
+
+      if (passedCredentials && passedCredentials.length > 0) {
+        const collectedIds = passedCredentials.reduce(
+          (acc, cred) => {
+            if (cred.rpId === currentRpId) {
+              acc.matchingRpIdCredentials.push(cred.credentialId);
+            }
+            acc.allCredentialIds.push(cred.credentialId);
+            return acc;
+          },
+          { matchingRpIdCredentials: [] as string[], allCredentialIds: [] as string[] }
+        );
+
+        if (collectedIds.matchingRpIdCredentials.length > 0) {
+          credentialIdsToTry = collectedIds.matchingRpIdCredentials;
+        } else {
+          credentialIdsToTry = collectedIds.allCredentialIds;
+        }
+      }
 
       const {
         raw: credential,
@@ -222,8 +225,8 @@ export class WebAuthnHelper {
       } = await sign({
         challenge: OxHex.fromBytes(challenge),
         userVerification: "required" as const,
-        ...(credentialIds && { credentialId: credentialIds }),
-        rpId: WebAuthnHelper.getRpId(),
+        ...(credentialIdsToTry && { credentialId: credentialIdsToTry }),
+        rpId: currentRpId, // Always use currentRpId for the sign operation's rpId parameter
       });
 
       const serializedSignature = {
@@ -234,7 +237,7 @@ export class WebAuthnHelper {
       const { publicKey } = await pylon.authenticatePasskey({
         credentialId: credential.id,
         challenge: challengeStr,
-        metadata, // Contains authenticatorData, clientDataJSON
+        metadata,
         signature: serializedSignature,
       });
       console.info(`${logPrefix} Server authentication successful.`);
