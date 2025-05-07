@@ -70,7 +70,7 @@ const defaultState: UserContextType = {
 
 const UserContext = createContext<UserContextType>(defaultState);
 
-const PUBLIC_ROUTES = ["/auth", "/auth/recovery", "/invite", "/onboard"];
+const PUBLIC_ROUTES = ["/auth", "/invite", "/onboard"];
 
 interface UserProviderProps {
   children: ReactNode;

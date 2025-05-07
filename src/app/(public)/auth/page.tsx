@@ -227,16 +227,17 @@ const AuthPage = () => {
                       : "Resend Email"}
                 </Button>
 
-                {passkeyCredentials.length > 0 && (
+                {/* TODO: Add email recovery link & page */}
+                {/* {passkeyCredentials.length > 0 && (
                   <div className="text-center mt-4">
                     <Link
                       className="text-sm text-primary hover:underline"
                       href={`/auth/recover?email=${encodeURIComponent(email)}`}
                     >
-                      Forgot your passkey?
+                      Lost your passkey?
                     </Link>
                   </div>
-                )}
+                )} */}
               </div>
             )}
 

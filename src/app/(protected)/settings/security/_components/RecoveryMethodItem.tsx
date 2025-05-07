@@ -29,6 +29,7 @@ export interface RecoveryMethodItemProps {
   handleToggleMonetic?: () => void;
   isPendingToggle?: boolean;
   disableToggle?: boolean;
+  onManualRecoveryRequest?: () => void;
 }
 
 const RecoveryMethodItem: React.FC<RecoveryMethodItemProps> = ({
@@ -48,6 +49,7 @@ const RecoveryMethodItem: React.FC<RecoveryMethodItemProps> = ({
   handleToggleMonetic,
   isPendingToggle = false,
   disableToggle = false,
+  onManualRecoveryRequest,
 }) => {
   // Determine chip display - coming soon takes precedence over active status
   const determinedChipColor = chipColorProp ?? (isComingSoon ? "default" : isActive ? "success" : "default");
@@ -75,6 +77,24 @@ const RecoveryMethodItem: React.FC<RecoveryMethodItemProps> = ({
             isDisabled={isPendingToggle || disableToggle}
           />
         </div>
+
+        {/* Manual Recovery Assistance Section - only if Monetic Recovery is enabled */}
+        {isMoneticRecoveryEnabled && onManualRecoveryRequest && (
+          <div className="pt-4 mt-4 border-warning space-y-3 bg-warning/10 p-4 rounded-md">
+            <h4 className="text-sm font-medium text-warning-700">Lost All Access Methods?</h4>
+            <p className="text-xs text-warning-600">
+              If you've lost all passkeys and Monetic Recovery is your only option, you can request manual assistance.
+              This is an intensive process reserved for emergencies.
+            </p>
+            <button
+              onClick={onManualRecoveryRequest}
+              className="text-xs text-danger hover:text-danger-600 font-medium disabled:opacity-50"
+              disabled={isPendingToggle}
+            >
+              Request Manual Recovery Assistance &rarr;
+            </button>
+          </div>
+        )}
       </div>
     );
   };

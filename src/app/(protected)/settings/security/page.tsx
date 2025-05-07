@@ -9,7 +9,6 @@ import {
   ShieldAlert,
   CheckCircle2,
   XCircle,
-  Lock,
   CheckCircle,
   AlertCircle,
   Mail,
@@ -19,36 +18,26 @@ import {
   Building,
   Trash2,
   Info,
-  Fingerprint,
-  Laptop,
-  Laptop2,
 } from "lucide-react";
 import { Spinner } from "@heroui/spinner";
-import { format, parseISO } from "date-fns";
-import { useToast } from "@/hooks/generics/useToast";
 import { useUser } from "@/contexts/UserContext";
 import { usePasskeySelection } from "@/contexts/PasskeySelectionContext";
 import { TransferStatus } from "@/components/generics/transfer-status";
 import { Chip } from "@heroui/chip";
-import { Progress } from "@heroui/progress";
 import { GRACE_PERIOD_OPTIONS, DEAD_SWITCH_OPTIONS } from "@/app/(protected)/settings/security/constants";
-import { PendingChanges, RecoveryWallet } from "@/app/(protected)/settings/security/types";
+import { PendingChanges } from "@/app/(protected)/settings/security/types";
 import { RecoveryWalletMethod } from "@monetic-labs/sdk";
 import { useSecuritySettingsManager } from "./_hooks/useSecuritySettingsManager";
 import { useRecoveryWallets } from "./_hooks/useRecoveryWallets";
 import { usePasskeyManager } from "./_hooks/usePasskeyManager";
 import SecuritySettingCard from "./_components/SecuritySettingCard";
-import RecoveryThresholdSelector from "./_components/RecoveryThresholdSelector";
 import TimeSelector from "./_components/TimeSelector";
 import RecoveryMethodItem from "./_components/RecoveryMethodItem";
 import StatusAlert from "./_components/StatusAlert";
 import SummaryStatusItem from "./_components/SummaryStatusItem";
-import { ListTable } from "@/components/generics/list-table";
-import { getTimeAgo } from "@/utils/helpers";
-import { PasskeyStatus, Passkey } from "@/utils/safe/features/passkey";
-import { Input } from "@heroui/input";
-import { Tooltip } from "@heroui/tooltip";
-import { LEGACY_API_BASE_URL } from "@/libs/monetic-sdk";
+import RecoveryRequestModal from "./_components/RecoveryRequestModal";
+import PasskeyManagementSection from "./_components/PasskeyManagementSection";
+import { Passkey } from "@/utils/safe/features/passkey";
 
 export default function SecuritySettingsPage() {
   // Component State
@@ -57,8 +46,7 @@ export default function SecuritySettingsPage() {
   const [recoveryDelay, setRecoveryDelay] = useState("7");
   const [transactionDelay, setTransactionDelay] = useState("12");
   const [showLegacyBanner, setShowLegacyBanner] = useState(false);
-  const [editingPasskeyId, setEditingPasskeyId] = useState<string | null>(null);
-  const [editingPasskeyName, setEditingPasskeyName] = useState("");
+  const [isRecoveryModalOpen, setIsRecoveryModalOpen] = useState(false);
 
   // User Context
   const { user, isLoading: isUserLoading } = useUser();
@@ -212,25 +200,6 @@ export default function SecuritySettingsPage() {
   // Filter passkeys to ensure 'id' is defined for ListTable compatibility
   const listTableItems = passkeys.filter((pk): pk is Passkey & { id: string } => typeof pk.id === "string");
 
-  // --- Renaming Handlers ---
-  const startEditing = (passkey: Passkey) => {
-    setEditingPasskeyId(passkey.credentialId);
-    setEditingPasskeyName(passkey.displayName || "");
-  };
-
-  const handleRenameCommit = () => {
-    const passkeyToRename = passkeys.find((p) => p.credentialId === editingPasskeyId);
-    if (passkeyToRename?.id && editingPasskeyName !== passkeyToRename.displayName) {
-      renamePasskey(passkeyToRename.id, editingPasskeyName);
-    }
-    setEditingPasskeyId(null);
-  };
-
-  const handleRenameCancel = () => {
-    setEditingPasskeyId(null);
-  };
-  // --- End Renaming Handlers ---
-
   // Loading State
   if (isUserLoading || (isPasskeyLoading && passkeys.length === 0 && !hasWalletAddress)) {
     // Adjust loading condition
@@ -286,6 +255,14 @@ export default function SecuritySettingsPage() {
     }
   };
 
+  const openRecoveryModal = () => {
+    setIsRecoveryModalOpen(true);
+  };
+
+  const closeRecoveryModal = () => {
+    setIsRecoveryModalOpen(false);
+  };
+
   // Render Page Content
   return (
     <div className="space-y-8 max-w-4xl mx-auto pb-12">
@@ -313,139 +290,17 @@ export default function SecuritySettingsPage() {
         </div>
       )}
 
-      {/* Passkeys Section (Always visible) */}
-      <ListTable
-        aria-label="Passkeys"
-        title="Authentication Methods"
-        description="Passkeys allow you to log in and sign transactions using biometrics, a device password, or a PIN."
-        icon={<Fingerprint className="text-primary" size={20} />}
-        items={listTableItems as (Passkey & { id: string })[]}
-        isLoading={isPasskeyLoading && listTableItems.length === 0}
-        renderItem={(item) => {
-          const passkey = item as Passkey & { id: string };
-          const isProcessing = isProcessingPasskey[passkey.id];
-          const isCurrentlyEditing = editingPasskeyId === passkey.credentialId;
-          const canRemove =
-            passkeys.filter((p) => p.status === PasskeyStatus.ACTIVE_ONCHAIN).length > 1 ||
-            passkey.status !== PasskeyStatus.ACTIVE_ONCHAIN;
-
-          const statusChip = () => {
-            switch (passkey.status) {
-              case PasskeyStatus.ACTIVE_ONCHAIN:
-                return (
-                  <Chip color="success" size="sm" variant="flat" startContent={<CheckCircle size={14} />}>
-                    Active
-                  </Chip>
-                );
-              case PasskeyStatus.PENDING_ONCHAIN:
-                return (
-                  <Chip color="warning" size="sm" variant="flat" startContent={<Clock size={14} />}>
-                    Pending
-                  </Chip>
-                );
-              default:
-                return (
-                  <Chip color="default" size="sm" variant="flat" startContent={<AlertCircle size={14} />}>
-                    Unknown
-                  </Chip>
-                );
-            }
-          };
-
-          const endContent = (
-            <div className="flex items-center gap-1 flex-shrink-0">
-              {passkey.status === PasskeyStatus.PENDING_ONCHAIN && (
-                <Button
-                  size="sm"
-                  color="primary"
-                  variant="flat"
-                  onPress={() => activatePasskey(passkey)}
-                  isLoading={isProcessing}
-                  isDisabled={isProcessing}
-                >
-                  {isProcessing ? "" : "Activate"}
-                </Button>
-              )}
-              <Tooltip content={!canRemove ? "Cannot remove the last active passkey" : "Remove Passkey"}>
-                <div>
-                  <Button
-                    isIconOnly
-                    size="sm"
-                    variant="light"
-                    color="danger"
-                    isDisabled={!canRemove || isProcessing}
-                    onPress={() => removePasskey(passkey)}
-                    className="data-[disabled=true]:opacity-50"
-                  >
-                    <Trash2 size={16} />
-                  </Button>
-                </div>
-              </Tooltip>
-            </div>
-          );
-
-          const primaryTextContent = isCurrentlyEditing ? (
-            <Input
-              aria-label="Rename Passkey"
-              size="sm"
-              variant="bordered"
-              value={editingPasskeyName}
-              onChange={(e) => setEditingPasskeyName(e.target.value)}
-              onBlur={handleRenameCommit}
-              onKeyDown={(e) => {
-                if (e.key === "Enter") handleRenameCommit();
-                if (e.key === "Escape") handleRenameCancel();
-              }}
-              classNames={{ inputWrapper: "h-8" }}
-            />
-          ) : (
-            <button
-              className="text-sm font-medium text-foreground text-left hover:text-primary transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-              onClick={() => startEditing(passkey)}
-              disabled={isProcessing}
-              title="Click to rename"
-            >
-              {passkey.displayName || `Passkey ${passkey.credentialId?.substring(0, 6)}...`}
-            </button>
-          );
-
-          return {
-            startContent: <Laptop2 className="text-foreground/60 w-5 h-5" />,
-            primaryText: (
-              <div className="flex items-center gap-2">
-                {primaryTextContent}
-                {LEGACY_API_BASE_URL && passkey.rpId === new URL(LEGACY_API_BASE_URL).hostname && (
-                  <Chip
-                    startContent={<AlertTriangle className="w-3 h-3" />}
-                    color="warning"
-                    size="sm"
-                    variant="bordered"
-                  >
-                    Deprecated
-                  </Chip>
-                )}
-              </div>
-            ),
-            secondaryText: (
-              <div className="flex items-center gap-2 mt-1">
-                {statusChip()}
-                <span className="text-xs text-foreground/60">
-                  {passkey.lastUsedAt ? `Last used ${getTimeAgo(passkey.lastUsedAt)}` : "Usage unknown"}
-                </span>
-              </div>
-            ),
-            endContent: endContent,
-          };
-        }}
-        itemHasDivider={true}
-        onAddItem={addPasskey}
-        addItemLabel={
-          isAddingPasskey ? (user?.walletAddress ? "Registering..." : "Creating Account...") : "Add Passkey"
-        }
-        disableAddItem={isAddingPasskey}
-        emptyContent="No passkeys registered yet."
-        cardClassName="shadow-sm"
-        bodyClassName="p-0"
+      {/* Passkeys Section (Always visible) - Now uses the dedicated component */}
+      <PasskeyManagementSection
+        passkeys={listTableItems}
+        isLoading={isPasskeyLoading}
+        isAddingPasskey={isAddingPasskey}
+        isProcessingPasskey={isProcessingPasskey}
+        user={user}
+        onAddPasskey={addPasskey}
+        onActivatePasskey={activatePasskey}
+        onRenamePasskey={renamePasskey}
+        onRemovePasskey={removePasskey}
       />
 
       {/* Legacy Wallet Banner (Conditional) */}
@@ -579,6 +434,7 @@ export default function SecuritySettingsPage() {
             handleToggleMonetic={handleToggleMonetic}
             isPendingToggle={pendingChanges.toggleMonetic}
             disableToggle={true}
+            onManualRecoveryRequest={openRecoveryModal}
           />
 
           {/* Legacy Recovery Methods Section */}
@@ -760,6 +616,9 @@ export default function SecuritySettingsPage() {
           />
         </SecuritySettingCard>
       </div>
+
+      {/* Recovery Request Modal - Now uses the component */}
+      <RecoveryRequestModal isOpen={isRecoveryModalOpen} onClose={closeRecoveryModal} />
     </div>
   );
 }

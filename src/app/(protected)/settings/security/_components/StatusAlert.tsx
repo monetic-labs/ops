@@ -36,7 +36,7 @@ const StatusAlert: React.FC<StatusAlertProps> = ({ type, message, icon: CustomIc
       case "warning":
         return "border-warning-200 bg-warning-50 dark:bg-warning/10 dark:border-warning/30 text-warning-600 dark:text-warning";
       case "success":
-        return "border-success-200 bg-success-50 dark:bg-success/10 dark:border-success/30 text-success-600 dark:text-success";
+        return "border-success/30 bg-success/10 text-success dark:bg-success/10 dark:border-success/30 dark:text-success";
       case "danger":
         return "border-danger-200 bg-danger-50 dark:bg-danger/10 dark:border-danger/30 text-danger-600 dark:text-danger";
       case "info":
