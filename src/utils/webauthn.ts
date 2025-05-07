@@ -192,30 +192,25 @@ export class WebAuthnHelper {
    * @param credentialIds - Array of credential IDs to use for authentication
    * @returns A new WebAuthnHelper instance with the credential that was used for authentication
    */
-  static async login(passedCredentials?: Passkey[]): Promise<WebAuthnHelper> {
+  static async login(passedCredentials: Passkey[]): Promise<WebAuthnHelper> {
     try {
       const challengeStr = await this.requestChallenge();
       const challenge = Bytes.fromString(challengeStr);
       const currentRpId = window.location.hostname;
-      let credentialIdsToTry: string[] | undefined = undefined;
+      let credentialIdsToTry: string[];
+      let rpIdForSign: string;
 
-      if (passedCredentials && passedCredentials.length > 0) {
-        const collectedIds = passedCredentials.reduce(
-          (acc, cred) => {
-            if (cred.rpId === currentRpId) {
-              acc.matchingRpIdCredentials.push(cred.credentialId);
-            }
-            acc.allCredentialIds.push(cred.credentialId);
-            return acc;
-          },
-          { matchingRpIdCredentials: [] as string[], allCredentialIds: [] as string[] }
-        );
+      const credsForCurrentRp = passedCredentials.filter((cred) => cred.rpId === currentRpId);
 
-        if (collectedIds.matchingRpIdCredentials.length > 0) {
-          credentialIdsToTry = collectedIds.matchingRpIdCredentials;
-        } else {
-          credentialIdsToTry = collectedIds.allCredentialIds;
-        }
+      if (credsForCurrentRp.length > 0) {
+        // Case 1: Credentials matching currentRpId exist. Prioritize them.
+        credentialIdsToTry = credsForCurrentRp.map((cred) => cred.credentialId);
+        rpIdForSign = currentRpId;
+      } else {
+        // Case 2: No credentials match currentRpId.
+        // Assume passedCredentials is not empty and all items share the same foreign rpId.
+        rpIdForSign = passedCredentials[0].rpId; // Use this foreign rpId
+        credentialIdsToTry = passedCredentials.map((cred) => cred.credentialId); // Attempt all provided credentials
       }
 
       const {
@@ -225,8 +220,8 @@ export class WebAuthnHelper {
       } = await sign({
         challenge: OxHex.fromBytes(challenge),
         userVerification: "required" as const,
-        ...(credentialIdsToTry && { credentialId: credentialIdsToTry }),
-        rpId: currentRpId, // Always use currentRpId for the sign operation's rpId parameter
+        credentialId: credentialIdsToTry,
+        rpId: rpIdForSign,
       });
 
       const serializedSignature = {
