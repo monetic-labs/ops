@@ -197,8 +197,12 @@ export default function SecuritySettingsPage() {
     removePasskey,
   } = usePasskeyManager({ user });
 
-  // Filter passkeys to ensure 'id' is defined for ListTable compatibility
-  const listTableItems = passkeys.filter((pk): pk is Passkey & { id: string } => typeof pk.id === "string");
+  // The passkeys from usePasskeyManager are already Passkey[] with non-optional id.
+  // The filter `pk.id === "string"` is technically redundant if the type contract is upheld,
+  // but doesn't hurt as a runtime sanity check if there's any doubt about data sources upstream.
+  // For clean typing, if `passkeys` is `Passkey[]`, `id` is guaranteed.
+  // Let's assume `passkeys` from the hook correctly implements `Passkey[]`
+  const listTableItems: Passkey[] = passkeys; // No filtering needed if type is correct from hook
 
   // Loading State
   if (isUserLoading || (isPasskeyLoading && passkeys.length === 0 && !hasWalletAddress)) {

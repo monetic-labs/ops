@@ -17,7 +17,7 @@ interface UserForPasskeySection {
 }
 
 export interface PasskeyManagementSectionProps {
-  passkeys: (Passkey & { id: string })[];
+  passkeys: Passkey[];
   isLoading: boolean;
   isAddingPasskey: boolean;
   isProcessingPasskey: Record<string, boolean>;
@@ -49,7 +49,7 @@ const PasskeyManagementSection: React.FC<PasskeyManagementSectionProps> = ({
 
   const handleRenameCommit = () => {
     const passkeyToRename = passkeys.find((p) => p.credentialId === editingPasskeyId);
-    if (passkeyToRename?.id && editingPasskeyName !== passkeyToRename.displayName) {
+    if (passkeyToRename && editingPasskeyName !== passkeyToRename.displayName) {
       onRenamePasskey(passkeyToRename.id, editingPasskeyName);
     }
     setEditingPasskeyId(null);
@@ -67,8 +67,7 @@ const PasskeyManagementSection: React.FC<PasskeyManagementSectionProps> = ({
       icon={<Fingerprint className="text-primary" size={20} />}
       items={passkeys} // Already filtered in page.tsx, or filter here if preferred
       isLoading={isLoading && passkeys.length === 0}
-      renderItem={(item) => {
-        const passkeyItem = item as Passkey & { id: string }; // item is already the correct type
+      renderItem={(passkeyItem) => {
         const isProcessing = isProcessingPasskey[passkeyItem.id];
         const isCurrentlyEditing = editingPasskeyId === passkeyItem.credentialId;
         const canRemove =

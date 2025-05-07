@@ -7,6 +7,7 @@ import { Button } from "@heroui/button";
 import { WebAuthnCredentials } from "@/types/webauthn";
 import { useUser } from "@/contexts/UserContext";
 import { usePasskeySelectionModal } from "@/contexts/PasskeySelectionContext";
+import { truncateAddress } from "@/utils/helpers";
 
 /**
  * A modal for selecting which passkey to use for signing transactions
@@ -26,12 +27,6 @@ export const PasskeySelectionModal: React.FC = () => {
       setSelectedCredentialId(credentials[0].credentialId);
     }
   }, [isOpen, credentials]);
-
-  // Format credential ID for display (first 6 and last 4 characters)
-  const formatCredentialId = (id: string) => {
-    if (id.length <= 10) return id;
-    return `${id.substring(0, 6)}...${id.substring(id.length - 4)}`;
-  };
 
   // Handle selection confirmation
   const handleConfirm = () => {
@@ -68,7 +63,7 @@ export const PasskeySelectionModal: React.FC = () => {
                 >
                   {credentials.map((credential) => (
                     <Radio key={credential.credentialId} value={credential.credentialId}>
-                      Passkey {formatCredentialId(credential.credentialId)}
+                      Passkey {truncateAddress(credential.credentialId)}
                     </Radio>
                   ))}
                 </RadioGroup>

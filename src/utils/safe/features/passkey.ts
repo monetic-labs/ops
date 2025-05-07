@@ -22,17 +22,18 @@ export enum PasskeyStatus {
   UNKNOWN = "UNKNOWN", // Status couldn't be determined
 }
 
+// The authoritative Passkey type
 export type Passkey = {
+  id: string; // Non-optional: assume passkeys from DB will have this
   credentialId: string;
-  publicKey: string;
+  publicKey: string; // Hex string representation
   displayName: string;
-  lastUsedAt: string;
+  lastUsedAt: string; // ISO Date string
   status: PasskeyStatus;
-  id?: string;
-  rpId?: string;
-  createdAt?: string;
+  rpId: string; // Non-optional
+  createdAt?: string; // ISO Date string
   counter?: number;
-  ownerAddress?: Address;
+  ownerAddress?: Address; // Hex address from viem
 };
 
 /**
@@ -44,8 +45,15 @@ export type Passkey = {
 export async function createPasskeyCredentials(email: string): Promise<WebAuthnCredentials> {
   const passkeyResult = await WebAuthnHelper.createPasskey(email);
 
-  if (!passkeyResult?.credentialId || !passkeyResult?.publicKey || !passkeyResult?.publicKeyCoordinates) {
-    throw new Error("Failed to create passkey");
+  if (
+    !passkeyResult?.credentialId ||
+    !passkeyResult?.publicKey ||
+    !passkeyResult?.publicKeyCoordinates ||
+    !passkeyResult.rpId
+  ) {
+    throw new Error(
+      "Failed to create passkey, missing required fields from WebAuthnHelper.createPasskey (including rpId)"
+    );
   }
 
   return {
@@ -55,40 +63,47 @@ export async function createPasskeyCredentials(email: string): Promise<WebAuthnC
   };
 }
 
+// Interface for the raw passkey data expected from the backend (e.g., via pylon.getUserById())
+interface RegisteredPasskeyInput {
+  id: string; // Expect 'id' from backend
+  credentialId: string;
+  publicKey?: string; // Optional as it might be enriched or processed
+  displayName?: string;
+  lastUsedAt?: string;
+  createdAt?: string;
+  rpId: string; // Expect 'rpId' from backend
+  // counter is not part of this raw input, it's derived or less common
+}
+
 /**
  * Synchronizes on-chain and off-chain passkeys by comparing registered passkeys
  * with on-chain owners, and returns the status of each passkey
  *
  * @param walletAddress - The user's Safe wallet address
- * @param registeredPasskeys - The passkeys registered in the database
+ * @param registeredPasskeysFromDb - The passkeys registered in the database
  * @returns Array of passkeys with their synchronization status
  */
 export async function syncPasskeysWithSafe(
   walletAddress: Address | undefined,
-  registeredPasskeys: Array<{
-    credentialId: string;
-    publicKey?: string;
-    displayName?: string;
-    lastUsedAt?: string;
-    id?: string;
-    createdAt?: string;
-  }> = []
+  registeredPasskeysFromDb: Array<RegisteredPasskeyInput> = []
 ): Promise<Passkey[]> {
-  console.info(`${logPrefix} Starting sync. Wallet: ${walletAddress}, Input Passkeys:`, registeredPasskeys);
-  // If no wallet address or no passkeys, return empty array
-  if (!walletAddress || !registeredPasskeys?.length) {
-    console.info(`${logPrefix} No wallet or passkeys provided, returning basic mapping.`);
-    return (registeredPasskeys || []).map((passkey) => ({
-      ...passkey,
-      displayName: passkey?.displayName || "Unnamed Device",
+  console.info(`${logPrefix} Starting sync. Wallet: ${walletAddress}, Input Passkeys:`, registeredPasskeysFromDb);
+
+  if (!walletAddress || !registeredPasskeysFromDb?.length) {
+    console.info(`${logPrefix} No wallet or passkeys provided, mapping input to Passkey with UNKNOWN status.`);
+    return (registeredPasskeysFromDb || []).map((passkey) => ({
+      id: passkey.id,
+      credentialId: passkey.credentialId,
+      publicKey: passkey.publicKey || "",
+      displayName: passkey.displayName || "Unnamed Device",
       status: PasskeyStatus.UNKNOWN,
-      lastUsedAt: passkey?.lastUsedAt || passkey?.createdAt || new Date().toISOString(),
-      publicKey: passkey?.publicKey || "",
+      lastUsedAt: passkey.lastUsedAt || passkey.createdAt || new Date().toISOString(),
+      rpId: passkey.rpId,
+      createdAt: passkey.createdAt,
     }));
   }
 
   try {
-    // Get on-chain owners
     console.info(`${logPrefix} Fetching on-chain owners for ${walletAddress}`);
     const owners = (await publicClient.readContract({
       address: walletAddress,
@@ -96,117 +111,68 @@ export async function syncPasskeysWithSafe(
       functionName: "getOwners",
     })) as Address[];
 
-    // Try to get the latest user data from pylon to get all passkeys with public keys
-    let completePasskeys = registeredPasskeys;
-    try {
-      const userData = await pylon.getUserById();
-      if (userData?.registeredPasskeys?.length > 0) {
-        // Create a map of the complete passkeys from the API
-        const completePasskeysMap = userData.registeredPasskeys.reduce(
-          (acc, pk) => {
-            if (pk.credentialId && pk.publicKey) {
-              acc[pk.credentialId] = pk;
-            }
-            return acc;
-          },
-          {} as Record<string, any>
-        );
-
-        // Enrich our input passkeys with data from the API
-        completePasskeys = registeredPasskeys.map((pk) => {
-          const complete = completePasskeysMap[pk.credentialId];
-          if (complete && complete.publicKey && !pk.publicKey) {
-            return {
-              ...pk,
-              publicKey: complete.publicKey,
-            };
-          }
-          return pk;
-        });
-      }
-    } catch (error) {
-      console.warn("Could not fetch updated user data from pylon:", error);
-      // Continue with the original passkeys
-    }
-
-    // Convert each registered passkey to its corresponding on-chain address
-    const passkeysWithStatus = await Promise.all(
-      completePasskeys.map(async (passkey) => {
-        if (!passkey || !passkey.credentialId) {
-          // Handle invalid passkey data
-          console.error("Invalid passkey data (missing credentialId):", passkey);
+    const passkeysWithStatus: Passkey[] = await Promise.all(
+      registeredPasskeysFromDb.map(async (passkeyInput): Promise<Passkey> => {
+        if (!passkeyInput.publicKey) {
+          console.warn(
+            `${logPrefix} Passkey (ID: ${passkeyInput.id}, CredID: ${passkeyInput.credentialId}) missing publicKey. Status set to UNKNOWN.`
+          );
           return {
-            id: passkey?.id,
-            credentialId: passkey?.credentialId || "unknown",
-            publicKey: passkey?.publicKey || "",
-            displayName: passkey?.displayName || "Unnamed Device",
+            id: passkeyInput.id,
+            credentialId: passkeyInput.credentialId,
+            publicKey: "",
+            displayName: passkeyInput.displayName || "Unnamed Device",
             status: PasskeyStatus.UNKNOWN,
-            lastUsedAt: passkey?.lastUsedAt || passkey?.createdAt || new Date().toISOString(),
+            lastUsedAt: passkeyInput.lastUsedAt || passkeyInput.createdAt || new Date().toISOString(),
+            rpId: passkeyInput.rpId,
+            createdAt: passkeyInput.createdAt,
           };
         }
 
         try {
-          // If publicKey is missing, we need to handle the error properly, not hardcode
-          if (!passkey.publicKey) {
-            return {
-              id: passkey?.id,
-              credentialId: passkey.credentialId,
-              publicKey: "",
-              displayName: passkey.displayName || "Unnamed Device",
-              status: PasskeyStatus.UNKNOWN,
-              lastUsedAt: passkey.lastUsedAt || passkey.createdAt || new Date().toISOString(),
-            };
+          let publicKeyHex = passkeyInput.publicKey;
+          if (publicKeyHex.startsWith("{") && publicKeyHex.includes("x") && publicKeyHex.includes("y")) {
+            const parsed = JSON.parse(publicKeyHex);
+            if (parsed.x && parsed.y) {
+              publicKeyHex = PublicKey.toHex({ x: BigInt(parsed.x), y: BigInt(parsed.y), prefix: 4 });
+            }
+          }
+          if (!publicKeyHex.startsWith("0x")) {
+            publicKeyHex = `0x${publicKeyHex}`;
           }
 
-          // Handle JSON string public keys (they might have been stringified)
-          let publicKeyHex = passkey.publicKey;
-          try {
-            // If it's a stringified JSON object, parse it and extract the coordinates
-            if (publicKeyHex.startsWith("{") && publicKeyHex.includes("x") && publicKeyHex.includes("y")) {
-              const parsed = JSON.parse(publicKeyHex);
-              if (parsed.x && parsed.y) {
-                // Use the recommended method for converting
-                publicKeyHex = PublicKey.toHex({ ...parsed, prefix: 4 });
-              }
-            }
-
-            // Make sure it's a valid hex string
-            if (!publicKeyHex.startsWith("0x")) {
-              publicKeyHex = `0x${publicKeyHex}`;
-            }
-          } catch (e) {
-            // Continue with original publicKey if parsing fails
-          }
-
-          // Convert the passkey's public key to an on-chain owner address
           const { x, y } = PublicKey.fromHex(publicKeyHex as Hex);
-
-          // Create the owner address using Candide's function
           const ownerAddress = SafeAccount.createWebAuthnSignerVerifierAddress(x, y, {
             eip7212WebAuthnPrecompileVerifier: DEFAULT_SECP256R1_PRECOMPILE_ADDRESS,
           }) as Address;
 
-          // Check if this owner exists on-chain
           const isOnChain = owners.some((owner) => owner.toLowerCase() === ownerAddress.toLowerCase());
 
           return {
-            id: passkey.id,
-            credentialId: passkey.credentialId,
+            id: passkeyInput.id,
+            credentialId: passkeyInput.credentialId,
             publicKey: publicKeyHex,
-            displayName: passkey.displayName || "Unnamed Device",
+            displayName: passkeyInput.displayName || "Unnamed Device",
             status: isOnChain ? PasskeyStatus.ACTIVE_ONCHAIN : PasskeyStatus.PENDING_ONCHAIN,
             ownerAddress,
-            lastUsedAt: passkey.lastUsedAt || passkey.createdAt || new Date().toISOString(),
+            lastUsedAt: passkeyInput.lastUsedAt || passkeyInput.createdAt || new Date().toISOString(),
+            rpId: passkeyInput.rpId,
+            createdAt: passkeyInput.createdAt,
           };
         } catch (error) {
-          console.error("Error processing passkey:", error);
+          console.error(
+            `${logPrefix} Error processing passkey (ID: ${passkeyInput.id}, CredID: ${passkeyInput.credentialId}):`,
+            error
+          );
           return {
-            id: passkey.id,
-            credentialId: passkey.credentialId,
-            publicKey: passkey.publicKey || "",
-            displayName: passkey.displayName || "Unnamed Device",
+            id: passkeyInput.id,
+            credentialId: passkeyInput.credentialId,
+            publicKey: passkeyInput.publicKey || "",
+            displayName: passkeyInput.displayName || "Unnamed Device",
             status: PasskeyStatus.UNKNOWN,
-            lastUsedAt: passkey.lastUsedAt || passkey.createdAt || new Date().toISOString(),
+            lastUsedAt: passkeyInput.lastUsedAt || passkeyInput.createdAt || new Date().toISOString(),
+            rpId: passkeyInput.rpId,
+            createdAt: passkeyInput.createdAt,
           };
         }
       })
@@ -216,13 +182,15 @@ export async function syncPasskeysWithSafe(
     return passkeysWithStatus;
   } catch (error) {
     console.error(`${logPrefix} Error during sync:`, error);
-    // Return passkeys with unknown status in case of error
-    return (registeredPasskeys || []).map((passkey) => ({
-      ...passkey,
-      displayName: passkey?.displayName || "Unnamed Device",
-      publicKey: passkey?.publicKey || "",
+    return (registeredPasskeysFromDb || []).map((passkey) => ({
+      id: passkey.id,
+      credentialId: passkey.credentialId,
+      publicKey: passkey.publicKey || "",
+      displayName: passkey.displayName || "Unnamed Device",
       status: PasskeyStatus.UNKNOWN,
-      lastUsedAt: passkey?.lastUsedAt || passkey?.createdAt || new Date().toISOString(),
+      lastUsedAt: passkey.lastUsedAt || passkey.createdAt || new Date().toISOString(),
+      rpId: passkey.rpId,
+      createdAt: passkey.createdAt,
     }));
   }
 }
