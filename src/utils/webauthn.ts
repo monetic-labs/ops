@@ -18,15 +18,18 @@ const logPrefix = "[WebAuthn Helper]";
 export interface PasskeyCredentials {
   publicKey: WebauthnPublicKey;
   credentialId: string;
+  rpId: string;
 }
 
 export class WebAuthnHelper {
   private readonly publicKey: WebauthnPublicKey;
   private readonly credentialId: string;
+  private readonly rpId: string;
 
-  constructor({ publicKey, credentialId }: PasskeyCredentials) {
+  constructor({ publicKey, credentialId, rpId }: PasskeyCredentials) {
     this.publicKey = publicKey;
     this.credentialId = credentialId;
+    this.rpId = rpId;
   }
 
   /**
@@ -44,12 +47,20 @@ export class WebAuthnHelper {
   }
 
   /**
-   * Get both the public key and credential ID
+   * Get the RP ID of the passkey
+   */
+  get getRpId(): string {
+    return this.rpId;
+  }
+
+  /**
+   * Get the public key, credential ID, and RP ID
    */
   getCredentials(): PasskeyCredentials {
     return {
       publicKey: this.publicKey,
       credentialId: this.credentialId,
+      rpId: this.rpId,
     };
   }
 
@@ -110,6 +121,7 @@ export class WebAuthnHelper {
     publicKey: Hex;
     publicKeyCoordinates: WebauthnPublicKey;
     passkeyId: string;
+    rpId: string;
   }> {
     console.info(`${logPrefix} Starting 'createPasskey' for email: ${email}`);
     try {
@@ -175,6 +187,7 @@ export class WebAuthnHelper {
         publicKey: PublicKey.toHex(credential.publicKey),
         publicKeyCoordinates: { x, y },
         passkeyId,
+        rpId: expectedRpId,
       };
     } catch (error) {
       console.error(`${logPrefix} 'createPasskey' failed:`, error);
@@ -242,6 +255,7 @@ export class WebAuthnHelper {
       return new WebAuthnHelper({
         publicKey: { x, y },
         credentialId: credential.id,
+        rpId: rpIdForSign,
       });
     } catch (error) {
       console.error(`${logPrefix} 'login' failed:`, error);
@@ -260,6 +274,7 @@ export class WebAuthnHelper {
       await sign({
         challenge: OxHex.fromBytes(challenge),
         credentialId: this.credentialId,
+        rpId: this.rpId,
         userVerification: "required",
       });
 
@@ -282,6 +297,7 @@ export class WebAuthnHelper {
     const { signature, metadata } = await sign({
       challenge: message,
       credentialId: this.credentialId,
+      rpId: this.rpId,
       userVerification: "required",
     });
 

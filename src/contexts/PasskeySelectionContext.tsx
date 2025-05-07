@@ -45,8 +45,11 @@ export function PasskeySelectionProvider({ children }: { children: ReactNode }) 
   const handleSelect = useCallback(
     (credential: WebAuthnCredentials) => {
       if (resolver) {
-        // Save the selected credential ID to localStorage
-        LocalStorage.saveSelectedCredentialId(credential.credentialId);
+        // Save the selected credential ID and rpId to localStorage
+        LocalStorage.saveSelectedPasskeyInfo({
+          credentialId: credential.credentialId,
+          rpId: credential.rpId,
+        });
 
         resolver.resolve(credential);
         setResolver(null);
@@ -74,28 +77,33 @@ export function PasskeySelectionProvider({ children }: { children: ReactNode }) 
       // If user has only one credential, just use that
       if (credentials.length === 1) {
         try {
-          // Save the selected credential ID to localStorage
-          LocalStorage.saveSelectedCredentialId(credentials[0].credentialId);
+          // Save the selected credential ID and rpId to localStorage
+          LocalStorage.saveSelectedPasskeyInfo({
+            credentialId: credentials[0].credentialId,
+            rpId: credentials[0].rpId,
+          });
         } catch (error) {
-          console.error("Failed to save credential ID:", error);
+          console.error("Failed to save passkey info:", error);
           // Continue even if local storage fails
         }
         return resolve(credentials[0]);
       }
 
       try {
-        // Check if we have a stored credential ID
-        const savedCredentialId = LocalStorage.getSelectedCredentialId();
-        if (savedCredentialId) {
-          // Find the credential with the saved ID
-          const savedCredential = credentials.find((cred) => cred.credentialId === savedCredentialId);
+        // Check if we have a stored passkey info
+        const savedPasskeyInfo = LocalStorage.getSelectedPasskeyInfo();
+        if (savedPasskeyInfo) {
+          // Find the credential with the saved ID and rpId
+          const savedCredential = credentials.find(
+            (cred) => cred.credentialId === savedPasskeyInfo.credentialId && cred.rpId === savedPasskeyInfo.rpId
+          );
           if (savedCredential) {
             // If found, use it without showing the modal
             return resolve(savedCredential);
           }
         }
       } catch (error) {
-        console.error("Error checking saved credential:", error);
+        console.error("Error checking saved passkey info:", error);
         // Continue with modal selection if there's an error
       }
 

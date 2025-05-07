@@ -30,7 +30,7 @@ export class XMTPService {
     // Environment-specific XMTP configurations
     this.XMTP_ENV = process.env.NEXT_PUBLIC_XMTP_ENV === "production" ? "production" : "dev";
 
-    const supportAddress = 'TODO'
+    const supportAddress = "TODO";
 
     if (!supportAddress) {
       throw new Error("NEXT_PUBLIC_MONETIC_SUPPORT_ADDRESS is not set");
@@ -55,6 +55,7 @@ export class XMTPService {
         const webAuthn = new WebAuthnHelper({
           publicKey: this.credentials.publicKey,
           credentialId: this.credentials.credentialId,
+          rpId: this.credentials.rpId,
         });
 
         const { rawSignature } = await webAuthn.signMessage(message as Hex);

@@ -64,6 +64,7 @@ export const executeNestedTransaction = async ({
     const webauthnHelper = new WebAuthnHelper({
       publicKey: credentials.publicKey,
       credentialId: credentials.credentialId,
+      rpId: credentials.rpId,
     });
 
     // Create account instances

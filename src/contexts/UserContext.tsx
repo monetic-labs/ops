@@ -173,6 +173,7 @@ export function UserProvider({ children, token }: UserProviderProps) {
             return {
               publicKey: { x, y },
               credentialId: passkey.credentialId,
+              rpId: passkey.rpId,
             };
           });
           setCredentials(credentialsArray);
@@ -273,7 +274,7 @@ export function UserProvider({ children, token }: UserProviderProps) {
       setAuthStatus(AuthStatus.LOGGING_OUT);
 
       // Clear passkey data
-      LocalStorage.clearSelectedCredentialId();
+      LocalStorage.clearSelectedPasskeyInfo();
 
       // Clear session
       LocalStorage.clearSession();

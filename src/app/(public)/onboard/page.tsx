@@ -192,6 +192,7 @@ export default function OnboardPage() {
         publicKeyCoordinates: publicKey,
         credentialId,
         passkeyId,
+        rpId,
       } = await WebAuthnHelper.createPasskey(formData.users[0].email);
 
       updateStatusStep(0, true);
@@ -334,7 +335,7 @@ export default function OnboardPage() {
       if (merchantResponse) {
         // Now deploy and setup the safe account
         await deployIndividualSafe({
-          credentials: { publicKey, credentialId },
+          credentials: { publicKey, credentialId, rpId },
           deploySettlement: true,
           callbacks: {
             onDeployment: () => updateStatusStep(2, true),
@@ -351,7 +352,7 @@ export default function OnboardPage() {
         setIsSubmitting(false);
         setIsRedirecting(true);
         handleSubmitSuccess(); // Clear onboarding progress from localStorage
-        addCredential({ publicKey, credentialId }); // Add credential to UserContext
+        addCredential({ publicKey, credentialId, rpId }); // Add credential to UserContext
         router.push("/"); // Redirect to home page
       }
     } catch (error) {

@@ -6,6 +6,7 @@ export interface WebAuthnCredentials {
     y: bigint;
   };
   credentialId: string;
+  rpId: string;
 }
 
 export interface OnboardingState {

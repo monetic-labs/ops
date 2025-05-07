@@ -74,15 +74,15 @@ const AuthPage = () => {
       const webauthn = await WebAuthnHelper.login(credentials);
 
       // Get credentials from the instance
-      const { publicKey, credentialId } = webauthn.getCredentials();
+      const { publicKey, credentialId, rpId } = webauthn.getCredentials();
 
       // Add the authenticated credential to our context
-      addCredential({ publicKey, credentialId });
+      addCredential({ publicKey, credentialId, rpId });
       setButtonStatusText("Redirecting...");
 
       // Store the credential ID in localStorage for persistence
       try {
-        LocalStorage.saveSelectedCredentialId(credentialId);
+        LocalStorage.saveSelectedPasskeyInfo({ credentialId, rpId });
       } catch (error) {
         console.error("Error storing credential:", error);
         // Continue even if storage fails

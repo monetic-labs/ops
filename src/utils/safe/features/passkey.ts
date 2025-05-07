@@ -51,6 +51,7 @@ export async function createPasskeyCredentials(email: string): Promise<WebAuthnC
   return {
     credentialId: passkeyResult.credentialId,
     publicKey: passkeyResult.publicKeyCoordinates,
+    rpId: passkeyResult.rpId,
   };
 }
 

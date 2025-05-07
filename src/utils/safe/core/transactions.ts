@@ -28,6 +28,7 @@ export async function executeSafeTransactions(
   const webauthnHelper = new WebAuthnHelper({
     credentialId: credentials.credentialId,
     publicKey: credentials.publicKey,
+    rpId: credentials.rpId,
   });
 
   // Create and send the user operation

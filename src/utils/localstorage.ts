@@ -16,7 +16,7 @@ export interface Session {
 
 export interface State {
   profileImage?: string;
-  selectedCredentialId?: string;
+  selectedPasskeyInfo?: { credentialId: string; rpId: string };
   onboarding?: OnboardingProgress;
 }
 
@@ -113,35 +113,36 @@ export class LocalStorage {
    * Passkey Management (stored in state)
    */
 
-  // Save the selected credential ID
-  static saveSelectedCredentialId(credentialId: string): void {
+  // Save the selected passkey info
+  static saveSelectedPasskeyInfo(passkeyInfo: { credentialId: string; rpId: string }): void {
     try {
       const state = this.getState();
-      this.setState({ ...state, selectedCredentialId: credentialId });
+      this.setState({ ...state, selectedPasskeyInfo: passkeyInfo });
     } catch (error) {
-      console.error("Error saving selected credential ID:", error);
+      console.error("Error saving selected passkey info:", error);
     }
   }
 
-  // Get the selected credential ID
-  static getSelectedCredentialId(): string | null {
+  // Get the selected passkey info
+  static getSelectedPasskeyInfo(): { credentialId: string; rpId: string } | null {
     try {
       const state = this.getState();
-      return state.selectedCredentialId || null;
+      return state.selectedPasskeyInfo || null;
     } catch (error) {
-      console.error("Error getting selected credential ID:", error);
+      console.error("Error getting selected passkey info:", error);
       return null;
     }
   }
 
-  // Clear the selected credential ID
-  static clearSelectedCredentialId(): void {
+  // Clear the selected passkey info
+  static clearSelectedPasskeyInfo(): void {
     try {
       const state = this.getState();
-      const { selectedCredentialId, ...rest } = state;
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const { selectedPasskeyInfo, ...rest } = state;
       this.setState(rest);
     } catch (error) {
-      console.error("Error clearing selected credential ID:", error);
+      console.error("Error clearing selected passkey info:", error);
     }
   }
 
