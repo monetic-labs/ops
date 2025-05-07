@@ -83,7 +83,7 @@ const RecoveryMethodItem: React.FC<RecoveryMethodItemProps> = ({
           <div className="pt-4 mt-4 border-warning space-y-3 bg-warning/10 p-4 rounded-md">
             <h4 className="text-sm font-medium text-warning-700">Lost All Access Methods?</h4>
             <p className="text-xs text-warning-600">
-              If you've lost all passkeys and Monetic Recovery is your only option, you can request manual assistance.
+              If you&apos;ve lost all passkeys and Monetic Recovery is your only option, you can request manual assistance.
               This is an intensive process reserved for emergencies.
             </p>
             <button

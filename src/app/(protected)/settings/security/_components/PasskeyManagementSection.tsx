@@ -143,7 +143,6 @@ const PasskeyManagementSection: React.FC<PasskeyManagementSectionProps> = ({
               if (e.key === "Escape") handleRenameCancel();
             }}
             classNames={{ inputWrapper: "h-8" }}
-            autoFocus
           />
         ) : (
           <button
