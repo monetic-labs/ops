@@ -29,12 +29,7 @@ import { Badge as HeroBadge } from "@heroui/badge";
 import { useProcessedNavigation, type ProcessedNavItem } from "@/hooks/useProcessedNavigation";
 import { UserMenu } from "./UserMenu";
 import { useShortcuts } from "@/components/generics/shortcuts-provider";
-
-// Define props for Sidebar
-interface SidebarProps {
-  isCollapsed: boolean;
-  toggleSidebar: () => void;
-}
+import { useSidebarState } from "@/hooks/generics/useSidebarState";
 
 // --- Skeleton Item Component (moved near top for clarity) ---
 const SkeletonNavItem = ({ isCollapsed }: { isCollapsed: boolean }) => (
@@ -46,13 +41,14 @@ const SkeletonNavItem = ({ isCollapsed }: { isCollapsed: boolean }) => (
 );
 
 // Accept props in the component function
-export function Sidebar({ isCollapsed, toggleSidebar: originalToggleSidebar }: SidebarProps) {
+export function Sidebar() {
   const pathname = usePathname();
   const { user, isFullyApproved, isLoading: isUserLoadingGlobal, profile } = useUser();
   const { accounts, isLoadingAccounts } = useAccounts();
   const { toggleTheme, isDark } = useTheme();
   const { unreadCount } = useMessagingState();
   const { toggleChat } = useShortcuts();
+  const { isCollapsed, toggleSidebar: originalToggleSidebar } = useSidebarState();
 
   // Get processed navigation data from the hook
   const { processedMainNavItems, processedSidebarUserMenuItems, processedOrgMenuItems } = useProcessedNavigation();
@@ -194,7 +190,7 @@ export function Sidebar({ isCollapsed, toggleSidebar: originalToggleSidebar }: S
           <Button
             isIconOnly
             variant="light"
-            className="p-2 rounded-lg group w-full text-left justify-center opacity-50 cursor-wait"
+            className="p-2 rounded-lg group w-full text-left justify-center opacity-50 cursor-wait border border-transparent focus:outline-none focus:ring-0"
             aria-label={item.label}
             isDisabled={true}
           >
@@ -215,7 +211,7 @@ export function Sidebar({ isCollapsed, toggleSidebar: originalToggleSidebar }: S
                   <Button
                     isIconOnly
                     variant="light"
-                    className={`p-2 rounded-lg group w-full text-left transition-opacity justify-center ${
+                    className={`p-2 rounded-lg group w-full text-left transition-colors justify-center border border-transparent hover:border-transparent focus:outline-none focus:ring-0 ${
                       finalIsDisabled ? "opacity-50 cursor-not-allowed" : "hover:bg-content2 text-foreground/80"
                     }`}
                     aria-label={item.label}
@@ -273,6 +269,7 @@ export function Sidebar({ isCollapsed, toggleSidebar: originalToggleSidebar }: S
               classNames={{ content: "bg-content2/90 text-foreground text-xs px-2 py-1 ml-2" }}
               content={item.tooltip}
               placement="right"
+              delay={500}
             >
               <button
                 type="button"
@@ -312,7 +309,7 @@ export function Sidebar({ isCollapsed, toggleSidebar: originalToggleSidebar }: S
           </>
         );
         const commonClasses = `
-          flex items-center p-2 rounded-lg group w-full text-left transition-opacity
+          flex items-center p-2 rounded-lg group w-full text-left transition-colors border border-transparent hover:border-transparent focus:outline-none focus:ring-0
           ${isSubmenu ? "pl-5" : ""}
           ${finalIsDisabled ? `opacity-50 ${cursorClass}` : "hover:bg-content2 text-foreground/80"}
           ${item.isActive && !isSubmenu && !isLoading ? "bg-content2 text-foreground font-semibold" : ""}
@@ -331,10 +328,11 @@ export function Sidebar({ isCollapsed, toggleSidebar: originalToggleSidebar }: S
         return (
           <li key={item.id}>
             <Tooltip
-              isDisabled={isTransitioning || finalIsDisabled || !item.tooltip || !isCollapsed} // Disable during transition
+              isDisabled={isTransitioning || finalIsDisabled || !item.tooltip} // Disable during transition
               classNames={{ content: "bg-content2/90 text-foreground text-xs px-2 py-1 ml-2" }}
               content={item.tooltip}
               placement="right"
+              delay={500}
             >
               <Link
                 href={finalIsDisabled || !item.href || item.href === "#" ? "#" : item.href}
@@ -402,6 +400,7 @@ export function Sidebar({ isCollapsed, toggleSidebar: originalToggleSidebar }: S
         isDisabled={isTransitioning}
         content={isDark ? "Switch to Light Mode" : "Switch to Dark Mode"}
         placement={isCollapsed ? "right" : "top"} // Adjusted placement for expanded
+        delay={500}
       >
         <Button
           isIconOnly
@@ -421,6 +420,7 @@ export function Sidebar({ isCollapsed, toggleSidebar: originalToggleSidebar }: S
         isDisabled={isTransitioning}
         content={isCollapsed ? "Expand Sidebar" : "Collapse Sidebar"}
         placement={isCollapsed ? "right" : "top"} // Adjusted placement for expanded
+        delay={500}
       >
         <Button
           isIconOnly
@@ -512,7 +512,7 @@ export function Sidebar({ isCollapsed, toggleSidebar: originalToggleSidebar }: S
     if (isCollapsed || isTransitioning) {
       // Icon only with tooltip when collapsed or transitioning
       return (
-        <Tooltip content="Get help now" placement="right">
+        <Tooltip content="Get help now" placement="right" delay={500}>
           <Button isIconOnly size="sm" className={`${baseButtonClasses} w-8`} variant="light" onPress={toggleChat}>
             {icon}
           </Button>
@@ -536,7 +536,7 @@ export function Sidebar({ isCollapsed, toggleSidebar: originalToggleSidebar }: S
   return (
     <>
       <aside
-        className={`fixed top-0 left-0 z-40 h-screen bg-content1 border-r border-divider hidden lg:flex flex-col transition-all duration-300 ease-in-out ${
+        className={`fixed top-0 left-0 z-40 h-screen bg-content1 border border-divider hidden lg:flex flex-col transition-colors duration-300 ease-in-out ${
           isCollapsed ? "w-20" : "w-64"
         }`}
       >

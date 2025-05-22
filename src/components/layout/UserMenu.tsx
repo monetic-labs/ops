@@ -163,7 +163,7 @@ export function UserMenu({
       <DropdownItem
         key={item.id}
         color={item.isDanger ? "danger" : undefined}
-        className={item.isDanger ? "text-danger" : ""}
+        className={item.isDanger ? "hover:text-white transition delay-50" : "transition delay-150"}
         startContent={startContent}
         onPress={() => item.action && handleAction(item.action)}
         description={isLoadingAction === item.action ? <Spinner size="sm" /> : undefined}
