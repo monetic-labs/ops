@@ -4,10 +4,17 @@ import { Button } from "@heroui/button";
 import { Input } from "@heroui/input";
 import { Mail, Phone, DollarSign, Info } from "lucide-react";
 import { Tooltip } from "@heroui/tooltip";
+import { Chip } from "@heroui/chip";
 import { GetOrderLinksOutput, ISO4217Currency } from "@monetic-labs/sdk";
 
 import { formatPhoneNumber, formatCurrencyInput } from "@/utils/helpers";
 import pylon from "@/libs/monetic-sdk";
+
+// Define a looser customer type that allows partial fields
+interface CustomerInfo {
+  email?: string;
+  phone?: string;
+}
 
 interface CreateOrderModalProps {
   isOpen: boolean;
@@ -15,7 +22,7 @@ interface CreateOrderModalProps {
   onCreate: (order: GetOrderLinksOutput) => Promise<void>;
 }
 
-export default function CreateOnlineRequestModal({ isOpen, onClose, onCreate }: CreateOrderModalProps) {
+export default function CreatePaymentRequestModal({ isOpen, onClose, onCreate }: CreateOrderModalProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [formData, setFormData] = useState({
@@ -30,14 +37,14 @@ export default function CreateOnlineRequestModal({ isOpen, onClose, onCreate }: 
   });
 
   const validateEmail = (email: string) => {
+    if (!email) return "";
     const emailRegex = /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i;
-
     return emailRegex.test(email) ? "" : "Please enter a valid email address";
   };
 
   const validatePhone = (phone: string) => {
+    if (!phone) return "";
     const phoneRegex = /^\(\d{3}\)\s\d{3}-\d{4}$/;
-
     return phoneRegex.test(phone) ? "" : "Please enter a valid phone number";
   };
 
@@ -90,7 +97,11 @@ export default function CreateOnlineRequestModal({ isOpen, onClose, onCreate }: 
   };
 
   const isFormValid = () => {
-    return !errors.email && !errors.phone && !errors.amount && formData.email && formData.phone && formData.amount;
+    // Only amount is required, customer information is completely optional
+    const validEmail = !formData.email || !errors.email;
+    const validPhone = !formData.phone || !errors.phone;
+
+    return validEmail && validPhone && !errors.amount && !!formData.amount;
   };
 
   const handleSubmit = async () => {
@@ -101,23 +112,35 @@ export default function CreateOnlineRequestModal({ isOpen, onClose, onCreate }: 
 
     try {
       const amountInCents = Math.round(parseFloat(formData.amount.replace(/[^\d.]/g, "")) * 100);
-      const response = await pylon.createOrderLink({
-        customer: {
-          email: formData.email,
-          phone: formData.phone.replace(/\D/g, ""),
-        },
+
+      // Create a customer object only if at least one field is filled
+      const customerData: Record<string, string> = {};
+      if (formData.email) customerData.email = formData.email;
+      if (formData.phone) customerData.phone = formData.phone.replace(/\D/g, "");
+
+      // Only include customer if we have data
+      const requestData: any = {
         order: {
           subtotal: amountInCents,
           currency: ISO4217Currency.USD,
         },
-      });
+      };
+
+      // Only add customer field if we have data
+      if (Object.keys(customerData).length > 0) {
+        requestData.customer = customerData;
+      }
+
+      const response = await pylon.createOrderLink(requestData);
+
+      // Create the response object
+      const responseCustomer: any = {};
+      if (formData.email) responseCustomer.email = formData.email;
+      if (formData.phone) responseCustomer.phone = formData.phone;
 
       const newOrder: GetOrderLinksOutput = {
         id: response.orderLink,
-        customer: {
-          email: formData.email,
-          phone: formData.phone,
-        },
+        customer: responseCustomer,
         order: {
           subtotal: amountInCents,
           currency: ISO4217Currency.USD,
@@ -143,53 +166,14 @@ export default function CreateOnlineRequestModal({ isOpen, onClose, onCreate }: 
   };
 
   return (
-    <Modal isOpen={isOpen} size="2xl" onClose={handleClose}>
+    <Modal isOpen={isOpen} size="md" onClose={handleClose}>
       <ModalContent>
         {() => (
           <>
-            <ModalHeader>Create Payment Order</ModalHeader>
+            <ModalHeader className="flex justify-center">Create Payment Request</ModalHeader>
             <ModalBody>
-              <div className="flex flex-col gap-6">
-                <div>
-                  <p className="text-sm text-foreground/70 pb-2">Customer Details</p>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <Input
-                      errorMessage={errors.email}
-                      isInvalid={!!errors.email}
-                      label={
-                        <div className="flex items-center gap-1">
-                          Email
-                          <Tooltip content="Used for receipts, order confirmations, and potential follow-ups.">
-                            <Info className="w-3 h-3 text-foreground/50 cursor-help" />
-                          </Tooltip>
-                        </div>
-                      }
-                      placeholder="customer@example.com"
-                      startContent={<Mail className="w-4 h-4 text-default-400" />}
-                      value={formData.email}
-                      variant="bordered"
-                      onChange={(e) => handleInputChange("email", e.target.value)}
-                    />
-                    <Input
-                      errorMessage={errors.phone}
-                      isInvalid={!!errors.phone}
-                      label={
-                        <div className="flex items-center gap-1">
-                          Phone
-                          <Tooltip content="Used for order confirmations (SMS) and potential follow-ups.">
-                            <Info className="w-3 h-3 text-foreground/50 cursor-help" />
-                          </Tooltip>
-                        </div>
-                      }
-                      placeholder="(555) 555-5555"
-                      startContent={<Phone className="w-4 h-4 text-default-400" />}
-                      value={formData.phone}
-                      variant="bordered"
-                      onChange={(e) => handleInputChange("phone", e.target.value)}
-                    />
-                  </div>
-                </div>
-                <div className="flex flex-col items-center text-center pt-4 pb-4 bg-content2/30 dark:bg-content1/50 rounded-lg">
+              <div className="flex flex-col gap-4">
+                <div className="flex flex-col items-center text-center pb-4">
                   <Input
                     label="Enter Amount"
                     labelPlacement="outside"
@@ -207,9 +191,49 @@ export default function CreateOnlineRequestModal({ isOpen, onClose, onCreate }: 
                     variant="bordered"
                     onChange={(e) => handleInputChange("amount", e.target.value)}
                   />
+                  <div className="flex gap-2 pt-4">
+                    {[10, 20, 50, 100].map((presetAmount) => (
+                      <Chip
+                        key={presetAmount}
+                        variant="flat"
+                        color="default"
+                        className="cursor-pointer hover:bg-content3"
+                        onClick={() => handleInputChange("amount", presetAmount.toString())}
+                      >
+                        ${presetAmount}
+                      </Chip>
+                    ))}
+                  </div>
                 </div>
+
+                <div>
+                  <p className="text-sm text-foreground/70 pb-2">Customer Details (Optional)</p>
+                  <div className="flex flex-col gap-3">
+                    <Input
+                      errorMessage={errors.email}
+                      isInvalid={!!errors.email}
+                      label="Email"
+                      placeholder="customer@example.com"
+                      startContent={<Mail className="w-4 h-4 text-default-400" />}
+                      value={formData.email}
+                      variant="bordered"
+                      onChange={(e) => handleInputChange("email", e.target.value)}
+                    />
+                    <Input
+                      errorMessage={errors.phone}
+                      isInvalid={!!errors.phone}
+                      label="Phone"
+                      placeholder="(555) 555-5555"
+                      startContent={<Phone className="w-4 h-4 text-default-400" />}
+                      value={formData.phone}
+                      variant="bordered"
+                      onChange={(e) => handleInputChange("phone", e.target.value)}
+                    />
+                  </div>
+                </div>
+
                 {error && <p className="text-danger text-sm">{error}</p>}
-                <div className="pt-2 text-xs text-foreground/60 space-y-1 bg-content2 dark:bg-content1 p-3 rounded-md border border-divider">
+                <div className="text-xs text-foreground/60 bg-content2 dark:bg-content1 p-3 rounded-md border border-divider">
                   <p>
                     <strong>Note:</strong> Email and phone help with reconciliation and customer communication
                     (confirmations, refunds).
@@ -222,7 +246,7 @@ export default function CreateOnlineRequestModal({ isOpen, onClose, onCreate }: 
                 Cancel
               </Button>
               <Button color="primary" isDisabled={!isFormValid()} isLoading={isLoading} onPress={handleSubmit}>
-                Create Order
+                Create Request
               </Button>
             </ModalFooter>
           </>

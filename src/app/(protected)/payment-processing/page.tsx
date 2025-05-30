@@ -7,9 +7,6 @@ import { PlusIcon, Copy, Trash2, QrCode } from "lucide-react";
 import { Snippet } from "@heroui/snippet";
 import { TransactionListItem, GetOrderLinksOutput, BillingAddress } from "@monetic-labs/sdk";
 import { useQueryClient, useQuery } from "@tanstack/react-query";
-import { QRCodeSVG } from "qrcode.react";
-import { Modal, ModalContent, ModalHeader, ModalBody } from "@heroui/modal";
-import { format } from "date-fns";
 
 import { DataTable, Column, EmptyContent } from "@/components/generics/data-table";
 import { paymentsStatusColorMap } from "@/data";
@@ -22,13 +19,12 @@ import {
   mapCurrencyToSymbol,
 } from "@/utils/helpers";
 import Countdown from "@/components/generics/countdown";
-import CreateOnlineRequestModal from "./_components/CreateOnlineRequestModal";
+import CreatePaymentRequestModal from "./_components/CreatePaymentRequestModal";
 import { useOrderManagement } from "./_hooks/useOrderManagement";
 import pylon from "@/libs/monetic-sdk";
 
 // Import Detail Modals
 import { PaymentDetails } from "./_components/order-details";
-import CreateInStoreRequestModal from "./_components/CreateInStoreRequestModal";
 import { QRCodeModal } from "./_components/QRCodeModal";
 
 const paymentHistoryColumns: Column<TransactionListItem>[] = [
@@ -92,7 +88,7 @@ const paymentHistoryColumns: Column<TransactionListItem>[] = [
 ];
 
 // Type definition for the creation modal (can be expanded if needed)
-type ModalType = "online" | "instore" | null;
+type ModalType = "payment" | null;
 
 export default function PaymentProcessingPage() {
   const [activeModal, setActiveModal] = useState<ModalType>(null);
@@ -205,7 +201,8 @@ export default function PaymentProcessingPage() {
 
   // --- Handler for Showing QR Code ---
   const handleShowQrCode = (url: string) => {
-    setQrCodeUrl(url);
+    const id = url.substring(url.lastIndexOf("/") + 1);
+    setQrCodeUrl(id);
     setIsQrModalOpen(true);
   };
 
@@ -226,7 +223,7 @@ export default function PaymentProcessingPage() {
       uid: "customer",
       align: "start",
       render: (order) => {
-        const detail = order.customer?.email || formatPhoneNumber(order.customer?.phone) || "N/A";
+        const detail = order.customer?.email || formatPhoneNumber(order.customer?.phone || "") || "N/A";
         return <span className="truncate block text-sm max-w-[150px] sm:max-w-[200px]">{detail}</span>;
       },
     },
@@ -283,27 +280,15 @@ export default function PaymentProcessingPage() {
         title="Payment Activity"
         subtitle="View your processed payments and active payment requests"
         actionButton={
-          // Container for buttons with responsive layout
-          <div className="flex flex-col sm:flex-row gap-2">
-            <Button
-              color="primary"
-              variant="ghost"
-              startContent={<QrCode className="w-4 h-4" />}
-              onPress={() => setActiveModal("instore")}
-              className="w-full sm:w-auto" // Full width on mobile
-            >
-              In-Store Request
-            </Button>
-            <Button
-              color="primary"
-              variant="solid"
-              startContent={<PlusIcon className="w-4 h-4" />}
-              onPress={() => setActiveModal("online")}
-              className="w-full sm:w-auto" // Full width on mobile
-            >
-              Online Request
-            </Button>
-          </div>
+          <Button
+            color="primary"
+            variant="solid"
+            startContent={<PlusIcon className="w-4 h-4" />}
+            onPress={() => setActiveModal("payment")}
+            className="w-full sm:w-auto" // Full width on mobile
+          >
+            Payment Request
+          </Button>
         }
         aria-label="Payment History Table"
         columns={paymentHistoryColumns}
@@ -344,15 +329,8 @@ export default function PaymentProcessingPage() {
       )}
 
       {/* Modals */}
-      <CreateOnlineRequestModal
-        isOpen={activeModal === "online"}
-        onClose={() => setActiveModal(null)}
-        onCreate={handleOrderCreated}
-      />
-
-      {/* In-Store Request Modal */}
-      <CreateInStoreRequestModal
-        isOpen={activeModal === "instore"}
+      <CreatePaymentRequestModal
+        isOpen={activeModal === "payment"}
         onClose={() => setActiveModal(null)}
         onCreate={handleOrderCreated}
       />
