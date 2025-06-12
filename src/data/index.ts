@@ -4,7 +4,7 @@ import {
   MerchantDisbursementEventGetOutput,
   MerchantUserGetOutput,
   PersonRole,
-  TransactionListItem,
+  PaymentListItem,
   CardLimitFrequency,
   CardShippingMethod,
   CardStatus,
@@ -259,11 +259,11 @@ export const issuedCardColumns: readonly Column<IssuedCards>[] = [
   //{ name: "ACTIONS", uid: "actions" },
 ] as const;
 
-export const paymentsColumns: readonly Column<TransactionListItem>[] = [
+export const paymentsColumns: readonly Column<PaymentListItem>[] = [
   { name: "ID", uid: "id" },
-  { name: "Status", uid: "transactionStatusHistory" }, // We'll use this to get the latest status
-  { name: "Payment Method", uid: "paymentMethod" },
-  { name: "Total", uid: "total" },
+  { name: "Status", uid: "paymentType" },
+  { name: "Payment Method", uid: "paymentType" },
+  { name: "Total", uid: "totalAmount" },
   { name: "Created", uid: "createdAt" },
 ] as const;
 
@@ -385,18 +385,8 @@ export const statusColorMap: Record<DisbursementState, StatusColor> = {
 };
 
 export const paymentsStatusColorMap: Record<string, StatusColor> = {
-  SENT_FOR_AUTHORIZATION: "primary",
-  AUTHORIZED: "secondary",
-  SENT_FOR_SETTLEMENT: "warning",
-  SETTLED: "success",
-  SETTLEMENT_FAILED: "danger",
-  CANCELLED: "danger",
-  ERROR: "danger",
-  EXPIRED: "danger",
-  REFUSED: "danger",
-  SENT_FOR_REFUND: "warning",
-  REFUNDED: "success",
-  REFUND_FAILED: "danger",
+  SALE: "success",
+  REFUND: "warning",
 };
 
 export const usersStatusColorMap: Record<PersonRole, StatusColor> = {

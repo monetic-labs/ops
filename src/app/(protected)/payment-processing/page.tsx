@@ -5,8 +5,14 @@ import { Chip } from "@heroui/chip";
 import { Button } from "@heroui/button";
 import { PlusIcon, Copy, Trash2, QrCode } from "lucide-react";
 import { Snippet } from "@heroui/snippet";
-import { TransactionListItem, GetOrderLinksOutput, BillingAddress } from "@monetic-labs/sdk";
+import {
+  PaymentListItem,
+  GetPaymentLinkDetailsOutput,
+  BillingAddress,
+  CreatePaymentLinkOutput,
+} from "@monetic-labs/sdk";
 import { useQueryClient, useQuery } from "@tanstack/react-query";
+import { toast } from "sonner";
 
 import { DataTable, Column, EmptyContent } from "@/components/generics/data-table";
 import { paymentsStatusColorMap } from "@/data";
@@ -15,8 +21,9 @@ import {
   formatStringToTitleCase,
   getTimeAgo,
   formatPhoneNumber,
-  centsToDollars,
   mapCurrencyToSymbol,
+  getFullName,
+  formatUsername,
 } from "@/utils/helpers";
 import Countdown from "@/components/generics/countdown";
 import CreatePaymentRequestModal from "./_components/CreatePaymentRequestModal";
@@ -27,23 +34,50 @@ import pylon from "@/libs/monetic-sdk";
 import { PaymentDetails } from "./_components/order-details";
 import { QRCodeModal } from "./_components/QRCodeModal";
 
-const paymentHistoryColumns: Column<TransactionListItem>[] = [
+const paymentHistoryColumns: Column<PaymentListItem>[] = [
+  {
+    name: "PAYMENT ID",
+    uid: "id",
+    render: (payment: PaymentListItem) => {
+      const truncatedId = payment.id.length > 8 ? payment.id.slice(0, 8) : payment.id;
+      return <span className="truncate block text-sm font-medium">{truncatedId}</span>;
+    },
+  },
   {
     name: "STATUS",
-    uid: "transactionStatusHistory",
-    render: (payment: TransactionListItem) => {
-      const statusLength = payment.transactionStatusHistory.length;
-      const lastStatus = statusLength > 0 ? payment.transactionStatusHistory[statusLength - 1].status : "UNKNOWN";
-
+    uid: "paymentType",
+    render: (payment: PaymentListItem) => {
+      const status = payment.paymentType;
       return (
         <Chip
           className="capitalize truncate"
-          color={paymentsStatusColorMap[lastStatus] || "default"}
+          color={paymentsStatusColorMap[status] || "default"}
           size="sm"
           variant="flat"
         >
-          {formatStringToTitleCase(lastStatus)}
+          {formatStringToTitleCase(status)}
         </Chip>
+      );
+    },
+  },
+  {
+    name: "AMOUNT",
+    uid: "totalAmount",
+    allowsSorting: true,
+    render: (payment: PaymentListItem) => (
+      <span className="truncate block text-sm font-medium">{formatAmountUSD(Number(payment.totalAmount))}</span>
+    ),
+  },
+  {
+    name: "CUSTOMER",
+    uid: "customerId",
+    render: (payment: PaymentListItem) => {
+      const customer = payment.customer;
+      const userFullName = getFullName(customer.firstName || "", customer.lastName || "", "Unknown");
+      return (
+        <span className="truncate block text-sm max-w-[150px] sm:max-w-[200px]">
+          {formatUsername(customer.username) || userFullName}
+        </span>
       );
     },
   },
@@ -51,38 +85,8 @@ const paymentHistoryColumns: Column<TransactionListItem>[] = [
     name: "DATE",
     uid: "createdAt",
     allowsSorting: true,
-    render: (payment: TransactionListItem) => (
+    render: (payment: PaymentListItem) => (
       <span className="truncate block text-sm">{getTimeAgo(payment.createdAt)}</span>
-    ),
-  },
-  {
-    name: "CUSTOMER",
-    uid: "customer",
-    render: (payment: TransactionListItem) => {
-      let detail = "N/A";
-      const billingAddr = payment.billingAddress as BillingAddress | undefined;
-      if (billingAddr?.firstName || billingAddr?.lastName) {
-        detail = `${billingAddr.firstName || ""} ${billingAddr.lastName || ""}`.trim();
-      }
-      return <span className="truncate block text-sm max-w-[150px] sm:max-w-[200px]">{detail || "N/A"}</span>;
-    },
-  },
-  {
-    name: "AMOUNT",
-    uid: "total",
-    allowsSorting: true,
-    render: (payment: TransactionListItem) => (
-      <span className="truncate block text-sm font-medium">{formatAmountUSD(payment.total / 100)}</span>
-    ),
-  },
-  {
-    name: "PAYMENT METHOD",
-    uid: "paymentMethod",
-    // Hide on mobile (screens smaller than sm breakpoint)
-    render: (payment: TransactionListItem) => (
-      <span className="hidden sm:table-cell truncate text-sm max-w-[100px]">
-        {formatStringToTitleCase(payment.paymentMethod)}
-      </span>
     ),
   },
 ];
@@ -92,80 +96,60 @@ type ModalType = "payment" | null;
 
 export default function PaymentProcessingPage() {
   const [activeModal, setActiveModal] = useState<ModalType>(null);
-  const [temporaryRequests, setTemporaryRequests] = useState<GetOrderLinksOutput[]>([]);
+
   const queryClient = useQueryClient();
 
   // State for viewing payment details
-  const [selectedPayment, setSelectedPayment] = useState<TransactionListItem | null>(null);
+  const [selectedPayment, setSelectedPayment] = useState<PaymentListItem | null>(null);
   // State for QR Code Modal
   const [isQrModalOpen, setIsQrModalOpen] = useState(false);
   const [qrCodeUrl, setQrCodeUrl] = useState<string | null>(null);
 
   // Fetch Payment History
-  const { transactions, isLoading: isLoadingHistory, error: errorHistory } = useOrderManagement();
+  const { payments, isLoading: isLoadingHistory, error: errorHistory } = useOrderManagement();
 
   // --- Fetch Existing Active Order Links ---
   const {
     data: fetchedActiveLinks = [],
     isLoading: isLoadingLinks,
     error: errorLinks,
-  } = useQuery<GetOrderLinksOutput[], Error>({
-    queryKey: ["activeOrderLinks"],
+  } = useQuery<GetPaymentLinkDetailsOutput[], Error>({
+    queryKey: ["activePaymentLinks"],
     queryFn: async () => {
-      const links = await pylon.getOrderLinks();
+      const links = await pylon.getPaymentLinks();
       // Filter potentially expired links fetched from API if API doesn't pre-filter
       const now = Date.now();
       return links.filter((link) => new Date(link.expiresAt).getTime() > now);
     },
-    // Optional: Add refetch interval if needed, though create/delete should handle updates
-    // refetchInterval: 60000, // Example: refetch every minute
   });
 
-  // --- Combine and Filter Active Requests ---
+  // Sync active requests when payment history is updated
+  useEffect(() => {
+    // When a payment is processed, it might have been an active request.
+    // Invalidate the active links query to refresh the list.
+    queryClient.invalidateQueries({ queryKey: ["activePaymentLinks"] });
+  }, [payments, queryClient]);
+
+  // --- Combined list of active requests (API + optimistic) ---
   const activeRequests = useMemo(() => {
     const now = Date.now();
-    // Filter temporary requests just in case interval hasn't run
-    const validTemporary = temporaryRequests.filter((req) => new Date(req.expiresAt).getTime() > now);
-
-    // Combine fetched and temporary, ensuring uniqueness based on ID
-    const combined = [...fetchedActiveLinks];
-    const fetchedIds = new Set(fetchedActiveLinks.map((link) => link.id));
-
-    validTemporary.forEach((tempReq) => {
-      if (!fetchedIds.has(tempReq.id)) {
-        combined.push(tempReq);
-      }
-    });
-
-    // Sort by expiration, soonest expiring first (optional)
-    // combined.sort((a, b) => new Date(a.expiresAt).getTime() - new Date(b.expiresAt).getTime());
-
-    return combined;
-  }, [fetchedActiveLinks, temporaryRequests]);
-
-  // Effect to remove expired temporary requests
-  useEffect(() => {
-    const interval = setInterval(() => {
-      const now = Date.now();
-      setTemporaryRequests((prevRequests) => prevRequests.filter((req) => new Date(req.expiresAt).getTime() > now));
-    }, 30 * 1000); // Check every 30 seconds
-
-    // Initial check on mount
-    const now = Date.now();
-    setTemporaryRequests((prevRequests) => prevRequests.filter((req) => new Date(req.expiresAt).getTime() > now));
-
-    return () => clearInterval(interval); // Cleanup on unmount
-  }, []);
+    // Filter out expired links from the fetched data
+    return (fetchedActiveLinks || []).filter((link) => new Date(link.expiresAt).getTime() > now);
+  }, [fetchedActiveLinks]);
 
   // Handler for successful request creation
-  const handleOrderCreated = async (newOrder: GetOrderLinksOutput) => {
-    // Add to top for visibility
-    setTemporaryRequests((prev) => [newOrder, ...prev]);
-    setActiveModal(null); // Close whichever modal was open
+  const handleOrderCreated = async (newOrder: CreatePaymentLinkOutput) => {
+    // Optimistically update the cache with the new payment request
+    queryClient.setQueryData<GetPaymentLinkDetailsOutput[]>(["activePaymentLinks"], (oldData = []) => [
+      newOrder,
+      ...oldData,
+    ]);
+
+    setActiveModal(null); // Close the modal
   };
 
   // --- Handlers for Payment History Details ---
-  const handleViewDetails = (payment: TransactionListItem) => {
+  const handleViewDetails = (payment: PaymentListItem) => {
     setSelectedPayment(payment);
   };
 
@@ -175,27 +159,21 @@ export default function PaymentProcessingPage() {
 
   // --- Handler for Deleting Payment Requests (Updated) ---
   const handleDeleteRequest = async (requestId: string) => {
-    const actualId = requestId.substring(requestId.lastIndexOf("/") + 1);
-    const isTemporary = temporaryRequests.some((req) => req.id === requestId);
+    // Optimistically update the cache by removing the payment request
+    queryClient.setQueryData<GetPaymentLinkDetailsOutput[]>(["activePaymentLinks"], (oldData = []) =>
+      oldData.filter((r) => r.id !== requestId)
+    );
 
-    if (isTemporary) {
-      // Just remove from local state
-      setTemporaryRequests((prev) => prev.filter((req) => req.id !== requestId));
-    } else {
-      // It's a fetched request, delete via API and refetch
-      try {
-        const deleteSuccess = await pylon.deleteOrderLink(actualId);
-        if (deleteSuccess) {
-          // Invalidate query cache to trigger refetch
-          await queryClient.invalidateQueries({ queryKey: ["activeOrderLinks"] });
-        } else {
-          console.error("Failed to delete order link via API (returned false) for ID:", actualId);
-          // TODO: Show error toast
-        }
-      } catch (error) {
-        console.error("Error deleting order link:", error);
-        // TODO: Show error toast
-      }
+    try {
+      await pylon.deletePaymentLink(requestId);
+      toast.success("Payment request deleted.");
+      // Invalidate to ensure consistency, though optimistic removal is usually enough
+      queryClient.invalidateQueries({ queryKey: ["activePaymentLinks"] });
+    } catch (error) {
+      console.error("Failed to delete payment request:", error);
+      toast.error("Failed to delete payment request.");
+      // Revert optimistic update on failure
+      queryClient.invalidateQueries({ queryKey: ["activePaymentLinks"] });
     }
   };
 
@@ -207,7 +185,15 @@ export default function PaymentProcessingPage() {
   };
 
   // --- Move requestColumns definition inside the component ---
-  const requestColumns: Column<GetOrderLinksOutput>[] = [
+  const requestColumns: Column<GetPaymentLinkDetailsOutput>[] = [
+    {
+      name: "ID",
+      uid: "id",
+      render: (order) => {
+        const truncatedId = order.id.length > 8 ? order.id.slice(0, 8) : order.id;
+        return <span className="truncate block text-sm font-medium">{truncatedId}</span>;
+      },
+    },
     {
       name: "EXPIRES",
       uid: "expiresAt",
@@ -216,6 +202,14 @@ export default function PaymentProcessingPage() {
         <div className="truncate block w-[100px]">
           <Countdown expiresAt={order.expiresAt} />
         </div>
+      ),
+    },
+    {
+      name: "AMOUNT",
+      uid: "order.subtotal",
+      align: "start",
+      render: (order) => (
+        <span className="truncate block text-sm font-medium">{formatAmountUSD(order.order.subtotal)}</span>
       ),
     },
     {
@@ -228,23 +222,13 @@ export default function PaymentProcessingPage() {
       },
     },
     {
-      name: "AMOUNT",
-      uid: "order.subtotal",
-      align: "start",
-      render: (order) => (
-        <span className="truncate block text-sm font-medium">
-          {formatAmountUSD(order.order.subtotal / 100)} {order.order.currency}
-        </span>
-      ),
-    },
-    {
       name: "PAYMENT LINK",
       uid: "link",
       align: "start",
       render: (order) => (
         <Snippet
           hideSymbol
-          codeString={order.id}
+          codeString={order.link}
           classNames={{
             base: "bg-default-100 dark:bg-default-200/50 p-1 rounded-md max-w-[150px] sm:max-w-[200px]",
             pre: "text-xs truncate font-mono text-foreground/70",
@@ -253,7 +237,7 @@ export default function PaymentProcessingPage() {
           size="sm"
           variant="flat"
         >
-          {order.id}
+          {order.link}
         </Snippet>
       ),
     },
@@ -292,7 +276,7 @@ export default function PaymentProcessingPage() {
         }
         aria-label="Payment History Table"
         columns={paymentHistoryColumns}
-        items={transactions}
+        items={payments}
         isLoading={isLoadingHistory}
         isError={!!errorHistory}
         errorMessage={errorHistory ? String(errorHistory) : "Failed to load payment history"}
@@ -341,18 +325,14 @@ export default function PaymentProcessingPage() {
           isOpen={!!selectedPayment}
           response={{
             transactionId: selectedPayment.id,
-            transactionStatus:
-              selectedPayment.transactionStatusHistory[selectedPayment.transactionStatusHistory.length - 1]?.status ||
-              "UNKNOWN", // Handle empty history
-            transactionProcessor: selectedPayment.processor,
-            transactionPaymentMethod: selectedPayment.paymentMethod,
-            transactionSubtotal: centsToDollars(selectedPayment.subtotal),
-            transactionTip: centsToDollars(selectedPayment.tipAmount),
+            transactionStatus: selectedPayment.paymentType,
+            transactionSubtotal: selectedPayment.subtotalAmount,
+            transactionTip: selectedPayment.tipAmount,
             transactionCurrency: selectedPayment.currency,
-            transactionTotal: centsToDollars(selectedPayment.total),
+            transactionTotal: selectedPayment.totalAmount,
             // Safely access nested properties
-            transactionBillingAddress: selectedPayment.billingAddress || {},
-            transactionShippingAddress: selectedPayment.shippingAddress || {},
+            transactionBillingAddress: selectedPayment.billingAddress,
+            transactionShippingAddress: selectedPayment.shippingAddress,
             transactionCreatedAt: selectedPayment.createdAt,
             timestamp: selectedPayment.createdAt,
           }}

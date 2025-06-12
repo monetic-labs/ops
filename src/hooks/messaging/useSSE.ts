@@ -3,31 +3,7 @@ import { useEffect, useCallback } from "react";
 import { Message, SupportMessage } from "@/types/messaging";
 import { useUser, AuthStatus } from "@/contexts/UserContext";
 import pylon from "@/libs/monetic-sdk";
-
-// Use the types already defined in the Pylon SDK
-// This is just for reference, we'll use the SDK's actual types
-interface ChatMessageEvent {
-  type: "chat_message";
-  data: {
-    messageId: number;
-    text: string;
-    from: {
-      id: number;
-      is_bot: boolean;
-      first_name: string;
-      username?: string;
-    };
-    timestamp: string;
-  };
-}
-
-interface MerchantChatConnectionEvent {
-  type: "chat_connection";
-  connectionId: string;
-  merchantId: string;
-}
-
-type MerchantChatEvent = ChatMessageEvent | MerchantChatConnectionEvent;
+import { MerchantChatEvent, PaymentSSEEventType as SSEEvent } from "@monetic-labs/sdk";
 
 interface SSEOptions {
   handleMessage: (message: Message) => void;
@@ -37,33 +13,36 @@ export const useSSE = ({ handleMessage }: SSEOptions) => {
   const { authStatus, isLoading } = useUser();
 
   const handleChatEvent = useCallback(
-    (event: any) => {
+    (event: MerchantChatEvent) => {
       // Only process chat message events
-      if (event.type !== "chat_message") return;
+      if (event.type !== SSEEvent.CHAT_MESSAGE) return;
 
-      const { data } = event;
-
-      const message: SupportMessage = {
-        id: crypto.randomUUID(),
-        text: data.text,
-        type: "support",
-        timestamp: new Date(data.timestamp).getTime(),
-        status: "received",
-        metadata: {
-          telegramMessageId: data.messageId,
-          chatId: data.from.id.toString(),
-          timestamp: new Date(data.timestamp).getTime(),
-          userId: data.from.id.toString(),
-          from: {
-            id: data.from.id,
-            is_bot: data.from.is_bot,
-            first_name: data.from.first_name,
-            username: data.from.username,
+      try {
+        const from = event.data.from;
+        const message: SupportMessage = {
+          id: crypto.randomUUID(),
+          text: event.data.text,
+          type: "support",
+          timestamp: new Date(event.data.timestamp).getTime(),
+          status: "received",
+          metadata: {
+            telegramMessageId: event.data.messageId,
+            chatId: from.id.toString(),
+            timestamp: new Date(event.data.timestamp).getTime(),
+            userId: from.id.toString(),
+            from: {
+              id: from.id,
+              is_bot: from.is_bot,
+              first_name: from.first_name,
+              username: from.username,
+            },
           },
-        },
-      };
+        };
 
-      handleMessage(message);
+        handleMessage(message);
+      } catch (error) {
+        console.error("[SSE] Error parsing chat message data:", error);
+      }
     },
     [handleMessage]
   );

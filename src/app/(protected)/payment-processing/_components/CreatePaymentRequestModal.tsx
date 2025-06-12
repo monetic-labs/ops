@@ -5,7 +5,7 @@ import { Input } from "@heroui/input";
 import { Mail, Phone, DollarSign, Info } from "lucide-react";
 import { Tooltip } from "@heroui/tooltip";
 import { Chip } from "@heroui/chip";
-import { GetOrderLinksOutput, ISO4217Currency } from "@monetic-labs/sdk";
+import { ISO4217Currency, CreatePaymentLinkOutput, PaymentCustomer, CreatePaymentLinkInput } from "@monetic-labs/sdk";
 
 import { formatPhoneNumber, formatCurrencyInput } from "@/utils/helpers";
 import pylon from "@/libs/monetic-sdk";
@@ -19,7 +19,7 @@ interface CustomerInfo {
 interface CreateOrderModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onCreate: (order: GetOrderLinksOutput) => Promise<void>;
+  onCreate: (order: CreatePaymentLinkOutput) => Promise<void>;
 }
 
 export default function CreatePaymentRequestModal({ isOpen, onClose, onCreate }: CreateOrderModalProps) {
@@ -111,40 +111,39 @@ export default function CreatePaymentRequestModal({ isOpen, onClose, onCreate }:
     setError(null);
 
     try {
-      const amountInCents = Math.round(parseFloat(formData.amount.replace(/[^\d.]/g, "")) * 100);
-
       // Create a customer object only if at least one field is filled
       const customerData: Record<string, string> = {};
       if (formData.email) customerData.email = formData.email;
       if (formData.phone) customerData.phone = formData.phone.replace(/\D/g, "");
 
       // Only include customer if we have data
-      const requestData: any = {
+      const requestData: CreatePaymentLinkInput = {
         order: {
-          subtotal: amountInCents,
-          currency: ISO4217Currency.USD,
+          subtotal: parseFloat(formData.amount),
+        },
+        customer: {
+          email: formData.email || undefined,
+          phone: formData.phone || undefined,
         },
       };
 
-      // Only add customer field if we have data
-      if (Object.keys(customerData).length > 0) {
-        requestData.customer = customerData;
-      }
-
-      const response = await pylon.createOrderLink(requestData);
+      const response = await pylon.createPaymentLink(requestData);
 
       // Create the response object
-      const responseCustomer: any = {};
-      if (formData.email) responseCustomer.email = formData.email;
-      if (formData.phone) responseCustomer.phone = formData.phone;
+      const responseCustomer: PaymentCustomer = {
+        email: formData.email,
+        phone: formData.phone,
+      };
 
-      const newOrder: GetOrderLinksOutput = {
-        id: response.orderLink,
+      const newOrder: CreatePaymentLinkOutput = {
+        id: response.id,
+        link: response.link,
         customer: responseCustomer,
         order: {
-          subtotal: amountInCents,
-          currency: ISO4217Currency.USD,
+          subtotal: response.order.subtotal,
         },
+        merchant: response.merchant,
+        paymentToken: response.paymentToken,
         expiresAt: response.expiresAt,
       };
 

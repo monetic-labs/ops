@@ -1,164 +1,159 @@
 import React from "react";
 import { Modal, ModalContent, ModalHeader, ModalBody } from "@heroui/modal";
 import { Divider } from "@heroui/divider";
-import { BillingAddress, ShippingAddress } from "@monetic-labs/sdk";
+import { BillingAddress, StableCurrency, ShippingAddress } from "@monetic-labs/sdk";
+import { Chip } from "@heroui/chip";
+import { Snippet } from "@heroui/snippet";
+import { Home, Truck, User, Clock, Tag, Wallet, Gift } from "lucide-react";
 
-import { formattedDate, mapCurrencyToSymbol } from "@/utils/helpers";
+import { formatAmountUSD, formattedDate, mapCurrencyToSymbol } from "@/utils/helpers";
 import ModalFooterWithSupport from "@/components/generics/footer-modal-support";
 
 interface PaymentDetailsResponseProps {
   isOpen: boolean;
   response: {
     transactionId: string;
-    transactionStatus: string;
-    transactionProcessor: string;
-    transactionPaymentMethod: string;
+    transactionStatus: "SALE" | "REFUND";
     transactionSubtotal: string;
     transactionTip: string;
     transactionTotal: string;
-    transactionCurrency: string;
+    transactionCurrency: StableCurrency;
     transactionBillingAddress: BillingAddress;
-    transactionShippingAddress: ShippingAddress;
+    transactionShippingAddress?: ShippingAddress | null;
     transactionCreatedAt: string;
     timestamp: string;
   };
   onClose: () => void;
 }
 
+const DetailRow = ({
+  label,
+  value,
+  valueClassName,
+  icon: Icon,
+}: {
+  label: string;
+  value: React.ReactNode;
+  valueClassName?: string;
+  icon: React.ElementType;
+}) => (
+  <div className="flex items-center justify-between">
+    <div className="flex items-center gap-2">
+      <Icon className="w-4 h-4 text-foreground/70" />
+      <span className="text-sm text-foreground/90">{label}</span>
+    </div>
+    <span className={`text-sm font-medium ${valueClassName || ""}`}>{value}</span>
+  </div>
+);
+
+const AddressCard = ({
+  title,
+  address,
+  icon: Icon,
+}: {
+  title: string;
+  address?: BillingAddress | ShippingAddress | null;
+  icon: React.ElementType;
+}) => {
+  if (!address || Object.keys(address).length === 0) {
+    return null;
+  }
+
+  const { firstName, lastName, street1, street2, city, state, postcode, country } = address;
+
+  return (
+    <div className="rounded-lg p-4 bg-content2 dark:bg-content3 flex-1 min-w-[200px]">
+      <div className="flex items-center gap-2 mb-2">
+        <Icon className="w-5 h-5 text-foreground/70" />
+        <h3 className="font-semibold text-foreground">{title}</h3>
+      </div>
+      <address className="not-italic text-sm text-foreground/90 space-y-0.5">
+        <p>
+          {firstName} {lastName}
+        </p>
+        <p>{street1}</p>
+        {street2 && <p>{street2}</p>}
+        <p>
+          {city}, {state} {postcode}
+        </p>
+        <p>{country}</p>
+      </address>
+    </div>
+  );
+};
+
 export function PaymentDetails({ isOpen, response, onClose }: PaymentDetailsResponseProps) {
   const handleSupportClick = () => {
-    // Handle support action
     console.log("Support clicked");
   };
 
-  const getStatusColor = (status: string) => {
+  const getStatusChipColor = (status: string) => {
     switch (status.toLowerCase()) {
-      case "sent_for_settlement":
-        return "text-orange-500";
-      case "settled":
-        return "text-success";
-      case "failed":
-        return "text-danger";
+      case "sale":
+        return "success";
+      case "refund":
+        return "warning";
       default:
-        return "text-foreground";
+        return "default";
     }
   };
 
   return (
-    <Modal className="max-w-md mx-auto" isOpen={isOpen} scrollBehavior="inside" onClose={onClose}>
+    <Modal className="max-w-xl mx-auto" isOpen={isOpen} scrollBehavior="inside" onClose={onClose}>
       <ModalContent>
         {(onClose) => (
           <>
             <ModalHeader className="flex flex-col items-center">
-              <h2 className="text-2xl font-bold">Details Response</h2>
-              <p className="text-sm text-foreground/60">Transaction ID: {response.transactionId}</p>
+              <h2 className="text-2xl font-bold">Payment Details</h2>
+              <Snippet hideSymbol variant="flat" size="sm" className="mt-1 bg-transparent">
+                {response.transactionId}
+              </Snippet>
             </ModalHeader>
-            <Divider />
-            <ModalBody>
-              <div className="space-y-4 font-mono text-sm">
-                {/* Transaction details */}
-                <div className="grid grid-cols-2 gap-2">
-                  <span>Response Status:</span>
-                  <span className={`text-right font-bold ${getStatusColor(response.transactionStatus)}`}>
-                    {response.transactionStatus}
-                  </span>
-                  <span>Processor:</span>
-                  <span className="text-right">{response.transactionProcessor}</span>
-                  <span>Payment Method:</span>
-                  <span className="text-right">{response.transactionPaymentMethod}</span>
-                  <span>Subtotal:</span>
-                  <span className="text-right">{`${mapCurrencyToSymbol[response.transactionCurrency.toLowerCase()]}${
-                    response.transactionSubtotal
-                  } ${response.transactionCurrency}`}</span>
-                  <span>Tip:</span>
-                  <span className="text-right">{`${mapCurrencyToSymbol[response.transactionCurrency.toLowerCase()]}${
-                    response.transactionTip
-                  } ${response.transactionCurrency}`}</span>
-                  <span>Total:</span>
-                  <span className="text-right">{`${mapCurrencyToSymbol[response.transactionCurrency.toLowerCase()]}${
-                    response.transactionTotal
-                  } ${response.transactionCurrency}`}</span>
+            <ModalBody className="py-6">
+              <div className="space-y-6">
+                {/* Financial Details */}
+                <div className="space-y-3 rounded-xl bg-content2 dark:bg-content3 p-4">
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <p className="text-sm text-foreground/70">Total Amount</p>
+                      <p className="text-3xl font-bold tracking-tight">
+                        {formatAmountUSD(Number(response.transactionTotal))}
+                      </p>
+                    </div>
+                    <Chip color={getStatusChipColor(response.transactionStatus)} variant="flat">
+                      {response.transactionStatus}
+                    </Chip>
+                  </div>
+                  <Divider />
+                  <DetailRow
+                    icon={Wallet}
+                    label="Subtotal"
+                    value={`${formatAmountUSD(Number(response.transactionSubtotal))} ${response.transactionCurrency}`}
+                  />
+                  <DetailRow
+                    icon={Gift}
+                    label="Tip"
+                    value={`${formatAmountUSD(Number(response.transactionTip))} ${response.transactionCurrency}`}
+                  />
                 </div>
-                <Divider />
-                {/* Billing Address */}
-                <div>
-                  <span className="font-bold mb-1">Billing Address:</span>
-                  <address className="not-italic text-right">
-                    {response.transactionBillingAddress.firstName} {response.transactionBillingAddress.lastName}
-                    <br />
-                    {response.transactionBillingAddress.street1}
-                    <br />
-                    {response.transactionBillingAddress.street2 && (
-                      <>
-                        {response.transactionBillingAddress.street2}
-                        <br />
-                      </>
-                    )}
-                    {response.transactionBillingAddress.street3 && (
-                      <>
-                        {response.transactionBillingAddress.street3}
-                        <br />
-                      </>
-                    )}
-                    {response.transactionBillingAddress.city}, {response.transactionBillingAddress.state}{" "}
-                    {response.transactionBillingAddress.postcode}
-                    <br />
-                    {response.transactionBillingAddress.country}
-                  </address>
+
+                {/* Customer Address Details */}
+                <div className="flex flex-col sm:flex-row gap-4">
+                  <AddressCard title="Billing Address" address={response.transactionBillingAddress} icon={User} />
+                  <AddressCard title="Shipping Address" address={response.transactionShippingAddress} icon={Truck} />
                 </div>
-                {/* Shipping Address */}
-                <div>
-                  <span className="font-bold mb-1">Shipping Address:</span>
-                  <address className="not-italic text-right">
-                    {response.transactionShippingAddress.firstName} {response.transactionShippingAddress.lastName}
-                    <br />
-                    {response.transactionShippingAddress.street1}
-                    <br />
-                    {response.transactionShippingAddress.street2 && (
-                      <>
-                        {response.transactionShippingAddress.street2}
-                        <br />
-                      </>
-                    )}
-                    {response.transactionShippingAddress.street3 && (
-                      <>
-                        {response.transactionShippingAddress.street3}
-                        <br />
-                      </>
-                    )}
-                    {response.transactionShippingAddress.city}, {response.transactionShippingAddress.state}{" "}
-                    {response.transactionShippingAddress.postcode}
-                    <br />
-                    {response.transactionShippingAddress.country}
-                  </address>
-                </div>
-                <Divider />
-                <div className="grid grid-cols-2 gap-2">
-                  <span>Timestamp:</span>
-                  <span className="text-right">{formattedDate(response.timestamp)}</span>
-                </div>
+
+                {/* Timestamp */}
+                <DetailRow
+                  icon={Clock}
+                  label="Timestamp"
+                  value={formattedDate(response.timestamp)}
+                  valueClassName="font-mono"
+                />
               </div>
             </ModalBody>
-            <Divider />
             <ModalFooterWithSupport
               actions={[
-                // Add commented-out action buttons here
-                /* TODO: Implement Refund Action
-                {
-                  label: "Refund",
-                  onClick: () => console.log("Refund Clicked for", response.transactionId),
-                  // Add appropriate styling/variant, e.g., color="warning"
-                  className: "...", 
-                },
-                */
-                /* TODO: Implement Cancel Action (if applicable based on status)
-                {
-                  label: "Cancel",
-                  onClick: () => console.log("Cancel Clicked for", response.transactionId),
-                  // Add appropriate styling/variant, e.g., color="danger"
-                  className: "...", 
-                },
-                */
                 {
                   label: "Close",
                   onClick: onClose,

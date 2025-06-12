@@ -12,6 +12,9 @@ export const isProduction = process.env.NEXT_PUBLIC_NODE_ENV === "production";
 
 // Currency Formatting and Conversion
 export const mapCurrencyToSymbol: Record<string, string> = {
+  usdc: "$",
+  usdt: "$",
+  dai: "$",
   usd: "$",
   eur: "€",
   gbp: "£",
@@ -164,8 +167,8 @@ export const getTimeAgo = (timestamp: string | Date): string => {
 export const todayStr = dayjs().format("MMM D YYYY hh:mm A");
 
 // Name and Text Formatting
-export const getFullName = (firstName: string, lastName: string) => {
-  if (!firstName && !lastName) return "User";
+export const getFullName = (firstName: string, lastName: string, _default: string = "User") => {
+  if (!firstName && !lastName) return _default;
   if (!firstName) return lastName;
   if (!lastName) return firstName;
 
@@ -312,4 +315,9 @@ export const formatIndustryCode = (code: string): string => {
 
   const description = NAICS_CODES[code as keyof typeof NAICS_CODES];
   return description ? `${code} - ${description}` : code;
+};
+
+export const formatUsername = (username?: string): string | undefined => {
+  if (!username) return undefined;
+  return `@${username}`;
 };

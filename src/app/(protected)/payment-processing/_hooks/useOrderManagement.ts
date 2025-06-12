@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from "react";
-import { TransactionListOutput, TransactionListItem, TransactionSSEEventType } from "@monetic-labs/sdk";
+import { PaymentListOutput, PaymentListItem, PaymentSSEEventType } from "@monetic-labs/sdk";
 import { useRouter } from "next/navigation";
 
 import pylon from "@/libs/monetic-sdk";
@@ -8,82 +8,82 @@ export const useOrderManagement = () => {
   const [state, setState] = useState<{
     isLoading: boolean;
     error: string | null;
-    transactions: TransactionListItem[];
+    payments: PaymentListItem[];
   }>({
     isLoading: true,
     error: null,
-    transactions: [],
+    payments: [],
   });
   const effectRan = useRef(false);
 
   const router = useRouter();
 
-  const sortTransactionsByDate = useCallback((transactions: TransactionListItem[]) => {
-    return [...transactions].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+  const sortPaymentsByDate = useCallback((payments: PaymentListItem[]) => {
+    return [...payments].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
   }, []);
 
-  const updateTransactions = useCallback(
-    (updater: (prev: TransactionListItem[]) => TransactionListItem[]) => {
+  const updatePayments = useCallback(
+    (updater: (prev: PaymentListItem[]) => PaymentListItem[]) => {
       setState((prevState) => ({
         ...prevState,
-        transactions: sortTransactionsByDate(updater(prevState.transactions)),
+        payments: sortPaymentsByDate(updater(prevState.payments)),
       }));
     },
-    [sortTransactionsByDate]
+    [sortPaymentsByDate]
   );
 
   const handleInitialList = useCallback(
-    (data: TransactionListItem[]) => {
+    (data: PaymentListItem[]) => {
       setState((prevState) => ({
         ...prevState,
         isLoading: false,
-        transactions: sortTransactionsByDate(data),
+        payments: sortPaymentsByDate(data),
       }));
     },
-    [sortTransactionsByDate]
+    [sortPaymentsByDate]
   );
 
-  const handleTransactionUpdated = useCallback(
-    (updatedTransaction: TransactionListItem) => {
-      console.log("Updated transaction:", updatedTransaction);
-      updateTransactions((prevTransactions) => {
-        const existingIndex = prevTransactions.findIndex((t) => t.id === updatedTransaction.id);
+  const handlePaymentUpdated = useCallback(
+    (updatedPayment: PaymentListItem) => {
+      console.log("Updated payment:", updatedPayment);
+      updatePayments((prevPayments) => {
+        const existingIndex = prevPayments.findIndex((p) => p.id === updatedPayment.id);
 
         if (existingIndex !== -1) {
-          const newTransactions = [...prevTransactions];
+          const newPayments = [...prevPayments];
 
-          newTransactions[existingIndex] = updatedTransaction;
+          newPayments[existingIndex] = updatedPayment;
 
-          return newTransactions;
+          return newPayments;
         }
 
-        return [updatedTransaction, ...prevTransactions];
+        return [updatedPayment, ...prevPayments];
       });
     },
-    [updateTransactions]
+    [updatePayments]
   );
 
-  const handleTransactionUpdate = useCallback(
-    (data: TransactionListOutput) => {
+  const handlePaymentUpdate = useCallback(
+    (data: PaymentListOutput) => {
       switch (data.type) {
-        case TransactionSSEEventType.KEEP_ALIVE:
+        case PaymentSSEEventType.KEEP_ALIVE:
           // These are just to keep the connection alive, no need to update state
           break;
-        case TransactionSSEEventType.INITIAL_LIST:
-          handleInitialList(data.data.transactions);
+        case PaymentSSEEventType.INITIAL_LIST:
+          handleInitialList(data.data.payments);
           break;
-        case TransactionSSEEventType.TRANSACTION_UPDATED:
-          handleTransactionUpdated(data.data);
+        case PaymentSSEEventType.PAYMENT_UPDATED:
+          handlePaymentUpdated(data.data);
           break;
         default:
           setState((prevState) => ({
             ...prevState,
-            error: "Unknown transaction update type",
+            error: "Unknown payment update type",
           }));
-          console.warn("Unknown transaction update type:", data);
+          console.warn("Unknown payment update type:", data);
       }
     },
-    [handleInitialList, handleTransactionUpdated]
+    [handleInitialList, handlePaymentUpdated]
   );
 
   useEffect(() => {
@@ -97,12 +97,12 @@ export const useOrderManagement = () => {
     const setupConnection = async () => {
       setState((prevState) => ({ ...prevState, isLoading: true, error: null }));
       try {
-        closeConnection = await pylon.getTransactionList(handleTransactionUpdate);
+        closeConnection = await pylon.getPaymentList(handlePaymentUpdate);
       } catch (error) {
-        console.error("Failed to set up transaction list:", error);
+        console.error("Failed to set up payment list:", error);
         setState((prevState) => ({
           ...prevState,
-          error: "Failed to connect to transaction list",
+          error: "Failed to connect to payment list",
         }));
       } finally {
         setState((prevState) => ({ ...prevState, isLoading: false }));
@@ -116,7 +116,7 @@ export const useOrderManagement = () => {
         closeConnection();
       }
     };
-  }, [handleTransactionUpdate, router]);
+  }, [handlePaymentUpdate, router]);
 
   return state;
 };
